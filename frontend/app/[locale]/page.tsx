@@ -41,11 +41,12 @@ export default async function HomePage() {
   const isHebrew = locale === 'he';
 
   return (
-    <div className="py-12 sm:py-16">
-      <section className="text-center">
+    <div className="h-[calc(100vh-130px)] flex flex-col">
+      {/* Hero Section */}
+      <section className="text-center py-8">
         <div className="mx-auto max-w-3xl">
           <h1
-            className={`text-4xl sm:text-5xl ${
+            className={`text-4xl md:text-5xl ${
               isHebrew ? 'font-light hebrew-hero' : 'font-black'
             } tracking-tight bg-gradient-to-tr from-pride-purple to-pride-pink bg-clip-text text-transparent`}
           >
@@ -58,7 +59,7 @@ export default async function HomePage() {
               t('home.heroHeadline')
             )}
           </h1>
-          <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">
+          <p className="mt-3 text-base md:text-lg text-slate-600 dark:text-slate-300">
             {isHebrew ? (
               <>
                 <span className="brand-raleway text-pride-purple font-extrabold">INCLUSIFY</span>{' '}
@@ -68,7 +69,7 @@ export default async function HomePage() {
               t('home.heroSub')
             )}
           </p>
-          <div className="mt-8 flex items-center justify-center gap-3">
+          <div className="mt-6 flex items-center justify-center gap-3">
             <Link href={`/${locale}/analyze`} className="btn-primary">
               {t('app.cta')}
             </Link>
@@ -79,24 +80,25 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 sm:gap-7 lg:gap-8">
+      {/* Features Section - fills remaining space */}
+      <section className="flex-1 grid grid-cols-2 xl:grid-cols-3 gap-4 pb-4">
         {features.map((f, i) => (
           <div
             key={i}
-            className="rounded-2xl p-6 sm:p-7 lg:p-8 border shadow-soft-xl"
+            className="rounded-2xl p-5 border shadow-soft-xl flex flex-col"
             style={{ backgroundColor: f.color }}
           >
             <div className="flex items-start gap-4">
-              <div className="h-12 w-12 rounded-xl grid place-items-center text-2xl bg-white/70">
+              <div className="h-11 w-11 rounded-xl grid place-items-center text-2xl bg-white/70 flex-shrink-0">
                 <span role="img" aria-label={f.key}>
                   {f.emoji}
                 </span>
               </div>
-              <div>
-                <h3 className="text-lg sm:text-xl font-extrabold">
+              <div className="flex-1">
+                <h3 className="text-base md:text-lg font-extrabold leading-tight">
                   {t(`home.featuresDetailed.${f.key}.title`)}
                 </h3>
-                <p className="mt-2 text-slate-700 dark:text-slate-300 text-sm sm:text-base">
+                <p className="mt-2 text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
                   {t(`home.featuresDetailed.${f.key}.desc`)}
                 </p>
               </div>

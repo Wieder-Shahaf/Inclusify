@@ -16,7 +16,9 @@
     "frontend:dev": "cd frontend && npm run dev",
     "frontend:build": "cd frontend && npm run build",
     "frontend:start": "cd frontend && npm start",
-    "frontend:lint": "cd frontend && npm run lint"
+    "frontend:lint": "cd frontend && npm run lint",
+    "backend:dev": "cd backend && source .venv/bin/activate && uvicorn app.main:app --reload --port 8000",
+    "backend:start": "cd backend && source .venv/bin/activate && uvicorn app.main:app --port 8000"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -24,3 +24,5 @@ build/
 *.safetensors
 ml/data/raw/
 ml/data/private/
+
+.claude
