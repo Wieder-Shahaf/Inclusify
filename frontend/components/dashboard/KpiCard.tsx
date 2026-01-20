@@ -13,6 +13,7 @@ export default function KpiCard({
   change,
   accent = 'indigo',
   bgColor,
+  compact = false,
 }: {
   label: string;
   value: string;
@@ -20,6 +21,7 @@ export default function KpiCard({
   change?: Change;
   accent?: 'indigo' | 'purple' | 'green' | 'amber' | 'rose' | 'sky';
   bgColor?: string;
+  compact?: boolean;
 }) {
   const up = (change?.value ?? 0) >= 0;
   const accentBg = {
@@ -30,18 +32,26 @@ export default function KpiCard({
     rose: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-200',
     sky: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-200',
   }[accent];
+
   return (
     <div
-      className="rounded-2xl border glass p-5 sm:p-6"
+      className={cn(
+        'rounded-xl border glass',
+        compact ? 'p-3' : 'p-5 sm:p-6 rounded-2xl'
+      )}
       style={bgColor ? { backgroundColor: bgColor } : undefined}
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
-          <p className="mt-2 text-3xl font-black tracking-tight">{value}</p>
+          <p className={cn('text-slate-500 dark:text-slate-400', compact ? 'text-xs' : 'text-sm')}>
+            {label}
+          </p>
+          <p className={cn('font-black tracking-tight', compact ? 'mt-1 text-xl' : 'mt-2 text-3xl')}>
+            {value}
+          </p>
         </div>
         {icon ? (
-          <div className={cn('h-11 w-11 grid place-items-center rounded-xl', accentBg)}>
+          <div className={cn('grid place-items-center rounded-lg', accentBg, compact ? 'h-8 w-8' : 'h-11 w-11 rounded-xl')}>
             {icon}
           </div>
         ) : null}
@@ -49,12 +59,13 @@ export default function KpiCard({
       {change && (
         <p
           className={cn(
-            'mt-3 text-sm font-medium',
+            'font-medium',
+            compact ? 'mt-1.5 text-xs' : 'mt-3 text-sm',
             up ? 'text-green-600 dark:text-green-400' : 'text-rose-600 dark:text-rose-400'
           )}
         >
           {up ? '+' : ''}
-          {change.value}% from {change.since}
+          {change.value}% {compact ? '' : 'from '}{change.since}
         </p>
       )}
     </div>
