@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import SeverityBadge, { Severity } from './SeverityBadge';
 import { cn } from '@/lib/utils';
 
@@ -21,10 +20,8 @@ type AnnotatedTextProps = {
 };
 
 export default function AnnotatedText({ text, annotations, onAnnotationClick }: AnnotatedTextProps) {
-  const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | null>(null);
-
   if (!text) return null;
-  
+
   const parts: Array<{ content: string; ann?: Annotation }> = [];
   let cursor = 0;
   const sorted = [...annotations].sort((a, b) => a.start - b.start);
@@ -41,7 +38,6 @@ export default function AnnotatedText({ text, annotations, onAnnotationClick }: 
   }
 
   const handleClick = (ann: Annotation) => {
-    setSelectedAnnotation(ann);
     onAnnotationClick?.(ann);
   };
 

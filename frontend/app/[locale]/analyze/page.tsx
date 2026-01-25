@@ -1,77 +1,93 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { useState, useCallback } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
+import { motion, AnimatePresence } from 'framer-motion';
 import AnnotationSidePanel from '@/components/AnnotationSidePanel';
 import SeverityBadge from '@/components/SeverityBadge';
-import { analyzeText, uploadFile, type AnalysisResult } from '@/lib/api/client';
-import { mockAnalyze } from '@/lib/utils/mock';
+import PaperUpload from '@/components/PaperUpload';
+import ProcessingAnimation from '@/components/ProcessingAnimation';
+import AnalysisSummary from '@/components/AnalysisSummary';
+import IssueTooltip from '@/components/IssueTooltip';
 import { Annotation } from '@/components/AnnotatedText';
-import { cn } from '@/lib/utils';
+import { getSampleText, analyzeDemoText } from '@/lib/utils/demoData';
+import { RotateCcw, FileText, ChevronLeft, ChevronRight, Scan, BarChart3, ShieldCheck } from 'lucide-react';
 
-const emptyAnalysis: AnalysisResult = {
+type ViewState = 'upload' | 'processing' | 'results';
+
+interface AnalysisData {
+  text: string;
+  annotations: Annotation[];
+  results: Array<{
+    phrase: string;
+    severity: 'outdated' | 'biased' | 'offensive' | 'incorrect';
+    explanation: string;
+    suggestion?: string;
+    references?: Array<{ label: string; url: string }>;
+  }>;
+  counts: Record<'outdated' | 'biased' | 'offensive' | 'incorrect', number>;
+  summary: {
+    totalIssues: number;
+    score: number;
+    recommendations: string[];
+  };
+}
+
+const emptyAnalysis: AnalysisData = {
+  text: '',
   annotations: [],
   results: [],
   counts: { outdated: 0, biased: 0, offensive: 0, incorrect: 0 },
-  originalText: '',
+  summary: { totalIssues: 0, score: 100, recommendations: [] },
 };
 
 export default function AnalyzePage() {
-  const t = useTranslations();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [text, setText] = useState('');
-  const [ran, setRan] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [analysis, setAnalysis] = useState<AnalysisResult>(emptyAnalysis);
-  const [privateMode, setPrivateMode] = useState(true);
-  const [sensitivity, setSensitivity] = useState(3);
+  const t = useTranslations('analyzer');
+  const locale = useLocale();
+  const isHebrew = locale === 'he';
+
+  const [viewState, setViewState] = useState<ViewState>('upload');
+  const [fileName, setFileName] = useState('');
+  const [analysis, setAnalysis] = useState<AnalysisData>(emptyAnalysis);
   const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const counts = analysis.counts;
-  const totalIssues = counts.outdated + counts.biased + counts.offensive + counts.incorrect;
 
-  const run = async () => {
-    if (!text.trim()) return;
+  const handleFileSelect = useCallback((file: File) => {
+    setFileName(file.name);
+    setViewState('processing');
+  }, []);
 
-    setLoading(true);
-    setError(null);
+  const handleUseSample = useCallback(() => {
+    setFileName(t('sampleFileName'));
+    setViewState('processing');
+  }, [t]);
 
-    try {
-      const result = await analyzeText(text, { privateMode });
-      setAnalysis(result);
-      setRan(true);
-    } catch (err) {
-      console.error('Analysis failed:', err);
-      setError(err instanceof Error ? err.message : 'Analysis failed. Is the backend running?');
-      const mockResult = mockAnalyze(text);
-      setAnalysis({ ...mockResult, originalText: text });
-      setRan(true);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const handleProcessingComplete = useCallback(() => {
+    const sampleText = getSampleText(locale);
+    const recommendations = {
+      outdated: t('recommendations.outdated'),
+      biased: t('recommendations.biased'),
+      offensive: t('recommendations.offensive'),
+      incorrect: t('recommendations.incorrect'),
+      excellent: t('recommendations.excellent'),
+    };
+    const result = analyzeDemoText(sampleText, locale, { recommendations });
+    setAnalysis({
+      text: sampleText,
+      ...result,
+    });
+    setViewState('results');
+  }, [locale, t]);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+  const handleReset = useCallback(() => {
+    setViewState('upload');
+    setFileName('');
+    setAnalysis(emptyAnalysis);
+    setSelectedAnnotation(null);
+    setSidePanelOpen(false);
+  }, []);
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      const result = await uploadFile(files[0]);
-      setText(result.text);
-    } catch (err) {
-      console.error('Upload failed:', err);
-      setError(err instanceof Error ? err.message : 'Upload failed. Is the backend running?');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleIssueClick = (result: typeof analysis.results[0]) => {
+  const handleIssueClick = useCallback((result: AnalysisData['results'][0]) => {
     const annotation = analysis.annotations.find(
       (a) => a.label.toLowerCase() === result.phrase.toLowerCase()
     );
@@ -79,20 +95,26 @@ export default function AnalyzePage() {
       setSelectedAnnotation(annotation);
       setSidePanelOpen(true);
     }
-  };
+  }, [analysis.annotations]);
 
-  // Render text with inline highlights (no overlap issues)
+  const handleAnnotationClick = useCallback((annotation: Annotation) => {
+    setSelectedAnnotation(annotation);
+    setSidePanelOpen(true);
+  }, []);
+
+  // Render highlighted text with tooltips
   const renderHighlightedText = () => {
+    const { text, annotations } = analysis;
     if (!text) return null;
-    if (analysis.annotations.length === 0) {
+    if (annotations.length === 0) {
       return <span className="whitespace-pre-wrap">{text}</span>;
     }
 
     const parts: Array<{ content: string; annotation?: Annotation }> = [];
     let cursor = 0;
 
-    // Sort and filter overlapping annotations (keep first occurrence only)
-    const sorted = [...analysis.annotations].sort((a, b) => a.start - b.start);
+    // Sort and filter overlapping annotations
+    const sorted = [...annotations].sort((a, b) => a.start - b.start);
     const nonOverlapping: Annotation[] = [];
     let lastEnd = -1;
 
@@ -114,32 +136,17 @@ export default function AnalyzePage() {
       parts.push({ content: text.slice(cursor) });
     }
 
-    const severityColors: Record<string, string> = {
-      outdated: 'bg-sky-200 dark:bg-sky-900/50 border-b-2 border-sky-500',
-      biased: 'bg-amber-200 dark:bg-amber-900/50 border-b-2 border-amber-500',
-      offensive: 'bg-rose-200 dark:bg-rose-900/50 border-b-2 border-rose-500',
-      incorrect: 'bg-red-200 dark:bg-red-900/50 border-b-2 border-red-500',
-    };
-
     return (
-      <span className="whitespace-pre-wrap">
+      <span className="whitespace-pre-wrap leading-relaxed">
         {parts.map((part, idx) =>
           part.annotation ? (
-            <mark
+            <IssueTooltip
               key={idx}
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedAnnotation(part.annotation!);
-                setSidePanelOpen(true);
-              }}
-              className={cn(
-                'cursor-pointer rounded-sm px-0.5 transition-all hover:opacity-70',
-                severityColors[part.annotation.severity] || severityColors.biased
-              )}
-              title={part.annotation.suggestion ? `→ ${part.annotation.suggestion}` : undefined}
+              annotation={part.annotation}
+              onOpenSidePanel={() => handleAnnotationClick(part.annotation!)}
             >
               {part.content}
-            </mark>
+            </IssueTooltip>
           ) : (
             <span key={idx}>{part.content}</span>
           )
@@ -148,242 +155,268 @@ export default function AnalyzePage() {
     );
   };
 
+  const totalIssues = analysis.counts.outdated + analysis.counts.biased + analysis.counts.offensive + analysis.counts.incorrect;
+  const wordCount = analysis.text.split(/\s+/).filter(Boolean).length;
+
+  // Prepare translations for child components
+  const uploadTranslations = {
+    title: t('uploadTitle'),
+    description: t('uploadDesc'),
+    dragDrop: t('dragDrop'),
+    trySample: t('trySample'),
+    dropHere: t('dropHere'),
+    chooseDifferent: t('chooseDifferent'),
+    analyzePaper: t('analyzePaper'),
+    fileError: t('fileError'),
+    fileSizeError: t('fileSizeError'),
+    or: t('or'),
+  };
+
+  const processingTranslations = {
+    uploading: t('processing.uploading'),
+    uploadingDesc: t('processing.uploadingDesc'),
+    parsing: t('processing.parsing'),
+    parsingDesc: t('processing.parsingDesc'),
+    analyzing: t('processing.analyzing'),
+    analyzingDesc: t('processing.analyzingDesc'),
+    generating: t('processing.generating'),
+    generatingDesc: t('processing.generatingDesc'),
+    complete: t('processing.complete'),
+    completeDesc: t('processing.completeDesc'),
+  };
+
+  const summaryTranslations = {
+    score: t('summaryCard.score'),
+    totalIssues: t('summaryCard.totalIssues'),
+    wordCount: t('summaryCard.wordCount'),
+    categories: t('summaryCard.categories'),
+    recommendations: t('summaryCard.recommendations'),
+    excellent: t('summaryCard.excellent'),
+    good: t('summaryCard.good'),
+    needsImprovement: t('summaryCard.needsImprovement'),
+    requiresAttention: t('summaryCard.requiresAttention'),
+    outdated: t('summaryCard.outdated'),
+    biased: t('summaryCard.biased'),
+    offensive: t('summaryCard.offensive'),
+    incorrect: t('summaryCard.incorrect'),
+    exportReport: t('exportReport'),
+  };
+
+  const features = [
+    { icon: Scan, title: t('features.smartDetection'), desc: t('features.smartDetectionDesc') },
+    { icon: BarChart3, title: t('features.detailedReports'), desc: t('features.detailedReportsDesc') },
+    { icon: ShieldCheck, title: t('features.privacyFirst'), desc: t('features.privacyFirstDesc') },
+  ];
+
+  const BackIcon = isHebrew ? ChevronRight : ChevronLeft;
+
   return (
     <>
-      <div className="py-4">
-        {/* Toolbar */}
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-3 p-2 glass rounded-lg border">
-          <div className="flex items-center gap-3">
-            {/* Upload Button */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,.docx,.txt"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="btn-ghost px-3 py-1.5 rounded-lg text-sm flex items-center gap-2"
-              disabled={loading}
+      <div className="flex flex-col flex-1">
+        <AnimatePresence mode="wait">
+          {/* Upload State */}
+          {viewState === 'upload' && (
+            <motion.div
+              key="upload"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="flex-1 flex flex-col justify-center max-w-4xl mx-auto w-full px-4 py-4"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-              Upload
-            </button>
-
-            {/* Private Mode */}
-            <label className="inline-flex items-center gap-2 text-sm cursor-pointer">
-              <input
-                type="checkbox"
-                className="h-4 w-4 rounded"
-                checked={privateMode}
-                onChange={(e) => setPrivateMode(e.target.checked)}
-              />
-              <span className="flex items-center gap-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                {t('app.privateMode')}
-              </span>
-            </label>
-
-            {/* Settings */}
-            <div className="relative">
-              <button
-                onClick={() => setSettingsOpen(!settingsOpen)}
-                className="btn-ghost px-3 py-1.5 rounded-lg text-sm flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                {t('analyzer.settings')}
-              </button>
-              {settingsOpen && (
-                <div className="absolute left-0 mt-2 w-72 glass border rounded-xl p-4 z-20 shadow-lg">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm">Sensitivity</label>
-                    <span className="text-sm font-medium">{sensitivity}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={1}
-                    max={5}
-                    value={sensitivity}
-                    onChange={(e) => setSensitivity(Number(e.target.value))}
-                    className="w-full mt-2"
-                  />
-                  <fieldset className="mt-4 text-sm space-y-2">
-                    <legend className="font-medium mb-2">Categories</legend>
-                    {['outdated', 'biased', 'offensive', 'incorrect'].map((c) => (
-                      <label key={c} className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" defaultChecked className="h-4 w-4 rounded" />
-                        <SeverityBadge level={c as any} />
-                      </label>
-                    ))}
-                  </fieldset>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Analyze Button */}
-          <button
-            onClick={run}
-            disabled={loading || !text.trim()}
-            className="btn-primary px-5 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {loading ? (
-              <>
-                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                Analyzing...
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                </svg>
-                {t('analyzer.analyzeBtn')}
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300">
-            {error}
-          </div>
-        )}
-
-        {/* Main Content: Editor + Issues Panel */}
-        <div className="grid gap-4 lg:grid-cols-[1fr,300px]" style={{ height: 'calc(100vh - 200px)', minHeight: '400px', maxHeight: '600px' }}>
-          {/* Text Editor with Highlights */}
-          <div className="glass rounded-xl border overflow-hidden flex flex-col">
-            <div className="flex-1 p-4 overflow-auto">
-              {/* Show textarea when not analyzed, highlighted text when analyzed */}
-              {!ran ? (
-                <textarea
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  placeholder={t('analyzer.placeholder') as string}
-                  className="w-full h-full min-h-full resize-none bg-transparent outline-none leading-7"
-                  aria-label="Text to analyze"
-                />
-              ) : (
-                <div
-                  className="leading-7 cursor-text"
-                  onClick={() => setRan(false)} // Click to edit
-                  title="Click to edit"
+              {/* Header */}
+              <div className="text-center mb-4">
+                <motion.h1
+                  className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-pride-purple to-pride-pink bg-clip-text text-transparent mb-2"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
                 >
-                  {renderHighlightedText()}
-                </div>
-              )}
-            </div>
-
-            {/* Footer */}
-            <div className="px-4 py-2 border-t bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between text-sm text-slate-500">
-              <span>{text.length} chars</span>
-              <div className="flex items-center gap-3">
-                {ran && (
-                  <button
-                    onClick={() => setRan(false)}
-                    className="text-pride-purple hover:underline text-xs"
-                  >
-                    Edit text
-                  </button>
-                )}
-                {ran && (
-                  <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    Analyzed
-                  </span>
-                )}
+                  {t('uploadTitle')}
+                </motion.h1>
+                <motion.p
+                  className="text-slate-500 dark:text-slate-400 max-w-md mx-auto text-sm"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  {t('uploadDesc')}
+                </motion.p>
               </div>
-            </div>
-          </div>
 
-          {/* Issues Panel */}
-          <div className="glass rounded-xl border overflow-hidden flex flex-col">
-            <div className="p-3 border-b bg-slate-50/50 dark:bg-slate-800/50">
-              <h2 className="font-semibold text-sm flex items-center gap-2">
-                Issues
-                {totalIssues > 0 && (
-                  <span className="px-2 py-0.5 text-xs rounded-full bg-pride-purple/20 text-pride-purple">
-                    {totalIssues}
-                  </span>
-                )}
-              </h2>
-            </div>
+              {/* Upload Component */}
+              <PaperUpload
+                onFileSelect={handleFileSelect}
+                onUseSample={handleUseSample}
+                translations={uploadTranslations}
+              />
 
-            {/* Summary Counts - Compact */}
-            <div className="px-3 py-2 border-b flex flex-wrap gap-x-4 gap-y-1 text-xs">
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-sky-500" />
-                {counts.outdated}
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-amber-500" />
-                {counts.biased}
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-rose-500" />
-                {counts.offensive}
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-red-500" />
-                {counts.incorrect}
-              </span>
-            </div>
-
-            {/* Issues List */}
-            <div className="flex-1 overflow-y-auto">
-              {!ran && (
-                <div className="p-4 text-center text-slate-500 text-xs">
-                  Click "Analyze" to check your text
-                </div>
-              )}
-
-              {ran && analysis.results.length === 0 && (
-                <div className="p-4 text-center">
-                  <div className="text-xl mb-1">🎉</div>
-                  <div className="text-green-600 dark:text-green-400 text-sm font-medium">
-                    No issues found!
-                  </div>
-                </div>
-              )}
-
-              {analysis.results.map((result, i) => (
-                <div
-                  key={i}
-                  onClick={() => handleIssueClick(result)}
-                  className="px-3 py-2 border-b last:border-b-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-medium text-sm truncate">
-                      {result.phrase}
-                    </span>
-                    <SeverityBadge level={result.severity} />
-                  </div>
-                  {result.suggestion && (
-                    <div className="mt-1 text-xs text-slate-500 truncate">
-                      → {result.suggestion}
+              {/* Features */}
+              <motion.div
+                className="mt-4 grid grid-cols-3 gap-3"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                {features.map((feature, i) => {
+                  const Icon = feature.icon;
+                  return (
+                    <div
+                      key={i}
+                      className="p-3 rounded-lg bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 text-center"
+                    >
+                      <div className="flex justify-center mb-1.5">
+                        <Icon className="w-5 h-5 text-pride-purple" />
+                      </div>
+                      <h3 className="font-semibold text-xs text-slate-800 dark:text-white">{feature.title}</h3>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{feature.desc}</p>
                     </div>
-                  )}
+                  );
+                })}
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* Processing State */}
+          {viewState === 'processing' && (
+            <motion.div
+              key="processing"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="flex-1 flex items-center justify-center px-4"
+            >
+              <ProcessingAnimation
+                fileName={fileName}
+                onComplete={handleProcessingComplete}
+                translations={processingTranslations}
+              />
+            </motion.div>
+          )}
+
+          {/* Results State */}
+          {viewState === 'results' && (
+            <motion.div
+              key="results"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="h-[calc(100vh-140px)] flex flex-col px-4 py-4"
+            >
+              {/* Results Header - Fixed */}
+              <div className="flex flex-wrap items-center justify-between gap-4 mb-4 flex-shrink-0">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleReset}
+                    className="btn-ghost p-2 rounded-lg"
+                    aria-label="Go back"
+                  >
+                    <BackIcon className="w-5 h-5" />
+                  </button>
+                  <div>
+                    <h2 className="font-semibold text-lg text-slate-800 dark:text-white flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-pride-purple" />
+                      {fileName}
+                    </h2>
+                    <p className="text-sm text-slate-500">
+                      {totalIssues} {totalIssues === 1 ? t('issueFound') : t('issuesFoundPlural')}
+                    </p>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
+                <button
+                  onClick={handleReset}
+                  className="btn-ghost px-4 py-2 rounded-lg text-sm flex items-center gap-2"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  {t('analyzeAnother')}
+                </button>
+              </div>
+
+              {/* Main Content Grid - Flexible */}
+              <div className={`flex-1 min-h-0 grid gap-4 ${isHebrew ? 'lg:grid-cols-[380px,1fr]' : 'lg:grid-cols-[1fr,380px]'}`}>
+                {/* Text Panel with Highlights */}
+                <div className={`glass rounded-xl border overflow-hidden flex flex-col min-h-0 max-h-full ${isHebrew ? 'lg:order-2' : ''}`}>
+                  <div className="px-4 py-3 border-b bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between flex-shrink-0">
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                      {t('documentContent')}
+                    </span>
+                    <span className="text-xs text-slate-400">
+                      {t('hoverHint')}
+                    </span>
+                  </div>
+                  <div
+                    className="flex-1 p-6 overflow-y-auto text-sm text-slate-700 dark:text-slate-200 scroll-smooth min-h-0"
+                    style={{ scrollBehavior: 'smooth' }}
+                    dir={isHebrew ? 'rtl' : 'ltr'}
+                  >
+                    {renderHighlightedText()}
+                  </div>
+                </div>
+
+                {/* Right Panel: Summary + Issues - Scrollable */}
+                <div className={`flex flex-col gap-4 min-h-0 max-h-full overflow-y-auto scroll-smooth pb-4 ${isHebrew ? 'lg:order-1' : ''}`} style={{ scrollBehavior: 'smooth' }}>
+                  {/* Summary Card */}
+                  <AnalysisSummary
+                    counts={analysis.counts}
+                    score={analysis.summary.score}
+                    recommendations={analysis.summary.recommendations}
+                    wordCount={wordCount}
+                    translations={summaryTranslations}
+                  />
+
+                  {/* Issues List */}
+                  <div className="glass rounded-xl border overflow-hidden flex flex-col">
+                    <div className="px-4 py-3 border-b bg-slate-50/50 dark:bg-slate-800/50 flex-shrink-0">
+                      <h3 className="text-sm font-semibold flex items-center gap-2">
+                        {t('issuesFound')}
+                        <span className="px-2 py-0.5 text-xs rounded-full bg-pride-purple/20 text-pride-purple">
+                          {analysis.results.length}
+                        </span>
+                      </h3>
+                    </div>
+                    <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {analysis.results.length === 0 ? (
+                        <div className="p-6 text-center">
+                          <div className="text-3xl mb-2">🎉</div>
+                          <p className="text-green-600 dark:text-green-400 font-medium">{t('noIssuesFound')}</p>
+                          <p className="text-sm text-slate-500 mt-1">{t('noIssuesMessage')}</p>
+                        </div>
+                      ) : (
+                        analysis.results.map((result, i) => (
+                          <motion.button
+                            key={i}
+                            onClick={() => handleIssueClick(result)}
+                            className="w-full px-4 py-3 text-start hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                            initial={{ opacity: 0, x: isHebrew ? -20 : 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.05 }}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm text-slate-800 dark:text-white truncate">
+                                  &ldquo;{result.phrase}&rdquo;
+                                </p>
+                                {result.suggestion && (
+                                  <p className="text-xs text-pride-purple mt-1 truncate">{isHebrew ? '←' : '→'} {result.suggestion}</p>
+                                )}
+                              </div>
+                              <SeverityBadge level={result.severity} />
+                            </div>
+                          </motion.button>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
+      {/* Side Panel for Issue Details */}
       <AnnotationSidePanel
         annotation={selectedAnnotation}
         open={sidePanelOpen}

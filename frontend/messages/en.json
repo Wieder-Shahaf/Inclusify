@@ -7,14 +7,28 @@
     "admin": "Admin",
     "analyze": "Analyze",
     "privateMode": "Private mode",
-    "settings": "Settings"
+    "settings": "Settings",
+    "footerCopyright": "Achva LGBT — INCLUSIFY",
+    "footerTagline": "Built with accessibility and inclusion in mind."
   },
   "admin": {
+    "title": "Analytics Dashboard",
+    "subtitle": "Monitor platform usage and gather insights",
+    "refresh": "Refresh",
+    "lastUpdated": "Last updated",
+    "timeRanges": {
+      "today": "Today",
+      "week": "This Week",
+      "month": "This Month",
+      "year": "This Year"
+    },
     "kpi": {
       "totalAnalyses": "Total Analyses",
       "issuesFound": "Issues Found",
       "resolved": "Resolved",
       "avgScore": "Avg. Score",
+      "activeUsers": "Active Users",
+      "documentsProcessed": "Documents Processed",
       "since": "last month"
     },
     "scoreTrends": "Score Trends",
@@ -23,10 +37,28 @@
     "shareByCategory": "Share by category",
     "issuesFoundShort": "Issues found",
     "topTerms": "Top Terms Flagged",
+    "topTermsDesc": "Most frequently flagged terms across all analyses",
+    "recentActivity": "Recent Activity",
+    "recentActivityDesc": "Latest document analyses",
+    "documentTypes": "Document Types",
+    "peakHours": "Peak Usage Hours",
+    "platformHealth": "Platform Health",
     "table": {
       "term": "Term",
       "occurrences": "Occurrences",
-      "suggestion": "Suggested Alternative"
+      "suggestion": "Suggested Alternative",
+      "trend": "Trend"
+    },
+    "activity": {
+      "analyzed": "analyzed",
+      "found": "found",
+      "issues": "issues"
+    },
+    "health": {
+      "apiLatency": "API Latency",
+      "uptime": "Uptime",
+      "errorRate": "Error Rate",
+      "queueSize": "Queue Size"
     },
     "usageByLanguage": "Usage by Language",
     "runs": "runs",
@@ -37,8 +69,37 @@
   },
   "home": {
     "heroHeadline": "Write with respect, clarity, and inclusion.",
+    "heroHeadlineTop": "Write with",
+    "heroHeadlineBottom": "respect & inclusion",
     "heroSub": "Identify outdated or biased language and get inclusive alternatives and references.",
-    "featuresTitle": "What you can do",
+    "heroBadge": "AI-Powered Inclusive Writing",
+    "trustFree": "Free to use",
+    "trustNoSignup": "No sign-up required",
+    "trustPrivacy": "Privacy-first",
+    "demoTitle": "See it in action",
+    "demoSubtitle": "Watch how INCLUSIFY detects and suggests improvements in real-time",
+    "demoLabel": "Document Analysis",
+    "demoIssuesDetected": "issues detected",
+    "demoText": "The study examined homosexual participants and their experiences. Normal people often have different perspectives on healthcare access.",
+    "demoTerm1": "homosexual",
+    "demoSuggestion1": "gay, lesbian, or LGBTQ+",
+    "demoTerm2": "Normal people",
+    "demoSuggestion2": "heterosexual individuals",
+    "howItWorksTitle": "How it works",
+    "howItWorksSubtitle": "Three simple steps to more inclusive academic writing",
+    "step1Title": "Upload your document",
+    "step1Desc": "Drop your PDF, DOCX, PPTX, or paste text directly. Your data stays private.",
+    "step2Title": "AI analyzes your text",
+    "step2Desc": "Advanced NLP identifies outdated, biased, or problematic language patterns.",
+    "step3Title": "Get actionable insights",
+    "step3Desc": "Receive suggestions with explanations and academic references to improve your writing.",
+    "featuresTitle": "Powerful features for inclusive writing",
+    "featuresSubtitle": "Everything you need to ensure your academic work is respectful and up-to-date",
+    "ctaTitle": "Ready to write more inclusively?",
+    "ctaSubtitle": "Join researchers and academics who are making their work more accessible and respectful.",
+    "ctaFormats": "Supports multiple formats",
+    "ctaInstant": "Instant analysis",
+    "ctaPrivate": "100% private",
     "featuresDetailed": {
       "smartDetection": {
         "title": "Smart Detection Engine",
@@ -82,7 +143,69 @@
     "results": "Results",
     "summary": "Summary",
     "noIssues": "No issues detected in this preview.",
-    "settings": "Sensitivity & Categories"
+    "settings": "Sensitivity & Categories",
+    "uploadTitle": "Analyze Your Paper",
+    "uploadDesc": "Upload your academic document to check for inclusive language",
+    "dragDrop": "Drag and drop your document here, or click to browse",
+    "trySample": "Try with sample academic paper",
+    "dropHere": "Drop your file here",
+    "chooseDifferent": "Choose Different File",
+    "analyzePaper": "Analyze Paper",
+    "fileError": "Please upload a PDF, DOCX, PPTX, or TXT file",
+    "fileSizeError": "File size must be less than 10MB",
+    "processing": {
+      "uploading": "Uploading document",
+      "uploadingDesc": "Securely transferring your file...",
+      "parsing": "Parsing content",
+      "parsingDesc": "Extracting text from document...",
+      "analyzing": "Analyzing language",
+      "analyzingDesc": "Scanning for inclusive language patterns...",
+      "generating": "Generating insights",
+      "generatingDesc": "Preparing your personalized report...",
+      "complete": "Analysis complete",
+      "completeDesc": "Your results are ready!"
+    },
+    "summaryCard": {
+      "score": "Inclusivity Score",
+      "totalIssues": "Total Issues",
+      "wordCount": "Word Count",
+      "categories": "Issues by Category",
+      "recommendations": "Recommendations",
+      "excellent": "Excellent",
+      "good": "Good",
+      "needsImprovement": "Needs Improvement",
+      "requiresAttention": "Requires Attention",
+      "outdated": "Outdated",
+      "biased": "Biased",
+      "offensive": "Offensive",
+      "incorrect": "Incorrect"
+    },
+    "recommendations": {
+      "outdated": "Update terminology to current inclusive standards",
+      "biased": "Revise framing to avoid implicit bias",
+      "offensive": "Replace potentially offensive language with respectful alternatives",
+      "incorrect": "Correct factually inaccurate terminology",
+      "excellent": "Excellent! Your text demonstrates inclusive language practices"
+    },
+    "features": {
+      "smartDetection": "Smart Detection",
+      "smartDetectionDesc": "AI-powered analysis",
+      "detailedReports": "Detailed Reports",
+      "detailedReportsDesc": "Category insights",
+      "privacyFirst": "Privacy First",
+      "privacyFirstDesc": "Data stays secure"
+    },
+    "analyzeAnother": "Analyze Another",
+    "issuesFound": "Issues Found",
+    "issueFound": "issue found",
+    "issuesFoundPlural": "issues found",
+    "noIssuesFound": "No issues found!",
+    "noIssuesMessage": "Your text demonstrates inclusive language practices.",
+    "documentContent": "Document Content",
+    "hoverHint": "Click highlighted text for details",
+    "viewDetails": "View full details",
+    "exportReport": "Export Report",
+    "sampleFileName": "sample_academic_paper.txt"
   },
   "severity": {
     "outdated": "Outdated",
@@ -91,29 +214,20 @@
     "incorrect": "Factually incorrect"
   },
   "glossary": {
-    "title": "Mini-Glossary",
-    "intro": "Key concepts for inclusive academic writing:",
-    "terms": [
-      {
-        "term": "Gender identity",
-        "desc": "A person's internal sense of their own gender."
-      },
-      {
-        "term": "Sexual orientation",
-        "desc": "Enduring pattern of emotional/romantic attraction."
-      },
-      {
-        "term": "Transgender",
-        "desc": "An umbrella term for people whose gender identity differs from sex assigned at birth."
-      },
-      {
-        "term": "Non-binary",
-        "desc": "A gender identity outside the male/female binary."
-      },
-      {
-        "term": "Inclusive language",
-        "desc": "Language that avoids biases, slang, or expressions that discriminate."
-      }
-    ]
+    "title": "LGBTQ+ Glossary",
+    "subtitle": "A comprehensive guide to LGBTQ+ terminology for inclusive academic writing. Definitions sourced from leading advocacy organizations.",
+    "searchPlaceholder": "Search terms...",
+    "badge": "Educational Resource",
+    "categories": {
+      "all": "All Terms",
+      "identity": "Gender Identity",
+      "orientation": "Sexual Orientation",
+      "expression": "Expression",
+      "concepts": "Concepts"
+    },
+    "sourcesTitle": "Authoritative Sources",
+    "sourcesDesc": "Definitions are sourced from leading LGBTQ+ advocacy organizations and are regularly updated to reflect current terminology and understanding.",
+    "noResults": "No terms found matching your search.",
+    "relatedTerms": "Related"
   }
 }

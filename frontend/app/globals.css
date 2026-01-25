@@ -84,7 +84,13 @@
   }
 
   .bg-hero-gradient {
+    background-color: #ffffff;
     background-image: var(--background-image-hero-gradient);
+
+    &:is(.dark *) {
+      background-color: #0f172a;
+      background-image: radial-gradient(1200px 600px at 100% 0%, rgba(123,97,255,0.15), rgba(0,0,0,0) 60%), radial-gradient(800px 400px at 0% 40%, rgba(255,83,161,0.12), rgba(0,0,0,0) 60%);
+    }
   }
 }
 
@@ -205,4 +211,21 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Animated gradient for hero text */
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  animation: gradient 4s ease infinite;
 }

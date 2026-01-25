@@ -1,5 +1,7 @@
 'use client';
 
+import { useMemo } from 'react';
+
 export type DonutDatum = {
   label: string;
   value: number;
@@ -25,7 +27,33 @@ export default function DonutChart({
   const total = data.reduce((s, d) => s + d.value, 0);
   const radius = (size - thickness) / 2;
   const circumference = 2 * Math.PI * radius;
-  let offset = 0;
+
+  // Precompute segment data with offsets using reduce to avoid mutation
+  const segments = useMemo(() => {
+    const result: Array<{
+      label: string;
+      value: number;
+      color: string;
+      len: number;
+      dashArray: string;
+      dashOffset: number;
+    }> = [];
+
+    data.reduce((offset, d) => {
+      const frac = d.value / total;
+      const len = circumference * frac;
+      result.push({
+        ...d,
+        len,
+        dashArray: `${len} ${circumference - len}`,
+        dashOffset: -offset,
+      });
+      return offset + len;
+    }, 0);
+
+    return result;
+  }, [data, total, circumference]);
+
   return (
     <div className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="block">
@@ -37,26 +65,19 @@ export default function DonutChart({
             opacity="0.08"
             strokeWidth={thickness}
           />
-          {data.map((d, i) => {
-            const frac = d.value / total;
-            const len = circumference * frac;
-            const dashArray = `${len} ${circumference - len}`;
-            const dashOffset = -offset;
-            offset += len;
-            return (
-              <circle
-                key={i}
-                r={radius}
-                fill="none"
-                stroke={d.color}
-                strokeWidth={thickness}
-                strokeDasharray={dashArray}
-                strokeDashoffset={dashOffset}
-                transform="rotate(-90)"
-                strokeLinecap="round"
-              />
-            );
-          })}
+          {segments.map((segment, i) => (
+            <circle
+              key={i}
+              r={radius}
+              fill="none"
+              stroke={segment.color}
+              strokeWidth={thickness}
+              strokeDasharray={segment.dashArray}
+              strokeDashoffset={segment.dashOffset}
+              transform="rotate(-90)"
+              strokeLinecap="round"
+            />
+          ))}
         </g>
       </svg>
       {center && (

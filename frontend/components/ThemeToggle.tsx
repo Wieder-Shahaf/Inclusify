@@ -1,76 +1,93 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
+import { Sun, Moon } from 'lucide-react';
 
 const THEME_KEY = 'inclusify-theme';
 
 export default function ThemeToggle() {
-  const [dark, setDark] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [dark, setDark] = useState<boolean | null>(null);
+  const mountedRef = useRef(false);
 
   // Initialize theme from localStorage on mount
   useEffect(() => {
-    setMounted(true);
+    mountedRef.current = true;
     const saved = localStorage.getItem(THEME_KEY);
     // Default to light mode if no preference saved
     const isDark = saved === 'dark';
     setDark(isDark);
 
+    // Sync with DOM in case script didn't run
     if (isDark) {
       document.documentElement.classList.add('dark');
-      document.documentElement.setAttribute('data-theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
-      document.documentElement.removeAttribute('data-theme');
     }
   }, []);
 
   // Update DOM and localStorage when theme changes
   useEffect(() => {
-    if (!mounted) return;
+    if (!mountedRef.current || dark === null) return;
 
     const html = document.documentElement;
     if (dark) {
       html.classList.add('dark');
-      html.setAttribute('data-theme', 'dark');
       localStorage.setItem(THEME_KEY, 'dark');
     } else {
       html.classList.remove('dark');
-      html.removeAttribute('data-theme');
       localStorage.setItem(THEME_KEY, 'light');
     }
-  }, [dark, mounted]);
+  }, [dark]);
 
-  // Prevent hydration mismatch by not rendering until mounted
-  if (!mounted) {
+  const toggleTheme = () => {
+    setDark((d) => !d);
+  };
+
+  // Show a placeholder while hydrating to prevent flash
+  if (dark === null) {
     return (
-      <button className={cn("btn-ghost rounded-full p-2")} title="Toggle theme">
-        <span className="sr-only">Toggle theme</span>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-          <path d="M12 18a6 6 0 100-12 6 6 0 000 12zm0 4a1 1 0 011 1v1a1 1 0 01-2 0v-1a1 1 0 011-1zm0-22a1 1 0 011-1v1a1 1 0 01-2 0V0a1 1 0 011-1zM0 13a1 1 0 011-1h1a1 1 0 010 2H1a1 1 0 01-1-1zm22 0a1 1 0 011-1h1a1 1 0 010 2h-1a1 1 0 01-1-1zM4.22 19.78a1 1 0 011.42 0l.7.7a1 1 0 01-1.42 1.42l-.7-.7a1 1 0 010-1.42zM17.66 6.34a1 1 0 011.42 0l.7.7a1 1 0 01-1.42 1.42l-.7-.7a1 1 0 010-1.42zM4.22 4.22a1 1 0 010 1.42l-.7.7A1 1 0 012.1 4.92l.7-.7a1 1 0 011.42 0zM19.78 19.78a1 1 0 01-1.42 0l-.7-.7a1 1 0 111.42-1.42l.7.7a1 1 0 010 1.42z"></path>
-        </svg>
+      <button
+        className={cn("btn-ghost rounded-full p-2 w-9 h-9")}
+        title="Toggle theme"
+        aria-label="Toggle theme"
+      >
+        <span className="w-5 h-5 block" />
       </button>
     );
   }
 
   return (
     <button
-      onClick={() => setDark((d) => !d)}
-      className={cn("btn-ghost rounded-full p-2")}
-      aria-pressed={dark}
-      title="Toggle theme"
-    >
-      <span className="sr-only">Toggle theme</span>
-      {dark ? (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-          <path d="M21.64 13A9 9 0 1111 2.36 7 7 0 0021.64 13z"></path>
-        </svg>
-      ) : (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-          <path d="M12 18a6 6 0 100-12 6 6 0 000 12zm0 4a1 1 0 011 1v1a1 1 0 01-2 0v-1a1 1 0 011-1zm0-22a1 1 0 011-1v1a1 1 0 01-2 0V0a1 1 0 011-1zM0 13a1 1 0 011-1h1a1 1 0 010 2H1a1 1 0 01-1-1zm22 0a1 1 0 011-1h1a1 1 0 010 2h-1a1 1 0 01-1-1zM4.22 19.78a1 1 0 011.42 0l.7.7a1 1 0 01-1.42 1.42l-.7-.7a1 1 0 010-1.42zM17.66 6.34a1 1 0 011.42 0l.7.7a1 1 0 01-1.42 1.42l-.7-.7a1 1 0 010-1.42zM4.22 4.22a1 1 0 010 1.42l-.7.7A1 1 0 012.1 4.92l.7-.7a1 1 0 011.42 0zM19.78 19.78a1 1 0 01-1.42 0l-.7-.7a1 1 0 111.42-1.42l.7.7a1 1 0 010 1.42z"></path>
-        </svg>
+      onClick={toggleTheme}
+      className={cn(
+        "btn-ghost rounded-full p-2 transition-all duration-200",
+        "hover:bg-slate-100 dark:hover:bg-slate-800"
       )}
+      aria-pressed={dark}
+      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+      title={dark ? "Switch to light mode" : "Switch to dark mode"}
+    >
+      <div className="relative w-5 h-5">
+        {/* Sun Icon - shown in dark mode */}
+        <Sun
+          className={cn(
+            "absolute inset-0 w-5 h-5 transition-all duration-300",
+            dark
+              ? "opacity-100 rotate-0 scale-100 text-yellow-400"
+              : "opacity-0 -rotate-90 scale-50"
+          )}
+        />
+        {/* Moon Icon - shown in light mode */}
+        <Moon
+          className={cn(
+            "absolute inset-0 w-5 h-5 transition-all duration-300",
+            dark
+              ? "opacity-0 rotate-90 scale-50"
+              : "opacity-100 rotate-0 scale-100 text-slate-600"
+          )}
+        />
+      </div>
     </button>
   );
 }

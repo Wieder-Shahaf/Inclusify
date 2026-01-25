@@ -1,111 +1,121 @@
-import { getTranslations, getLocale } from 'next-intl/server';
-import Link from 'next/link';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+import HeroSection from '@/components/landing/HeroSection';
+import DemoPreview from '@/components/landing/DemoPreview';
+import HowItWorks from '@/components/landing/HowItWorks';
+import FeaturesGrid from '@/components/landing/FeaturesGrid';
+import CTASection from '@/components/landing/CTASection';
 
-export default async function HomePage() {
+type Props = {
+  params: Promise<{ locale: string }>;
+};
+
+export default async function HomePage({ params }: Props) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const t = await getTranslations();
-  const locale = await getLocale();
+  const isHebrew = locale === 'he';
 
   const features = [
     {
       key: 'smartDetection',
-      color: '#E5D9F2',
-      emoji: '🧠',
+      title: t('home.featuresDetailed.smartDetection.title'),
+      description: t('home.featuresDetailed.smartDetection.desc'),
     },
     {
       key: 'bilingualSupport',
-      color: '#D1E9F6',
-      emoji: '🌐',
+      title: t('home.featuresDetailed.bilingualSupport.title'),
+      description: t('home.featuresDetailed.bilingualSupport.desc'),
     },
     {
       key: 'gradedAlerts',
-      color: '#FFF8DE',
-      emoji: '⚠️',
+      title: t('home.featuresDetailed.gradedAlerts.title'),
+      description: t('home.featuresDetailed.gradedAlerts.desc'),
     },
     {
       key: 'exportableReports',
-      color: '#E7FBBE',
-      emoji: '📄',
+      title: t('home.featuresDetailed.exportableReports.title'),
+      description: t('home.featuresDetailed.exportableReports.desc'),
     },
     {
       key: 'educationalResources',
-      color: '#FFEAEA',
-      emoji: '📖',
+      title: t('home.featuresDetailed.educationalResources.title'),
+      description: t('home.featuresDetailed.educationalResources.desc'),
     },
     {
       key: 'privacyFirst',
-      color: '#F5EFFF',
-      emoji: '🔒',
+      title: t('home.featuresDetailed.privacyFirst.title'),
+      description: t('home.featuresDetailed.privacyFirst.desc'),
     },
   ];
 
-  const isHebrew = locale === 'he';
+  const heroTranslations = {
+    headline: t('home.heroHeadline'),
+    headlineTop: t('home.heroHeadlineTop'),
+    headlineBottom: t('home.heroHeadlineBottom'),
+    subheadline: t('home.heroSub'),
+    cta: t('app.cta'),
+    secondaryCta: t('app.glossary'),
+    badge: t('home.heroBadge'),
+    trustFree: t('home.trustFree'),
+    trustNoSignup: t('home.trustNoSignup'),
+    trustPrivacy: t('home.trustPrivacy'),
+  };
+
+  const demoTranslations = {
+    title: t('home.demoTitle'),
+    subtitle: t('home.demoSubtitle'),
+    label: t('home.demoLabel'),
+    issuesDetected: t('home.demoIssuesDetected'),
+    demoText: t('home.demoText'),
+    term1: t('home.demoTerm1'),
+    suggestion1: t('home.demoSuggestion1'),
+    term2: t('home.demoTerm2'),
+    suggestion2: t('home.demoSuggestion2'),
+    outdated: t('severity.outdated'),
+    biased: t('severity.biased'),
+  };
+
+  const howItWorksTranslations = {
+    title: t('home.howItWorksTitle'),
+    subtitle: t('home.howItWorksSubtitle'),
+    step1Title: t('home.step1Title'),
+    step1Desc: t('home.step1Desc'),
+    step2Title: t('home.step2Title'),
+    step2Desc: t('home.step2Desc'),
+    step3Title: t('home.step3Title'),
+    step3Desc: t('home.step3Desc'),
+  };
+
+  const featuresGridTranslations = {
+    title: t('home.featuresTitle'),
+    subtitle: t('home.featuresSubtitle'),
+  };
+
+  const ctaTranslations = {
+    title: t('home.ctaTitle'),
+    subtitle: t('home.ctaSubtitle'),
+    formats: t('home.ctaFormats'),
+    instant: t('home.ctaInstant'),
+    private: t('home.ctaPrivate'),
+    cta: t('app.cta'),
+  };
 
   return (
-    <div className="h-[calc(100vh-130px)] flex flex-col">
-      {/* Hero Section */}
-      <section className="text-center py-8">
-        <div className="mx-auto max-w-3xl">
-          <h1
-            className={`text-4xl md:text-5xl ${
-              isHebrew ? 'font-light hebrew-hero' : 'font-black'
-            } tracking-tight bg-gradient-to-tr from-pride-purple to-pride-pink bg-clip-text text-transparent`}
-          >
-            {isHebrew ? (
-              <>
-                <span className="block">{t('home.heroHeadlineTop')}</span>
-                <span className="block">{t('home.heroHeadlineBottom')}</span>
-              </>
-            ) : (
-              t('home.heroHeadline')
-            )}
-          </h1>
-          <p className="mt-3 text-base md:text-lg text-slate-600 dark:text-slate-300">
-            {isHebrew ? (
-              <>
-                <span className="brand-raleway text-pride-purple font-extrabold">INCLUSIFY</span>{' '}
-                מאתרת ניסוחים בעייתיים ומציעה לכם נוסח חדש מקצועי ומכבד יותר - בלחיצת כפתור!
-              </>
-            ) : (
-              t('home.heroSub')
-            )}
-          </p>
-          <div className="mt-6 flex items-center justify-center gap-3">
-            <Link href={`/${locale}/analyze`} className="btn-primary">
-              {t('app.cta')}
-            </Link>
-            <Link href={`/${locale}/glossary`} className="btn-ghost">
-              {t('app.glossary')}
-            </Link>
-          </div>
-        </div>
-      </section>
+    <div className="flex flex-col">
+      <HeroSection
+        locale={locale}
+        isHebrew={isHebrew}
+        translations={heroTranslations}
+      />
 
-      {/* Features Section - fills remaining space */}
-      <section className="flex-1 grid grid-cols-2 xl:grid-cols-3 gap-4 pb-4">
-        {features.map((f, i) => (
-          <div
-            key={i}
-            className="rounded-2xl p-5 border shadow-soft-xl flex flex-col"
-            style={{ backgroundColor: f.color }}
-          >
-            <div className="flex items-start gap-4">
-              <div className="h-11 w-11 rounded-xl grid place-items-center text-2xl bg-white/70 flex-shrink-0">
-                <span role="img" aria-label={f.key}>
-                  {f.emoji}
-                </span>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-base md:text-lg font-extrabold leading-tight">
-                  {t(`home.featuresDetailed.${f.key}.title`)}
-                </h3>
-                <p className="mt-2 text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
-                  {t(`home.featuresDetailed.${f.key}.desc`)}
-                </p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </section>
+      <DemoPreview isHebrew={isHebrew} translations={demoTranslations} />
+
+      <HowItWorks isHebrew={isHebrew} translations={howItWorksTranslations} />
+
+      <FeaturesGrid features={features} translations={featuresGridTranslations} />
+
+      <CTASection locale={locale} translations={ctaTranslations} />
     </div>
   );
 }
