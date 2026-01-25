@@ -7,14 +7,28 @@
     "admin": "ניהול",
     "analyze": "ניתוח",
     "privateMode": "מצב פרטי",
-    "settings": "הגדרות"
+    "settings": "הגדרות",
+    "footerCopyright": "Achva LGBT — INCLUSIFY",
+    "footerTagline": "נבנה מתוך מחויבות לנגישות והכלה."
   },
   "admin": {
+    "title": "לוח בקרה אנליטי",
+    "subtitle": "מעקב אחר שימוש בפלטפורמה ואיסוף תובנות",
+    "refresh": "רענון",
+    "lastUpdated": "עודכן לאחרונה",
+    "timeRanges": {
+      "today": "היום",
+      "week": "השבוע",
+      "month": "החודש",
+      "year": "השנה"
+    },
     "kpi": {
       "totalAnalyses": "סה״כ ניתוחים",
       "issuesFound": "בעיות שאותרו",
       "resolved": "טופלו",
       "avgScore": "ציון ממוצע",
+      "activeUsers": "משתמשים פעילים",
+      "documentsProcessed": "מסמכים שעובדו",
       "since": "בחודש האחרון"
     },
     "scoreTrends": "מגמות ציון",
@@ -23,10 +37,28 @@
     "shareByCategory": "חלוקה לפי קטגוריות",
     "issuesFoundShort": "בעיות שאותרו",
     "topTerms": "מונחים מובילים שסומנו",
+    "topTermsDesc": "המונחים שסומנו בתדירות הגבוהה ביותר בכל הניתוחים",
+    "recentActivity": "פעילות אחרונה",
+    "recentActivityDesc": "ניתוחי מסמכים אחרונים",
+    "documentTypes": "סוגי מסמכים",
+    "peakHours": "שעות שיא",
+    "platformHealth": "תקינות הפלטפורמה",
     "table": {
       "term": "מונח",
       "occurrences": "הופעות",
-      "suggestion": "חלופה מומלצת"
+      "suggestion": "חלופה מומלצת",
+      "trend": "מגמה"
+    },
+    "activity": {
+      "analyzed": "נותח",
+      "found": "נמצאו",
+      "issues": "בעיות"
+    },
+    "health": {
+      "apiLatency": "זמן תגובה API",
+      "uptime": "זמן פעילות",
+      "errorRate": "שיעור שגיאות",
+      "queueSize": "גודל התור"
     },
     "usageByLanguage": "שימוש לפי שפה",
     "runs": "הרצות",
@@ -36,10 +68,38 @@
     }
   },
   "home": {
+    "heroHeadline": "כתיבה מכבדת, ברורה ומכלילה.",
     "heroHeadlineTop": "מילים ברורות, שפה מכבדת,",
     "heroHeadlineBottom": "שפה שווה.",
-    "heroSub": "<brand>INCLUSIFY</brand> מאתרת ניסוחים בעייתיים ומציעה לכם נוסח חדש מקצועי ומכבד יותר - בלחיצת כפתור!",
-    "featuresTitle": "מה אפשר לעשות",
+    "heroSub": "INCLUSIFY מאתרת ניסוחים בעייתיים ומציעה לכם נוסח חדש מקצועי ומכבד יותר - בלחיצת כפתור!",
+    "heroBadge": "כתיבה מכלילה מבוססת AI",
+    "trustFree": "חינם לשימוש",
+    "trustNoSignup": "ללא הרשמה",
+    "trustPrivacy": "פרטיות מובטחת",
+    "demoTitle": "ראו בפעולה",
+    "demoSubtitle": "צפו כיצד INCLUSIFY מזהה ומציעה שיפורים בזמן אמת",
+    "demoLabel": "ניתוח מסמך",
+    "demoIssuesDetected": "בעיות זוהו",
+    "demoText": "המחקר בדק משתתפים הומוסקסואלים וחוויותיהם. אנשים נורמליים לעתים קרובות מחזיקים בנקודות מבט שונות על גישה לשירותי בריאות.",
+    "demoTerm1": "הומוסקסואלים",
+    "demoSuggestion1": "גייז, לסביות, או להט״ב+",
+    "demoTerm2": "אנשים נורמליים",
+    "demoSuggestion2": "אנשים הטרוסקסואלים",
+    "howItWorksTitle": "איך זה עובד",
+    "howItWorksSubtitle": "שלושה צעדים פשוטים לכתיבה אקדמית מכלילה יותר",
+    "step1Title": "העלו את המסמך שלכם",
+    "step1Desc": "גררו PDF, DOCX, PPTX, או הדביקו טקסט ישירות. המידע שלכם נשאר פרטי.",
+    "step2Title": "AI מנתח את הטקסט",
+    "step2Desc": "מודלי NLP מתקדמים מזהים דפוסי שפה מיושנים, מוטים או בעייתיים.",
+    "step3Title": "קבלו תובנות מעשיות",
+    "step3Desc": "קבלו הצעות עם הסברים ומקורות אקדמיים לשיפור הכתיבה שלכם.",
+    "featuresTitle": "יכולות מתקדמות לכתיבה מכלילה",
+    "featuresSubtitle": "כל מה שצריך כדי להבטיח שהעבודה האקדמית שלכם מכבדת ועדכנית",
+    "ctaTitle": "מוכנים לכתוב בצורה מכלילה יותר?",
+    "ctaSubtitle": "הצטרפו לחוקרים ואקדמאים שהופכים את עבודתם לנגישה ומכבדת יותר.",
+    "ctaFormats": "תומך במגוון פורמטים",
+    "ctaInstant": "ניתוח מיידי",
+    "ctaPrivate": "פרטיות מלאה",
     "featuresDetailed": {
       "smartDetection": {
         "title": "מנוע זיהוי חכם",
@@ -83,7 +143,69 @@
     "results": "תוצאות",
     "summary": "סיכום",
     "noIssues": "לא אותרו בעיות בתצוגה מקדימה.",
-    "settings": "רגישות וקטגוריות"
+    "settings": "רגישות וקטגוריות",
+    "uploadTitle": "ניתוח המסמך שלך",
+    "uploadDesc": "העלו מסמך אקדמי לבדיקת שפה מכלילה",
+    "dragDrop": "גררו ושחררו את המסמך כאן, או לחצו לעיון",
+    "trySample": "נסו עם מסמך אקדמי לדוגמה",
+    "dropHere": "שחררו את הקובץ כאן",
+    "chooseDifferent": "בחירת קובץ אחר",
+    "analyzePaper": "ניתוח המסמך",
+    "fileError": "יש להעלות קובץ PDF, DOCX, PPTX, או TXT",
+    "fileSizeError": "גודל הקובץ חייב להיות פחות מ-10MB",
+    "processing": {
+      "uploading": "מעלה מסמך",
+      "uploadingDesc": "מעביר את הקובץ בצורה מאובטחת...",
+      "parsing": "מעבד תוכן",
+      "parsingDesc": "מחלץ טקסט מהמסמך...",
+      "analyzing": "מנתח שפה",
+      "analyzingDesc": "סורק דפוסי שפה מכלילה...",
+      "generating": "מייצר תובנות",
+      "generatingDesc": "מכין את הדוח המותאם אישית שלך...",
+      "complete": "הניתוח הושלם",
+      "completeDesc": "התוצאות מוכנות!"
+    },
+    "summaryCard": {
+      "score": "ציון מכלילות",
+      "totalIssues": "סה״כ בעיות",
+      "wordCount": "מספר מילים",
+      "categories": "בעיות לפי קטגוריה",
+      "recommendations": "המלצות",
+      "excellent": "מצוין",
+      "good": "טוב",
+      "needsImprovement": "דורש שיפור",
+      "requiresAttention": "דורש תשומת לב",
+      "outdated": "מיושן",
+      "biased": "מוטה",
+      "offensive": "פוגעני",
+      "incorrect": "שגוי"
+    },
+    "recommendations": {
+      "outdated": "עדכנו את הטרמינולוגיה לסטנדרטים מכלילים עדכניים",
+      "biased": "תקנו את המסגור כדי להימנע מהטיה מרומזת",
+      "offensive": "החליפו שפה שעלולה לפגוע בחלופות מכבדות",
+      "incorrect": "תקנו טרמינולוגיה שגויה עובדתית",
+      "excellent": "מצוין! הטקסט שלך מפגין שימוש בשפה מכלילה"
+    },
+    "features": {
+      "smartDetection": "זיהוי חכם",
+      "smartDetectionDesc": "ניתוח מבוסס AI",
+      "detailedReports": "דוחות מפורטים",
+      "detailedReportsDesc": "תובנות לפי קטגוריה",
+      "privacyFirst": "פרטיות קודמת לכל",
+      "privacyFirstDesc": "המידע נשאר מאובטח"
+    },
+    "analyzeAnother": "ניתוח נוסף",
+    "issuesFound": "בעיות שנמצאו",
+    "issueFound": "בעיה נמצאה",
+    "issuesFoundPlural": "בעיות נמצאו",
+    "noIssuesFound": "לא נמצאו בעיות!",
+    "noIssuesMessage": "הטקסט שלך מפגין שימוש בשפה מכלילה.",
+    "documentContent": "תוכן המסמך",
+    "hoverHint": "לחצו על טקסט מודגש לפרטים",
+    "viewDetails": "הצג פרטים מלאים",
+    "exportReport": "ייצוא דוח",
+    "sampleFileName": "מסמך_אקדמי_לדוגמה.txt"
   },
   "severity": {
     "outdated": "מיושן",
@@ -92,29 +214,20 @@
     "incorrect": "שגוי עובדתית"
   },
   "glossary": {
-    "title": "מיני-מילון",
-    "intro": "מונחי מפתח לכתיבה מכלילה:",
-    "terms": [
-      {
-        "term": "זהות מגדרית",
-        "desc": "התחושה הפנימית של אדם לגבי המגדר שלו."
-      },
-      {
-        "term": "נטייה מינית",
-        "desc": "דפוס מתמשך של משיכה רגשית או רומנטית (ולעתים גם מינית)."
-      },
-      {
-        "term": "טרנסג׳נדר/ית",
-        "desc": "מונח־מטרייה לאנשים שזהותם המגדרית שונה מהמגדר שיוחס להם בלידה."
-      },
-      {
-        "term": "נון־בינארי/ת",
-        "desc": "זהות מגדרית שאינה מוגבלת רק לקטגוריות \"גבר\" או \"אישה\"."
-      },
-      {
-        "term": "שפה מכלילה",
-        "desc": "שפה שנמנעת מהטיות, סלנג או ביטויים מפלים כלפי קבוצות שונות."
-      }
-    ]
+    "title": "מילון מונחי להט״ב+",
+    "subtitle": "מדריך מקיף למונחי להט״ב+ לכתיבה אקדמית מכלילה. הגדרות ממקורות מוסמכים.",
+    "searchPlaceholder": "חיפוש מונחים...",
+    "badge": "משאב חינוכי",
+    "categories": {
+      "all": "כל המונחים",
+      "identity": "זהות מגדרית",
+      "orientation": "נטייה מינית",
+      "expression": "ביטוי מגדרי",
+      "concepts": "מושגים"
+    },
+    "sourcesTitle": "מקורות מוסמכים",
+    "sourcesDesc": "ההגדרות מקורן בארגוני להט״ב+ מובילים ומתעדכנות באופן קבוע כדי לשקף את הטרמינולוגיה וההבנה העדכניות.",
+    "noResults": "לא נמצאו מונחים התואמים את החיפוש.",
+    "relatedTerms": "קשור"
   }
 }

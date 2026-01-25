@@ -54,9 +54,11 @@ export default function Navbar() {
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
             <ThemeToggle />
-            <Link href={`/${locale}/analyze`} className="btn-primary hidden sm:inline-flex">
-              {t('cta')}
-            </Link>
+            {!pathname.includes('/analyze') && (
+              <Link href={`/${locale}/analyze`} className="btn-primary hidden sm:inline-flex">
+                {t('cta')}
+              </Link>
+            )}
           </div>
         </nav>
         {pathname !== `/${locale}` && (
