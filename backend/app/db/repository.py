@@ -1,0 +1,135 @@
+import asyncpg
+import json
+from typing import Optional
+
+async def get_org_by_slug(conn: asyncpg.Connection, slug: str):
+    return await conn.fetchrow(
+        "SELECT org_id, name, default_private_mode FROM organizations WHERE slug=$1 LIMIT 1;",
+        slug,
+    )
+
+async def get_user_by_email(conn: asyncpg.Connection, email: str):
+    return await conn.fetchrow(
+        "SELECT user_id, org_id, role FROM users WHERE email=$1 LIMIT 1;",
+        email,
+    )
+
+async def get_latest_org(conn: asyncpg.Connection):
+    return await conn.fetchrow(
+        "SELECT org_id, name, default_private_mode FROM organizations ORDER BY created_at DESC LIMIT 1;"
+    )
+
+async def get_latest_user(conn: asyncpg.Connection):
+    return await conn.fetchrow(
+        "SELECT user_id, org_id, role FROM users ORDER BY created_at DESC LIMIT 1;"
+    )
+
+async def create_document(
+    conn: asyncpg.Connection,
+    org_id,
+    user_id,
+    input_type: str,
+    language: str,
+    private_mode: bool,
+    mime_type: str = "text/plain",
+    original_filename: Optional[str] = None,
+    text_storage_ref: Optional[str] = None,
+    text_sha256: Optional[str] = None,
+):
+    row = await conn.fetchrow(
+        """
+        INSERT INTO documents
+          (org_id, user_id, input_type, language, private_mode, original_filename, mime_type, text_storage_ref, text_sha256)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        RETURNING document_id;
+        """,
+        org_id,
+        user_id,
+        input_type,
+        language,
+        private_mode,
+        original_filename,
+        mime_type,
+        text_storage_ref,
+        text_sha256,
+    )
+    return row["document_id"]
+
+async def create_run(conn: asyncpg.Connection, document_id, model_version: str, status: str, config_snapshot: dict):
+    row = await conn.fetchrow(
+        """
+        INSERT INTO analysis_runs
+          (document_id, status, model_version, config_snapshot, started_at)
+        VALUES ($1,$2,$3,$4::jsonb, NOW())
+        RETURNING run_id;
+        """,
+        document_id,
+        status,
+        model_version,
+        json.dumps(config_snapshot, ensure_ascii=False),
+    )
+    return row["run_id"]
+
+async def finish_run(conn: asyncpg.Connection, run_id, status: str, runtime_ms: int):
+    await conn.execute(
+        """
+        UPDATE analysis_runs
+        SET status=$1, finished_at=NOW(), runtime_ms=$2
+        WHERE run_id=$3;
+        """,
+        status,
+        runtime_ms,
+        run_id,
+    )
+
+async def insert_finding(
+    conn: asyncpg.Connection,
+    run_id,
+    category: str,
+    severity: str,
+    start_idx: int,
+    end_idx: int,
+    explanation: Optional[str] = None,
+    excerpt_redacted: Optional[str] = None,
+    rule_id=None,
+    confidence=None,
+):
+    row = await conn.fetchrow(
+        """
+        INSERT INTO findings
+          (run_id, category, severity, start_idx, end_idx, confidence, explanation, rule_id, excerpt_redacted)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        RETURNING finding_id;
+        """,
+        run_id,
+        category,
+        severity,
+        start_idx,
+        end_idx,
+        confidence,
+        explanation,
+        rule_id,
+        excerpt_redacted,
+    )
+    return row["finding_id"]
+
+async def insert_suggestion(
+    conn: asyncpg.Connection,
+    finding_id,
+    language: str,
+    replacement_text: str,
+    rationale: Optional[str] = None,
+    source_id=None,
+):
+    await conn.execute(
+        """
+        INSERT INTO suggestions
+          (finding_id, language, replacement_text, rationale, source_id)
+        VALUES ($1,$2,$3,$4,$5);
+        """,
+        finding_id,
+        language,
+        replacement_text,
+        rationale,
+        source_id,
+    )

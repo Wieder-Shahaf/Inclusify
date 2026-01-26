@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AnalysisStatus {
+  pending
+  completed
+  failed
+}
+
+enum IssueSeverity {
+  outdated
+  biased
+  offensive
+  incorrect
+}
+
+model Document {
+  id             String        @id @default(cuid())
+  filename       String
+  contentType    String
+  pageCount      Int
+  textPreview    String?       @db.Text
+  fullText       String?       @db.Text
+  createdAt      DateTime      @default(now())
+  analysisRuns   AnalysisRun[]
+
+  @@index([createdAt])
+}
+
+model AnalysisRun {
+  id            String         @id @default(cuid())
+  documentId    String?
+  document      Document?      @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  inputText     String?        @db.Text
+  language      String         @default("auto")
+  privateMode   Boolean        @default(true)
+  status        AnalysisStatus @default(pending)
+  correctedText String?        @db.Text
+  note          String?        @db.Text
+  createdAt     DateTime       @default(now())
+  issues        Issue[]
+
+  @@index([createdAt])
+  @@index([language])
+}
+
+model Issue {
+  id           String        @id @default(cuid())
+  analysisId   String
+  analysis     AnalysisRun   @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  span         String
+  severity     IssueSeverity
+  type         String
+  description  String        @db.Text
+  suggestion   String?       @db.Text
+  start        Int
+  end          Int
+  createdAt    DateTime      @default(now())
+
+  @@index([analysisId])
+  @@index([severity])
+}

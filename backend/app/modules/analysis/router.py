@@ -24,10 +24,15 @@ TODO (for model integration):
 =============================================================================
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional, Literal
 import asyncio
+import hashlib
+import time
+
+from app.db.deps import get_db
+from app.db import repository as repo
 
 router = APIRouter()
 
@@ -40,6 +45,8 @@ class AnalysisRequest(BaseModel):
     text: str = Field(..., min_length=1)
     language: Optional[Literal['en', 'he', 'auto']] = 'auto'
     private_mode: Optional[bool] = True
+    org_slug: Optional[str] = None
+    user_email: Optional[str] = None
 
 
 class Issue(BaseModel):
@@ -274,46 +281,99 @@ def find_issues(text: str) -> list[Issue]:
 # =============================================================================
 
 @router.post("/analyze", response_model=AnalysisResponse)
-async def analyze_text(request: AnalysisRequest):
-    """
-    Analyze text for non-inclusive LGBTQ+ language.
+async def analyze_text(request: AnalysisRequest, conn=Depends(get_db)):
+    t0 = time.time()
 
-    **CURRENT STATUS: DEMO MODE (Rule-Based Detection)**
-
-    This endpoint currently uses keyword matching as a placeholder.
-    Production version will use the fine-tuned suzume-llama-3-8B model
-    deployed on Azure ML Online Endpoint.
-
-    Args:
-        request: AnalysisRequest containing:
-            - text: The text to analyze
-            - language: 'en', 'he', or 'auto' (default: 'auto')
-            - private_mode: If True, text is not logged (default: True)
-
-    Returns:
-        AnalysisResponse containing:
-            - original_text: The input text
-            - analysis_status: 'Success' or error status
-            - issues_found: List of detected issues with positions
-            - note: Status message about detection mode
-
-    TODO (Model Integration):
-        1. Call Azure ML endpoint with text
-        2. Parse LLM JSON response
-        3. Merge with rule-based results for hybrid detection
-        4. Add confidence scores
-    """
-    # Small delay to simulate processing (can be removed in production)
     await asyncio.sleep(0.3)
 
-    # DEMO: Use rule-based detection
-    # TODO: Replace/augment with LLM inference call
     issues = find_issues(request.text)
+
+    # ---- Resolve org/user (לפי org_slug/user_email אם סופקו, אחרת "האחרונים" לדמו) ----
+    org = await repo.get_org_by_slug(conn, request.org_slug) if request.org_slug else await repo.get_latest_org(conn)
+    if not org:
+        raise HTTPException(status_code=400, detail="No organization found. Run seed.sql or provide org_slug.")
+
+    org_id = org["org_id"]
+    default_private_mode = org["default_private_mode"]
+
+    user = await repo.get_user_by_email(conn, request.user_email) if request.user_email else await repo.get_latest_user(conn)
+    if not user:
+        raise HTTPException(status_code=400, detail="No user found. Run seed.sql or provide user_email.")
+
+    user_id = user["user_id"]
+    user_org_id = user["org_id"]
+    if user_org_id != org_id:
+        raise HTTPException(status_code=403, detail="User does not belong to the selected organization.")
+
+    private_mode = bool(request.private_mode) if request.private_mode is not None else bool(default_private_mode)
+
+    # לא שומרים טקסט מלא אם private_mode=True, רק hash
+    text_sha256 = hashlib.sha256(request.text.encode("utf-8")).hexdigest()
+
+    # ---- DB transaction ----
+    try:
+        async with conn.transaction():
+            doc_id = await repo.create_document(
+                conn=conn,
+                org_id=org_id,
+                user_id=user_id,
+                input_type="paste",
+                language=request.language or "auto",
+                private_mode=private_mode,
+                mime_type="text/plain",
+                text_storage_ref=None,
+                text_sha256=text_sha256,
+            )
+
+            run_id = await repo.create_run(
+                conn=conn,
+                document_id=doc_id,
+                model_version="rules-v0",
+                status="running",
+                config_snapshot={"mode": "rule-based", "language": request.language, "private_mode": private_mode},
+            )
+
+            # Insert findings + suggestions
+            def map_severity(s: str) -> str:
+                # mapping ל-db (low/medium/high)
+                if s == "offensive":
+                    return "high"
+                if s in ("biased", "incorrect"):
+                    return "medium"
+                return "low"  # outdated
+
+            for iss in issues:
+                finding_id = await repo.insert_finding(
+                    conn=conn,
+                    run_id=run_id,
+                    category=iss.type,
+                    severity=map_severity(iss.severity),
+                    start_idx=iss.start,
+                    end_idx=iss.end,
+                    explanation=iss.description,
+                    excerpt_redacted=iss.span,
+                    rule_id=None,
+                    confidence=None,
+                )
+                if iss.suggestion:
+                    await repo.insert_suggestion(
+                        conn=conn,
+                        finding_id=finding_id,
+                        language=(request.language if request.language in ("he", "en") else "he"),
+                        replacement_text=iss.suggestion,
+                        rationale="Auto-suggestion from rule-based demo",
+                        source_id=None,
+                    )
+
+            runtime_ms = int((time.time() - t0) * 1000)
+            await repo.finish_run(conn, run_id=run_id, status="succeeded", runtime_ms=runtime_ms)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"DB error: {e}")
 
     return AnalysisResponse(
         original_text=request.text,
         analysis_status="Success",
         issues_found=issues,
-        corrected_text=None,  # TODO: Generate with LLM
-        note=f"DEMO MODE: Found {len(issues)} issue(s) using rule-based detection. LLM integration pending."
+        corrected_text=None,
+        note=f"Saved to DB: document_id={doc_id}, run_id={run_id}. DEMO MODE: {len(issues)} issue(s)."
     )
