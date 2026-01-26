@@ -31,20 +31,24 @@ import asyncio
 import hashlib
 import time
 
-from app.db.deps import get_db
-from app.db import repository as repo
+# [CONFLICT 1 SOLVED] Friend's imports are saved here but disabled
+# --- PENDING DB INTEGRATION (Uncomment when DB is ready) ---
+# from app.db.deps import get_db
+# from app.db import repository as repo
 
 router = APIRouter()
 
 
 # =============================================================================
-# Request/Response Models (matching Model Diagram: backend/app/schemas.py)
+# Request/Response Models
 # =============================================================================
 
 class AnalysisRequest(BaseModel):
     text: str = Field(..., min_length=1)
     language: Optional[Literal['en', 'he', 'auto']] = 'auto'
     private_mode: Optional[bool] = True
+    
+    # [CONFLICT 2 SOLVED] Friend's fields added here (as Optional) so they don't break validation
     org_slug: Optional[str] = None
     user_email: Optional[str] = None
 
@@ -69,19 +73,6 @@ class AnalysisResponse(BaseModel):
 
 # =============================================================================
 # DEMO: Rule-Based Term Dictionary
-# =============================================================================
-# This is a PLACEHOLDER for demonstration purposes.
-#
-# In production, the fine-tuned LLM will:
-# - Understand context (e.g., academic discussion vs. prejudiced framing)
-# - Detect subtle biases not captured by keyword matching
-# - Handle variations and misspellings
-# - Provide context-aware suggestions
-#
-# These rules serve as:
-# - High-precision detection for known problematic terms
-# - Fallback when model is unavailable
-# - Baseline comparison for model evaluation
 # =============================================================================
 
 TERM_RULES = [
@@ -230,17 +221,6 @@ TERM_RULES = [
 def find_issues(text: str) -> list[Issue]:
     """
     DEMO/PLACEHOLDER: Find problematic terms using simple keyword matching.
-
-    This function will be replaced/augmented with LLM-based detection that:
-    - Understands context and nuance
-    - Detects implicit bias and framing issues
-    - Handles Hebrew morphological variations
-
-    Args:
-        text: The input text to analyze
-
-    Returns:
-        List of Issue objects for each detected term
     """
     issues = []
     text_lower = text.lower()
@@ -277,8 +257,43 @@ def find_issues(text: str) -> list[Issue]:
 
 
 # =============================================================================
-# Main Analysis Endpoint
+# ACTIVE ENDPOINT (Simple Demo Version)
 # =============================================================================
+
+# [CONFLICT 3 SOLVED] Kept your simple function definition here
+@router.post("/analyze", response_model=AnalysisResponse)
+async def analyze_text(request: AnalysisRequest):
+    """
+    Analyze text for non-inclusive LGBTQ+ language.
+
+    **CURRENT STATUS: DEMO MODE (Rule-Based Detection)**
+
+    This endpoint currently uses keyword matching as a placeholder.
+    """
+    # Small delay to simulate processing (can be removed in production)
+    await asyncio.sleep(0.3)
+
+    # DEMO: Use rule-based detection
+    issues = find_issues(request.text)
+
+    # [CONFLICT 4 SOLVED] Kept your simple return statement
+    return AnalysisResponse(
+        original_text=request.text,
+        analysis_status="Success",
+        issues_found=issues,
+        corrected_text=None,  # TODO: Generate with LLM
+        note=f"DEMO MODE: Found {len(issues)} issue(s) using rule-based detection. LLM integration pending."
+    )
+
+
+# =============================================================================
+# SAVED: FRIEND'S DB IMPLEMENTATION (Commented Out)
+# =============================================================================
+# TODO: Uncomment this section (and imports at top) when Docker/Postgres is running.
+# -----------------------------------------------------------------------------
+
+"""
+# [CONFLICT 3 & 4 SAVED HERE] Your friend's entire logic is preserved below:
 
 @router.post("/analyze", response_model=AnalysisResponse)
 async def analyze_text(request: AnalysisRequest, conn=Depends(get_db)):
@@ -377,3 +392,4 @@ async def analyze_text(request: AnalysisRequest, conn=Depends(get_db)):
         corrected_text=None,
         note=f"Saved to DB: document_id={doc_id}, run_id={run_id}. DEMO MODE: {len(issues)} issue(s)."
     )
+"""
