@@ -1,0 +1,27 @@
+{
+  "sample_idx": 67,
+  "split": "test",
+  "input_sentence": "Gender-affirming surgery is a complex medical procedure chosen by some transgender individuals.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses 'transgender individuals' to refer to people who have undergone gender-affirming surgery, which is an inclusive and accurate term. It also acknowledges the complexity of the procedure and the personal choice involved, which is respectful and factual.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses 'transgender individuals' to refer to people who have undergone gender-affirming surgery, which is an inclusive and accurate term. It also acknowledges the complexity of the procedure and the personal choice involved, which is respectful and factual."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Accurate description of a medical intervention."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.853717565536499,
+    "sim_pred_nearest_train": 0.9034940004348755,
+    "nearest_train_idx": 594,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:36:19.016330"
+}

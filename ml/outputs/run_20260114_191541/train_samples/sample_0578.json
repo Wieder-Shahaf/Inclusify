@@ -1,0 +1,27 @@
+{
+  "sample_idx": 578,
+  "split": "train",
+  "input_sentence": "The media's focus on LGBTQ+ issues is creating a generation of confused youth.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that the media's focus on LGBTQ+ issues is causing confusion among youth, which could be perceived as invalidating the identities and experiences of LGBTQ+ individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that the media's focus on LGBTQ+ issues is causing confusion among youth, which could be perceived as invalidating the identities and experiences of LGBTQ+ individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Biased",
+    "explanation": "Suggests that exposure to LGBTQ+ themes influences identity formation in a negative, trend-driven way."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9001253843307495,
+    "sim_pred_nearest_train": 0.9550038576126099,
+    "nearest_train_idx": 58,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:03:50.297309"
+}

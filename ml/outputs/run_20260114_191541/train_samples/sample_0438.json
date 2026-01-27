@@ -1,0 +1,27 @@
+{
+  "sample_idx": 438,
+  "split": "train",
+  "input_sentence": "There's a debate about whether exposing children to diverse family structures could influence their own developing identities.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is inclusive and does not contain any language that could be considered offensive or biased against LGBTQ+ individuals. It discusses diverse family structures in a neutral manner, focusing on the potential influence on children's identities without making any assumptions or stereotypes about LGBTQ+ families.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence is inclusive and does not contain any language that could be considered offensive or biased against LGBTQ+ individuals. It discusses diverse family structures in a neutral manner, focusing on the potential influence on children's identities without making any assumptions or stereotypes about LGBTQ+ families."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Suggests that exposure to LGBTQ+ identities can 'infect' or unduly influence a child's own identity, rather than being a neutral observation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8953587412834167,
+    "sim_pred_nearest_train": 0.9141277074813843,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:38:44.484579"
+}

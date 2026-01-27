@@ -1,0 +1,27 @@
+{
+  "sample_idx": 101,
+  "split": "test",
+  "input_sentence": "Bisexual erasure is a real phenomenon that happens to heterosexual people too.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that bisexual erasure is a phenomenon that affects heterosexual people, which is not accurate. Bisexual erasure is the act of denying, ignoring, or erasing the existence of bisexuality. It is a form of discrimination that affects the LGBTQ+ community, particularly bisexual individuals. The sentence's phrasing could be perceived as minimizing the impact of bisexual erasure on the LGBTQ+ community.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that bisexual erasure is a phenomenon that affects heterosexual people, which is not accurate. Bisexual erasure is the act of denying, ignoring, or erasing the existence of bisexuality. It is a form of discrimination that affects the LGBTQ+ community, particularly bisexual individuals. The sentence's phrasing could be perceived as minimizing the impact of bisexual erasure on the LGBTQ+ community."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Erasure",
+    "severity": "Factually Incorrect",
+    "explanation": "Minimizes or misattributes the specific issue of bisexual erasure by conflating it with unrelated experiences."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.923531174659729,
+    "sim_pred_nearest_train": 0.9283840656280518,
+    "nearest_train_idx": 379,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T22:01:54.049793"
+}

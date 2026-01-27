@@ -1,0 +1,27 @@
+{
+  "sample_idx": 708,
+  "split": "train",
+  "input_sentence": "Some find the language of intersectionality in LGBTQ+ discourse to be overly academic.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by explicitly mentioning LGBTQ+ discourse, indicating that the language of intersectionality is relevant to and applicable within the LGBTQ+ community. The term 'LGBTQ+' is widely recognized and accepted as an inclusive term for the lesbian, gay, bisexual, transgender, queer, and other sexual and gender minority communities. The sentence does not contain any language that could be considered offensive, outdated, biased, or factually incorrect.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by explicitly mentioning LGBTQ+ discourse, indicating that the language of intersectionality is relevant to and applicable within the LGBTQ+ community. The term 'LGBTQ+' is widely recognized and accepted as an inclusive term for the lesbian, gay, bisexual, transgender, queer, and other sexual and gender minority communities. The sentence does not contain any language that could be considered offensive, outdated, biased, or factually incorrect."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Erasure",
+    "severity": "Potentially Offensive",
+    "explanation": "Dismisses the importance of understanding how multiple identities intersect, potentially marginalizing those with intersecting identities."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8526287078857422,
+    "sim_pred_nearest_train": 0.8980640172958374,
+    "nearest_train_idx": 775,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Erasure",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:27:05.188970"
+}

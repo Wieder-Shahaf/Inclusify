@@ -1,0 +1,27 @@
+{
+  "sample_idx": 576,
+  "split": "train",
+  "input_sentence": "The concept of 'gender dysphoria' was previously understood as a clear mental disorder requiring correction.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The term 'gender dysphoria' has evolved from a diagnosis in the Diagnostic and Statistical Manual of Mental Disorders (DSM) to a recognized aspect of gender identity. It is no longer considered a mental disorder requiring correction, but rather a term used to describe the distress some individuals experience due to a mismatch between their gender identity and the gender they were assigned at birth.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The term 'gender dysphoria' has evolved from a diagnosis in the Diagnostic and Statistical Manual of Mental Disorders (DSM) to a recognized aspect of gender identity. It is no longer considered a mental disorder requiring correction, but rather a term used to describe the distress some individuals experience due to a mismatch between their gender identity and the gender they were assigned at birth."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "This refers to an older understanding of gender dysphoria that viewed it as a disorder to be 'cured,' rather than a complex experience often necessitating affirmation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9233449101448059,
+    "sim_pred_nearest_train": 0.9233448505401611,
+    "nearest_train_idx": 576,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T21:03:28.669344"
+}

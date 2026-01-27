@@ -1,0 +1,27 @@
+{
+  "sample_idx": 9,
+  "split": "test",
+  "input_sentence": "Are non-binary individuals truly a distinct gender category?",
+  "raw_output": "{\"category\": \"Identity Invalidation\", \"severity\": \"Potentially Offensive\", \"explanation\": \"Questions the validity of a recognized gender identity, implying it's not a genuine or distinct category.\"}",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Questions the validity of a recognized gender identity, implying it's not a genuine or distinct category."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Questions the legitimacy of a recognized gender identity, framing it as debatable or unproven."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9923746585845947,
+    "sim_pred_nearest_train": 0.9930117130279541,
+    "nearest_train_idx": 401,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:06:40.301714"
+}

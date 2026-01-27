@@ -1,0 +1,27 @@
+{
+  "sample_idx": 222,
+  "split": "train",
+  "input_sentence": "A person's sexual orientation can be diagnosed as a mental disorder.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence suggests that sexual orientation can be diagnosed as a mental disorder, which is a historical and outdated concept. In the past, homosexuality was considered a mental disorder by some medical organizations, but this classification has been widely discredited and removed from the Diagnostic and Statistical Manual of Mental Disorders (DSM) since 1973.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence suggests that sexual orientation can be diagnosed as a mental disorder, which is a historical and outdated concept. In the past, homosexuality was considered a mental disorder by some medical organizations, but this classification has been widely discredited and removed from the Diagnostic and Statistical Manual of Mental Disorders (DSM) since 1973."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Pathologization",
+    "severity": "Factually Incorrect",
+    "explanation": "Major medical and psychological associations declassified homosexuality as a mental disorder decades ago."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9382104277610779,
+    "sim_pred_nearest_train": 0.9485465884208679,
+    "nearest_train_idx": 548,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T20:01:17.677405"
+}

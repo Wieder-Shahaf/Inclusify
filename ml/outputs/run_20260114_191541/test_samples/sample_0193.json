@@ -1,0 +1,27 @@
+{
+  "sample_idx": 193,
+  "split": "test",
+  "input_sentence": "Early research on sexual orientation often focused on pathology rather than identity.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence accurately describes the historical focus on pathology in early research on sexual orientation, without using outdated or offensive language.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Correct",
+    "explanation": "The sentence accurately describes the historical focus on pathology in early research on sexual orientation, without using outdated or offensive language."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "This points to an outdated research paradigm that viewed non-heterosexuality as inherently problematic."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9353396892547607,
+    "sim_pred_nearest_train": 0.9438795447349548,
+    "nearest_train_idx": 108,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T22:18:30.881329"
+}

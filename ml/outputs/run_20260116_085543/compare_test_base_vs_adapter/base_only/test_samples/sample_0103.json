@@ -1,0 +1,27 @@
+{
+  "sample_idx": 103,
+  "split": "test",
+  "input_sentence": "We need to be careful not to promote 'gender confusion' among young people.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The term 'gender confusion' is a historically used but no longer appropriate way to describe individuals who do not conform to traditional gender norms. It is considered outdated and pathologizing, as it implies that there is something wrong with someone's gender identity.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The term 'gender confusion' is a historically used but no longer appropriate way to describe individuals who do not conform to traditional gender norms. It is considered outdated and pathologizing, as it implies that there is something wrong with someone's gender identity."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Frames gender diversity as a negative outcome or a sign of distress, rather than a natural aspect of human variation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8716080188751221,
+    "sim_pred_nearest_train": 0.9378107190132141,
+    "nearest_train_idx": 6,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:41:54.453834"
+}

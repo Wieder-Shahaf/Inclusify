@@ -1,0 +1,27 @@
+{
+  "sample_idx": 146,
+  "split": "test",
+  "input_sentence": "The legal recognition of same-sex marriage has had profound impacts on the well-being of LGBTQ+ couples.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym LGBTQ+ to refer to the community, which is inclusive of all sexual orientations and gender identities. The language is factually accurate and does not contain any biases or offensive terms.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym LGBTQ+ to refer to the community, which is inclusive of all sexual orientations and gender identities. The language is factually accurate and does not contain any biases or offensive terms."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Addresses the societal and personal benefits of legal protections."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8364065885543823,
+    "sim_pred_nearest_train": 0.9060072302818298,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T22:10:09.812036"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 155,
+  "split": "test",
+  "input_sentence": "LGBTQ+ activism exaggerates discrimination for political gain.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that LGBTQ+ activism is motivated by a desire for political gain rather than a genuine need for equality and protection, which can be perceived as invalidating the experiences and struggles of the LGBTQ+ community.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that LGBTQ+ activism is motivated by a desire for political gain rather than a genuine need for equality and protection, which can be perceived as invalidating the experiences and struggles of the LGBTQ+ community."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Minimization of Harm",
+    "severity": "Biased",
+    "explanation": "Frames documented systemic issues as manipulative political strategy."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8590101003646851,
+    "sim_pred_nearest_train": 0.9355957508087158,
+    "nearest_train_idx": 203,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:49:56.655428"
+}

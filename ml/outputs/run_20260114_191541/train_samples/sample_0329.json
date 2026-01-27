@@ -1,0 +1,27 @@
+{
+  "sample_idx": 329,
+  "split": "train",
+  "input_sentence": "Schools were advised not to discuss LGBTQ+ topics.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that LGBTQ+ topics are not appropriate for discussion, which can be perceived as invalidating the identities and experiences of LGBTQ+ individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that LGBTQ+ topics are not appropriate for discussion, which can be perceived as invalidating the identities and experiences of LGBTQ+ individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Erasure / Institutional Censorship",
+    "severity": "Outdated",
+    "explanation": "Refers to repeal laws (like Section 28); contrasts with modern inclusive education."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.873795747756958,
+    "sim_pred_nearest_train": 0.9650014638900757,
+    "nearest_train_idx": 197,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:19:59.849743"
+}

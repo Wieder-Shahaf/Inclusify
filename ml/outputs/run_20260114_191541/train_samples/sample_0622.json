@@ -1,0 +1,27 @@
+{
+  "sample_idx": 622,
+  "split": "train",
+  "input_sentence": "Some believe that the medicalization of gender identity is driven by pharmaceutical interests, not patient needs.",
+  "raw_output": "```json\n{\n  \"category\": \"Medical Misinformation\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"The statement implies that the medicalization of gender identity is solely driven by pharmaceutical interests, which is not accurate. The medicalization of gender identity is a complex issue involving various factors, including patient needs, societal pressures, and the availability of medical interventions. It is important to consider the multifaceted nature of this issue to ensure accurate and inclusive language.\"\n}\n```",
+  "parsed_output": {
+    "category": "Medical Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "The statement implies that the medicalization of gender identity is solely driven by pharmaceutical interests, which is not accurate. The medicalization of gender identity is a complex issue involving various factors, including patient needs, societal pressures, and the availability of medical interventions. It is important to consider the multifaceted nature of this issue to ensure accurate and inclusive language."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Pseudoscience",
+    "severity": "Biased",
+    "explanation": "Suggests that medical acceptance and treatment of gender identity are based on financial motives rather than genuine medical necessity or patient well-being."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9078073501586914,
+    "sim_pred_nearest_train": 0.9399664998054504,
+    "nearest_train_idx": 480,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Medical Misinformation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:11:27.033972"
+}

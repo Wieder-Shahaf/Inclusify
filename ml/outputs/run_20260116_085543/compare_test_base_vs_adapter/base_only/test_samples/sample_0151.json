@@ -1,0 +1,27 @@
+{
+  "sample_idx": 151,
+  "split": "test",
+  "input_sentence": "Homosexuality was considered a mental illness in the past, and we should revisit those findings.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence references homosexuality as a mental illness, which is a historical misconception that has been widely discredited and removed from the Diagnostic and Statistical Manual of Mental Disorders (DSM) since 1973. The use of this outdated terminology perpetuates harmful stereotypes and stigmatizes individuals who identify as LGBTQ+.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence references homosexuality as a mental illness, which is a historical misconception that has been widely discredited and removed from the Diagnostic and Statistical Manual of Mental Disorders (DSM) since 1973. The use of this outdated terminology perpetuates harmful stereotypes and stigmatizes individuals who identify as LGBTQ+."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Pathologization",
+    "severity": "Biased",
+    "explanation": "Advocates for the return of discredited medical classifications for sexual orientation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9125373363494873,
+    "sim_pred_nearest_train": 0.9460353851318359,
+    "nearest_train_idx": 366,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:49:21.032022"
+}

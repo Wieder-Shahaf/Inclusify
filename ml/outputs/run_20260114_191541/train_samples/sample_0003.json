@@ -1,0 +1,27 @@
+{
+  "sample_idx": 3,
+  "split": "train",
+  "input_sentence": "It's important to present a balanced view on transgender issues, acknowledging differing opinions.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is inclusive and respectful, acknowledging the diversity of opinions on transgender issues without invalidating any perspective.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence is inclusive and respectful, acknowledging the diversity of opinions on transgender issues without invalidating any perspective."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Frames the existence or rights of transgender individuals as a matter of opinion or debate, rather than a human right."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8863577842712402,
+    "sim_pred_nearest_train": 0.9246710538864136,
+    "nearest_train_idx": 594,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:22:14.987981"
+}

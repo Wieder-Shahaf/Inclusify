@@ -1,0 +1,27 @@
+{
+  "sample_idx": 182,
+  "split": "test",
+  "input_sentence": "Older psychological texts often linked non-normative gender expression in children to future homosexual or transgender identity.",
+  "raw_output": "{\"category\": \"False Causality\", \"severity\": \"Outdated\", \"explanation\": \"This reflects an outdated and speculative link between childhood gender expression and adult sexual orientation or gender identity.\"}",
+  "parsed_output": {
+    "category": "False Causality",
+    "severity": "Outdated",
+    "explanation": "This reflects an outdated and speculative link between childhood gender expression and adult sexual orientation or gender identity."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "False Causality",
+    "severity": "Outdated",
+    "explanation": "This falsely suggests a deterministic link between childhood gender non-conformity and later identity."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9734224081039429,
+    "sim_pred_nearest_train": 0.9985004663467407,
+    "nearest_train_idx": 79,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "False Causality",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:24:08.413763"
+}

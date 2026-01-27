@@ -1,0 +1,27 @@
+{
+  "sample_idx": 312,
+  "split": "train",
+  "input_sentence": "The idea of queer identity is a modern invention with no historical basis.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence implies that queer identity has no historical basis, which is a common misconception. Historically, queer identities have been present in various forms and cultures, and the concept of 'queer' as a modern identity has roots in the 19th and 20th centuries. The statement is outdated and does not accurately reflect the historical context of queer identities.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence implies that queer identity has no historical basis, which is a common misconception. Historically, queer identities have been present in various forms and cultures, and the concept of 'queer' as a modern identity has roots in the 19th and 20th centuries. The statement is outdated and does not accurately reflect the historical context of queer identities."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Erasure",
+    "severity": "Biased",
+    "explanation": "Denies the historical existence and validity of queer identities."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8921090364456177,
+    "sim_pred_nearest_train": 0.9344446659088135,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:17:08.068889"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 273,
+  "split": "train",
+  "input_sentence": "The idea that gender identity is solely determined by biological sex at birth was the dominant paradigm.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence suggests that gender identity is solely determined by biological sex at birth, which is a historically outdated and pathologizing view. This perspective has been widely discredited and is no longer considered accurate or inclusive.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence suggests that gender identity is solely determined by biological sex at birth, which is a historically outdated and pathologizing view. This perspective has been widely discredited and is no longer considered accurate or inclusive."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This reflects an outdated and rigid understanding of gender that excludes transgender experiences."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9193812608718872,
+    "sim_pred_nearest_train": 0.9474384784698486,
+    "nearest_train_idx": 319,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:10:11.897976"
+}

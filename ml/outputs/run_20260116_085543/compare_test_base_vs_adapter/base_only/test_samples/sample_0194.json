@@ -1,0 +1,27 @@
+{
+  "sample_idx": 194,
+  "split": "test",
+  "input_sentence": "The history of LGBTQ+ activism is a rich tapestry of advocacy and social change.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym LGBTQ+ to encompass a broad range of sexual orientations and gender identities, and it describes activism and social change in a positive and inclusive manner.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym LGBTQ+ to encompass a broad range of sexual orientations and gender identities, and it describes activism and social change in a positive and inclusive manner."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Accurate and positive framing of LGBTQ+ activism's historical significance."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8955296277999878,
+    "sim_pred_nearest_train": 0.9038797616958618,
+    "nearest_train_idx": 728,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:55:42.761093"
+}

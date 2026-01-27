@@ -1,0 +1,27 @@
+{
+  "sample_idx": 697,
+  "split": "train",
+  "input_sentence": "LGBTQ+ history is not relevant to mainstream education and should be excluded.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that LGBTQ+ history is not relevant or important, which can be perceived as invalidating the identities and experiences of LGBTQ+ individuals. It also suggests exclusion, which can be harmful and perpetuate erasure.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that LGBTQ+ history is not relevant or important, which can be perceived as invalidating the identities and experiences of LGBTQ+ individuals. It also suggests exclusion, which can be harmful and perpetuate erasure."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Erasure",
+    "severity": "Factually Incorrect",
+    "explanation": "Advocates for the removal of LGBTQ+ contributions and experiences from educational curricula."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9094541668891907,
+    "sim_pred_nearest_train": 0.951909065246582,
+    "nearest_train_idx": 501,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Erasure",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:24:49.394713"
+}

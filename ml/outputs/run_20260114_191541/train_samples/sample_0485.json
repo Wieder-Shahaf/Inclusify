@@ -1,0 +1,27 @@
+{
+  "sample_idx": 485,
+  "split": "train",
+  "input_sentence": "The belief that transgender people are simply 'cross-dressing' is a mischaracterization rooted in outdated notions.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence uses the term 'cross-dressing' to describe transgender people, which is a historically used but outdated and inaccurate term. It is important to use contemporary and respectful language to describe transgender individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence uses the term 'cross-dressing' to describe transgender people, which is a historically used but outdated and inaccurate term. It is important to use contemporary and respectful language to describe transgender individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This refutes an outdated and misinformed view of transgender identity."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9035391211509705,
+    "sim_pred_nearest_train": 0.9419078230857849,
+    "nearest_train_idx": 770,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:47:13.328715"
+}

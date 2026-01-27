@@ -1,0 +1,27 @@
+{
+  "sample_idx": 780,
+  "split": "train",
+  "input_sentence": "The idea of 'gender fluidity' seems more like a social construct influenced by popular culture than a stable identity.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that gender fluidity is not a stable identity, which could be perceived as invalidating the experiences of gender fluid individuals. It also frames gender fluidity as a social construct influenced by popular culture, which might be seen as diminishing the validity of gender fluidity as a legitimate identity.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that gender fluidity is not a stable identity, which could be perceived as invalidating the experiences of gender fluid individuals. It also frames gender fluidity as a social construct influenced by popular culture, which might be seen as diminishing the validity of gender fluidity as a legitimate identity."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Biased",
+    "explanation": "Attributes gender fluidity to cultural influence rather than an authentic, internal experience of gender."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8970911502838135,
+    "sim_pred_nearest_train": 0.9693233966827393,
+    "nearest_train_idx": 519,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:39:49.215838"
+}

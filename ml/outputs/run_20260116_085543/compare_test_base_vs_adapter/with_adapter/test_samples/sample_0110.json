@@ -1,0 +1,27 @@
+{
+  "sample_idx": 110,
+  "split": "test",
+  "input_sentence": "Some worry that LGBTQ+ history is being taught too early.",
+  "raw_output": "{\"category\": \"Sexualization of Identity\", \"severity\": \"Potentially Offensive\", \"explanation\": \"Frames education about LGBTQ+ people and history as inappropriate or premature, often implying it's sexual in nature.\"}",
+  "parsed_output": {
+    "category": "Sexualization of Identity",
+    "severity": "Potentially Offensive",
+    "explanation": "Frames education about LGBTQ+ people and history as inappropriate or premature, often implying it's sexual in nature."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Tone Policing",
+    "severity": "Potentially Offensive",
+    "explanation": "Focuses on the timing or perceived appropriateness of educational content rather than its factual basis or importance."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9057168364524841,
+    "sim_pred_nearest_train": 0.9787499904632568,
+    "nearest_train_idx": 476,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Sexualization of Identity",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:16:56.218067"
+}

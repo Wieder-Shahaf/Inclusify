@@ -1,0 +1,27 @@
+{
+  "sample_idx": 484,
+  "split": "train",
+  "input_sentence": "Are we promoting a specific lifestyle by discussing LGBTQ+ issues openly?",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym LGBTQ+ to refer to the community, which is inclusive and widely recognized. The phrase'specific lifestyle' could be interpreted as potentially offensive, but in the context of discussing issues openly, it seems to be referring to the community's experiences and rights rather than making a value judgment.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym LGBTQ+ to refer to the community, which is inclusive and widely recognized. The phrase'specific lifestyle' could be interpreted as potentially offensive, but in the context of discussing issues openly, it seems to be referring to the community's experiences and rights rather than making a value judgment."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Sexualization of Identity",
+    "severity": "Potentially Offensive",
+    "explanation": "Frames discussions about identity and rights as the promotion of a sexualized lifestyle."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8620687127113342,
+    "sim_pred_nearest_train": 0.8938190937042236,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:47:02.843275"
+}

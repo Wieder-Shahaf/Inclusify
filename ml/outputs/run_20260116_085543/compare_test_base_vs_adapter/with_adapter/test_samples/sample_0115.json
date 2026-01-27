@@ -1,0 +1,27 @@
+{
+  "sample_idx": 115,
+  "split": "test",
+  "input_sentence": "Research indicates that LGBTQ+ youth have higher rates of mental health challenges due to societal stigma.",
+  "raw_output": "{\"category\": NaN, \"severity\": \"Correct\", \"explanation\": \"Accurate reflection of the impact of stigma on mental health.\"}",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "Accurate reflection of the impact of stigma on mental health."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Supported by numerous studies linking minority stress and mental well-being in LGBTQ+ populations."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9041320085525513,
+    "sim_pred_nearest_train": 0.9375677108764648,
+    "nearest_train_idx": 531,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:17:22.097109"
+}

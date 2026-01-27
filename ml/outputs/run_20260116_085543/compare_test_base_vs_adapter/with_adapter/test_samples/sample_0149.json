@@ -1,0 +1,27 @@
+{
+  "sample_idx": 149,
+  "split": "test",
+  "input_sentence": "Asexual individuals are simply repressed or haven't experienced true love.",
+  "raw_output": "{\"category\": \"Identity Invalidation\", \"severity\": \"Factually Incorrect\", \"explanation\": \"This dismisses asexuality as a lack of experience or emotional capacity, rather than a valid orientation.\"}",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Factually Incorrect",
+    "explanation": "This dismisses asexuality as a lack of experience or emotional capacity, rather than a valid orientation."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Factually Incorrect",
+    "explanation": "This dismisses asexuality by attributing it to external factors like repression or lack of romantic experience."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.983716607093811,
+    "sim_pred_nearest_train": 0.993018388748169,
+    "nearest_train_idx": 171,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:20:40.365906"
+}

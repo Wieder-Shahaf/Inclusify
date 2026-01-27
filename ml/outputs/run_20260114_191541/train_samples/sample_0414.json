@@ -1,0 +1,27 @@
+{
+  "sample_idx": 414,
+  "split": "train",
+  "input_sentence": "Is it possible that increased awareness of LGBTQ+ issues is leading to an over-identification?",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym LGBTQ+ to refer to the community, which is inclusive and widely recognized. The language does not contain any biases, inaccuracies, or offensive terms.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym LGBTQ+ to refer to the community, which is inclusive and widely recognized. The language does not contain any biases, inaccuracies, or offensive terms."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Suggests that identifying as LGBTQ+ might be a trend or a form of imitation rather than a genuine identity."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8784065246582031,
+    "sim_pred_nearest_train": 0.9109171628952026,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:34:42.938996"
+}

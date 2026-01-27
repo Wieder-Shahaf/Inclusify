@@ -1,0 +1,27 @@
+{
+  "sample_idx": 4,
+  "split": "test",
+  "input_sentence": "Older psychological theories sometimes posited that homosexuals suffered from a lack of masculine or feminine development.",
+  "raw_output": "{\"category\": \"Identity Invalidation\", \"severity\": \"Outdated\", \"explanation\": \"This describes an outdated and harmful framework that pathologized identity based on gender expression.\"}",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This describes an outdated and harmful framework that pathologized identity based on gender expression."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "This reflects an outdated and pathologizing view of homosexuality as a developmental deficiency."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.921538770198822,
+    "sim_pred_nearest_train": 0.9802042841911316,
+    "nearest_train_idx": 643,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:06:08.196336"
+}

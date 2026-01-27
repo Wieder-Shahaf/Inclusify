@@ -1,0 +1,27 @@
+{
+  "sample_idx": 64,
+  "split": "test",
+  "input_sentence": "The historical treatment of gay individuals by the medical community was often harmful.",
+  "raw_output": "{\"category\": \"Historical Pathologization\", \"severity\": \"Outdated\", \"explanation\": \"Refers to outdated medical practices that pathologized homosexuality.\"}",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "Refers to outdated medical practices that pathologized homosexuality."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Pathologization",
+    "severity": "Potentially Offensive",
+    "explanation": "Refers to past medical practices that pathologized homosexuality, which can still evoke negative associations."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9565931558609009,
+    "sim_pred_nearest_train": 0.994354248046875,
+    "nearest_train_idx": 366,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:12:12.581158"
+}

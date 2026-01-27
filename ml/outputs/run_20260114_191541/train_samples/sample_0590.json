@@ -1,0 +1,27 @@
+{
+  "sample_idx": 590,
+  "split": "train",
+  "input_sentence": "The politicization of gender identity is making it difficult to have a rational conversation.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses 'politicization of gender identity' which is a neutral and inclusive way to discuss the topic. It does not contain any language that could be considered offensive or biased against the LGBTQ+ community.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses 'politicization of gender identity' which is a neutral and inclusive way to discuss the topic. It does not contain any language that could be considered offensive or biased against the LGBTQ+ community."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Tone Policing",
+    "severity": "Potentially Offensive",
+    "explanation": "Attributes difficulty in conversation to the 'politicization' rather than addressing underlying prejudice or resistance to understanding."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8899864554405212,
+    "sim_pred_nearest_train": 0.9041473269462585,
+    "nearest_train_idx": 645,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Sexualization of Identity",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:05:54.415258"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 33,
+  "split": "test",
+  "input_sentence": "In the past, the assumption was that anyone exhibiting non-heterosexual behavior was simply going through a rebellious phase.",
+  "raw_output": "{\"category\": \"Identity Invalidation\", \"severity\": \"Outdated\", \"explanation\": \"This dismisses non-heterosexual identities as a temporary phase of rebellion, invalidating genuine identity exploration.\"}",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This dismisses non-heterosexual identities as a temporary phase of rebellion, invalidating genuine identity exploration."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This dismisses genuine sexual orientations as mere rebellion, invalidating the identity of LGBTQ+ individuals."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9754536151885986,
+    "sim_pred_nearest_train": 0.9637729525566101,
+    "nearest_train_idx": 91,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:09:11.161955"
+}

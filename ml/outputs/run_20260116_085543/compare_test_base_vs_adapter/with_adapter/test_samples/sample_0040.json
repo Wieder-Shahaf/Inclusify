@@ -1,0 +1,27 @@
+{
+  "sample_idx": 40,
+  "split": "test",
+  "input_sentence": "LGBTQ+ identities only exist in Western societies.",
+  "raw_output": "{\"category\": \"Erasure\", \"severity\": \"Factually Incorrect\", \"explanation\": \"This denies the existence and historical presence of LGBTQ+ identities in non-Western cultures.\"}",
+  "parsed_output": {
+    "category": "Erasure",
+    "severity": "Factually Incorrect",
+    "explanation": "This denies the existence and historical presence of LGBTQ+ identities in non-Western cultures."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural/Historical Erasure",
+    "severity": "Factually Incorrect",
+    "explanation": "Ignores global history of gender variance (Asia, Africa, Americas pre-colonialism)."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9471995234489441,
+    "sim_pred_nearest_train": 0.9728928208351135,
+    "nearest_train_idx": 13,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Erasure",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:09:50.665254"
+}

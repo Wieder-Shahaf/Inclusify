@@ -1,0 +1,27 @@
+{
+  "sample_idx": 56,
+  "split": "test",
+  "input_sentence": "The idea that exposure to LGBTQ+ individuals in media would 'corrupt' children has been debunked.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by referring to LGBTQ+ individuals directly, and it accurately states that the idea of exposure to LGBTQ+ individuals in media corrupting children has been debunked, which is a factually correct and inclusive statement.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by referring to LGBTQ+ individuals directly, and it accurately states that the idea of exposure to LGBTQ+ individuals in media corrupting children has been debunked, which is a factually correct and inclusive statement."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Outdated",
+    "explanation": "This sentence directly addresses and dismisses the outdated 'social contagion' fear related to media exposure."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8613935708999634,
+    "sim_pred_nearest_train": 0.9018577933311462,
+    "nearest_train_idx": 15,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Erasure",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:53:35.404988"
+}

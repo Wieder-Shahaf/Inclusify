@@ -1,0 +1,27 @@
+{
+  "sample_idx": 352,
+  "split": "train",
+  "input_sentence": "Until recently, the existence of transgender men was often overlooked or misunderstood in medical contexts.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence uses the term 'transgender men' which is inclusive and accurate. However, the phrase 'often overlooked or misunderstood' suggests a historical pathologization of transgender individuals, which is outdated and no longer appropriate.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence uses the term 'transgender men' which is inclusive and accurate. However, the phrase 'often overlooked or misunderstood' suggests a historical pathologization of transgender individuals, which is outdated and no longer appropriate."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Erasure",
+    "severity": "Outdated",
+    "explanation": "This highlights a historical lack of recognition for transgender men's identities."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9278686046600342,
+    "sim_pred_nearest_train": 0.943030059337616,
+    "nearest_train_idx": 770,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:24:14.147907"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 424,
+  "split": "train",
+  "input_sentence": "Bisexual individuals experience attraction to more than one gender.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence accurately describes the attraction experienced by bisexual individuals without using outdated or offensive language.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence accurately describes the attraction experienced by bisexual individuals without using outdated or offensive language."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Accurate definition of bisexuality."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9324116706848145,
+    "sim_pred_nearest_train": 0.9324116110801697,
+    "nearest_train_idx": 9,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:36:21.528618"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 58,
+  "split": "test",
+  "input_sentence": "Homosexuality is a choice, and people can choose to be heterosexual.",
+  "raw_output": "```json\n{\n  \"category\": \"False Causality\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"The statement suggests that sexual orientation is a choice, which is a harmful and scientifically disproven belief. Sexual orientation is a natural aspect of human identity and cannot be changed by choice.\"\n}\n```",
+  "parsed_output": {
+    "category": "False Causality",
+    "severity": "Factually Incorrect",
+    "explanation": "The statement suggests that sexual orientation is a choice, which is a harmful and scientifically disproven belief. Sexual orientation is a natural aspect of human identity and cannot be changed by choice."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Factually Incorrect",
+    "explanation": "Asserts that sexual orientation is a conscious decision, contradicting scientific understanding."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.942912220954895,
+    "sim_pred_nearest_train": 0.9619789123535156,
+    "nearest_train_idx": 564,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "False Causality",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:34:53.100303"
+}

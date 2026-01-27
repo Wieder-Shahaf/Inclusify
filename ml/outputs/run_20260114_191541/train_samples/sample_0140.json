@@ -1,0 +1,27 @@
+{
+  "sample_idx": 140,
+  "split": "train",
+  "input_sentence": "We shouldn't validate non-binary identities because they lack concrete scientific basis.",
+  "raw_output": "```json\n{\n  \"category\": \"Medical Misinformation\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"The statement implies that non-binary identities are not valid because they lack a 'concrete scientific basis.' This is a misconception. Non-binary identities are recognized by many medical and psychological organizations, including the World Health Organization, which removed gender dysphoria from its list of mental disorders in 2018. The statement is factually incorrect and perpetuates harmful stereotypes.\"\n}\n```",
+  "parsed_output": {
+    "category": "Medical Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "The statement implies that non-binary identities are not valid because they lack a 'concrete scientific basis.' This is a misconception. Non-binary identities are recognized by many medical and psychological organizations, including the World Health Organization, which removed gender dysphoria from its list of mental disorders in 2018. The statement is factually incorrect and perpetuates harmful stereotypes."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Pseudoscience",
+    "severity": "Biased",
+    "explanation": "Falsely claims a lack of scientific basis for non-binary identities to invalidate them."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8948236703872681,
+    "sim_pred_nearest_train": 0.9218683242797852,
+    "nearest_train_idx": 480,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Medical Misinformation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:47:00.880409"
+}

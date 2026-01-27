@@ -1,0 +1,27 @@
+{
+  "sample_idx": 377,
+  "split": "train",
+  "input_sentence": "The notion of 'chosen family' for LGBTQ+ individuals diminishes the importance of biological ties.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that the concept of 'chosen family' for LGBTQ+ individuals is less important than biological ties, which could be perceived as invalidating the identity and experiences of LGBTQ+ individuals who have formed their own families.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that the concept of 'chosen family' for LGBTQ+ individuals is less important than biological ties, which could be perceived as invalidating the identity and experiences of LGBTQ+ individuals who have formed their own families."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Erasure",
+    "severity": "Potentially Offensive",
+    "explanation": "Undermines the validity and importance of chosen families, which are crucial support systems for many in the LGBTQ+ community."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9549152851104736,
+    "sim_pred_nearest_train": 0.9549151659011841,
+    "nearest_train_idx": 377,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Erasure",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:28:17.396432"
+}

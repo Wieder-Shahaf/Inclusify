@@ -1,0 +1,27 @@
+{
+  "sample_idx": 141,
+  "split": "test",
+  "input_sentence": "Medical guidelines emphasize the importance of patient autonomy in decisions regarding gender transition.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by focusing on patient autonomy, which is a neutral and respectful approach to discussing gender transition. It does not contain any language that could be considered offensive or biased against the LGBTQ+ community.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by focusing on patient autonomy, which is a neutral and respectful approach to discussing gender transition. It does not contain any language that could be considered offensive or biased against the LGBTQ+ community."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Highlights patient rights and self-determination in medical care."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.883028507232666,
+    "sim_pred_nearest_train": 0.9023371338844299,
+    "nearest_train_idx": 761,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T22:09:10.960862"
+}

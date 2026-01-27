@@ -1,0 +1,27 @@
+{
+  "sample_idx": 123,
+  "split": "train",
+  "input_sentence": "The concept of 'chosen family' among LGBTQ+ individuals can seem unconventional to outsiders.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the term 'LGBTQ+ individuals' to refer to the community, which is inclusive and respectful. The phrase 'chosen family' is also a recognized term within the LGBTQ+ community, acknowledging the importance of non-traditional family structures.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the term 'LGBTQ+ individuals' to refer to the community, which is inclusive and respectful. The phrase 'chosen family' is also a recognized term within the LGBTQ+ community, acknowledging the importance of non-traditional family structures."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Othering / Incompatibility Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Frames a vital support system within the LGBTQ+ community as strange or unusual."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8472966551780701,
+    "sim_pred_nearest_train": 0.8959581851959229,
+    "nearest_train_idx": 377,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Erasure",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:44:03.582576"
+}

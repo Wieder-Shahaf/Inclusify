@@ -1,0 +1,27 @@
+{
+  "sample_idx": 116,
+  "split": "test",
+  "input_sentence": "People who identify as non-binary are just trying to be trendy.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence invalidates the identity of non-binary individuals by implying that their gender identity is a trend rather than a legitimate expression of their gender. This can be harmful and perpetuate stereotypes.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence invalidates the identity of non-binary individuals by implying that their gender identity is a trend rather than a legitimate expression of their gender. This can be harmful and perpetuate stereotypes."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Biased",
+    "explanation": "Suggests non-binary identities are adopted due to trends rather than genuine self-understanding."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8893069624900818,
+    "sim_pred_nearest_train": 0.9645203948020935,
+    "nearest_train_idx": 114,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T22:04:37.307754"
+}

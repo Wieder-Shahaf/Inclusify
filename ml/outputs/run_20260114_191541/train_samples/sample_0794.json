@@ -1,0 +1,27 @@
+{
+  "sample_idx": 794,
+  "split": "train",
+  "input_sentence": "Gender reassignment surgery was once viewed as a radical and experimental procedure with uncertain outcomes.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The term'reassignment' is outdated and pathologizes the gender identity of individuals who undergo such surgeries. It's more inclusive to use 'transition' or 'gender-affirming surgeries' instead.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The term'reassignment' is outdated and pathologizes the gender identity of individuals who undergo such surgeries. It's more inclusive to use 'transition' or 'gender-affirming surgeries' instead."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Outdated",
+    "explanation": "While complex, this phrasing reflects an older, less informed perspective on transgender healthcare."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.911575198173523,
+    "sim_pred_nearest_train": 0.9331961870193481,
+    "nearest_train_idx": 430,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:42:19.476286"
+}

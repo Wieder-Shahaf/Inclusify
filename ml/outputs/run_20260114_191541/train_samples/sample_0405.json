@@ -1,0 +1,27 @@
+{
+  "sample_idx": 405,
+  "split": "train",
+  "input_sentence": "Intersex individuals are inherently unhealthy and require constant medical intervention.",
+  "raw_output": "```json\n{\n  \"category\": \"Medical Misinformation\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"This statement is not accurate. Intersex individuals are not inherently unhealthy, and the need for medical intervention varies widely among individuals. The assumption of inherent unhealthiness is a harmful stereotype.\"\n}\n```",
+  "parsed_output": {
+    "category": "Medical Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "This statement is not accurate. Intersex individuals are not inherently unhealthy, and the need for medical intervention varies widely among individuals. The assumption of inherent unhealthiness is a harmful stereotype."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "This inaccurately pathologizes intersex variations, suggesting a universal need for medical intervention which is not the case."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9490483999252319,
+    "sim_pred_nearest_train": 0.9490483999252319,
+    "nearest_train_idx": 405,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Medical Misinformation",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T20:33:13.299790"
+}

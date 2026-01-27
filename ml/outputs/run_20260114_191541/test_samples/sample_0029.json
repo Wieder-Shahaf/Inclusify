@@ -1,0 +1,27 @@
+{
+  "sample_idx": 29,
+  "split": "test",
+  "input_sentence": "Children are being confused about their sexual orientation by exposure to LGBTQ+ content.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that exposure to LGBTQ+ content is causing confusion in children about their sexual orientation, which could be perceived as invalidating the identities of LGBTQ+ individuals and potentially offensive to the LGBTQ+ community.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that exposure to LGBTQ+ content is causing confusion in children about their sexual orientation, which could be perceived as invalidating the identities of LGBTQ+ individuals and potentially offensive to the LGBTQ+ community."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Biased",
+    "explanation": "Suggests LGBTQ+ content can negatively influence or confuse a child's sexual orientation development."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9125744104385376,
+    "sim_pred_nearest_train": 0.9545918703079224,
+    "nearest_train_idx": 476,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Sexualization of Identity",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:48:36.327996"
+}

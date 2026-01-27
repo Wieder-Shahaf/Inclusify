@@ -1,0 +1,27 @@
+{
+  "sample_idx": 132,
+  "split": "test",
+  "input_sentence": "In the past, medical interventions for intersex variations often prioritized conformity over individual well-being.",
+  "raw_output": "{\"category\": \"Medical Misinformation\", \"severity\": \"Outdated\", \"explanation\": \"This describes an outdated and harmful approach to medical care for intersex individuals.\"}",
+  "parsed_output": {
+    "category": "Medical Misinformation",
+    "severity": "Outdated",
+    "explanation": "This describes an outdated and harmful approach to medical care for intersex individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Outdated",
+    "explanation": "This describes an outdated medical approach that was not centered on the best interests of intersex individuals."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.993133544921875,
+    "sim_pred_nearest_train": 0.9942879676818848,
+    "nearest_train_idx": 56,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Medical Misinformation",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:19:04.876625"
+}

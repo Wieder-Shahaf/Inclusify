@@ -1,0 +1,27 @@
+{
+  "sample_idx": 48,
+  "split": "train",
+  "input_sentence": "The psychological impact of minority stress is a key factor in understanding LGBTQ+ health disparities.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by specifying LGBTQ+ health disparities, which acknowledges the diverse experiences within the LGBTQ+ community. It also correctly identifies minority stress as a key factor in understanding these disparities, without any bias or misinformation.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by specifying LGBTQ+ health disparities, which acknowledges the diverse experiences within the LGBTQ+ community. It also correctly identifies minority stress as a key factor in understanding these disparities, without any bias or misinformation."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Identifies a scientifically recognized concept explaining health outcomes."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8621994256973267,
+    "sim_pred_nearest_train": 0.9150257110595703,
+    "nearest_train_idx": 136,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:30:32.238085"
+}

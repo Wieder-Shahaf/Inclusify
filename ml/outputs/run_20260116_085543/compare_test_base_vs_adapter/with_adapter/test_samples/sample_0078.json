@@ -1,0 +1,27 @@
+{
+  "sample_idx": 78,
+  "split": "test",
+  "input_sentence": "Transgender men were sometimes misdiagnosed with schizophrenia in earlier medical records.",
+  "raw_output": "{\"category\": \"Medical Misinformation\", \"severity\": \"Outdated\", \"explanation\": \"This highlights an outdated and incorrect medical practice that mislabeled transgender individuals.\"}",
+  "parsed_output": {
+    "category": "Medical Misinformation",
+    "severity": "Outdated",
+    "explanation": "This highlights an outdated and incorrect medical practice that mislabeled transgender individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Outdated",
+    "explanation": "This points to outdated and incorrect diagnostic practices for transgender individuals."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9922269582748413,
+    "sim_pred_nearest_train": 0.9899572134017944,
+    "nearest_train_idx": 177,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Medical Misinformation",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:13:38.605509"
+}

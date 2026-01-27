@@ -1,0 +1,27 @@
+{
+  "sample_idx": 428,
+  "split": "train",
+  "input_sentence": "The Diagnostic and Statistical Manual of Mental Disorders (DSM) has evolved to better reflect current understanding of gender identity.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the term 'gender identity' which is inclusive of LGBTQ+ individuals. It also mentions the DSM, which is a widely recognized and respected reference in the field of mental health, without any language that could be considered offensive or biased.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the term 'gender identity' which is inclusive of LGBTQ+ individuals. It also mentions the DSM, which is a widely recognized and respected reference in the field of mental health, without any language that could be considered offensive or biased."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Accurate statement about the evolution of diagnostic criteria."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.871600866317749,
+    "sim_pred_nearest_train": 0.9142556190490723,
+    "nearest_train_idx": 750,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:37:07.210277"
+}

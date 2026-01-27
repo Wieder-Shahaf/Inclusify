@@ -1,0 +1,27 @@
+{
+  "sample_idx": 107,
+  "split": "train",
+  "input_sentence": "Conversion therapy is a legitimate and effective method for changing sexual orientation.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence pathologizes sexual orientation by implying that it can be changed, which is a harmful and outdated belief. Conversion therapy is widely recognized as ineffective and harmful by the medical and psychological communities.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence pathologizes sexual orientation by implying that it can be changed, which is a harmful and outdated belief. Conversion therapy is widely recognized as ineffective and harmful by the medical and psychological communities."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Pseudoscience",
+    "severity": "Factually Incorrect",
+    "explanation": "Promotes a scientifically discredited and harmful practice as a valid therapeutic approach."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8616523742675781,
+    "sim_pred_nearest_train": 0.9434689283370972,
+    "nearest_train_idx": 108,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:41:18.088936"
+}

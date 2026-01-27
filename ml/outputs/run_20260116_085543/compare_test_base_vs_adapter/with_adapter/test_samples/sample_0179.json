@@ -1,0 +1,27 @@
+{
+  "sample_idx": 179,
+  "split": "test",
+  "input_sentence": "The rise of online communities for LGBTQ+ youth could be seen as a form of social contagion.",
+  "raw_output": "{\"category\": \"Social Contagion Narrative\", \"severity\": \"Potentially Offensive\", \"explanation\": \"Frames the formation of online communities as a trend driven by imitation rather than a genuine need for support.\"}",
+  "parsed_output": {
+    "category": "Social Contagion Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Frames the formation of online communities as a trend driven by imitation rather than a genuine need for support."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Frames the formation of supportive communities for LGBTQ+ youth as a potentially negative or imitative phenomenon."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9728165864944458,
+    "sim_pred_nearest_train": 0.9743185043334961,
+    "nearest_train_idx": 51,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Social Contagion Narrative",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:23:50.145996"
+}

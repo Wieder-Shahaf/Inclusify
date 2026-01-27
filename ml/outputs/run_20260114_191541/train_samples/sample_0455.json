@@ -1,0 +1,27 @@
+{
+  "sample_idx": 455,
+  "split": "train",
+  "input_sentence": "The concept of gender fluidity is unscientific and a product of wishful thinking.",
+  "raw_output": "```json\n{\n  \"category\": \"Medical Misinformation\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"The statement dismisses gender fluidity as unscientific and a product of wishful thinking, which is a common misconception. Gender fluidity is a recognized aspect of human gender identity and expression, supported by scientific research. It is not a product of wishful thinking but rather a natural part of the human experience.\"\n}\n```",
+  "parsed_output": {
+    "category": "Medical Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "The statement dismisses gender fluidity as unscientific and a product of wishful thinking, which is a common misconception. Gender fluidity is a recognized aspect of human gender identity and expression, supported by scientific research. It is not a product of wishful thinking but rather a natural part of the human experience."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Scientific Denialism",
+    "severity": "Factually Incorrect",
+    "explanation": "This dismisses the scientifically recognized spectrum of gender identities and experiences."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9108829498291016,
+    "sim_pred_nearest_train": 0.93397456407547,
+    "nearest_train_idx": 480,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Medical Misinformation",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:41:51.254606"
+}

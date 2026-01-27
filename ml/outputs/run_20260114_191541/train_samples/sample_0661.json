@@ -1,0 +1,27 @@
+{
+  "sample_idx": 661,
+  "split": "train",
+  "input_sentence": "Bisexuality is a gateway to homosexuality, so we should discourage it.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence pathologizes bisexuality by implying it is a 'gateway' to another sexual orientation, which is a harmful and outdated view. It also discourages bisexuality, which is a valid sexual orientation.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence pathologizes bisexuality by implying it is a 'gateway' to another sexual orientation, which is a harmful and outdated view. It also discourages bisexuality, which is a valid sexual orientation."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "False Causality",
+    "severity": "Biased",
+    "explanation": "Asserts a causal link between bisexuality and homosexuality that is not scientifically supported."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8876699209213257,
+    "sim_pred_nearest_train": 0.949800968170166,
+    "nearest_train_idx": 420,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:18:23.894659"
+}

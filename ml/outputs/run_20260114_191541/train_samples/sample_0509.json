@@ -1,0 +1,27 @@
+{
+  "sample_idx": 509,
+  "split": "train",
+  "input_sentence": "We must be cautious about medical interventions for gender dysphoria in adolescents, as many will desist by adulthood.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The term 'desist' is outdated and pathologizes the experiences of transgender individuals. It implies that their gender identity is a phase or a condition that can be 'cured' or 'outgrown.' A more inclusive approach would focus on affirming and supporting the gender identity of adolescents, rather than implying that it may change.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The term 'desist' is outdated and pathologizes the experiences of transgender individuals. It implies that their gender identity is a phase or a condition that can be 'cured' or 'outgrown.' A more inclusive approach would focus on affirming and supporting the gender identity of adolescents, rather than implying that it may change."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Biased",
+    "explanation": "Suggests that gender dysphoria in adolescents is likely to resolve on its own, invalidating their current identity and the need for timely care."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8669849038124084,
+    "sim_pred_nearest_train": 0.925426721572876,
+    "nearest_train_idx": 430,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:51:35.054133"
+}

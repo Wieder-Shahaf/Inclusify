@@ -1,0 +1,27 @@
+{
+  "sample_idx": 208,
+  "split": "train",
+  "input_sentence": "It's important to acknowledge that not all cultures fully embrace same-sex relationships.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence acknowledges the diversity in cultural acceptance of same-sex relationships without invalidating or pathologizing LGBTQ+ identities.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Correct",
+    "explanation": "The sentence acknowledges the diversity in cultural acceptance of same-sex relationships without invalidating or pathologizing LGBTQ+ identities."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Othering / Incompatibility Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Highlights cultural differences in a way that can imply LGBTQ+ existence is inherently at odds with certain societal values."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8908438682556152,
+    "sim_pred_nearest_train": 0.9332578182220459,
+    "nearest_train_idx": 211,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:58:46.473639"
+}

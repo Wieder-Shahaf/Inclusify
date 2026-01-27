@@ -1,0 +1,27 @@
+{
+  "sample_idx": 199,
+  "split": "train",
+  "input_sentence": "Sexual orientation is a complex interplay of attraction, behavior, and identity.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is inclusive and accurately describes sexual orientation as a multifaceted concept that encompasses attraction, behavior, and identity, without specifying gender or excluding any sexual orientation.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence is inclusive and accurately describes sexual orientation as a multifaceted concept that encompasses attraction, behavior, and identity, without specifying gender or excluding any sexual orientation."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Describes the multifaceted nature of sexual orientation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9274437427520752,
+    "sim_pred_nearest_train": 0.9274437427520752,
+    "nearest_train_idx": 199,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:57:15.110248"
+}

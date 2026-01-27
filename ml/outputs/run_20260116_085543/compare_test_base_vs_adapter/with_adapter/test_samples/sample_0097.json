@@ -1,0 +1,27 @@
+{
+  "sample_idx": 97,
+  "split": "test",
+  "input_sentence": "Some older psychological theories proposed that transgender identity was a form of immaturity.",
+  "raw_output": "{\"category\": \"Identity Invalidation\", \"severity\": \"Outdated\", \"explanation\": \"This reflects an outdated and dismissive view of transgender identity, framing it as a developmental issue rather than a valid identity.\"}",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This reflects an outdated and dismissive view of transgender identity, framing it as a developmental issue rather than a valid identity."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "This points to an outdated medical view that pathologized transgender identity."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9405804872512817,
+    "sim_pred_nearest_train": 0.9900738000869751,
+    "nearest_train_idx": 599,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:15:38.077938"
+}

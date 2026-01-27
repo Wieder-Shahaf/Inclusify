@@ -1,0 +1,27 @@
+{
+  "sample_idx": 465,
+  "split": "train",
+  "input_sentence": "Transgender identities reflect modern social trends rather than biology.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence correctly frames transgender identities as a social construct rather than a biological one, which is a widely accepted perspective in the field of gender studies.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Correct",
+    "explanation": "The sentence correctly frames transgender identities as a social construct rather than a biological one, which is a widely accepted perspective in the field of gender studies."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Denial of Biological Basis",
+    "severity": "Biased",
+    "explanation": "Dismisses biological components of identity in favor of a \"lifestyle\" narrative."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8799915909767151,
+    "sim_pred_nearest_train": 0.9477838277816772,
+    "nearest_train_idx": 298,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:43:30.625980"
+}

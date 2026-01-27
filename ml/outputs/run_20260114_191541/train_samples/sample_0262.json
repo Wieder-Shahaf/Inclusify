@@ -1,0 +1,27 @@
+{
+  "sample_idx": 262,
+  "split": "train",
+  "input_sentence": "Bisexual people are more likely to be unfaithful in relationships.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence perpetuates a harmful stereotype that has been debunked by research. It is important to avoid linking sexual orientation to specific behaviors or traits.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence perpetuates a harmful stereotype that has been debunked by research. It is important to avoid linking sexual orientation to specific behaviors or traits."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Defamatory Stereotyping",
+    "severity": "Factually Incorrect",
+    "explanation": "This unfairly links bisexuality to infidelity, perpetuating negative stereotypes about the orientation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8954553604125977,
+    "sim_pred_nearest_train": 0.9643094539642334,
+    "nearest_train_idx": 406,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:08:12.169270"
+}

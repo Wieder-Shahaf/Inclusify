@@ -1,0 +1,27 @@
+{
+  "sample_idx": 178,
+  "split": "train",
+  "input_sentence": "It's important to consider the potential societal impact of recognizing more gender identities.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is inclusive and acknowledges the importance of considering the societal impact of recognizing more gender identities, which is a neutral and respectful approach.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence is inclusive and acknowledges the importance of considering the societal impact of recognizing more gender identities, which is a neutral and respectful approach."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Erasure",
+    "severity": "Potentially Offensive",
+    "explanation": "Implies that recognizing diverse identities inherently creates a problem, rather than addressing societal biases."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.882859468460083,
+    "sim_pred_nearest_train": 0.9166698455810547,
+    "nearest_train_idx": 658,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:53:48.967880"
+}

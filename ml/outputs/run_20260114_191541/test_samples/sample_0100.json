@@ -1,0 +1,27 @@
+{
+  "sample_idx": 100,
+  "split": "test",
+  "input_sentence": "Children exposed to LGBTQ+ themes will become LGBTQ+ themselves.",
+  "raw_output": "```json\n{\n  \"category\": \"False Causality\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"The sentence implies a direct causal link between exposure to LGBTQ+ themes and becoming LGBTQ+, which is not supported by scientific evidence. It also perpetuates harmful stereotypes and stigmatizes LGBTQ+ individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "False Causality",
+    "severity": "Factually Incorrect",
+    "explanation": "The sentence implies a direct causal link between exposure to LGBTQ+ themes and becoming LGBTQ+, which is not supported by scientific evidence. It also perpetuates harmful stereotypes and stigmatizes LGBTQ+ individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Factually Incorrect",
+    "explanation": "This falsely suggests that exposure to LGBTQ+ identities leads to adoption of those identities, implying a contagion."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9360648393630981,
+    "sim_pred_nearest_train": 0.9714086055755615,
+    "nearest_train_idx": 552,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "False Causality",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T22:01:37.779030"
+}

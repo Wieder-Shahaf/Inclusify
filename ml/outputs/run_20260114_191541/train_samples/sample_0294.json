@@ -1,0 +1,27 @@
+{
+  "sample_idx": 294,
+  "split": "train",
+  "input_sentence": "The LGBTQ+ rights movement is a threat to traditional family values.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence frames the LGBTQ+ rights movement as a threat to traditional family values, which can be perceived as invalidating the identities and experiences of LGBTQ+ individuals and their families. It also implies that LGBTQ+ rights are in conflict with traditional values, which can be seen as offensive and divisive.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence frames the LGBTQ+ rights movement as a threat to traditional family values, which can be perceived as invalidating the identities and experiences of LGBTQ+ individuals and their families. It also implies that LGBTQ+ rights are in conflict with traditional values, which can be seen as offensive and divisive."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Factually Incorrect",
+    "explanation": "Frames the advancement of LGBTQ+ rights as a danger to societal norms and structures."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9018285274505615,
+    "sim_pred_nearest_train": 0.9542500972747803,
+    "nearest_train_idx": 203,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:13:52.464843"
+}

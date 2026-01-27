@@ -1,0 +1,27 @@
+{
+  "sample_idx": 95,
+  "split": "test",
+  "input_sentence": "In the past, gender expression was often strictly policed, with deviations seen as indicative of underlying issues.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence pathologizes gender expression deviations, implying that they are indicative of underlying issues. This language is outdated and no longer appropriate, as it perpetuates harmful stereotypes and medicalizes gender identity.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence pathologizes gender expression deviations, implying that they are indicative of underlying issues. This language is outdated and no longer appropriate, as it perpetuates harmful stereotypes and medicalizes gender identity."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This reflects an outdated and restrictive view of gender expression."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9313784241676331,
+    "sim_pred_nearest_train": 0.9659506678581238,
+    "nearest_train_idx": 673,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T22:00:42.385799"
+}

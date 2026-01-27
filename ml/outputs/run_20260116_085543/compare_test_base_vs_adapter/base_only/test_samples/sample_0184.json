@@ -1,0 +1,27 @@
+{
+  "sample_idx": 184,
+  "split": "test",
+  "input_sentence": "The medical establishment has a responsibility to provide competent care to all patients, regardless of their sexual orientation or gender identity.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is inclusive and factually accurate, recognizing the responsibility of the medical establishment to provide competent care to all patients, regardless of their sexual orientation or gender identity.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence is inclusive and factually accurate, recognizing the responsibility of the medical establishment to provide competent care to all patients, regardless of their sexual orientation or gender identity."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Emphasizes the ethical obligations of healthcare providers towards LGBTQ+ individuals."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9202902317047119,
+    "sim_pred_nearest_train": 0.920401394367218,
+    "nearest_train_idx": 297,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:54:21.383621"
+}

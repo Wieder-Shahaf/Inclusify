@@ -1,0 +1,27 @@
+{
+  "sample_idx": 111,
+  "split": "train",
+  "input_sentence": "Some parents worry about their children being influenced by LGBTQ+ peers.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that LGBTQ+ peers are inherently problematic or harmful to children, which can be perceived as invalidating the identities and experiences of LGBTQ+ individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that LGBTQ+ peers are inherently problematic or harmful to children, which can be perceived as invalidating the identities and experiences of LGBTQ+ individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Implies that LGBTQ+ identities are contagious and can be 'picked up' from others."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.924850583076477,
+    "sim_pred_nearest_train": 0.9496136903762817,
+    "nearest_train_idx": 203,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:41:59.003192"
+}

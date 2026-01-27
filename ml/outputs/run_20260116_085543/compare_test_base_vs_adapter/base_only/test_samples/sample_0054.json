@@ -1,0 +1,27 @@
+{
+  "sample_idx": 54,
+  "split": "test",
+  "input_sentence": "Transgender surgery is a dangerous and experimental procedure that should be restricted.",
+  "raw_output": "```json\n{\n  \"category\": \"Medical Misinformation\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"The statement is factually incorrect because it implies that transgender surgery is dangerous and experimental, which is not supported by the vast majority of medical evidence. Transgender surgeries are considered safe and effective by the medical community, and they are not experimental. The statement also suggests that transgender surgeries should be restricted, which is not a supported position in the medical community.\"\n}\n```",
+  "parsed_output": {
+    "category": "Medical Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "The statement is factually incorrect because it implies that transgender surgery is dangerous and experimental, which is not supported by the vast majority of medical evidence. Transgender surgeries are considered safe and effective by the medical community, and they are not experimental. The statement also suggests that transgender surgeries should be restricted, which is not a supported position in the medical community."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Biased",
+    "explanation": "Misrepresents gender-affirming surgeries as inherently dangerous and experimental, ignoring established medical practice."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9175403118133545,
+    "sim_pred_nearest_train": 0.9400569200515747,
+    "nearest_train_idx": 117,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Medical Misinformation",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:34:16.386230"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 415,
+  "split": "train",
+  "input_sentence": "The concept of gender expression being separate from gender identity is not universally understood.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is inclusive and accurately reflects the complexity of gender identity and expression, acknowledging that not everyone understands the distinction between the two.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence is inclusive and accurately reflects the complexity of gender identity and expression, acknowledging that not everyone understands the distinction between the two."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Suggests that a fundamental aspect of identity is not universally understood, implying it's less real or valid."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8799732327461243,
+    "sim_pred_nearest_train": 0.9270966053009033,
+    "nearest_train_idx": 261,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:34:50.909616"
+}

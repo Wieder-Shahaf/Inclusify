@@ -1,0 +1,27 @@
+{
+  "sample_idx": 350,
+  "split": "train",
+  "input_sentence": "Intersex people should be assigned a sex at birth and surgically altered to fit it.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence perpetuates harmful and outdated beliefs about intersex individuals, suggesting that their bodies need to be altered to fit societal expectations of gender. This approach is no longer considered appropriate or inclusive.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence perpetuates harmful and outdated beliefs about intersex individuals, suggesting that their bodies need to be altered to fit societal expectations of gender. This approach is no longer considered appropriate or inclusive."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "This promotes non-consensual medical interventions on intersex infants, which are increasingly recognized as harmful and unethical."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9011106491088867,
+    "sim_pred_nearest_train": 0.9487760663032532,
+    "nearest_train_idx": 770,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:23:50.464325"
+}

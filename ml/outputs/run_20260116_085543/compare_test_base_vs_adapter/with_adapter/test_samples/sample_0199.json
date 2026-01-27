@@ -1,0 +1,27 @@
+{
+  "sample_idx": 199,
+  "split": "test",
+  "input_sentence": "Older psychiatric classifications did not differentiate between gender identity and sexual orientation.",
+  "raw_output": "{\"category\": \"Identity Invalidation\", \"severity\": \"Outdated\", \"explanation\": \"This highlights an outdated lack of understanding that conflated distinct aspects of identity.\"}",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This highlights an outdated lack of understanding that conflated distinct aspects of identity."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "This highlights an outdated lack of understanding and categorization in psychiatric history."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9258230924606323,
+    "sim_pred_nearest_train": 0.9836266040802002,
+    "nearest_train_idx": 116,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:25:49.481631"
+}

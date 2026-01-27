@@ -1,0 +1,27 @@
+{
+  "sample_idx": 72,
+  "split": "test",
+  "input_sentence": "Until relatively recently, diagnostic manuals did not recognize gender dysphoria as a distinct condition.",
+  "raw_output": "{\"category\": \"Erasure\", \"severity\": \"Outdated\", \"explanation\": \"This highlights a historical lack of recognition for transgender individuals, which has implications for their access to care and understanding.\"}",
+  "parsed_output": {
+    "category": "Erasure",
+    "severity": "Outdated",
+    "explanation": "This highlights a historical lack of recognition for transgender individuals, which has implications for their access to care and understanding."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Erasure",
+    "severity": "Outdated",
+    "explanation": "This reflects a time when transgender experiences were not adequately understood or documented in medical contexts."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.984283447265625,
+    "sim_pred_nearest_train": 0.9827831983566284,
+    "nearest_train_idx": 352,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Erasure",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:13:00.613298"
+}

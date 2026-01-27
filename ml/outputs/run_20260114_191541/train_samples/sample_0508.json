@@ -1,0 +1,27 @@
+{
+  "sample_idx": 508,
+  "split": "train",
+  "input_sentence": "Allyship involves actively supporting and advocating for the rights of LGBTQ+ individuals.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym LGBTQ+ to refer to the community, which is inclusive and widely recognized. The language is clear and respectful, advocating for the rights of individuals within the community.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym LGBTQ+ to refer to the community, which is inclusive and widely recognized. The language is clear and respectful, advocating for the rights of individuals within the community."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Defines the role and actions of an ally in a constructive manner."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8455539345741272,
+    "sim_pred_nearest_train": 0.9083863496780396,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:51:20.525760"
+}

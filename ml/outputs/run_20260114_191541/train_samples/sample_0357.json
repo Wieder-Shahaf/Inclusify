@@ -1,0 +1,27 @@
+{
+  "sample_idx": 357,
+  "split": "train",
+  "input_sentence": "Public institutions face challenges balancing inclusion and tradition.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is inclusive because it acknowledges the challenges faced by public institutions in balancing inclusion and tradition, without specifying any particular group or identity. It is factually accurate and does not contain any language that could be considered offensive or biased.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence is inclusive because it acknowledges the challenges faced by public institutions in balancing inclusion and tradition, without specifying any particular group or identity. It is factually accurate and does not contain any language that could be considered offensive or biased."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Tradition vs. Rights Framing",
+    "severity": "Potentially Offensive",
+    "explanation": "Suggests \"tradition\" is a valid reason to delay or limit civil rights."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8506596088409424,
+    "sim_pred_nearest_train": 0.8899586796760559,
+    "nearest_train_idx": 761,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:25:01.569299"
+}

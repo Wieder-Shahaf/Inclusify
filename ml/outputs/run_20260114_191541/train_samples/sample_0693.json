@@ -1,0 +1,27 @@
+{
+  "sample_idx": 693,
+  "split": "train",
+  "input_sentence": "Older sociological research sometimes suggested that children of same-sex parents would have behavioral problems.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence uses the term'same-sex parents' which is outdated and not inclusive. It's better to use 'LGBTQ+ parents' or 'parents in same-sex relationships' to be more inclusive.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence uses the term'same-sex parents' which is outdated and not inclusive. It's better to use 'LGBTQ+ parents' or 'parents in same-sex relationships' to be more inclusive."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Disproven Sociological Theory",
+    "severity": "Outdated",
+    "explanation": "Extensive research has shown this to be untrue; child outcomes are not dependent on parental sexual orientation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9027236700057983,
+    "sim_pred_nearest_train": 0.9413071870803833,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:24:10.044156"
+}

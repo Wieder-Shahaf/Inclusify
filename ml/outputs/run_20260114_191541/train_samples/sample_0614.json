@@ -1,0 +1,27 @@
+{
+  "sample_idx": 614,
+  "split": "train",
+  "input_sentence": "The focus on gender identity is a distraction from addressing real health issues affecting the LGBTQ+ community.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is inclusive of the LGBTQ+ community and accurately addresses the focus on gender identity without any negative implications.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence is inclusive of the LGBTQ+ community and accurately addresses the focus on gender identity without any negative implications."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Tone Policing",
+    "severity": "Biased",
+    "explanation": "Dismisses the importance of gender identity affirmation by framing it as a diversion from other concerns."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8628540635108948,
+    "sim_pred_nearest_train": 0.9314802885055542,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:10:01.679414"
+}

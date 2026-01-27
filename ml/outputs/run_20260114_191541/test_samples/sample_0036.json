@@ -1,0 +1,27 @@
+{
+  "sample_idx": 36,
+  "split": "test",
+  "input_sentence": "Same-sex attraction is a result of societal breakdown and moral decay.",
+  "raw_output": "```json\n{\n  \"category\": \"False Causality\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"The sentence incorrectly attributes same-sex attraction to societal breakdown and moral decay, which is a harmful and scientifically unsupported claim. Same-sex attraction is a natural and normal aspect of human sexuality, not a result of societal or moral issues.\"\n}\n```",
+  "parsed_output": {
+    "category": "False Causality",
+    "severity": "Factually Incorrect",
+    "explanation": "The sentence incorrectly attributes same-sex attraction to societal breakdown and moral decay, which is a harmful and scientifically unsupported claim. Same-sex attraction is a natural and normal aspect of human sexuality, not a result of societal or moral issues."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Factually Incorrect",
+    "explanation": "This links non-heterosexual attraction to negative societal outcomes, a common tactic to pathologize and condemn LGBTQ+ identities."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9104529619216919,
+    "sim_pred_nearest_train": 0.9548418521881104,
+    "nearest_train_idx": 446,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "False Causality",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:49:53.383268"
+}

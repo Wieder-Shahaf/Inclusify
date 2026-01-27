@@ -1,0 +1,27 @@
+{
+  "sample_idx": 176,
+  "split": "test",
+  "input_sentence": "There was a belief that exposing children to LGBTQ+ content would 'turn' them gay.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The belief that exposure to LGBTQ+ content can 'turn' someone gay is a harmful and outdated concept that has been disproven by science. It is a historical pathologization of LGBTQ+ identities, suggesting that being LGBTQ+ is a condition that can be 'caught' or 'cured'. This belief is no longer supported by the medical or psychological communities and is considered harmful and offensive.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The belief that exposure to LGBTQ+ content can 'turn' someone gay is a harmful and outdated concept that has been disproven by science. It is a historical pathologization of LGBTQ+ identities, suggesting that being LGBTQ+ is a condition that can be 'caught' or 'cured'. This belief is no longer supported by the medical or psychological communities and is considered harmful and offensive."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Outdated",
+    "explanation": "This reflects a baseless fear that sexual orientation or gender identity can be 'caught' or influenced by exposure."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8912340402603149,
+    "sim_pred_nearest_train": 0.9372595548629761,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T22:15:40.156918"
+}

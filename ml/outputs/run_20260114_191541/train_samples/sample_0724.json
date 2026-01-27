@@ -1,0 +1,27 @@
+{
+  "sample_idx": 724,
+  "split": "train",
+  "input_sentence": "The LGBTQ+ community is trying to force its lifestyle on everyone.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that the LGBTQ+ community is trying to impose its identity or lifestyle on others, which can be perceived as invalidating the identities of others and potentially offensive.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that the LGBTQ+ community is trying to impose its identity or lifestyle on others, which can be perceived as invalidating the identities of others and potentially offensive."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Biased",
+    "explanation": "Frames LGBTQ+ advocacy as an aggressive imposition of a 'lifestyle'."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.903946578502655,
+    "sim_pred_nearest_train": 0.9630687832832336,
+    "nearest_train_idx": 197,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:29:50.542565"
+}

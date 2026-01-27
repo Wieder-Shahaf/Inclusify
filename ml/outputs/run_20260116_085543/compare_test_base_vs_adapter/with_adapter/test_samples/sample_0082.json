@@ -1,0 +1,27 @@
+{
+  "sample_idx": 82,
+  "split": "test",
+  "input_sentence": "Some historical academic discussions framed gay men as inherently predatory.",
+  "raw_output": "{\"category\": \"Defamatory Stereotyping\", \"severity\": \"Outdated\", \"explanation\": \"This perpetuates harmful and inaccurate stereotypes about the sexual behavior of gay men.\"}",
+  "parsed_output": {
+    "category": "Defamatory Stereotyping",
+    "severity": "Outdated",
+    "explanation": "This perpetuates harmful and inaccurate stereotypes about the sexual behavior of gay men."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Defamatory Stereotyping",
+    "severity": "Outdated",
+    "explanation": "This describes an outdated and harmful stereotype used in some academic circles."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9507234692573547,
+    "sim_pred_nearest_train": 0.9693225622177124,
+    "nearest_train_idx": 511,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Negative Stereotyping",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:14:00.644752"
+}

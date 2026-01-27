@@ -1,0 +1,27 @@
+{
+  "sample_idx": 385,
+  "split": "train",
+  "input_sentence": "Schools were advised to silence discussions about sexual orientation.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence advises schools to silence discussions about sexual orientation, which can be seen as invalidating the identities and experiences of LGBTQ+ individuals. It prioritizes the comfort of those who may not identify as LGBTQ+ over the rights and needs of those who do.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence advises schools to silence discussions about sexual orientation, which can be seen as invalidating the identities and experiences of LGBTQ+ individuals. It prioritizes the comfort of those who may not identify as LGBTQ+ over the rights and needs of those who do."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Institutional Censorship",
+    "severity": "Outdated",
+    "explanation": "Historical educational policy that has largely been reversed in secular systems."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8646623492240906,
+    "sim_pred_nearest_train": 0.953872799873352,
+    "nearest_train_idx": 526,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:29:39.688724"
+}

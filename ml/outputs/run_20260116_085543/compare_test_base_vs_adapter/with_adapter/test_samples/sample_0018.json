@@ -1,0 +1,27 @@
+{
+  "sample_idx": 18,
+  "split": "test",
+  "input_sentence": "LGBTQ+ elders often face unique challenges related to social isolation and discrimination.",
+  "raw_output": "{\"category\": NaN, \"severity\": \"Correct\", \"explanation\": \"Identifies specific challenges faced by LGBTQ+ older adults.\"}",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "Identifies specific challenges faced by LGBTQ+ older adults."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Acknowledges specific demographic challenges faced by a subset of the LGBTQ+ community."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9419742822647095,
+    "sim_pred_nearest_train": 0.9462475776672363,
+    "nearest_train_idx": 475,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:07:35.800144"
+}

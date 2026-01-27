@@ -1,0 +1,27 @@
+{
+  "sample_idx": 128,
+  "split": "train",
+  "input_sentence": "Transgender healthcare guidelines are developed by professional medical organizations.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by referring to 'transgender healthcare guidelines' without specifying gender identity, and it focuses on the development process by professional medical organizations, which is a neutral and factual approach.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by referring to 'transgender healthcare guidelines' without specifying gender identity, and it focuses on the development process by professional medical organizations, which is a neutral and factual approach."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Accurate; guidelines come from Endocrine Society, WPATH, etc."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8706290125846863,
+    "sim_pred_nearest_train": 0.9010236263275146,
+    "nearest_train_idx": 761,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:44:54.110641"
+}

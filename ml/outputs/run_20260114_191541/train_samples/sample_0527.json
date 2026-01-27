@@ -1,0 +1,27 @@
+{
+  "sample_idx": 527,
+  "split": "train",
+  "input_sentence": "Someone's gender identity is determined by their appearance.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"This sentence perpetuates the outdated belief that gender identity is determined by physical appearance, which is a harmful and inaccurate view. Gender identity is a complex and deeply personal aspect of a person's identity that cannot be reduced to physical characteristics.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "This sentence perpetuates the outdated belief that gender identity is determined by physical appearance, which is a harmful and inaccurate view. Gender identity is a complex and deeply personal aspect of a person's identity that cannot be reduced to physical characteristics."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "False Causality",
+    "severity": "Factually Incorrect",
+    "explanation": "This wrongly assumes that outward presentation dictates internal gender identity."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9007831811904907,
+    "sim_pred_nearest_train": 0.9416690468788147,
+    "nearest_train_idx": 319,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:54:43.404405"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 529,
+  "split": "train",
+  "input_sentence": "The concept of 'chosen family' is significant for many LGBTQ+ individuals.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the term 'LGBTQ+ individuals' to refer to individuals who identify as lesbian, gay, bisexual, transgender, queer, or other non-heterosexual or non-cisgender identities. This is an inclusive and accurate way to refer to the community.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the term 'LGBTQ+ individuals' to refer to individuals who identify as lesbian, gay, bisexual, transgender, queer, or other non-heterosexual or non-cisgender identities. This is an inclusive and accurate way to refer to the community."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Recognizes the importance of non-biological family structures."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8373019695281982,
+    "sim_pred_nearest_train": 0.8940868377685547,
+    "nearest_train_idx": 145,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:55:05.287532"
+}

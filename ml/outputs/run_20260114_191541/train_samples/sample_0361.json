@@ -1,0 +1,27 @@
+{
+  "sample_idx": 361,
+  "split": "train",
+  "input_sentence": "The increase in visible LGBTQ+ representation might be influencing younger generations' understanding of identity.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by explicitly mentioning LGBTQ+ representation, which is a direct reference to the community. It also discusses the impact on understanding identity, which is a neutral topic that does not inherently discriminate against any group.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by explicitly mentioning LGBTQ+ representation, which is a direct reference to the community. It also discusses the impact on understanding identity, which is a neutral topic that does not inherently discriminate against any group."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Suggests that LGBTQ+ identities can be 'caught' or adopted due to external influences, rather than being innate."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8864552974700928,
+    "sim_pred_nearest_train": 0.9129312038421631,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:25:41.141352"
+}

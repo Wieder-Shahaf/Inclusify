@@ -1,0 +1,27 @@
+{
+  "sample_idx": 54,
+  "split": "train",
+  "input_sentence": "Transgender individuals are simply confused about their gender and will eventually grow out of it.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"This sentence pathologizes transgender individuals by implying that their gender identity is a confusion that can be 'grown out of.' This perspective is outdated and harmful, as it denies the validity and autonomy of transgender people's experiences.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Potentially Offensive",
+    "explanation": "This sentence pathologizes transgender individuals by implying that their gender identity is a confusion that can be 'grown out of.' This perspective is outdated and harmful, as it denies the validity and autonomy of transgender people's experiences."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Factually Incorrect",
+    "explanation": "Denies the validity and permanence of transgender identities, suggesting they are a temporary phase."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8873339295387268,
+    "sim_pred_nearest_train": 0.9667770862579346,
+    "nearest_train_idx": 662,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:31:33.388516"
+}

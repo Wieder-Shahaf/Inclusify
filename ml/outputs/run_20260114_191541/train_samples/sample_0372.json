@@ -1,0 +1,27 @@
+{
+  "sample_idx": 372,
+  "split": "train",
+  "input_sentence": "It's important to distinguish between gender identity and gender expression in young children.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is inclusive and accurately distinguishes between gender identity and gender expression, which are important concepts in understanding the diversity of gender experiences.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence is inclusive and accurately distinguishes between gender identity and gender expression, which are important concepts in understanding the diversity of gender experiences."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Implies a separation or lack of understanding in how gender identity is expressed, potentially invalidating a child's self-understanding."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.887741208076477,
+    "sim_pred_nearest_train": 0.9286521673202515,
+    "nearest_train_idx": 261,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:27:27.836366"
+}

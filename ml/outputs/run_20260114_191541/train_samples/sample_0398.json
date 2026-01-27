@@ -1,0 +1,27 @@
+{
+  "sample_idx": 398,
+  "split": "train",
+  "input_sentence": "Medical professionals are increasingly trained in culturally competent care for LGBTQ+ patients.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym 'LGBTQ+' to refer to the diverse community of lesbian, gay, bisexual, transgender, queer, and other identities. It also emphasizes the importance of culturally competent care, which is a key aspect of inclusive healthcare practices.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym 'LGBTQ+' to refer to the diverse community of lesbian, gay, bisexual, transgender, queer, and other identities. It also emphasizes the importance of culturally competent care, which is a key aspect of inclusive healthcare practices."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Reflects ongoing efforts in medical education."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8248515129089355,
+    "sim_pred_nearest_train": 0.8939791917800903,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:32:05.397028"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 770,
+  "split": "train",
+  "input_sentence": "The concept of 'gender inversion' was used in older theories to explain transgender identities.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The term 'gender inversion' is a historical and outdated concept that was used to pathologize transgender identities. It is no longer appropriate to use this term in discussions about transgender people.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The term 'gender inversion' is a historical and outdated concept that was used to pathologize transgender identities. It is no longer appropriate to use this term in discussions about transgender people."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "This refers to an outdated and inaccurate theoretical framework that pathologized transgender people."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9212855100631714,
+    "sim_pred_nearest_train": 0.9250660538673401,
+    "nearest_train_idx": 430,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T21:38:07.912686"
+}

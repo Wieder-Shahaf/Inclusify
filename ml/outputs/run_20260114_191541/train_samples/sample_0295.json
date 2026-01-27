@@ -1,0 +1,27 @@
+{
+  "sample_idx": 295,
+  "split": "train",
+  "input_sentence": "The media's portrayal of transgender characters is creating unrealistic expectations and normalizing it for everyone.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that the portrayal of transgender characters is creating unrealistic expectations and normalizing it for everyone, which could be perceived as invalidating the experiences and identities of transgender individuals. It suggests that the portrayal is not accurate or appropriate for everyone, which could be seen as offensive to transgender people.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that the portrayal of transgender characters is creating unrealistic expectations and normalizing it for everyone, which could be perceived as invalidating the experiences and identities of transgender individuals. It suggests that the portrayal is not accurate or appropriate for everyone, which could be seen as offensive to transgender people."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Biased",
+    "explanation": "Suggests media representation influences identity adoption in a widespread, trend-like manner."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8666837811470032,
+    "sim_pred_nearest_train": 0.9601243734359741,
+    "nearest_train_idx": 3,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:14:05.496698"
+}

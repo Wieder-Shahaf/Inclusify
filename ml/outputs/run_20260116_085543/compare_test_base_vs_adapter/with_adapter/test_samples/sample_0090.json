@@ -1,0 +1,27 @@
+{
+  "sample_idx": 90,
+  "split": "test",
+  "input_sentence": "The history of medical interventions for gender non-conformity is complex and evolving.",
+  "raw_output": "{\"category\": NaN, \"severity\": \"Correct\", \"explanation\": \"Acknowledges the historical and ongoing nature of medical practices related to gender identity.\"}",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "Acknowledges the historical and ongoing nature of medical practices related to gender identity."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Acknowledges the historical development of medical approaches."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9295267462730408,
+    "sim_pred_nearest_train": 0.9365195035934448,
+    "nearest_train_idx": 674,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:14:48.914267"
+}

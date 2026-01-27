@@ -1,0 +1,27 @@
+{
+  "sample_idx": 792,
+  "split": "train",
+  "input_sentence": "The popularization of terms like 'genderqueer' suggests a trend rather than a deeply felt identity for many.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that individuals who identify as genderqueer may not have a deeply felt identity, which could be perceived as invalidating their experiences and identities.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that individuals who identify as genderqueer may not have a deeply felt identity, which could be perceived as invalidating their experiences and identities."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Biased",
+    "explanation": "Frames genderqueer identity as a trend influenced by popular culture rather than an authentic expression of self."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8845993280410767,
+    "sim_pred_nearest_train": 0.9667818546295166,
+    "nearest_train_idx": 518,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:42:00.963710"
+}

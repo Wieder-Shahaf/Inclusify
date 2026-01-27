@@ -1,0 +1,27 @@
+{
+  "sample_idx": 65,
+  "split": "test",
+  "input_sentence": "The idea of transitioning genders seems bewildering to those unfamiliar with it.",
+  "raw_output": "{\"category\": \"Identity Invalidation\", \"severity\": \"Potentially Offensive\", \"explanation\": \"Frames a valid and recognized aspect of identity as incomprehensible or strange, potentially leading to dismissal or skepticism.\"}",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Frames a valid and recognized aspect of identity as incomprehensible or strange, potentially leading to dismissal or skepticism."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Frames gender transition as inherently confusing or irrational, implying it's not a genuine experience."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9610271453857422,
+    "sim_pred_nearest_train": 0.9832033514976501,
+    "nearest_train_idx": 739,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:12:19.409148"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 657,
+  "split": "train",
+  "input_sentence": "Asexuality is a sexual orientation characterized by a lack of sexual attraction.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence accurately describes asexuality as a sexual orientation characterized by a lack of sexual attraction, without any bias or offensive language.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence accurately describes asexuality as a sexual orientation characterized by a lack of sexual attraction, without any bias or offensive language."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Accurate definition of asexuality."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9366446733474731,
+    "sim_pred_nearest_train": 0.9389761686325073,
+    "nearest_train_idx": 727,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:17:38.859891"
+}

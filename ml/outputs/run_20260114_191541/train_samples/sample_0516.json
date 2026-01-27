@@ -1,0 +1,27 @@
+{
+  "sample_idx": 516,
+  "split": "train",
+  "input_sentence": "It's important to remember traditional marriage definitions.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The term 'traditional marriage' is often used to imply a normative or superior form of marriage, which can be harmful and exclusionary to LGBTQ+ individuals and their relationships. It's important to use more inclusive language that respects the diversity of relationships and marriages.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The term 'traditional marriage' is often used to imply a normative or superior form of marriage, which can be harmful and exclusionary to LGBTQ+ individuals and their relationships. It's important to use more inclusive language that respects the diversity of relationships and marriages."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Erasure",
+    "severity": "Potentially Offensive",
+    "explanation": "Implies that non-heterosexual relationships are not valid forms of partnership, ignoring the existence and rights of LGBTQ+ couples."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8753069639205933,
+    "sim_pred_nearest_train": 0.909961998462677,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:52:50.643883"
+}

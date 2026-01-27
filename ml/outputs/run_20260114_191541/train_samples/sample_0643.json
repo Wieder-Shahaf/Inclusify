@@ -1,0 +1,27 @@
+{
+  "sample_idx": 643,
+  "split": "train",
+  "input_sentence": "In older medical literature, women who rejected traditional gender roles were sometimes labeled as neurotic.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence uses outdated terminology and concepts that pathologize non-traditional gender expressions. It implies that women who reject traditional gender roles are inherently flawed or neurotic, which is a harmful and inaccurate stereotype.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence uses outdated terminology and concepts that pathologize non-traditional gender expressions. It implies that women who reject traditional gender roles are inherently flawed or neurotic, which is a harmful and inaccurate stereotype."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This reflects an outdated framework that pathologized women who didn't conform to gender expectations."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9391334652900696,
+    "sim_pred_nearest_train": 0.9572088718414307,
+    "nearest_train_idx": 673,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:15:04.327496"
+}

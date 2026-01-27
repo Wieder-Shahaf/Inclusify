@@ -1,3 +1,4 @@
+# Existing ML pipeline dependencies
 requests>=2.31.0
 beautifulsoup4>=4.12.0
 pdfplumber>=0.10.0
@@ -8,3 +9,40 @@ hdbscan>=0.8.33
 scikit-learn>=1.3.0
 numpy>=1.24.0
 pandas>=2.0.0
+
+# Deep Learning / LLM (for LoRA fine-tuning and inference)
+transformers>=4.30.0
+peft>=0.4.0
+bitsandbytes>=0.41.0
+accelerate>=0.20.0
+
+# Data Analysis
+scipy>=1.10.0
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+plotly>=5.14.0
+ipywidgets>=8.0.0
+
+# Jupyter Support
+jupyter>=1.0.0
+ipykernel>=6.25.0
+notebook>=6.5.0
+jupyterlab>=4.0.0
+
+# Data Processing
+datasets>=2.14.0
+pyarrow>=12.0.0
+
+# Validation / Utilities
+pydantic>=2.0.0
+tqdm>=4.65.0
+psutil>=5.9.0
+packaging>=20.0
+pyyaml>=6.0
+huggingface-hub>=0.16.0
+safetensors>=0.3.0
+
+# API Support (Gemini)
+google-generativeai>=0.3.0

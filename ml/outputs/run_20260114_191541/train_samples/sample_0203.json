@@ -1,0 +1,27 @@
+{
+  "sample_idx": 203,
+  "split": "train",
+  "input_sentence": "Some people still hold traditional views on marriage that exclude same-sex unions.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that traditional views on marriage are inherently invalid or discriminatory, which may be perceived as offensive to those who hold such views. It could be rephrased to focus on the diversity of opinions on marriage without invalidating certain perspectives.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that traditional views on marriage are inherently invalid or discriminatory, which may be perceived as offensive to those who hold such views. It could be rephrased to focus on the diversity of opinions on marriage without invalidating certain perspectives."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Presents discriminatory views as mere 'traditional views' rather than beliefs that harm LGBTQ+ individuals."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9462423324584961,
+    "sim_pred_nearest_train": 0.9462423920631409,
+    "nearest_train_idx": 203,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T19:57:57.393180"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 582,
+  "split": "train",
+  "input_sentence": "LGBTQ+ topics should remain private and not public.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that LGBTQ+ topics should be kept private, which can be perceived as invalidating the identities and experiences of LGBTQ+ individuals. It may also reinforce harmful stereotypes that LGBTQ+ topics are inherently private or shameful.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that LGBTQ+ topics should be kept private, which can be perceived as invalidating the identities and experiences of LGBTQ+ individuals. It may also reinforce harmful stereotypes that LGBTQ+ topics are inherently private or shameful."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Erasure / Privatization Rhetoric",
+    "severity": "Biased",
+    "explanation": "Suggests identity is inherently shameful or inappropriate for public life."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9055914282798767,
+    "sim_pred_nearest_train": 0.9523446559906006,
+    "nearest_train_idx": 203,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:04:34.387260"
+}

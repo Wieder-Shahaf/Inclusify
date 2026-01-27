@@ -1,0 +1,27 @@
+{
+  "sample_idx": 551,
+  "split": "train",
+  "input_sentence": "Discrimination is associated with higher stress and mental health risks among LGBTQ+ people.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is inclusive and accurately states the association between discrimination and mental health risks for LGBTQ+ individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence is inclusive and accurately states the association between discrimination and mental health risks for LGBTQ+ individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Standard finding in Minority Stress Theory research."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8870090246200562,
+    "sim_pred_nearest_train": 0.9246344566345215,
+    "nearest_train_idx": 136,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:58:55.828386"
+}

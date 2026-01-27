@@ -1,0 +1,27 @@
+{
+  "sample_idx": 52,
+  "split": "test",
+  "input_sentence": "Parenting by same-sex couples was previously discouraged by professionals.",
+  "raw_output": "{\"category\": \"Historical Discrimination\", \"severity\": \"Outdated\", \"explanation\": \"This reflects an outdated societal bias that was once professionally endorsed.\"}",
+  "parsed_output": {
+    "category": "Historical Discrimination",
+    "severity": "Outdated",
+    "explanation": "This reflects an outdated societal bias that was once professionally endorsed."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Disproven Sociological Advice",
+    "severity": "Outdated",
+    "explanation": "Advice based on bias rather than child welfare data."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9259003400802612,
+    "sim_pred_nearest_train": 0.9483448266983032,
+    "nearest_train_idx": 463,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Defamatory Stereotyping",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:10:58.421650"
+}

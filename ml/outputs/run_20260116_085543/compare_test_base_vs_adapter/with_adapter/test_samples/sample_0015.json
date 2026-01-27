@@ -1,0 +1,27 @@
+{
+  "sample_idx": 15,
+  "split": "test",
+  "input_sentence": "Homosexuality was listed as a mental illness in diagnostic manuals.",
+  "raw_output": "{\"category\": \"Historical Pathologization\", \"severity\": \"Outdated\", \"explanation\": \"This refers to the historical classification of homosexuality as a mental illness by organizations like the DSM and ICD.\"}",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "This refers to the historical classification of homosexuality as a mental illness by organizations like the DSM and ICD."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "While historically true, it reflects a medical view that has been overturned."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9329981803894043,
+    "sim_pred_nearest_train": 0.9734276533126831,
+    "nearest_train_idx": 366,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:07:21.561001"
+}

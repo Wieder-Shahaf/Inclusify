@@ -1,0 +1,27 @@
+{
+  "sample_idx": 685,
+  "split": "train",
+  "input_sentence": "Bisexuality is just a phase that people go through before settling down with one gender.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence implies that bisexuality is a temporary or transitional state, which is a harmful and outdated view. Historically, bisexuality has been pathologized and stigmatized, leading to the belief that it is a phase people go through before settling into a monosexual identity. This perspective is no longer supported by the scientific community and is considered harmful to the LGBTQ+ community.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence implies that bisexuality is a temporary or transitional state, which is a harmful and outdated view. Historically, bisexuality has been pathologized and stigmatized, leading to the belief that it is a phase people go through before settling into a monosexual identity. This perspective is no longer supported by the scientific community and is considered harmful to the LGBTQ+ community."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Factually Incorrect",
+    "explanation": "Invalidates bisexual identity by suggesting it is not a stable or permanent orientation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8926804065704346,
+    "sim_pred_nearest_train": 0.9328039884567261,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:22:36.035700"
+}

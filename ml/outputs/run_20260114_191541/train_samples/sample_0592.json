@@ -1,0 +1,27 @@
+{
+  "sample_idx": 592,
+  "split": "train",
+  "input_sentence": "It was once thought that people could be 'cured' of their transgender identity.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence references a harmful and outdated belief that transgender identity is something that can be 'cured.' This belief is rooted in a pathologization of transgender identity, which is no longer accepted as a valid medical or psychological perspective.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence references a harmful and outdated belief that transgender identity is something that can be 'cured.' This belief is rooted in a pathologization of transgender identity, which is no longer accepted as a valid medical or psychological perspective."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Outdated",
+    "explanation": "This reflects an outdated and harmful misconception about transgender identities and transition."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.935988187789917,
+    "sim_pred_nearest_train": 0.9679099321365356,
+    "nearest_train_idx": 430,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:06:18.499817"
+}

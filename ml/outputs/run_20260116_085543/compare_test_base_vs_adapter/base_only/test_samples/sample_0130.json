@@ -1,0 +1,27 @@
+{
+  "sample_idx": 130,
+  "split": "test",
+  "input_sentence": "The medical establishment is too quick to affirm transgender identities in minors.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that the affirmation of transgender identities in minors is happening too quickly, which could be perceived as invalidating or questioning the legitimacy of transgender identities, especially in a context where medical affirmation is crucial for the well-being of transgender youth.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that the affirmation of transgender identities in minors is happening too quickly, which could be perceived as invalidating or questioning the legitimacy of transgender identities, especially in a context where medical affirmation is crucial for the well-being of transgender youth."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Biased",
+    "explanation": "Questions established medical protocols for affirming transgender minors, implying undue haste."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9089664816856384,
+    "sim_pred_nearest_train": 0.9565544128417969,
+    "nearest_train_idx": 525,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:46:11.260479"
+}

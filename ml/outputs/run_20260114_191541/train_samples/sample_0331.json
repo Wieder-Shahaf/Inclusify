@@ -1,0 +1,27 @@
+{
+  "sample_idx": 331,
+  "split": "train",
+  "input_sentence": "Some people question the scientific basis for non-binary gender identities.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence implies that non-binary gender identities are not scientifically recognized, which is outdated and incorrect. Non-binary gender identities are recognized by many scientific and medical organizations, including the World Health Organization, which removed gender identity disorder from its diagnostic manual in 2018.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence implies that non-binary gender identities are not scientifically recognized, which is outdated and incorrect. Non-binary gender identities are recognized by many scientific and medical organizations, including the World Health Organization, which removed gender identity disorder from its diagnostic manual in 2018."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Pseudoscience",
+    "severity": "Potentially Offensive",
+    "explanation": "Challenges established understanding of gender identity by demanding specific scientific 'proof' beyond lived experience."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8621258735656738,
+    "sim_pred_nearest_train": 0.9193060398101807,
+    "nearest_train_idx": 673,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:20:20.179461"
+}

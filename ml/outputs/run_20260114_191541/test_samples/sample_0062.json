@@ -1,0 +1,27 @@
+{
+  "sample_idx": 62,
+  "split": "test",
+  "input_sentence": "Some believe that promoting LGBTQ+ issues in schools is a form of indoctrination.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence frames the promotion of LGBTQ+ issues in schools as a form of indoctrination, which can be perceived as invalidating the identities and experiences of LGBTQ+ individuals. This framing can be harmful and perpetuate negative stereotypes.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence frames the promotion of LGBTQ+ issues in schools as a form of indoctrination, which can be perceived as invalidating the identities and experiences of LGBTQ+ individuals. This framing can be harmful and perpetuate negative stereotypes."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Frames education about LGBTQ+ identities as a harmful ideological agenda."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9345040917396545,
+    "sim_pred_nearest_train": 0.9531487226486206,
+    "nearest_train_idx": 607,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:54:45.657106"
+}

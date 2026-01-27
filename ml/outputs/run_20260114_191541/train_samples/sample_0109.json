@@ -1,0 +1,27 @@
+{
+  "sample_idx": 109,
+  "split": "train",
+  "input_sentence": "Pansexual people are just confused about their sexuality.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence invalidates the identity of pansexual individuals by implying they are confused about their sexuality, which can be harmful and perpetuate stereotypes.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence invalidates the identity of pansexual individuals by implying they are confused about their sexuality, which can be harmful and perpetuate stereotypes."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Factually Incorrect",
+    "explanation": "This denies the validity of pansexuality as a distinct sexual orientation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9438714981079102,
+    "sim_pred_nearest_train": 0.9667893648147583,
+    "nearest_train_idx": 600,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T19:41:38.033506"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 50,
+  "split": "test",
+  "input_sentence": "Many intersex variations are being mislabeled as 'gender identity issues' when they are primarily biological differences.",
+  "raw_output": "{\"category\": \"Erasure\", \"severity\": \"Potentially Offensive\", \"explanation\": \"Blurs the distinction between biological variations and gender identity, potentially dismissing the latter.\"}",
+  "parsed_output": {
+    "category": "Erasure",
+    "severity": "Potentially Offensive",
+    "explanation": "Blurs the distinction between biological variations and gender identity, potentially dismissing the latter."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Biased",
+    "explanation": "Incorrectly conflates intersex variations with gender identity, suggesting medical professionals are misdiagnosing or misinterpreting biological conditions."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9143000841140747,
+    "sim_pred_nearest_train": 0.9625293016433716,
+    "nearest_train_idx": 178,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Erasure",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:10:47.102439"
+}

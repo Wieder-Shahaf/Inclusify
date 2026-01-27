@@ -1,0 +1,27 @@
+{
+  "sample_idx": 73,
+  "split": "test",
+  "input_sentence": "Discussions around gender affirmation for minors are a source of significant public debate.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by not specifying gender identity, allowing for a broad understanding of gender affirmation. It also avoids making assumptions about the gender of the minors, focusing on the public debate aspect.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by not specifying gender identity, allowing for a broad understanding of gender affirmation. It also avoids making assumptions about the gender of the minors, focusing on the public debate aspect."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Potentially Offensive",
+    "explanation": "Frames evidence-based medical care as solely a subject of 'debate,' potentially undermining established protocols."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8402939438819885,
+    "sim_pred_nearest_train": 0.9038007259368896,
+    "nearest_train_idx": 467,
+    "nearest_train_severity": "Biased",
+    "nearest_train_category": "Erasure",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:56:36.231826"
+}

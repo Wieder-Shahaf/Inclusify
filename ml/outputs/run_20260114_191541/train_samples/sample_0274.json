@@ -1,0 +1,27 @@
+{
+  "sample_idx": 274,
+  "split": "train",
+  "input_sentence": "The diversity of human sexual behavior is well-documented across anthropological studies.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by focusing on the diversity of human sexual behavior without specifying gender or sexual orientation, making it appropriate for LGBTQ+ inclusive language compliance.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by focusing on the diversity of human sexual behavior without specifying gender or sexual orientation, making it appropriate for LGBTQ+ inclusive language compliance."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Supports the recognition of diverse sexual behaviors through scientific evidence."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8985446095466614,
+    "sim_pred_nearest_train": 0.9107853174209595,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:10:20.601001"
+}

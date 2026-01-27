@@ -1,0 +1,27 @@
+{
+  "sample_idx": 549,
+  "split": "train",
+  "input_sentence": "The fight for LGBTQ+ rights is often intertwined with broader human rights movements.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym 'LGBTQ+' to refer to the community, which is inclusive of a wide range of sexual orientations and gender identities. It also frames the fight for rights within a broader context of human rights, which is appropriate and inclusive.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym 'LGBTQ+' to refer to the community, which is inclusive of a wide range of sexual orientations and gender identities. It also frames the fight for rights within a broader context of human rights, which is appropriate and inclusive."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Recognizes the interconnectedness of LGBTQ+ rights with universal human rights."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8984513282775879,
+    "sim_pred_nearest_train": 0.9019946455955505,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:58:39.478597"
+}

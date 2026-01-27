@@ -1,0 +1,27 @@
+{
+  "sample_idx": 395,
+  "split": "train",
+  "input_sentence": "Some may feel that advocacy for LGBTQ+ issues is too aggressive and alienates the general public.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that advocacy for LGBTQ+ issues is inherently aggressive and alienating, which can be perceived as invalidating the identities and experiences of LGBTQ+ individuals. It also prioritizes the comfort of the general public over the rights and visibility of LGBTQ+ individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that advocacy for LGBTQ+ issues is inherently aggressive and alienating, which can be perceived as invalidating the identities and experiences of LGBTQ+ individuals. It also prioritizes the comfort of the general public over the rights and visibility of LGBTQ+ individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Tone Policing",
+    "severity": "Potentially Offensive",
+    "explanation": "Critiques the *method* of advocacy rather than the substance of the issues, using perceived aggression to dismiss the movement."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8997357487678528,
+    "sim_pred_nearest_train": 0.9530777335166931,
+    "nearest_train_idx": 203,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:31:32.383596"
+}

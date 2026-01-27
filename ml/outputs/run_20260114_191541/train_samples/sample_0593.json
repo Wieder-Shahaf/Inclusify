@@ -1,0 +1,27 @@
+{
+  "sample_idx": 593,
+  "split": "train",
+  "input_sentence": "A person can't truly be genderfluid; they must be one or the other.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence invalidates the identity of genderfluid individuals by implying that they must be one gender or the other, which is not accurate. Genderfluid individuals identify as having a fluid or changing gender identity.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence invalidates the identity of genderfluid individuals by implying that they must be one gender or the other, which is not accurate. Genderfluid individuals identify as having a fluid or changing gender identity."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Biased",
+    "explanation": "Denies the validity of genderfluid identities by imposing binary limitations."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9335280656814575,
+    "sim_pred_nearest_train": 0.9720698595046997,
+    "nearest_train_idx": 519,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T21:06:28.848487"
+}

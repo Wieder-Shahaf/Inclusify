@@ -1,0 +1,27 @@
+{
+  "sample_idx": 228,
+  "split": "train",
+  "input_sentence": "LGBTQ+ identities were historically excluded from medical research.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence accurately acknowledges the historical exclusion of LGBTQ+ identities from medical research, without perpetuating harmful stereotypes or misinformation.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Correct",
+    "explanation": "The sentence accurately acknowledges the historical exclusion of LGBTQ+ identities from medical research, without perpetuating harmful stereotypes or misinformation."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Institutional Exclusion",
+    "severity": "Outdated",
+    "explanation": "Notes a historical gap in data that modern science is actively correcting."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8936175107955933,
+    "sim_pred_nearest_train": 0.9488310813903809,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:02:16.688363"
+}

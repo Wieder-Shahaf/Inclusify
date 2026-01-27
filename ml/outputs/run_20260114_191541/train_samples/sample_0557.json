@@ -1,0 +1,27 @@
+{
+  "sample_idx": 557,
+  "split": "train",
+  "input_sentence": "Religious beliefs may oppose same-sex relationships.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that religious beliefs inherently oppose same-sex relationships, which may be perceived as invalidating the identities and experiences of LGBTQ+ individuals. It could be rephrased to focus on the diversity of religious beliefs and practices regarding LGBTQ+ issues.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that religious beliefs inherently oppose same-sex relationships, which may be perceived as invalidating the identities and experiences of LGBTQ+ individuals. It could be rephrased to focus on the diversity of religious beliefs and practices regarding LGBTQ+ issues."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Religious Objection",
+    "severity": "Potentially Offensive",
+    "explanation": "While factual that beliefs exist, often used to justify discriminatory action."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.919020414352417,
+    "sim_pred_nearest_train": 0.9514926671981812,
+    "nearest_train_idx": 203,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:00:07.203150"
+}

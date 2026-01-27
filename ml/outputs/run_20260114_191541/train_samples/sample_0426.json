@@ -1,0 +1,27 @@
+{
+  "sample_idx": 426,
+  "split": "train",
+  "input_sentence": "The idea that bisexuality is merely a phase of experimentation for young people is an oversimplification.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence does not invalidate the identity of bisexual individuals by suggesting that bisexuality is a phase. Instead, it critiques the oversimplification of bisexuality as a phase, which is a valid and inclusive perspective.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Correct",
+    "explanation": "The sentence does not invalidate the identity of bisexual individuals by suggesting that bisexuality is a phase. Instead, it critiques the oversimplification of bisexuality as a phase, which is a valid and inclusive perspective."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This sentence challenges an outdated and reductionist view of bisexuality."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9408951997756958,
+    "sim_pred_nearest_train": 0.9545220136642456,
+    "nearest_train_idx": 186,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T20:36:44.983486"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 138,
+  "split": "train",
+  "input_sentence": "It was once thought that children exhibiting gender non-conformity would 'grow out of it' on their own.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence perpetuates the outdated belief that gender non-conformity is a phase that children will naturally outgrow, which is a harmful and pathologizing view of gender diversity.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence perpetuates the outdated belief that gender non-conformity is a phase that children will naturally outgrow, which is a harmful and pathologizing view of gender diversity."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Dismissal of Identity",
+    "severity": "Outdated",
+    "explanation": "This outdated perspective dismisses a child's gender identity and discourages necessary support."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9056031703948975,
+    "sim_pred_nearest_train": 0.9516484141349792,
+    "nearest_train_idx": 6,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:46:33.300446"
+}

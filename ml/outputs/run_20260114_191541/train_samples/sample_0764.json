@@ -1,0 +1,27 @@
+{
+  "sample_idx": 764,
+  "split": "train",
+  "input_sentence": "Some researchers believe that early childhood exposure to LGBTQ+ themes in education can influence a child's developing sexuality.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym LGBTQ+ to refer to the community, which is inclusive and widely recognized. It also avoids making assumptions about the sexuality of children and focuses on the exposure to themes in education, which is a neutral and factually accurate statement.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym LGBTQ+ to refer to the community, which is inclusive and widely recognized. It also avoids making assumptions about the sexuality of children and focuses on the exposure to themes in education, which is a neutral and factually accurate statement."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Biased",
+    "explanation": "Suggests that exposure to LGBTQ+ topics can 'influence' a child's sexuality, implying it's not an innate aspect of their identity."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8712939620018005,
+    "sim_pred_nearest_train": 0.9108923077583313,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:36:58.303018"
+}

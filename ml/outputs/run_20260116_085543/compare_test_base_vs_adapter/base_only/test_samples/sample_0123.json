@@ -1,0 +1,27 @@
+{
+  "sample_idx": 123,
+  "split": "test",
+  "input_sentence": "Some people question the authenticity of transgender identities.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The term 'authenticity' is often used in a derogatory manner to question the legitimacy of transgender identities, which is a historical pathologization of transgender people. This language is outdated and can be harmful.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The term 'authenticity' is often used in a derogatory manner to question the legitimacy of transgender identities, which is a historical pathologization of transgender people. This language is outdated and can be harmful."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Directly challenges the genuineness of a person's identity, treating it as a matter of doubt."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8734927177429199,
+    "sim_pred_nearest_train": 0.9445561170578003,
+    "nearest_train_idx": 430,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:45:03.029951"
+}

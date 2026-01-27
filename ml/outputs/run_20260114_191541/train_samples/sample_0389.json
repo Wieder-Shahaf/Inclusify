@@ -1,0 +1,27 @@
+{
+  "sample_idx": 389,
+  "split": "train",
+  "input_sentence": "If someone is attracted to multiple genders, they are simply promiscuous.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence invalidates the identity of individuals who are attracted to multiple genders by labeling them as 'promiscuous', which is a derogatory term often used to stigmatize sexual behavior. This language does not respect the diversity of sexual orientations and can be harmful to individuals who identify as pansexual or polyamorous.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence invalidates the identity of individuals who are attracted to multiple genders by labeling them as 'promiscuous', which is a derogatory term often used to stigmatize sexual behavior. This language does not respect the diversity of sexual orientations and can be harmful to individuals who identify as pansexual or polyamorous."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Negative Stereotyping",
+    "severity": "Factually Incorrect",
+    "explanation": "This unfairly labels bisexuality or pansexuality as promiscuity, ignoring the validity of these orientations."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9054627418518066,
+    "sim_pred_nearest_train": 0.9274413585662842,
+    "nearest_train_idx": 600,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:30:25.332935"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 669,
+  "split": "train",
+  "input_sentence": "There are concerns that increased LGBTQ+ representation in media might normalize behaviors some find objectionable.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym 'LGBTQ+' to refer to the community, which is inclusive and widely recognized. The language does not contain any offensive or biased terms, and it does not perpetuate harmful stereotypes. The focus is on representation and normalization, which is a valid topic for discussion in the context of media and societal impact.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym 'LGBTQ+' to refer to the community, which is inclusive and widely recognized. The language does not contain any offensive or biased terms, and it does not perpetuate harmful stereotypes. The focus is on representation and normalization, which is a valid topic for discussion in the context of media and societal impact."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Negative Stereotyping",
+    "severity": "Potentially Offensive",
+    "explanation": "Links LGBTQ+ representation to the normalization of unspecified, potentially discriminatory, negative behaviors."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8965175151824951,
+    "sim_pred_nearest_train": 0.907175600528717,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:19:53.798242"
+}

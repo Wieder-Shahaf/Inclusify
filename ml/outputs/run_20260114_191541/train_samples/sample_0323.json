@@ -1,0 +1,27 @@
+{
+  "sample_idx": 323,
+  "split": "train",
+  "input_sentence": "The WHO removed homosexuality from the ICD in 1990.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence accurately states the removal of homosexuality from the International Classification of Diseases (ICD) by the World Health Organization (WHO) in 1990, which is a significant step towards de-pathologizing homosexuality.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Correct",
+    "explanation": "The sentence accurately states the removal of homosexuality from the International Classification of Diseases (ICD) by the World Health Organization (WHO) in 1990, which is a significant step towards de-pathologizing homosexuality."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Verifiable historical date and medical milestone."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8653292655944824,
+    "sim_pred_nearest_train": 0.9366301894187927,
+    "nearest_train_idx": 222,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:18:58.362374"
+}

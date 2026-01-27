@@ -1,0 +1,27 @@
+{
+  "sample_idx": 108,
+  "split": "train",
+  "input_sentence": "The DSM once included 'ego-dystonic homosexuality' to describe distress about same-sex attraction.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The term 'ego-dystonic homosexuality' is a historical and outdated concept that was used to pathologize same-sex attraction. It is no longer considered appropriate or accurate to describe same-sex attraction as a mental health issue.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The term 'ego-dystonic homosexuality' is a historical and outdated concept that was used to pathologize same-sex attraction. It is no longer considered appropriate or accurate to describe same-sex attraction as a mental health issue."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "This framed a natural variation in sexual orientation as a psychological problem requiring treatment."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9155673980712891,
+    "sim_pred_nearest_train": 0.922452449798584,
+    "nearest_train_idx": 366,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T19:41:29.462298"
+}

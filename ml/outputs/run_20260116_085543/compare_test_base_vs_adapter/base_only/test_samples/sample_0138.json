@@ -1,0 +1,27 @@
+{
+  "sample_idx": 138,
+  "split": "test",
+  "input_sentence": "LGBTQ+ representation can be controversial in conservative areas.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym LGBTQ+ to refer to the community, which is inclusive and widely recognized. The mention of 'conservative areas' does not inherently invalidate the representation, as it is a neutral description of the context.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym LGBTQ+ to refer to the community, which is inclusive and widely recognized. The mention of 'conservative areas' does not inherently invalidate the representation, as it is a neutral description of the context."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Friction Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Implies the presence of the group is the problem, not the intolerance."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8528369665145874,
+    "sim_pred_nearest_train": 0.9046187400817871,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:47:20.635177"
+}

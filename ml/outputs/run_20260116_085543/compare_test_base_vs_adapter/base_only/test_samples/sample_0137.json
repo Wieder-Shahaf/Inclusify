@@ -1,0 +1,27 @@
+{
+  "sample_idx": 137,
+  "split": "test",
+  "input_sentence": "Transgender people are mentally ill and need to be institutionalized.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence pathologizes transgender individuals, which is a harmful and outdated belief. Historically, transgender people were considered mentally ill and were subjected to institutionalization. However, this belief has been widely discredited and is no longer supported by medical or psychological communities.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence pathologizes transgender individuals, which is a harmful and outdated belief. Historically, transgender people were considered mentally ill and were subjected to institutionalization. However, this belief has been widely discredited and is no longer supported by medical or psychological communities."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Pathologization",
+    "severity": "Factually Incorrect",
+    "explanation": "Repeats outdated and harmful medical views that pathologize transgender identities."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9403049349784851,
+    "sim_pred_nearest_train": 0.9601540565490723,
+    "nearest_train_idx": 770,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:47:11.701251"
+}

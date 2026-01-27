@@ -1,0 +1,27 @@
+{
+  "sample_idx": 24,
+  "split": "test",
+  "input_sentence": "The rise in people identifying as asexual is a symptom of social isolation and a lack of meaningful relationships.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is inclusive and does not contain any language that could be considered offensive or biased towards the LGBTQ+ community. It discusses asexual individuals in a neutral and factual manner, focusing on their experiences rather than making assumptions or stereotypes.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence is inclusive and does not contain any language that could be considered offensive or biased towards the LGBTQ+ community. It discusses asexual individuals in a neutral and factual manner, focusing on their experiences rather than making assumptions or stereotypes."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Biased",
+    "explanation": "Attributes asexuality to external social factors rather than it being a valid sexual orientation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8896934986114502,
+    "sim_pred_nearest_train": 0.9083310961723328,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:47:43.930624"
+}

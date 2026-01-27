@@ -1,0 +1,27 @@
+{
+  "sample_idx": 449,
+  "split": "train",
+  "input_sentence": "The medical community historically believed that women could 'choose' to be heterosexual.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence implies that sexual orientation is a choice, which is a harmful and outdated belief. It also uses the term 'heterosexual' without specifying the gender of the individuals involved, which could be interpreted as assuming a binary gender system.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence implies that sexual orientation is a choice, which is a harmful and outdated belief. It also uses the term 'heterosexual' without specifying the gender of the individuals involved, which could be interpreted as assuming a binary gender system."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This reflects an outdated understanding that sexual orientation is a conscious choice."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9318026900291443,
+    "sim_pred_nearest_train": 0.9563401937484741,
+    "nearest_train_idx": 156,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:40:42.685471"
+}

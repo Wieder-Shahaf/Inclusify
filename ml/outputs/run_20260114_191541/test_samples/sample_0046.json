@@ -1,0 +1,27 @@
+{
+  "sample_idx": 46,
+  "split": "test",
+  "input_sentence": "The notion that gender identity can be fluid is a relatively new concept for many.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence acknowledges the fluidity of gender identity, which is a widely accepted and scientifically supported concept. It does not contain any language that could be considered offensive, outdated, biased, or factually incorrect.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence acknowledges the fluidity of gender identity, which is a widely accepted and scientifically supported concept. It does not contain any language that could be considered offensive, outdated, biased, or factually incorrect."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Frames a valid identity as a fleeting or temporary idea rather than a stable aspect of self."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8690486550331116,
+    "sim_pred_nearest_train": 0.9195540547370911,
+    "nearest_train_idx": 660,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:51:41.179738"
+}

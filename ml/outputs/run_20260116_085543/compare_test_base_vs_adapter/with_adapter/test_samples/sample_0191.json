@@ -1,0 +1,27 @@
+{
+  "sample_idx": 191,
+  "split": "test",
+  "input_sentence": "Homosexuality is a choice that individuals can overcome with the right therapy.",
+  "raw_output": "{\"category\": \"Identity Invalidation\", \"severity\": \"Factually Incorrect\", \"explanation\": \"This frames homosexuality as a choice that can be changed, invalidating the identity of gay individuals.\"}",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Factually Incorrect",
+    "explanation": "This frames homosexuality as a choice that can be changed, invalidating the identity of gay individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Biased",
+    "explanation": "Promotes the debunked idea that sexual orientation is a choice and can be 'cured'."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9087343215942383,
+    "sim_pred_nearest_train": 0.9720788598060608,
+    "nearest_train_idx": 315,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:25:01.810041"
+}

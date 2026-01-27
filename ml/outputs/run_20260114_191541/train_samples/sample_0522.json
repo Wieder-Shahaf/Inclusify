@@ -1,0 +1,27 @@
+{
+  "sample_idx": 522,
+  "split": "train",
+  "input_sentence": "It's understandable that some religious groups find the concept of same-sex marriage challenging.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is inclusive because it acknowledges the diversity of religious beliefs and does not make assumptions about the beliefs of all religious groups. It also uses the term'same-sex marriage' which is a widely accepted and inclusive term.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence is inclusive because it acknowledges the diversity of religious beliefs and does not make assumptions about the beliefs of all religious groups. It also uses the term'same-sex marriage' which is a widely accepted and inclusive term."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Othering / Incompatibility Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Normalizes the opposition to LGBTQ+ rights by framing it as a simple difference in belief."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8589798808097839,
+    "sim_pred_nearest_train": 0.8868122696876526,
+    "nearest_train_idx": 233,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:53:53.255296"
+}

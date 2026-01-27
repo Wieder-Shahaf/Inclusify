@@ -1,0 +1,27 @@
+{
+  "sample_idx": 680,
+  "split": "train",
+  "input_sentence": "The use of correct pronouns is a fundamental aspect of respectful communication.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence promotes the use of correct pronouns, which is inclusive and respectful towards all individuals, regardless of their gender identity or expression.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence promotes the use of correct pronouns, which is inclusive and respectful towards all individuals, regardless of their gender identity or expression."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Reinforces the importance of pronoun usage for respectful interaction."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9355943202972412,
+    "sim_pred_nearest_train": 0.9355942606925964,
+    "nearest_train_idx": 680,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:21:40.137994"
+}

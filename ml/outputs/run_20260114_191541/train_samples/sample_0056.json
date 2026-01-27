@@ -1,0 +1,27 @@
+{
+  "sample_idx": 56,
+  "split": "train",
+  "input_sentence": "Historically, intersex variations were often treated as anomalies to be corrected surgically without consent.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence accurately describes the historical treatment of intersex variations as anomalies to be corrected surgically without consent, which is a factually correct and inclusive way to discuss this topic.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Correct",
+    "explanation": "The sentence accurately describes the historical treatment of intersex variations as anomalies to be corrected surgically without consent, which is a factually correct and inclusive way to discuss this topic."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Outdated",
+    "explanation": "This refers to outdated and harmful medical practices regarding intersex individuals."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8948948979377747,
+    "sim_pred_nearest_train": 0.9243389368057251,
+    "nearest_train_idx": 237,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:31:50.337393"
+}

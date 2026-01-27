@@ -1,0 +1,27 @@
+{
+  "sample_idx": 548,
+  "split": "train",
+  "input_sentence": "Some historical medical journals presented homosexuality as a congenital defect.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence accurately reflects the historical pathologization of homosexuality, but it is outdated and no longer appropriate to use this terminology.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence accurately reflects the historical pathologization of homosexuality, but it is outdated and no longer appropriate to use this terminology."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "This reflects an outdated medical view that characterized homosexuality as an abnormality."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9767036437988281,
+    "sim_pred_nearest_train": 0.9809850454330444,
+    "nearest_train_idx": 366,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T20:58:27.870530"
+}

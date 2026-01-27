@@ -1,0 +1,27 @@
+{
+  "sample_idx": 121,
+  "split": "test",
+  "input_sentence": "Societal acceptance of same-sex marriage has increased globally in recent decades.",
+  "raw_output": "{\"category\": NaN, \"severity\": \"Correct\", \"explanation\": \"Reflects trends in legal and social recognition of same-sex relationships.\"}",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "Reflects trends in legal and social recognition of same-sex relationships."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Reflects documented legal and social trends."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9317296743392944,
+    "sim_pred_nearest_train": 0.9472145438194275,
+    "nearest_train_idx": 95,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:17:55.461140"
+}

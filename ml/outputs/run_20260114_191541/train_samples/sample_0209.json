@@ -1,0 +1,27 @@
+{
+  "sample_idx": 209,
+  "split": "train",
+  "input_sentence": "Pansexuals are just greedy and want to sleep with everyone.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence invalidates the identity of pansexual individuals by framing their sexual orientation as greedy and promiscuous, which is a harmful stereotype. It also implies that pansexuals are only interested in physical attraction, which is not accurate. Using such language can be offensive and perpetuate harmful stereotypes.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence invalidates the identity of pansexual individuals by framing their sexual orientation as greedy and promiscuous, which is a harmful stereotype. It also implies that pansexuals are only interested in physical attraction, which is not accurate. Using such language can be offensive and perpetuate harmful stereotypes."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Negative Stereotyping",
+    "severity": "Factually Incorrect",
+    "explanation": "Misrepresents and stigmatizes pansexuality with judgmental and inaccurate claims."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9174070358276367,
+    "sim_pred_nearest_train": 0.9459431171417236,
+    "nearest_train_idx": 600,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:58:59.467303"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 348,
+  "split": "train",
+  "input_sentence": "The idea that bisexuality is a 'confused' or 'transitional' phase was widely accepted.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence suggests that bisexuality was historically viewed as a phase or a confusion, which is a pathologizing and outdated perspective. This view is no longer widely accepted in the scientific community and is considered harmful to the LGBTQ+ community.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence suggests that bisexuality was historically viewed as a phase or a confusion, which is a pathologizing and outdated perspective. This view is no longer widely accepted in the scientific community and is considered harmful to the LGBTQ+ community."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This dismisses bisexuality as a valid orientation, reflecting an outdated understanding."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9219353199005127,
+    "sim_pred_nearest_train": 0.9570087790489197,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:23:30.462686"
+}

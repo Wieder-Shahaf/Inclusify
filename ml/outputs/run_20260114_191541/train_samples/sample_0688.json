@@ -1,0 +1,27 @@
+{
+  "sample_idx": 688,
+  "split": "train",
+  "input_sentence": "LGBTQ+ representation in media has contributed to greater public understanding and acceptance.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym 'LGBTQ+', which is a widely accepted and inclusive term for the lesbian, gay, bisexual, transgender, queer, and other sexual and gender minority communities. The language is factually accurate and does not contain any biases or offensive content.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym 'LGBTQ+', which is a widely accepted and inclusive term for the lesbian, gay, bisexual, transgender, queer, and other sexual and gender minority communities. The language is factually accurate and does not contain any biases or offensive content."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Acknowledges the impact of media on societal perceptions."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8365846276283264,
+    "sim_pred_nearest_train": 0.9036537408828735,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:23:09.650487"
+}

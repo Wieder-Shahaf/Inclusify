@@ -1,0 +1,27 @@
+{
+  "sample_idx": 506,
+  "split": "train",
+  "input_sentence": "The debate around gender-affirming care for adolescents is complex and controversial.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses 'gender-affirming care' which is an inclusive term that acknowledges the diverse gender identities and expressions of adolescents. It does not contain any language that could be considered offensive or biased against the LGBTQ+ community.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses 'gender-affirming care' which is an inclusive term that acknowledges the diverse gender identities and expressions of adolescents. It does not contain any language that could be considered offensive or biased against the LGBTQ+ community."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Potentially Offensive",
+    "explanation": "Frames a medically supported treatment as inherently controversial, potentially sowing doubt."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8537896871566772,
+    "sim_pred_nearest_train": 0.9240280389785767,
+    "nearest_train_idx": 297,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:51:01.976752"
+}

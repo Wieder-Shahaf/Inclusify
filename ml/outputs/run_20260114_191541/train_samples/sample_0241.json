@@ -1,0 +1,27 @@
+{
+  "sample_idx": 241,
+  "split": "train",
+  "input_sentence": "The concept of 'homosexual panic' was used in some legal and psychological contexts.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The term 'homosexual panic' is a relic of a bygone era and is no longer considered appropriate or accurate in contemporary discussions. It is a term that was historically used to describe a psychological condition that was thought to be a cause of violent behavior in individuals who were attracted to the same sex. However, this concept has been widely discredited and is now recognized as a harmful and outdated way of understanding sexual orientation.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The term 'homosexual panic' is a relic of a bygone era and is no longer considered appropriate or accurate in contemporary discussions. It is a term that was historically used to describe a psychological condition that was thought to be a cause of violent behavior in individuals who were attracted to the same sex. However, this concept has been widely discredited and is now recognized as a harmful and outdated way of understanding sexual orientation."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Outdated",
+    "explanation": "This refers to an outdated and problematic concept that pathologized same-sex attraction."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.892056941986084,
+    "sim_pred_nearest_train": 0.916786789894104,
+    "nearest_train_idx": 548,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:04:43.239525"
+}

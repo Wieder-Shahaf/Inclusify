@@ -1,0 +1,27 @@
+{
+  "sample_idx": 436,
+  "split": "train",
+  "input_sentence": "Asexual individuals are simply repressed or have psychological issues.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence invalidates the identities of asexual individuals by suggesting they are either repressed or have psychological issues, which is a harmful and offensive stereotype.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence invalidates the identities of asexual individuals by suggesting they are either repressed or have psychological issues, which is a harmful and offensive stereotype."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Biased",
+    "explanation": "Attributes asexuality to psychological problems rather than a valid orientation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9321550130844116,
+    "sim_pred_nearest_train": 0.9531392455101013,
+    "nearest_train_idx": 58,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T20:38:24.653462"
+}

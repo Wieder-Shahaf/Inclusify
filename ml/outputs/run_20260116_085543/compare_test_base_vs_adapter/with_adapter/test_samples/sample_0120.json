@@ -1,0 +1,27 @@
+{
+  "sample_idx": 120,
+  "split": "test",
+  "input_sentence": "The concept of gender fluidity is unscientific and a product of postmodern ideology.",
+  "raw_output": "{\"category\": \"Pseudoscience\", \"severity\": \"Biased\", \"explanation\": \"Dismisses gender fluidity as unscientific and ideologically driven, ignoring scientific understanding of gender.\"}",
+  "parsed_output": {
+    "category": "Pseudoscience",
+    "severity": "Biased",
+    "explanation": "Dismisses gender fluidity as unscientific and ideologically driven, ignoring scientific understanding of gender."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Pseudoscience",
+    "severity": "Biased",
+    "explanation": "Dismisses gender fluidity as lacking scientific basis and attributes it to ideology rather than lived experience."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9931062459945679,
+    "sim_pred_nearest_train": 0.9820151329040527,
+    "nearest_train_idx": 604,
+    "nearest_train_severity": "Biased",
+    "nearest_train_category": "Pseudoscience",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:17:50.543673"
+}

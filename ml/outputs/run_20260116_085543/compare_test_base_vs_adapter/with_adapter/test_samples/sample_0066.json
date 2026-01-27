@@ -1,0 +1,27 @@
+{
+  "sample_idx": 66,
+  "split": "test",
+  "input_sentence": "Gender dysphoria is a permanent psychological condition that cannot be managed.",
+  "raw_output": "{\"category\": \"Medical Misinformation\", \"severity\": \"Factually Incorrect\", \"explanation\": \"This misrepresents gender dysphoria, which is a distressing experience that can be managed with appropriate care.\"}",
+  "parsed_output": {
+    "category": "Medical Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "This misrepresents gender dysphoria, which is a distressing experience that can be managed with appropriate care."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "Gender dysphoria can be effectively managed and alleviated through gender-affirming care."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9682528972625732,
+    "sim_pred_nearest_train": 0.9771541953086853,
+    "nearest_train_idx": 53,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Medical Misinformation",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:12:26.460081"
+}

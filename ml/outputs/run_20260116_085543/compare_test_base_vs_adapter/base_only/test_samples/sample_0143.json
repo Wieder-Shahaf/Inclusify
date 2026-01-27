@@ -1,0 +1,27 @@
+{
+  "sample_idx": 143,
+  "split": "test",
+  "input_sentence": "The rapid evolution of LGBTQ+ terminology can be difficult to keep up with.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym 'LGBTQ+', which is a widely accepted and inclusive term for the lesbian, gay, bisexual, transgender, queer, and other sexual and gender minority communities. The language is neutral and does not contain any offensive or outdated terms.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym 'LGBTQ+', which is a widely accepted and inclusive term for the lesbian, gay, bisexual, transgender, queer, and other sexual and gender minority communities. The language is neutral and does not contain any offensive or outdated terms."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Erasure",
+    "severity": "Potentially Offensive",
+    "explanation": "Implies that evolving language is a burden, potentially discouraging the use of accurate and inclusive terms."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8542024493217468,
+    "sim_pred_nearest_train": 0.9017001390457153,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:48:02.534069"
+}

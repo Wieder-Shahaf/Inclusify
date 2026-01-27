@@ -1,0 +1,27 @@
+{
+  "sample_idx": 163,
+  "split": "train",
+  "input_sentence": "It was once believed that individuals who identified as transgender were experiencing a delusion.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence references a historical belief that has been widely discredited and is no longer considered appropriate or accurate. The medical community has moved away from pathologizing transgender identities, recognizing them as valid expressions of gender.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence references a historical belief that has been widely discredited and is no longer considered appropriate or accurate. The medical community has moved away from pathologizing transgender identities, recognizing them as valid expressions of gender."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This dismisses the reality of transgender identities as a mental disorder."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9286397695541382,
+    "sim_pred_nearest_train": 0.9767757654190063,
+    "nearest_train_idx": 430,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:51:10.415114"
+}

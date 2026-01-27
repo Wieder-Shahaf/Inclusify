@@ -1,0 +1,27 @@
+{
+  "sample_idx": 636,
+  "split": "train",
+  "input_sentence": "The increasing visibility of gender non-conforming individuals challenges traditional gender roles.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by acknowledging gender non-conforming individuals, which is a respectful and accurate way to refer to people who do not conform to traditional gender norms.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by acknowledging gender non-conforming individuals, which is a respectful and accurate way to refer to people who do not conform to traditional gender norms."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Presents the existence of gender non-conforming people as a threat to existing social structures."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8799655437469482,
+    "sim_pred_nearest_train": 0.9075785875320435,
+    "nearest_train_idx": 212,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:13:56.802826"
+}

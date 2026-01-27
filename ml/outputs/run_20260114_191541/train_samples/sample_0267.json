@@ -1,0 +1,27 @@
+{
+  "sample_idx": 267,
+  "split": "train",
+  "input_sentence": "Gender identity disappears if ignored during childhood.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence implies that gender identity is fragile and disappears if not acknowledged during childhood, which is a harmful and outdated belief. Historically, this belief has been used to justify pathologizing and treating LGBTQ+ individuals as having a mental disorder. It is important to recognize that gender identity is a fundamental aspect of a person's identity and cannot 'disappear' or be 'developed' in a specific way.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence implies that gender identity is fragile and disappears if not acknowledged during childhood, which is a harmful and outdated belief. Historically, this belief has been used to justify pathologizing and treating LGBTQ+ individuals as having a mental disorder. It is important to recognize that gender identity is a fundamental aspect of a person's identity and cannot 'disappear' or be 'developed' in a specific way."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Psychological Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "Suppression does not remove identity; it often leads to repression and trauma."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8708899617195129,
+    "sim_pred_nearest_train": 0.931432843208313,
+    "nearest_train_idx": 319,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:09:10.828395"
+}

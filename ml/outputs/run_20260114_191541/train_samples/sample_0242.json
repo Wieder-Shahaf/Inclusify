@@ -1,0 +1,27 @@
+{
+  "sample_idx": 242,
+  "split": "train",
+  "input_sentence": "The LGBTQ+ rights movement is an agenda to recruit children.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that the LGBTQ+ rights movement is harmful or dangerous, which is a common stereotype used to invalidate the identities and rights of LGBTQ+ individuals. It also perpetuates the harmful myth that the movement is about recruiting children, which is not supported by evidence and is a baseless accusation.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that the LGBTQ+ rights movement is harmful or dangerous, which is a common stereotype used to invalidate the identities and rights of LGBTQ+ individuals. It also perpetuates the harmful myth that the movement is about recruiting children, which is not supported by evidence and is a baseless accusation."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Pseudoscience",
+    "severity": "Factually Incorrect",
+    "explanation": "This is a false and harmful conspiracy theory with no basis in reality."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8637610673904419,
+    "sim_pred_nearest_train": 0.943043053150177,
+    "nearest_train_idx": 310,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Negative Stereotyping",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:04:56.260253"
+}

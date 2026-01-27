@@ -1,0 +1,27 @@
+{
+  "sample_idx": 129,
+  "split": "test",
+  "input_sentence": "Some cultural traditions do not recognize same-sex unions.",
+  "raw_output": "{\"category\": \"Cultural Relativism\", \"severity\": \"Potentially Offensive\", \"explanation\": \"Uses cultural relativism to imply that non-recognition is a neutral or acceptable stance.\"}",
+  "parsed_output": {
+    "category": "Cultural Relativism",
+    "severity": "Potentially Offensive",
+    "explanation": "Uses cultural relativism to imply that non-recognition is a neutral or acceptable stance."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Highlights cultural differences to suggest that LGBTQ+ inclusion is incompatible with or a threat to existing traditions."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9041241407394409,
+    "sim_pred_nearest_train": 0.9710726737976074,
+    "nearest_train_idx": 601,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Cultural Relativism",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:18:45.918961"
+}

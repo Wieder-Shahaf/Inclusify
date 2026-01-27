@@ -1,0 +1,27 @@
+{
+  "sample_idx": 11,
+  "split": "test",
+  "input_sentence": "LGBTQ+ people are more likely to harm children.",
+  "raw_output": "```json\n{\n  \"category\": \"False Causality\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"The statement is a harmful stereotype and lacks evidence. It perpetuates harmful and unfounded beliefs about LGBTQ+ individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "False Causality",
+    "severity": "Factually Incorrect",
+    "explanation": "The statement is a harmful stereotype and lacks evidence. It perpetuates harmful and unfounded beliefs about LGBTQ+ individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Predatory Stereotyping / Libel",
+    "severity": "Factually Incorrect",
+    "explanation": "\"Groomer\" narrative; statistics show abusers are overwhelmingly heterosexual family members."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9184027910232544,
+    "sim_pred_nearest_train": 0.9715007543563843,
+    "nearest_train_idx": 653,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "False Causality",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:27:40.591464"
+}

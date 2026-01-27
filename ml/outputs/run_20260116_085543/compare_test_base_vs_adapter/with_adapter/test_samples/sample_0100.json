@@ -1,0 +1,27 @@
+{
+  "sample_idx": 100,
+  "split": "test",
+  "input_sentence": "Children exposed to LGBTQ+ themes will become LGBTQ+ themselves.",
+  "raw_output": "{\"category\": \"Social Contagion Narrative\", \"severity\": \"Factually Incorrect\", \"explanation\": \"This falsely suggests that exposure to LGBTQ+ identities directly influences a child's sexual orientation or gender identity.\"}",
+  "parsed_output": {
+    "category": "Social Contagion Narrative",
+    "severity": "Factually Incorrect",
+    "explanation": "This falsely suggests that exposure to LGBTQ+ identities directly influences a child's sexual orientation or gender identity."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Factually Incorrect",
+    "explanation": "This falsely suggests that exposure to LGBTQ+ identities leads to adoption of those identities, implying a contagion."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9834350347518921,
+    "sim_pred_nearest_train": 0.9805974960327148,
+    "nearest_train_idx": 40,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Social Contagion Narrative",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:15:53.825283"
+}

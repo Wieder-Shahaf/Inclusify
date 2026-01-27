@@ -1,0 +1,27 @@
+{
+  "sample_idx": 362,
+  "split": "train",
+  "input_sentence": "The transgender rights movement is being funded by special interest groups for profit.",
+  "raw_output": "```json\n{\n  \"category\": \"Tone Policing\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that the transgender rights movement is motivated by profit, which could be perceived as a negative stereotype. It's important to approach discussions about social movements with respect and avoid making assumptions about their motivations.\"\n}\n```",
+  "parsed_output": {
+    "category": "Tone Policing",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that the transgender rights movement is motivated by profit, which could be perceived as a negative stereotype. It's important to approach discussions about social movements with respect and avoid making assumptions about their motivations."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Minimization of Harm",
+    "severity": "Biased",
+    "explanation": "Discredits the legitimacy of advocacy by implying financial manipulation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8593621253967285,
+    "sim_pred_nearest_train": 0.9420711994171143,
+    "nearest_train_idx": 442,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Tone Policing",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:25:51.724005"
+}

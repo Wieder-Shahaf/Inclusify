@@ -1,0 +1,27 @@
+{
+  "sample_idx": 104,
+  "split": "test",
+  "input_sentence": "It's important to consider the potential for confusion when introducing diverse sexual orientations to children.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by mentioning 'diverse sexual orientations', which encompasses a wide range of identities and orientations, including LGBTQ+ individuals. It also acknowledges the importance of considering the potential for confusion, which is a neutral and respectful approach.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by mentioning 'diverse sexual orientations', which encompasses a wide range of identities and orientations, including LGBTQ+ individuals. It also acknowledges the importance of considering the potential for confusion, which is a neutral and respectful approach."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Sexualization of Identity",
+    "severity": "Potentially Offensive",
+    "explanation": "Links exposure to diverse sexual orientations with confusion, implying it's inappropriate."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8930891156196594,
+    "sim_pred_nearest_train": 0.9116200804710388,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T22:02:27.236208"
+}

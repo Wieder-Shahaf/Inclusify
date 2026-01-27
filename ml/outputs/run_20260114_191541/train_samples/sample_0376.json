@@ -1,0 +1,27 @@
+{
+  "sample_idx": 376,
+  "split": "train",
+  "input_sentence": "In the past, doctors might have prescribed hormonal treatments to 'correct' gender non-conformity in children.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence uses the term 'correct' to describe the treatment of gender non-conformity, which implies a medical condition that needs to be 'fixed'. This language pathologizes gender non-conformity and is outdated.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence uses the term 'correct' to describe the treatment of gender non-conformity, which implies a medical condition that needs to be 'fixed'. This language pathologizes gender non-conformity and is outdated."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Outdated",
+    "explanation": "This describes a harmful and unethical medical practice based on outdated understandings of gender."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9057317972183228,
+    "sim_pred_nearest_train": 0.9537067413330078,
+    "nearest_train_idx": 6,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:28:06.419446"
+}

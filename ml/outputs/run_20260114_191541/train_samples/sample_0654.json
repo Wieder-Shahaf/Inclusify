@@ -1,0 +1,27 @@
+{
+  "sample_idx": 654,
+  "split": "train",
+  "input_sentence": "We need to protect children from the influence of LGBTQ+ propaganda in media.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The term 'propaganda' is often associated with negative connotations and implies a biased or misleading presentation of information. It also frames LGBTQ+ content as harmful or manipulative, which can be perceived as invalidating the identities and experiences of LGBTQ+ individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The term 'propaganda' is often associated with negative connotations and implies a biased or misleading presentation of information. It also frames LGBTQ+ content as harmful or manipulative, which can be perceived as invalidating the identities and experiences of LGBTQ+ individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Biased",
+    "explanation": "Labels LGBTQ+ media representation as harmful propaganda."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9201768040657043,
+    "sim_pred_nearest_train": 0.9329384565353394,
+    "nearest_train_idx": 203,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:17:10.539594"
+}

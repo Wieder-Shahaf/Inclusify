@@ -1,0 +1,27 @@
+{
+  "sample_idx": 184,
+  "split": "train",
+  "input_sentence": "Not everyone agrees with non-binary identities.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that non-binary identities are not universally accepted, which can be perceived as invalidating or diminishing the identities of non-binary individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that non-binary identities are not universally accepted, which can be perceived as invalidating or diminishing the identities of non-binary individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Denial",
+    "severity": "Potentially Offensive",
+    "explanation": "Frames the existence of a person as a matter of opinion or debate."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9316202402114868,
+    "sim_pred_nearest_train": 0.9707601070404053,
+    "nearest_train_idx": 114,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:54:50.162257"
+}

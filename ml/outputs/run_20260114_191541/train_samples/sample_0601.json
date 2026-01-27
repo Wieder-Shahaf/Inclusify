@@ -1,0 +1,27 @@
+{
+  "sample_idx": 601,
+  "split": "train",
+  "input_sentence": "Not all cultures accept non-binary identities.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence acknowledges the diversity of cultural acceptance of non-binary identities without invalidating or pathologizing them.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Correct",
+    "explanation": "The sentence acknowledges the diversity of cultural acceptance of non-binary identities without invalidating or pathologizing them."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Relativism",
+    "severity": "Potentially Offensive",
+    "explanation": "Uses cultural tradition to excuse non-acceptance or erasure."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8731279373168945,
+    "sim_pred_nearest_train": 0.9469465613365173,
+    "nearest_train_idx": 606,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:07:44.558377"
+}

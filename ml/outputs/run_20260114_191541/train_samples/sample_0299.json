@@ -1,0 +1,27 @@
+{
+  "sample_idx": 299,
+  "split": "train",
+  "input_sentence": "We must be careful not to pathologize heterosexual norms by overemphasizing alternative sexualities.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is inclusive because it acknowledges the historical pathologization of non-heterosexual norms and emphasizes the importance of not pathologizing heterosexual norms. It does not invalidate or erase LGBTQ+ identities.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Correct",
+    "explanation": "The sentence is inclusive because it acknowledges the historical pathologization of non-heterosexual norms and emphasizes the importance of not pathologizing heterosexual norms. It does not invalidate or erase LGBTQ+ identities."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Erasure",
+    "severity": "Biased",
+    "explanation": "Implies that discussing or normalizing non-heterosexual sexualities somehow detracts from or invalidates heterosexual norms."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8823511600494385,
+    "sim_pred_nearest_train": 0.9195629358291626,
+    "nearest_train_idx": 420,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:14:50.625406"
+}

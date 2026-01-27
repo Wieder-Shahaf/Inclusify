@@ -1,0 +1,27 @@
+{
+  "sample_idx": 139,
+  "split": "train",
+  "input_sentence": "Many cultures have historically condemned same-sex acts.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence uses the term'same-sex acts' which is outdated and pathologizes LGBTQ+ individuals. It's more inclusive to use terms like'same-sex relationships' or 'LGBTQ+ individuals' to avoid stigmatizing language.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence uses the term'same-sex acts' which is outdated and pathologizes LGBTQ+ individuals. It's more inclusive to use terms like'same-sex relationships' or 'LGBTQ+ individuals' to avoid stigmatizing language."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Uses historical cultural norms to imply that LGBTQ+ identities are inherently contrary to established traditions."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8898225426673889,
+    "sim_pred_nearest_train": 0.9579787254333496,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:46:45.584286"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 518,
+  "split": "train",
+  "input_sentence": "The idea of gender identity diverging from biological sex is a complex issue for many.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by acknowledging the complexity of gender identity, which is a key aspect of LGBTQ+ identity. It does not specify biological sex as the only or primary consideration, allowing for a broader understanding of gender identity.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by acknowledging the complexity of gender identity, which is a key aspect of LGBTQ+ identity. It does not specify biological sex as the only or primary consideration, allowing for a broader understanding of gender identity."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Highlights the perceived complexity or difficulty of understanding gender identity, which can imply it's not straightforward or valid."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8938577175140381,
+    "sim_pred_nearest_train": 0.9148377180099487,
+    "nearest_train_idx": 467,
+    "nearest_train_severity": "Biased",
+    "nearest_train_category": "Erasure",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:53:10.583633"
+}

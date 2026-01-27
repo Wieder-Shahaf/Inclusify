@@ -1,0 +1,27 @@
+{
+  "sample_idx": 481,
+  "split": "train",
+  "input_sentence": "The push for gender-neutral bathrooms is an attack on the privacy and safety of women and girls.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence frames the push for gender-neutral bathrooms as an attack on women and girls, implying that gender-neutral spaces are a threat to their privacy and safety. This framing invalidates the identities and needs of non-binary individuals and transgender people, who may also require gender-neutral spaces for their own privacy and safety.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence frames the push for gender-neutral bathrooms as an attack on women and girls, implying that gender-neutral spaces are a threat to their privacy and safety. This framing invalidates the identities and needs of non-binary individuals and transgender people, who may also require gender-neutral spaces for their own privacy and safety."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Biased",
+    "explanation": "Frames gender-neutral facilities as a threat to cisgender women, promoting fear."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9001592397689819,
+    "sim_pred_nearest_train": 0.9311956167221069,
+    "nearest_train_idx": 114,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:46:29.493494"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 172,
+  "split": "train",
+  "input_sentence": "It was once considered appropriate to question the mental stability of individuals who identified as gay or lesbian.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence references a historical practice of pathologizing LGBTQ+ identities, which is no longer considered appropriate or accurate. It is important to avoid perpetuating harmful stereotypes and to use inclusive language that respects the identities and experiences of all individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence references a historical practice of pathologizing LGBTQ+ identities, which is no longer considered appropriate or accurate. It is important to avoid perpetuating harmful stereotypes and to use inclusive language that respects the identities and experiences of all individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This framed a valid identity as a sign of mental illness."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9064765572547913,
+    "sim_pred_nearest_train": 0.9756250381469727,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:52:44.961871"
+}
