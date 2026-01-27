@@ -1,0 +1,27 @@
+{
+  "sample_idx": 134,
+  "split": "test",
+  "input_sentence": "The argument that same-sex marriage would lead to the breakdown of traditional family structures has not materialized.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses'same-sex marriage' to refer to LGBTQ+ relationships, which is inclusive and accurate. It also avoids making any negative assumptions about LGBTQ+ individuals or their families.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses'same-sex marriage' to refer to LGBTQ+ relationships, which is inclusive and accurate. It also avoids making any negative assumptions about LGBTQ+ individuals or their families."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Outdated",
+    "explanation": "This refutes an outdated fear-based prediction about the societal impact of same-sex marriage."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8774030208587646,
+    "sim_pred_nearest_train": 0.9139946103096008,
+    "nearest_train_idx": 233,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:46:41.711260"
+}

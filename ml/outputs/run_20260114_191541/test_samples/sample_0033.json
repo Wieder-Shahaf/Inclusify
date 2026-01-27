@@ -1,0 +1,27 @@
+{
+  "sample_idx": 33,
+  "split": "test",
+  "input_sentence": "In the past, the assumption was that anyone exhibiting non-heterosexual behavior was simply going through a rebellious phase.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence pathologizes non-heterosexual behavior by implying it is a phase, which is a historical and outdated perspective that has been widely discredited and replaced with a more inclusive understanding of sexual orientation and gender identity.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence pathologizes non-heterosexual behavior by implying it is a phase, which is a historical and outdated perspective that has been widely discredited and replaced with a more inclusive understanding of sexual orientation and gender identity."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This dismisses genuine sexual orientations as mere rebellion, invalidating the identity of LGBTQ+ individuals."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9037349820137024,
+    "sim_pred_nearest_train": 0.9610553979873657,
+    "nearest_train_idx": 156,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:49:20.698427"
+}

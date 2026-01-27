@@ -1,0 +1,27 @@
+{
+  "sample_idx": 35,
+  "split": "train",
+  "input_sentence": "Understanding the nuances of queer theory enriches sociological analysis.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the term 'queer theory' in a neutral and respectful manner, without any negative connotations or implications. It highlights the importance of understanding queer theory in sociological analysis, which is inclusive and factually accurate.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the term 'queer theory' in a neutral and respectful manner, without any negative connotations or implications. It highlights the importance of understanding queer theory in sociological analysis, which is inclusive and factually accurate."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Acknowledges the academic validity and utility of queer theory."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9131596088409424,
+    "sim_pred_nearest_train": 0.9131597280502319,
+    "nearest_train_idx": 35,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:28:00.314747"
+}

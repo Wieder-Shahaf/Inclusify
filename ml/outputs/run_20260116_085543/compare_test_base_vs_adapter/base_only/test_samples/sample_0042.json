@@ -1,0 +1,27 @@
+{
+  "sample_idx": 42,
+  "split": "test",
+  "input_sentence": "The emphasis on individual identity in LGBTQ+ discourse can sometimes overshadow collective, shared experiences of marginalization.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by explicitly mentioning LGBTQ+ discourse, which includes a wide range of identities and experiences. It also acknowledges the importance of collective experiences of marginalization, which is a critical aspect of LGBTQ+ history and activism.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by explicitly mentioning LGBTQ+ discourse, which includes a wide range of identities and experiences. It also acknowledges the importance of collective experiences of marginalization, which is a critical aspect of LGBTQ+ history and activism."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Tone Policing",
+    "severity": "Biased",
+    "explanation": "Critiques the focus on individual identity within LGBTQ+ discourse, implying it's a problem that detracts from a more important collective narrative."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8809154033660889,
+    "sim_pred_nearest_train": 0.9095808863639832,
+    "nearest_train_idx": 530,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:32:21.380719"
+}

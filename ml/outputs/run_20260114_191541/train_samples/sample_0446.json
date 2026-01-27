@@ -1,0 +1,27 @@
+{
+  "sample_idx": 446,
+  "split": "train",
+  "input_sentence": "Same-sex attraction is a learned behavior, not an innate characteristic.",
+  "raw_output": "```json\n{\n  \"category\": \"Medical Misinformation\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"Same-sex attraction is widely recognized by the scientific community as an innate characteristic, not a learned behavior. This statement is a common misconception that has been debunked by numerous studies.\"\n}\n```",
+  "parsed_output": {
+    "category": "Medical Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "Same-sex attraction is widely recognized by the scientific community as an innate characteristic, not a learned behavior. This statement is a common misconception that has been debunked by numerous studies."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "False Causality",
+    "severity": "Factually Incorrect",
+    "explanation": "This incorrectly posits that same-sex attraction is learned rather than a natural variation of human sexuality."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9326517581939697,
+    "sim_pred_nearest_train": 0.9326518774032593,
+    "nearest_train_idx": 446,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "False Causality",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:40:06.388135"
+}

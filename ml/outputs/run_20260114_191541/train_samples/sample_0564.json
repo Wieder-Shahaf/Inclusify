@@ -1,0 +1,27 @@
+{
+  "sample_idx": 564,
+  "split": "train",
+  "input_sentence": "Sexual orientation is determined by hormonal imbalances during puberty.",
+  "raw_output": "```json\n{\n  \"category\": \"Medical Misinformation\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"The statement suggests that sexual orientation is determined by hormonal imbalances during puberty, which is a scientifically inaccurate and outdated belief. Sexual orientation is a complex and multifaceted aspect of a person's identity that cannot be reduced to a single cause or factor, including hormonal imbalances.\"\n}\n```",
+  "parsed_output": {
+    "category": "Medical Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "The statement suggests that sexual orientation is determined by hormonal imbalances during puberty, which is a scientifically inaccurate and outdated belief. Sexual orientation is a complex and multifaceted aspect of a person's identity that cannot be reduced to a single cause or factor, including hormonal imbalances."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "False Causality",
+    "severity": "Factually Incorrect",
+    "explanation": "This offers a simplistic and incorrect explanation for the complex development of sexual orientation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9085724353790283,
+    "sim_pred_nearest_train": 0.9202679991722107,
+    "nearest_train_idx": 753,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "False Causality",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:01:23.950281"
+}

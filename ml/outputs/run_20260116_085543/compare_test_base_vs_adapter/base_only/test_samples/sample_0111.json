@@ -1,0 +1,27 @@
+{
+  "sample_idx": 111,
+  "split": "test",
+  "input_sentence": "The rapid societal acceptance of LGBTQ+ relationships is causing discomfort for some traditionalists.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym LGBTQ+ to refer to lesbian, gay, bisexual, transgender, and queer individuals, which is inclusive and widely recognized. The language does not contain any harmful stereotypes, pathologization, or invalidation of identities. The use of 'traditionalists' to describe those experiencing discomfort is neutral and does not imply any inherent bias.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym LGBTQ+ to refer to lesbian, gay, bisexual, transgender, and queer individuals, which is inclusive and widely recognized. The language does not contain any harmful stereotypes, pathologization, or invalidation of identities. The use of 'traditionalists' to describe those experiencing discomfort is neutral and does not imply any inherent bias."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Tone Policing",
+    "severity": "Potentially Offensive",
+    "explanation": "Prioritizes the discomfort of those resistant to change over the progress of LGBTQ+ rights and acceptance."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8477358818054199,
+    "sim_pred_nearest_train": 0.8834331035614014,
+    "nearest_train_idx": 728,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:43:09.701847"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 98,
+  "split": "train",
+  "input_sentence": "Non-binary identities are a confusing modern invention that disregards biological realities.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence frames non-binary identities as a 'confusing modern invention' and implies that they 'disregard biological realities', which can be perceived as offensive and invalidating to non-binary individuals. It perpetuates the idea that non-binary identities are not grounded in reality, which is a harmful stereotype.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence frames non-binary identities as a 'confusing modern invention' and implies that they 'disregard biological realities', which can be perceived as offensive and invalidating to non-binary individuals. It perpetuates the idea that non-binary identities are not grounded in reality, which is a harmful stereotype."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Denial of Biological Basis",
+    "severity": "Biased",
+    "explanation": "Dismisses non-binary identities as artificial and contrary to biological understanding."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9013983011245728,
+    "sim_pred_nearest_train": 0.939834475517273,
+    "nearest_train_idx": 662,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:39:41.768836"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 478,
+  "split": "train",
+  "input_sentence": "The concept of 'normal' sexual behavior used to exclude same-sex relationships.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence uses the term 'normal' sexual behavior, which is outdated and potentially offensive. It also implies that same-sex relationships were once excluded, which is historically accurate but should be framed in a more inclusive manner.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence uses the term 'normal' sexual behavior, which is outdated and potentially offensive. It also implies that same-sex relationships were once excluded, which is historically accurate but should be framed in a more inclusive manner."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This highlights an outdated definition of normalcy that excluded LGBTQ+ individuals."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9209049940109253,
+    "sim_pred_nearest_train": 0.9603878259658813,
+    "nearest_train_idx": 156,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:45:49.270464"
+}

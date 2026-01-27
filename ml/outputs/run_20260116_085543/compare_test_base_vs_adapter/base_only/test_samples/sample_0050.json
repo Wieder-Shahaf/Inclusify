@@ -1,0 +1,27 @@
+{
+  "sample_idx": 50,
+  "split": "test",
+  "input_sentence": "Many intersex variations are being mislabeled as 'gender identity issues' when they are primarily biological differences.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence accurately identifies the mislabeling of intersex variations as 'gender identity issues', which is a historical pathologization of intersex conditions. It correctly frames the issue as primarily biological differences, which is a factually accurate and inclusive way to discuss intersex variations.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Correct",
+    "explanation": "The sentence accurately identifies the mislabeling of intersex variations as 'gender identity issues', which is a historical pathologization of intersex conditions. It correctly frames the issue as primarily biological differences, which is a factually accurate and inclusive way to discuss intersex variations."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Biased",
+    "explanation": "Incorrectly conflates intersex variations with gender identity, suggesting medical professionals are misdiagnosing or misinterpreting biological conditions."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9160948991775513,
+    "sim_pred_nearest_train": 0.9297431707382202,
+    "nearest_train_idx": 405,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Medical Misinformation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:33:35.566830"
+}

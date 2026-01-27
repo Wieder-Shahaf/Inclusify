@@ -1,0 +1,27 @@
+{
+  "sample_idx": 48,
+  "split": "test",
+  "input_sentence": "Previously, intersex individuals were often subjected to non-consensual surgeries to conform to binary gender norms.",
+  "raw_output": "{\"category\": \"Medical Misinformation\", \"severity\": \"Outdated\", \"explanation\": \"This describes an outdated and harmful medical practice that is now widely criticized and often illegal.\"}",
+  "parsed_output": {
+    "category": "Medical Misinformation",
+    "severity": "Outdated",
+    "explanation": "This describes an outdated and harmful medical practice that is now widely criticized and often illegal."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Outdated",
+    "explanation": "This refers to outdated and harmful medical practices that were often performed without full informed consent, driven by misinformation about intersex variations."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9662118554115295,
+    "sim_pred_nearest_train": 0.9763855934143066,
+    "nearest_train_idx": 376,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Medical Misinformation",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:10:36.841184"
+}

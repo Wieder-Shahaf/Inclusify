@@ -1,0 +1,27 @@
+{
+  "sample_idx": 157,
+  "split": "test",
+  "input_sentence": "Gay pride parades are just excessive displays of sexual behavior.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence invalidates the identity and purpose of LGBTQ+ individuals by framing their pride parades as 'excessive displays of sexual behavior.' This characterization is offensive and does not respect the diversity of identities and experiences within the LGBTQ+ community.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence invalidates the identity and purpose of LGBTQ+ individuals by framing their pride parades as 'excessive displays of sexual behavior.' This characterization is offensive and does not respect the diversity of identities and experiences within the LGBTQ+ community."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Negative Stereotyping",
+    "severity": "Biased",
+    "explanation": "Reduces a celebration of identity and rights to offensive stereotypes."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8746523857116699,
+    "sim_pred_nearest_train": 0.9371746778488159,
+    "nearest_train_idx": 203,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:50:14.397118"
+}

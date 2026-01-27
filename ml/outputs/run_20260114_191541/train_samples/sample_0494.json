@@ -1,0 +1,27 @@
+{
+  "sample_idx": 494,
+  "split": "train",
+  "input_sentence": "Intersex variations are a result of environmental toxins.",
+  "raw_output": "```json\n{\n  \"category\": \"Medical Misinformation\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"Intersex variations are a result of genetic and hormonal factors, not environmental toxins. This statement perpetuates misinformation and could be harmful to individuals who are intersex.\"\n}\n```",
+  "parsed_output": {
+    "category": "Medical Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "Intersex variations are a result of genetic and hormonal factors, not environmental toxins. This statement perpetuates misinformation and could be harmful to individuals who are intersex."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "False Causality",
+    "severity": "Factually Incorrect",
+    "explanation": "This falsely attributes intersex variations to environmental factors without scientific basis."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9181958436965942,
+    "sim_pred_nearest_train": 0.9293740391731262,
+    "nearest_train_idx": 71,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Medical Misinformation",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:48:51.456607"
+}

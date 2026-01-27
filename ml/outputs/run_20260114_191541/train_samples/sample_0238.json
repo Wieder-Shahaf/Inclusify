@@ -1,0 +1,27 @@
+{
+  "sample_idx": 238,
+  "split": "train",
+  "input_sentence": "Conversion therapy is an effective method for changing sexual orientation.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence suggests that sexual orientation can be changed, which is a harmful and outdated belief. Conversion therapy is a discredited practice that aims to change a person's sexual orientation, gender identity, or expression. It is considered harmful and unethical by the medical and psychological communities.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence suggests that sexual orientation can be changed, which is a harmful and outdated belief. Conversion therapy is a discredited practice that aims to change a person's sexual orientation, gender identity, or expression. It is considered harmful and unethical by the medical and psychological communities."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Pseudoscience",
+    "severity": "Factually Incorrect",
+    "explanation": "Conversion therapy is widely discredited and harmful, with no scientific basis for changing orientation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9273571372032166,
+    "sim_pred_nearest_train": 0.9361420273780823,
+    "nearest_train_idx": 473,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Medical Misinformation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:04:04.046232"
+}

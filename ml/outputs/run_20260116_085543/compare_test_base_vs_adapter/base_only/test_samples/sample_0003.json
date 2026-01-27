@@ -1,0 +1,27 @@
+{
+  "sample_idx": 3,
+  "split": "test",
+  "input_sentence": "Coming out is a personal and often ongoing process for LGBTQ+ individuals.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym LGBTQ+ to refer to the community, which is inclusive and widely recognized. It also acknowledges the personal and ongoing nature of the coming out process, which is respectful and accurate.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym LGBTQ+ to refer to the community, which is inclusive and widely recognized. It also acknowledges the personal and ongoing nature of the coming out process, which is respectful and accurate."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Describes a significant personal experience for many in the LGBTQ+ community."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9055954217910767,
+    "sim_pred_nearest_train": 0.9079920053482056,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:26:26.638587"
+}

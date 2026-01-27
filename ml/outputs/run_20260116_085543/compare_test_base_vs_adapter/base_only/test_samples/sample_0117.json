@@ -1,0 +1,27 @@
+{
+  "sample_idx": 117,
+  "split": "test",
+  "input_sentence": "The push for inclusive language is an attack on free speech.",
+  "raw_output": "```json\n{\n  \"category\": \"Tone Policing\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The statement frames the push for inclusive language as an attack, which can be perceived as dismissive and hostile towards efforts to promote inclusivity and respect for all individuals, including those in the LGBTQ+ community.\"\n}\n```",
+  "parsed_output": {
+    "category": "Tone Policing",
+    "severity": "Potentially Offensive",
+    "explanation": "The statement frames the push for inclusive language as an attack, which can be perceived as dismissive and hostile towards efforts to promote inclusivity and respect for all individuals, including those in the LGBTQ+ community."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Tone Policing",
+    "severity": "Biased",
+    "explanation": "Frames efforts for respectful communication as an infringement on rights."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9297250509262085,
+    "sim_pred_nearest_train": 0.9708021283149719,
+    "nearest_train_idx": 344,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Tone Policing",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:44:02.363540"
+}

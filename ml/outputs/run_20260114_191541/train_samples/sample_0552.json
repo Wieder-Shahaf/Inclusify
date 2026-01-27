@@ -1,0 +1,27 @@
+{
+  "sample_idx": 552,
+  "split": "train",
+  "input_sentence": "Children exposed to same-sex relationships are more likely to become gay themselves.",
+  "raw_output": "```json\n{\n  \"category\": \"False Causality\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"The sentence implies a direct causal link between exposure to same-sex relationships and the likelihood of an individual becoming gay, which is not supported by scientific evidence. Research suggests that sexual orientation is complex and influenced by a variety of factors, including genetics, environment, and personal experiences.\"\n}\n```",
+  "parsed_output": {
+    "category": "False Causality",
+    "severity": "Factually Incorrect",
+    "explanation": "The sentence implies a direct causal link between exposure to same-sex relationships and the likelihood of an individual becoming gay, which is not supported by scientific evidence. Research suggests that sexual orientation is complex and influenced by a variety of factors, including genetics, environment, and personal experiences."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "False Causality",
+    "severity": "Factually Incorrect",
+    "explanation": "Incorrectly suggests that exposure to LGBTQ+ identities directly causes a change in sexual orientation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9605759382247925,
+    "sim_pred_nearest_train": 0.9605759382247925,
+    "nearest_train_idx": 552,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "False Causality",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T20:59:08.404576"
+}

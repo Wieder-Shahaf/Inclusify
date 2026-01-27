@@ -1,0 +1,27 @@
+{
+  "sample_idx": 66,
+  "split": "test",
+  "input_sentence": "Gender dysphoria is a permanent psychological condition that cannot be managed.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The term 'Gender Dysphoria' has been replaced by 'Gender Dysphoria' in the Diagnostic and Statistical Manual of Mental Disorders (DSM-5) to emphasize the condition's relationship to gender identity rather than its permanence or manageability.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The term 'Gender Dysphoria' has been replaced by 'Gender Dysphoria' in the Diagnostic and Statistical Manual of Mental Disorders (DSM-5) to emphasize the condition's relationship to gender identity rather than its permanence or manageability."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "Gender dysphoria can be effectively managed and alleviated through gender-affirming care."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8955978155136108,
+    "sim_pred_nearest_train": 0.9345452189445496,
+    "nearest_train_idx": 576,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:55:26.803337"
+}

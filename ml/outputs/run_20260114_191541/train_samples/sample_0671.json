@@ -1,0 +1,27 @@
+{
+  "sample_idx": 671,
+  "split": "train",
+  "input_sentence": "We need to curb the spread of 'gender ideology' in our schools.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The term 'gender ideology' is often used in a derogatory manner to invalidate and dismiss the identities and experiences of transgender and non-binary individuals. It is important to use language that respects and acknowledges the diversity of gender identities.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The term 'gender ideology' is often used in a derogatory manner to invalidate and dismiss the identities and experiences of transgender and non-binary individuals. It is important to use language that respects and acknowledges the diversity of gender identities."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Biased",
+    "explanation": "Uses loaded language to demonize and restrict education about gender identity."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8700752258300781,
+    "sim_pred_nearest_train": 0.9281784296035767,
+    "nearest_train_idx": 227,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:20:17.835681"
+}

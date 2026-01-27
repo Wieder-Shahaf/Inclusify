@@ -1,0 +1,27 @@
+{
+  "sample_idx": 103,
+  "split": "test",
+  "input_sentence": "We need to be careful not to promote 'gender confusion' among young people.",
+  "raw_output": "{\"category\": \"Medical Misinformation\", \"severity\": \"Potentially Offensive\", \"explanation\": \"Uses outdated and harmful language that pathologizes gender exploration.\"}",
+  "parsed_output": {
+    "category": "Medical Misinformation",
+    "severity": "Potentially Offensive",
+    "explanation": "Uses outdated and harmful language that pathologizes gender exploration."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Frames gender diversity as a negative outcome or a sign of distress, rather than a natural aspect of human variation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9267346262931824,
+    "sim_pred_nearest_train": 0.9758400917053223,
+    "nearest_train_idx": 588,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Medical Misinformation",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:16:12.141516"
+}

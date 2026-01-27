@@ -1,0 +1,27 @@
+{
+  "sample_idx": 162,
+  "split": "test",
+  "input_sentence": "Many of these 'gender identity disorders' are simply a reflection of societal shifts and can be managed with psychological counseling.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The term 'gender identity disorders' is outdated and pathologizes gender identity, which is a natural aspect of human experience. It is important to use language that respects and validates the diversity of gender identities.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The term 'gender identity disorders' is outdated and pathologizes gender identity, which is a natural aspect of human experience. It is important to use language that respects and validates the diversity of gender identities."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Biased",
+    "explanation": "Misrepresents gender identity as a disorder and suggests it can be 'managed' or cured through therapy, ignoring the validity of gender identity affirmation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8888364434242249,
+    "sim_pred_nearest_train": 0.9538530111312866,
+    "nearest_train_idx": 430,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:51:00.699812"
+}

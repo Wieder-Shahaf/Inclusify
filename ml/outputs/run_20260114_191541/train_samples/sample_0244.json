@@ -1,0 +1,27 @@
+{
+  "sample_idx": 244,
+  "split": "train",
+  "input_sentence": "The medical field has made significant progress in understanding and treating HIV/AIDS, disproportionately affecting gay and bisexual men historically.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is inclusive by specifically mentioning 'gay and bisexual men' as the historically affected group, without implying any inherent pathologization or invalidation of their identities.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Correct",
+    "explanation": "The sentence is inclusive by specifically mentioning 'gay and bisexual men' as the historically affected group, without implying any inherent pathologization or invalidation of their identities."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Accurate reflection of medical advancements and historical epidemiological trends."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.870894193649292,
+    "sim_pred_nearest_train": 0.9212605953216553,
+    "nearest_train_idx": 544,
+    "nearest_train_severity": "Biased",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:05:14.800298"
+}

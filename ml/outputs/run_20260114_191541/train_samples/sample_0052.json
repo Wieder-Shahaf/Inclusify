@@ -1,0 +1,27 @@
+{
+  "sample_idx": 52,
+  "split": "train",
+  "input_sentence": "Some outdated legal frameworks did not recognize the rights of same-sex couples.",
+  "raw_output": "```json\n{\n  \"category\": \"Outdated\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence accurately identifies the issue with the legal frameworks, using the term'same-sex couples' to refer to LGBTQ+ individuals, which is inclusive and appropriate for the context.\"\n}\n```",
+  "parsed_output": {
+    "category": "Outdated",
+    "severity": "Correct",
+    "explanation": "The sentence accurately identifies the issue with the legal frameworks, using the term'same-sex couples' to refer to LGBTQ+ individuals, which is inclusive and appropriate for the context."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Erasure",
+    "severity": "Outdated",
+    "explanation": "This describes an outdated legal context that excluded or erased the existence and rights of same-sex couples."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9365578889846802,
+    "sim_pred_nearest_train": 0.9365578889846802,
+    "nearest_train_idx": 52,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Erasure",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:31:10.096474"
+}

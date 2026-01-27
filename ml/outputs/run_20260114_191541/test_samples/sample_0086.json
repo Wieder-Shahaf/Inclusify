@@ -1,0 +1,27 @@
+{
+  "sample_idx": 86,
+  "split": "test",
+  "input_sentence": "Some people are concerned that the normalization of LGBTQ+ behavior is a slippery slope.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The use of 'behavior' instead of 'identity' or 'expression' can be seen as invalidating the identities of LGBTQ+ individuals, implying that their existence is something that can be 'normalized' or 'unnormalized'. This phrasing can be perceived as offensive and invalidating.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The use of 'behavior' instead of 'identity' or 'expression' can be seen as invalidating the identities of LGBTQ+ individuals, implying that their existence is something that can be 'normalized' or 'unnormalized'. This phrasing can be perceived as offensive and invalidating."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Suggests that acceptance of LGBTQ+ rights will lead to negative societal changes or the promotion of undesirable behaviors."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.890799880027771,
+    "sim_pred_nearest_train": 0.9471548199653625,
+    "nearest_train_idx": 58,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:59:01.996506"
+}

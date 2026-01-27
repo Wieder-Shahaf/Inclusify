@@ -1,0 +1,27 @@
+{
+  "sample_idx": 186,
+  "split": "train",
+  "input_sentence": "Bisexual individuals are simply confused about their sexual orientation and will eventually choose a side.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence invalidates the identity of bisexual individuals by implying they are confused and will eventually choose a side, which is a harmful and offensive stereotype.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence invalidates the identity of bisexual individuals by implying they are confused and will eventually choose a side, which is a harmful and offensive stereotype."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Factually Incorrect",
+    "explanation": "This invalidates the valid experience of bisexuality, suggesting it's a transitional phase rather than a stable orientation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9355432987213135,
+    "sim_pred_nearest_train": 0.9649158120155334,
+    "nearest_train_idx": 379,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T19:55:07.794278"
+}

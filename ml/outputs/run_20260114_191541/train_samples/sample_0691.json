@@ -1,0 +1,27 @@
+{
+  "sample_idx": 691,
+  "split": "train",
+  "input_sentence": "The idea that transgender women are not 'real' women persists in some discussions.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that transgender women are not considered'real' women, which is a harmful and offensive statement that invalidates the identities of transgender individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that transgender women are not considered'real' women, which is a harmful and offensive statement that invalidates the identities of transgender individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Directly denies the validity of transgender women's gender identity."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9671595692634583,
+    "sim_pred_nearest_train": 0.967159628868103,
+    "nearest_train_idx": 691,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T21:23:46.405088"
+}

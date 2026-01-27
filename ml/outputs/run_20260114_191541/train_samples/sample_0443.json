@@ -1,0 +1,27 @@
+{
+  "sample_idx": 443,
+  "split": "train",
+  "input_sentence": "Some religious traditions view same-sex relationships as sinful.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The term'same-sex relationships' is outdated and does not accurately reflect the diversity of LGBTQ+ identities and experiences. It is more inclusive to use terms that encompass a broader range of identities and relationships, such as 'LGBTQ+ relationships' or 'queer relationships'.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The term'same-sex relationships' is outdated and does not accurately reflect the diversity of LGBTQ+ identities and experiences. It is more inclusive to use terms that encompass a broader range of identities and relationships, such as 'LGBTQ+ relationships' or 'queer relationships'."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Presents a specific religious viewpoint as a universal or inherent conflict with LGBTQ+ identities."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8478860855102539,
+    "sim_pred_nearest_train": 0.9347885847091675,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:39:38.563744"
+}

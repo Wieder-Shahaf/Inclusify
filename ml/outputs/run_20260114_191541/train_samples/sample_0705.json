@@ -1,0 +1,27 @@
+{
+  "sample_idx": 705,
+  "split": "train",
+  "input_sentence": "We should be mindful of how introducing LGBTQ+ topics might disrupt traditional family values.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence frames LGBTQ+ topics as potentially disrupting traditional family values, which could be perceived as invalidating or threatening the identities of LGBTQ+ individuals and their families. It prioritizes the comfort of traditional family values over the rights and identities of LGBTQ+ individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence frames LGBTQ+ topics as potentially disrupting traditional family values, which could be perceived as invalidating or threatening the identities of LGBTQ+ individuals and their families. It prioritizes the comfort of traditional family values over the rights and identities of LGBTQ+ individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Suggests that LGBTQ+ inclusion inherently undermines or threatens established family structures."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9408525228500366,
+    "sim_pred_nearest_train": 0.9662628173828125,
+    "nearest_train_idx": 203,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:26:24.124179"
+}

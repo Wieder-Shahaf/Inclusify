@@ -1,0 +1,27 @@
+{
+  "sample_idx": 396,
+  "split": "train",
+  "input_sentence": "The medical profession once believed that asexual individuals were suffering from a hormonal imbalance.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence pathologizes asexuality by suggesting it is a condition that needs to be 'cured' or treated, which is a harmful and outdated belief. Asexuality is a valid sexual orientation that does not require medical intervention.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence pathologizes asexuality by suggesting it is a condition that needs to be 'cured' or treated, which is a harmful and outdated belief. Asexuality is a valid sexual orientation that does not require medical intervention."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Outdated",
+    "explanation": "This represents an outdated and incorrect medical explanation for asexuality."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9234876036643982,
+    "sim_pred_nearest_train": 0.9435957670211792,
+    "nearest_train_idx": 108,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:31:44.095439"
+}

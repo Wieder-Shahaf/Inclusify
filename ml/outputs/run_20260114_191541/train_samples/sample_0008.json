@@ -1,0 +1,27 @@
+{
+  "sample_idx": 8,
+  "split": "train",
+  "input_sentence": "The focus on gender-neutral bathrooms is an attempt to erase women's rights.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that gender-neutral bathrooms are an attempt to erase women's rights, which could be perceived as invalidating the identities and experiences of non-binary individuals and transgender women who may benefit from gender-neutral spaces. It also overlooks the broader context of gender inclusivity and accessibility.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that gender-neutral bathrooms are an attempt to erase women's rights, which could be perceived as invalidating the identities and experiences of non-binary individuals and transgender women who may benefit from gender-neutral spaces. It also overlooks the broader context of gender inclusivity and accessibility."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Factually Incorrect",
+    "explanation": "Frames inclusive bathroom policies as a threat to the rights and safety of cisgender women."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8947916030883789,
+    "sim_pred_nearest_train": 0.9188435077667236,
+    "nearest_train_idx": 519,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:23:10.249642"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 122,
+  "split": "test",
+  "input_sentence": "Children are being 'groomed' into identifying as LGBTQ+ by activists.",
+  "raw_output": "{\"category\": \"Social Contagion Narrative\", \"severity\": \"Factually Incorrect\", \"explanation\": \"This falsely portrays LGBTQ+ identity as something that can be 'taught' or 'indoctrinated,' rather than an intrinsic aspect of self.\"}",
+  "parsed_output": {
+    "category": "Social Contagion Narrative",
+    "severity": "Factually Incorrect",
+    "explanation": "This falsely portrays LGBTQ+ identity as something that can be 'taught' or 'indoctrinated,' rather than an intrinsic aspect of self."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Biased",
+    "explanation": "Uses a harmful and false narrative of 'grooming' to suggest LGBTQ+ identities are imposed."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9458690881729126,
+    "sim_pred_nearest_train": 0.9851173758506775,
+    "nearest_train_idx": 40,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Social Contagion Narrative",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:18:03.789105"
+}

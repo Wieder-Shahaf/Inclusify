@@ -1,0 +1,27 @@
+{
+  "sample_idx": 325,
+  "split": "train",
+  "input_sentence": "The concept of 'normal' gender development often excluded anything outside of strict heterosexuality and cisnormativity.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence accurately identifies the exclusionary nature of traditional gender development concepts, highlighting the historical and ongoing marginalization of non-heterosexual and non-cisgender individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Correct",
+    "explanation": "The sentence accurately identifies the exclusionary nature of traditional gender development concepts, highlighting the historical and ongoing marginalization of non-heterosexual and non-cisgender individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This highlights an outdated and exclusionary definition of gender development."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9466749429702759,
+    "sim_pred_nearest_train": 0.9466750621795654,
+    "nearest_train_idx": 325,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T20:19:19.015235"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 496,
+  "split": "train",
+  "input_sentence": "The notion that bisexuality is a gateway to homosexuality or a sign of confusion was prevalent.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence perpetuates a harmful and outdated belief that bisexuality is a transitional phase or a sign of confusion, which is no longer supported by modern understanding and acceptance of sexual orientation.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence perpetuates a harmful and outdated belief that bisexuality is a transitional phase or a sign of confusion, which is no longer supported by modern understanding and acceptance of sexual orientation."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This perpetuates harmful stereotypes and invalidates bisexual identities."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9334604740142822,
+    "sim_pred_nearest_train": 0.947624683380127,
+    "nearest_train_idx": 156,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:49:12.543946"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 26,
+  "split": "test",
+  "input_sentence": "The evolution of terminology in LGBTQ+ discourse reflects a deepening understanding of identity.",
+  "raw_output": "{\"category\": NaN, \"severity\": \"Correct\", \"explanation\": \"Notes the ongoing refinement of language within the community.\"}",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "Notes the ongoing refinement of language within the community."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Explains the dynamic nature of language related to identity."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9046685695648193,
+    "sim_pred_nearest_train": 0.9199802875518799,
+    "nearest_train_idx": 444,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:08:26.818564"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 148,
+  "split": "train",
+  "input_sentence": "Homophobia is a natural reaction to the perceived deviance of homosexual behavior.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence pathologizes and stigmatizes homosexual behavior, which is no longer a valid or appropriate way to discuss sexual orientation. It also implies that homophobia is a natural reaction, which is not supported by evidence and perpetuates harmful stereotypes.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence pathologizes and stigmatizes homosexual behavior, which is no longer a valid or appropriate way to discuss sexual orientation. It also implies that homophobia is a natural reaction, which is not supported by evidence and perpetuates harmful stereotypes."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "False Causality",
+    "severity": "Factually Incorrect",
+    "explanation": "This falsely attributes homophobia to a 'natural' reaction, ignoring the social and psychological roots of prejudice."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8945021629333496,
+    "sim_pred_nearest_train": 0.9657777547836304,
+    "nearest_train_idx": 366,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:48:31.529536"
+}

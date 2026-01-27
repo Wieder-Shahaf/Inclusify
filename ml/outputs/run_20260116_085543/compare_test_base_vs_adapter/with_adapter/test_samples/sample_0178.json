@@ -1,0 +1,27 @@
+{
+  "sample_idx": 178,
+  "split": "test",
+  "input_sentence": "The acceptance of pansexuality is a sign that traditional relationship models are breaking down.",
+  "raw_output": "{\"category\": \"Cultural Threat Narrative\", \"severity\": \"Biased\", \"explanation\": \"Frames the acceptance of a sexual orientation as a negative indicator of societal structure.\"}",
+  "parsed_output": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Biased",
+    "explanation": "Frames the acceptance of a sexual orientation as a negative indicator of societal structure."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Biased",
+    "explanation": "Portrays pansexuality as a symptom of societal decline and a threat to established relationship norms."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9584906101226807,
+    "sim_pred_nearest_train": 0.9829885959625244,
+    "nearest_train_idx": 560,
+    "nearest_train_severity": "Biased",
+    "nearest_train_category": "Cultural Threat Narrative",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:23:43.285742"
+}

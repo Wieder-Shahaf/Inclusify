@@ -1,0 +1,27 @@
+{
+  "sample_idx": 537,
+  "split": "train",
+  "input_sentence": "Transgenderism is a mental disorder that needs to be treated, not accepted.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence pathologizes transgenderism, which is no longer considered a mental disorder by most medical and psychological organizations. The language used is outdated and harmful.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence pathologizes transgenderism, which is no longer considered a mental disorder by most medical and psychological organizations. The language used is outdated and harmful."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Pathologization",
+    "severity": "Biased",
+    "explanation": "Reiterates the outdated and harmful view of transgender identities as a mental illness."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9472353458404541,
+    "sim_pred_nearest_train": 0.9646551012992859,
+    "nearest_train_idx": 430,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T20:56:30.056186"
+}

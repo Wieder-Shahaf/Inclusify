@@ -1,0 +1,27 @@
+{
+  "sample_idx": 72,
+  "split": "train",
+  "input_sentence": "The notion that bisexuality is a transitional phase has been widely debunked by research.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence accurately states that the notion that bisexuality is a transitional phase has been debunked by research, which is a factually correct and inclusive statement.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Correct",
+    "explanation": "The sentence accurately states that the notion that bisexuality is a transitional phase has been debunked by research, which is a factually correct and inclusive statement."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Disproven Sociological Theory",
+    "severity": "Outdated",
+    "explanation": "This sentence refers to an outdated and disproven belief about bisexuality, framing it as a phase rather than a valid sexual orientation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9157667756080627,
+    "sim_pred_nearest_train": 0.9247791767120361,
+    "nearest_train_idx": 186,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:34:49.444875"
+}

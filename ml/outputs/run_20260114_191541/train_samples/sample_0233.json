@@ -1,0 +1,27 @@
+{
+  "sample_idx": 233,
+  "split": "train",
+  "input_sentence": "Same-sex marriage is legally recognized in many countries, reflecting evolving societal norms.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by referring to'same-sex marriage' without specifying gender, and it accurately reflects the legal recognition of LGBTQ+ relationships in various countries.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by referring to'same-sex marriage' without specifying gender, and it accurately reflects the legal recognition of LGBTQ+ relationships in various countries."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Accurate observation of legal and social changes regarding same-sex marriage."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9080862402915955,
+    "sim_pred_nearest_train": 0.9080861806869507,
+    "nearest_train_idx": 233,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:03:07.055513"
+}

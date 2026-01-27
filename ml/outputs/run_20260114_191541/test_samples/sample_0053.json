@@ -1,0 +1,27 @@
+{
+  "sample_idx": 53,
+  "split": "test",
+  "input_sentence": "Pansexuality is just a trendy label for people who can't decide if they are gay or straight.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence invalidates the identity of pansexual individuals by implying that their sexual orientation is not genuine or is a trend. It also perpetuates the harmful binary thinking that sexual orientation must be strictly gay or straight.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence invalidates the identity of pansexual individuals by implying that their sexual orientation is not genuine or is a trend. It also perpetuates the harmful binary thinking that sexual orientation must be strictly gay or straight."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Factually Incorrect",
+    "explanation": "This dismisses pansexuality as a superficial trend and invalidates the genuine identity of pansexual individuals."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9502227902412415,
+    "sim_pred_nearest_train": 0.9648734331130981,
+    "nearest_train_idx": 600,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T21:52:58.506370"
+}

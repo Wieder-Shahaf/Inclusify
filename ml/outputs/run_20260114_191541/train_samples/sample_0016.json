@@ -1,0 +1,27 @@
+{
+  "sample_idx": 16,
+  "split": "train",
+  "input_sentence": "Allyship involves actively supporting and advocating for LGBTQ+ rights and well-being.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym 'LGBTQ+', which is a widely recognized and inclusive term for the lesbian, gay, bisexual, transgender, queer, and other sexual and gender minority communities. The language is supportive and advocates for the rights and well-being of these communities, which aligns with the principles of allyship.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym 'LGBTQ+', which is a widely recognized and inclusive term for the lesbian, gay, bisexual, transgender, queer, and other sexual and gender minority communities. The language is supportive and advocates for the rights and well-being of these communities, which aligns with the principles of allyship."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Accurate definition of allyship in the context of social justice."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.850799560546875,
+    "sim_pred_nearest_train": 0.9011255502700806,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:24:34.523301"
+}

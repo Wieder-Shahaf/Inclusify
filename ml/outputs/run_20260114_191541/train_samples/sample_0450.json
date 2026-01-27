@@ -1,0 +1,27 @@
+{
+  "sample_idx": 450,
+  "split": "train",
+  "input_sentence": "Some older therapeutic approaches aimed to 'normalize' gay men by encouraging heterosexual relationships.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence references a historical approach to therapy that aimed to 'normalize' gay men by encouraging heterosexual relationships, which is outdated and no longer appropriate. This approach is now recognized as harmful and pathologizing.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence references a historical approach to therapy that aimed to 'normalize' gay men by encouraging heterosexual relationships, which is outdated and no longer appropriate. This approach is now recognized as harmful and pathologizing."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Medical Malpractice",
+    "severity": "Outdated",
+    "explanation": "This describes outdated and harmful therapeutic practices that sought to change sexual orientation, which is now widely condemned."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9272091388702393,
+    "sim_pred_nearest_train": 0.9614939093589783,
+    "nearest_train_idx": 548,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:40:53.395509"
+}

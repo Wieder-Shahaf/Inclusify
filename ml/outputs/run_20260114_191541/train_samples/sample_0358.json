@@ -1,0 +1,27 @@
+{
+  "sample_idx": 358,
+  "split": "train",
+  "input_sentence": "Early psychological theories attributed same-sex attraction to faulty parenting.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence references historical psychological theories that pathologized same-sex attraction, which is no longer a valid or accepted perspective in contemporary psychology.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence references historical psychological theories that pathologized same-sex attraction, which is no longer a valid or accepted perspective in contemporary psychology."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "False Causality",
+    "severity": "Outdated",
+    "explanation": "This is a disproven and harmful theory that blames parents for a natural variation in sexual orientation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9019916653633118,
+    "sim_pred_nearest_train": 0.9668800830841064,
+    "nearest_train_idx": 156,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:25:10.260096"
+}

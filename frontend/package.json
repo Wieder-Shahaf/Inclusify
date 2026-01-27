@@ -11,9 +11,11 @@
   "dependencies": {
     "@prisma/client": "^7.2.0",
     "@radix-ui/react-dialog": "^1.1.15",
+    "@tailwindcss/oxide-linux-x64-gnu": "^4.1.18",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.26",
+    "lightningcss-linux-x64-gnu": "^1.30.2",
     "lucide-react": "^0.561.0",
     "next": "16.0.10",
     "next-intl": "^4.6.0",

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 589,
+  "split": "train",
+  "input_sentence": "Community-based support groups are crucial for the well-being of many LGBTQ+ individuals.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is inclusive of LGBTQ+ individuals and does not contain any biased, offensive, or factually incorrect language.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence is inclusive of LGBTQ+ individuals and does not contain any biased, offensive, or factually incorrect language."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Recognizes the importance of peer support."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8872824311256409,
+    "sim_pred_nearest_train": 0.928990364074707,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:05:44.198866"
+}

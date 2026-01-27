@@ -1,0 +1,27 @@
+{
+  "sample_idx": 336,
+  "split": "train",
+  "input_sentence": "The rise in openly LGBTQ+ people is a result of social contagion.",
+  "raw_output": "```json\n{\n  \"category\": \"False Causality\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"The term'social contagion' is often used in a pejorative manner to describe the spread of behaviors or identities, implying a negative influence. It is not an accurate or inclusive way to describe the increase in openly LGBTQ+ individuals, which is more appropriately attributed to social acceptance, legal protections, and the growing visibility of LGBTQ+ individuals in media and society.\"\n}\n```",
+  "parsed_output": {
+    "category": "False Causality",
+    "severity": "Factually Incorrect",
+    "explanation": "The term'social contagion' is often used in a pejorative manner to describe the spread of behaviors or identities, implying a negative influence. It is not an accurate or inclusive way to describe the increase in openly LGBTQ+ individuals, which is more appropriately attributed to social acceptance, legal protections, and the growing visibility of LGBTQ+ individuals in media and society."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Factually Incorrect",
+    "explanation": "This theory is not supported by scientific evidence and falsely suggests LGBTQ+ identities are 'caught' or influenced by trends."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9431149959564209,
+    "sim_pred_nearest_train": 0.9503759145736694,
+    "nearest_train_idx": 40,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Social Contagion Narrative",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:21:21.676529"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 34,
+  "split": "test",
+  "input_sentence": "The push for LGBTQ+ rights is an attack on traditional family values.",
+  "raw_output": "{\"category\": \"Cultural Threat Narrative\", \"severity\": \"Biased\", \"explanation\": \"Frames LGBTQ+ rights as a threat to established social structures and values.\"}",
+  "parsed_output": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Biased",
+    "explanation": "Frames LGBTQ+ rights as a threat to established social structures and values."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Biased",
+    "explanation": "Frames LGBTQ+ advocacy as a threat to established societal norms and structures."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9922622442245483,
+    "sim_pred_nearest_train": 0.9939577579498291,
+    "nearest_train_idx": 699,
+    "nearest_train_severity": "Biased",
+    "nearest_train_category": "Cultural Threat Narrative",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:09:16.918577"
+}

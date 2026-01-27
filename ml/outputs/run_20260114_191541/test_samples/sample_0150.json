@@ -1,0 +1,27 @@
+{
+  "sample_idx": 150,
+  "split": "test",
+  "input_sentence": "The transgender rights movement is an attempt to erase women.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence frames the transgender rights movement as an attempt to erase women, which is a biased and potentially offensive statement. It implies that the movement is against women, rather than focusing on the rights and identities of transgender individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence frames the transgender rights movement as an attempt to erase women, which is a biased and potentially offensive statement. It implies that the movement is against women, rather than focusing on the rights and identities of transgender individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Factually Incorrect",
+    "explanation": "This promotes a divisive narrative that pits transgender rights against women's rights, fostering hostility."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.898741602897644,
+    "sim_pred_nearest_train": 0.9557880163192749,
+    "nearest_train_idx": 3,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T22:10:53.033145"
+}

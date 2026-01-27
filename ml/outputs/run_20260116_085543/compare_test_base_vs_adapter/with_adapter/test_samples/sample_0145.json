@@ -1,0 +1,27 @@
+{
+  "sample_idx": 145,
+  "split": "test",
+  "input_sentence": "We are seeing an epidemic of young people identifying as transgender because of peer pressure and online influence.",
+  "raw_output": "{\"category\": \"Social Contagion Narrative\", \"severity\": \"Biased\", \"explanation\": \"Attributes transgender identity to external influences rather than internal sense of self.\"}",
+  "parsed_output": {
+    "category": "Social Contagion Narrative",
+    "severity": "Biased",
+    "explanation": "Attributes transgender identity to external influences rather than internal sense of self."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Biased",
+    "explanation": "Frames the increase in transgender identification as a trend or contagion, not genuine self-discovery."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9808541536331177,
+    "sim_pred_nearest_train": 0.9870564937591553,
+    "nearest_train_idx": 559,
+    "nearest_train_severity": "Biased",
+    "nearest_train_category": "Social Contagion Narrative",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:20:18.093421"
+}

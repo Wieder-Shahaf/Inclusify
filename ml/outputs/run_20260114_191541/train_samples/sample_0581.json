@@ -1,0 +1,27 @@
+{
+  "sample_idx": 581,
+  "split": "train",
+  "input_sentence": "All transgender women were once aggressive men.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence pathologizes transgender women by implying that their gender identity is a result of aggression. This perspective is outdated and harmful, as it perpetuates harmful stereotypes and misconceptions about transgender individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence pathologizes transgender women by implying that their gender identity is a result of aggression. This perspective is outdated and harmful, as it perpetuates harmful stereotypes and misconceptions about transgender individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Negative Stereotyping",
+    "severity": "Factually Incorrect",
+    "explanation": "This perpetuates harmful stereotypes about transgender women, associating them with aggressive traits."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9122269153594971,
+    "sim_pred_nearest_train": 0.9551753997802734,
+    "nearest_train_idx": 770,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:04:23.492012"
+}

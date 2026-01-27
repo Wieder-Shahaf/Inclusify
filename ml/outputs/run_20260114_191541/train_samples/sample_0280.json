@@ -1,0 +1,27 @@
+{
+  "sample_idx": 280,
+  "split": "train",
+  "input_sentence": "The concept of 'gender identity' is a distraction from actual medical needs.",
+  "raw_output": "```json\n{\n  \"category\": \"Medical Misinformation\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"The statement implies that gender identity is not a legitimate medical concept, which is incorrect. Gender identity is a recognized aspect of human identity and is considered a legitimate medical concern, especially in the context of transgender health.\"\n}\n```",
+  "parsed_output": {
+    "category": "Medical Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "The statement implies that gender identity is not a legitimate medical concept, which is incorrect. Gender identity is a recognized aspect of human identity and is considered a legitimate medical concern, especially in the context of transgender health."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Erasure",
+    "severity": "Biased",
+    "explanation": "Seeks to de-legitimize the importance of gender identity in healthcare."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8925871253013611,
+    "sim_pred_nearest_train": 0.958228588104248,
+    "nearest_train_idx": 117,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Medical Misinformation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:11:24.649343"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 133,
+  "split": "test",
+  "input_sentence": "Understanding and respecting a person's chosen pronouns is a fundamental aspect of inclusive communication.",
+  "raw_output": "{\"category\": NaN, \"severity\": \"Correct\", \"explanation\": \"Emphasizes the importance of respecting pronouns in inclusive interactions.\"}",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "Emphasizes the importance of respecting pronouns in inclusive interactions."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Highlights a key practice in respecting gender identity."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9355255365371704,
+    "sim_pred_nearest_train": 0.9561926126480103,
+    "nearest_train_idx": 680,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:19:09.709410"
+}

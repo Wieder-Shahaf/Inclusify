@@ -1,0 +1,27 @@
+{
+  "sample_idx": 737,
+  "split": "train",
+  "input_sentence": "Medical professionals are increasingly trained to provide gender-affirming care with sensitivity and expertise.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by mentioning 'gender-affirming care', which is a term that acknowledges and supports the diverse gender identities and expressions of individuals. It also emphasizes sensitivity and expertise, which are important aspects of providing appropriate care for LGBTQ+ individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by mentioning 'gender-affirming care', which is a term that acknowledges and supports the diverse gender identities and expressions of individuals. It also emphasizes sensitivity and expertise, which are important aspects of providing appropriate care for LGBTQ+ individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Indicates a positive trend in healthcare provider training."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8650652766227722,
+    "sim_pred_nearest_train": 0.9278966784477234,
+    "nearest_train_idx": 297,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:32:13.669630"
+}

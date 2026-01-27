@@ -1,0 +1,27 @@
+{
+  "sample_idx": 131,
+  "split": "test",
+  "input_sentence": "You're being too sensitive about this; gay people aren't really oppressed.",
+  "raw_output": "{\"category\": \"Minimization of Harm\", \"severity\": \"Biased\", \"explanation\": \"Dismisses the historical and ongoing experiences of discrimination and oppression faced by the LGBTQ+ community.\"}",
+  "parsed_output": {
+    "category": "Minimization of Harm",
+    "severity": "Biased",
+    "explanation": "Dismisses the historical and ongoing experiences of discrimination and oppression faced by the LGBTQ+ community."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Tone Policing",
+    "severity": "Factually Incorrect",
+    "explanation": "Dismisses valid concerns about discrimination by claiming the person is overreacting."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8756251335144043,
+    "sim_pred_nearest_train": 0.9837548136711121,
+    "nearest_train_idx": 621,
+    "nearest_train_severity": "Biased",
+    "nearest_train_category": "Minimization of Harm",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:18:59.084813"
+}

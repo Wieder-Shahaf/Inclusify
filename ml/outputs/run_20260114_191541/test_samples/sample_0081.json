@@ -1,0 +1,27 @@
+{
+  "sample_idx": 81,
+  "split": "test",
+  "input_sentence": "The concept of gender as a spectrum acknowledges that not all individuals identify strictly as male or female.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by acknowledging that gender identity can exist on a spectrum, which is a widely accepted and scientifically supported concept. It does not use binary gender terms exclusively, making it inclusive.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by acknowledging that gender identity can exist on a spectrum, which is a widely accepted and scientifically supported concept. It does not use binary gender terms exclusively, making it inclusive."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Accurate description of the gender spectrum concept."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9103586673736572,
+    "sim_pred_nearest_train": 0.9123538136482239,
+    "nearest_train_idx": 261,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:58:06.167017"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 122,
+  "split": "test",
+  "input_sentence": "Children are being 'groomed' into identifying as LGBTQ+ by activists.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The term 'groomed' is often used in a harmful context to imply manipulation or coercion, which is not accurate in the context of LGBTQ+ identity. It also invalidates the identities and experiences of individuals who identify as LGBTQ+.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The term 'groomed' is often used in a harmful context to imply manipulation or coercion, which is not accurate in the context of LGBTQ+ identity. It also invalidates the identities and experiences of individuals who identify as LGBTQ+."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Biased",
+    "explanation": "Uses a harmful and false narrative of 'grooming' to suggest LGBTQ+ identities are imposed."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9076887965202332,
+    "sim_pred_nearest_train": 0.9096931219100952,
+    "nearest_train_idx": 324,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:44:53.785277"
+}

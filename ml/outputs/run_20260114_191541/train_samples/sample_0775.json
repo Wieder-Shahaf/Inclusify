@@ -1,0 +1,27 @@
+{
+  "sample_idx": 775,
+  "split": "train",
+  "input_sentence": "We need to avoid making assumptions about people's sexual orientation or gender identity.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is inclusive and respectful, avoiding assumptions about individuals' sexual orientation or gender identity.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence is inclusive and respectful, avoiding assumptions about individuals' sexual orientation or gender identity."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Erasure",
+    "severity": "Potentially Offensive",
+    "explanation": "While seemingly inclusive, this phrasing can sometimes be used to avoid engaging with or acknowledging the existence of LGBTQ+ identities in specific contexts."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9007747769355774,
+    "sim_pred_nearest_train": 0.9214633703231812,
+    "nearest_train_idx": 751,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:38:53.353766"
+}

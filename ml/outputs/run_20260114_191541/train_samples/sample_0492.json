@@ -1,0 +1,27 @@
+{
+  "sample_idx": 492,
+  "split": "train",
+  "input_sentence": "Homophobia was once seen by some as a natural or acceptable societal reaction.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence uses the term 'homophobia' without specifying that it refers to a prejudice against LGBTQ+ individuals. It also frames the societal reaction as 'natural or acceptable,' which is outdated and no longer considered appropriate.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence uses the term 'homophobia' without specifying that it refers to a prejudice against LGBTQ+ individuals. It also frames the societal reaction as 'natural or acceptable,' which is outdated and no longer considered appropriate."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This reflects an outdated view that normalized prejudice against LGBTQ+ individuals."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9334676265716553,
+    "sim_pred_nearest_train": 0.9626871943473816,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:48:32.483750"
+}

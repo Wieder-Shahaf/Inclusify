@@ -1,0 +1,27 @@
+{
+  "sample_idx": 70,
+  "split": "test",
+  "input_sentence": "Intersex variations occur naturally in human biology and are not indicative of pathology.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by avoiding pathologization and focusing on the natural occurrence of intersex variations in human biology.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by avoiding pathologization and focusing on the natural occurrence of intersex variations in human biology."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Accurate biological and medical understanding of intersex traits."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9142152070999146,
+    "sim_pred_nearest_train": 0.9233180284500122,
+    "nearest_train_idx": 568,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:56:06.459323"
+}

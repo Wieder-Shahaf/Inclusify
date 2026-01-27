@@ -1,0 +1,27 @@
+{
+  "sample_idx": 105,
+  "split": "test",
+  "input_sentence": "It was once thought that exposing children to LGBTQ+ themes would 'turn them gay.'",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence perpetuates a harmful and outdated belief that LGBTQ+ identity can be 'turned' or 'acquired' through exposure to certain themes or experiences. This belief is rooted in a pathologization of LGBTQ+ identities and has been widely discredited by scientific research.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence perpetuates a harmful and outdated belief that LGBTQ+ identity can be 'turned' or 'acquired' through exposure to certain themes or experiences. This belief is rooted in a pathologization of LGBTQ+ identities and has been widely discredited by scientific research."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Outdated",
+    "explanation": "This is an example of the 'social contagion' myth, falsely suggesting that LGBTQ+ identities can be transmitted through exposure."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9009978175163269,
+    "sim_pred_nearest_train": 0.9646032452583313,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T22:02:39.875443"
+}

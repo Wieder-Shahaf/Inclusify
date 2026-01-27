@@ -1,0 +1,89 @@
+{
+  "run_timestamp": "20260114_191541",
+  "model_name": "lightblue/suzume-llama-3-8B-multilingual",
+  "embedding_model": "intfloat/multilingual-e5-large",
+  "train": {
+    "split": "train",
+    "total_samples": 800,
+    "successful_parses": 800,
+    "parse_error_rate": 0.0,
+    "metrics": {
+      "semantic_sim_pred_gold_mean": 0.9010845405608415,
+      "semantic_sim_pred_gold_std": 0.030861801730547814,
+      "semantic_sim_pred_gold_min": 0.8018106818199158,
+      "semantic_sim_pred_gold_max": 0.9810818433761597,
+      "semantic_sim_pred_nearest_mean": 0.9374082019180059,
+      "severity_exact_match_rate": 0.445,
+      "category_exact_match_rate": 0.16125
+    },
+    "by_severity": {
+      "Correct": {
+        "count": 160,
+        "sim_pred_gold_mean": 0.8892189756035804,
+        "exact_match_rate": 0.99375
+      },
+      "Outdated": {
+        "count": 160,
+        "sim_pred_gold_mean": 0.9131120104342699,
+        "exact_match_rate": 0.74375
+      },
+      "Biased": {
+        "count": 160,
+        "sim_pred_gold_mean": 0.8986004948616028,
+        "exact_match_rate": 0.0
+      },
+      "Potentially Offensive": {
+        "count": 160,
+        "sim_pred_gold_mean": 0.8937147002667188,
+        "exact_match_rate": 0.30625
+      },
+      "Factually Incorrect": {
+        "count": 160,
+        "sim_pred_gold_mean": 0.9107765216380358,
+        "exact_match_rate": 0.18125
+      }
+    }
+  },
+  "test": {
+    "split": "test",
+    "total_samples": 200,
+    "successful_parses": 200,
+    "parse_error_rate": 0.0,
+    "metrics": {
+      "semantic_sim_pred_gold_mean": 0.8971117088198661,
+      "semantic_sim_pred_gold_std": 0.03066948247885493,
+      "semantic_sim_pred_gold_min": 0.8246368169784546,
+      "semantic_sim_pred_gold_max": 0.9752482175827026,
+      "semantic_sim_pred_nearest_mean": 0.9353845649957657,
+      "severity_exact_match_rate": 0.425,
+      "category_exact_match_rate": 0.12
+    },
+    "by_severity": {
+      "Correct": {
+        "count": 40,
+        "sim_pred_gold_mean": 0.8864404872059822,
+        "exact_match_rate": 1.0
+      },
+      "Outdated": {
+        "count": 40,
+        "sim_pred_gold_mean": 0.9129972875118255,
+        "exact_match_rate": 0.625
+      },
+      "Biased": {
+        "count": 40,
+        "sim_pred_gold_mean": 0.8911520913243294,
+        "exact_match_rate": 0.0
+      },
+      "Potentially Offensive": {
+        "count": 40,
+        "sim_pred_gold_mean": 0.8814949482679367,
+        "exact_match_rate": 0.275
+      },
+      "Factually Incorrect": {
+        "count": 40,
+        "sim_pred_gold_mean": 0.913473729789257,
+        "exact_match_rate": 0.225
+      }
+    }
+  }
+}

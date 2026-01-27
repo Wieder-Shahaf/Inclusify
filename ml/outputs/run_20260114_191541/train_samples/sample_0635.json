@@ -1,0 +1,27 @@
+{
+  "sample_idx": 635,
+  "split": "train",
+  "input_sentence": "The mental health of LGBTQ+ individuals can be significantly impacted by social acceptance and legal protections.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by explicitly mentioning LGBTQ+ individuals, indicating that it is aware of and respects the diversity within the LGBTQ+ community. It also focuses on the positive impact of social acceptance and legal protections, which is a factually accurate and supportive approach.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by explicitly mentioning LGBTQ+ individuals, indicating that it is aware of and respects the diversity within the LGBTQ+ community. It also focuses on the positive impact of social acceptance and legal protections, which is a factually accurate and supportive approach."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Connects societal factors to mental health outcomes."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8638150095939636,
+    "sim_pred_nearest_train": 0.914110541343689,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:13:47.853788"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 130,
+  "split": "test",
+  "input_sentence": "The medical establishment is too quick to affirm transgender identities in minors.",
+  "raw_output": "{\"category\": \"Medical Misinformation\", \"severity\": \"Biased\", \"explanation\": \"Suggests that affirming transgender identities is premature or reckless, implying a lack of scientific basis for transition.\"}",
+  "parsed_output": {
+    "category": "Medical Misinformation",
+    "severity": "Biased",
+    "explanation": "Suggests that affirming transgender identities is premature or reckless, implying a lack of scientific basis for transition."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Biased",
+    "explanation": "Questions established medical protocols for affirming transgender minors, implying undue haste."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9537843465805054,
+    "sim_pred_nearest_train": 0.9731658697128296,
+    "nearest_train_idx": 754,
+    "nearest_train_severity": "Biased",
+    "nearest_train_category": "Medical Misinformation",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:18:52.704518"
+}

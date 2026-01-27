@@ -1,0 +1,27 @@
+{
+  "sample_idx": 180,
+  "split": "train",
+  "input_sentence": "Gender identity is a social construct, not a biological reality.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence accurately states that gender identity is a social construct, which is a widely accepted scientific understanding. It does not contain any language that could be considered offensive or biased against the LGBTQ+ community.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence accurately states that gender identity is a social construct, which is a widely accepted scientific understanding. It does not contain any language that could be considered offensive or biased against the LGBTQ+ community."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Denial of Biological Basis",
+    "severity": "Biased",
+    "explanation": "Dismisses the biological underpinnings of gender identity, framing it as purely social."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8878116011619568,
+    "sim_pred_nearest_train": 0.9046037197113037,
+    "nearest_train_idx": 311,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Scientific Denialism",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:54:10.791127"
+}

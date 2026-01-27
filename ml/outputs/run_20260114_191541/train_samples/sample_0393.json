@@ -1,0 +1,27 @@
+{
+  "sample_idx": 393,
+  "split": "train",
+  "input_sentence": "The fear that acknowledging transgender athletes would undermine women's sports is based on outdated assumptions.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence uses the term 'transgender athletes' without specifying the gender identity of the athletes, which could be interpreted as implying that the athletes are transitioning from male to female. This could be seen as perpetuating outdated assumptions about transgender individuals and their role in sports.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence uses the term 'transgender athletes' without specifying the gender identity of the athletes, which could be interpreted as implying that the athletes are transitioning from male to female. This could be seen as perpetuating outdated assumptions about transgender individuals and their role in sports."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Outdated",
+    "explanation": "This identifies an outdated and unfounded fear used to oppose transgender inclusion."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8987029194831848,
+    "sim_pred_nearest_train": 0.9458786249160767,
+    "nearest_train_idx": 770,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:31:10.429259"
+}

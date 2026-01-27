@@ -1,0 +1,27 @@
+{
+  "sample_idx": 786,
+  "split": "train",
+  "input_sentence": "The notion that a person's sexual orientation is a 'choice' was prevalent in earlier discussions.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence suggests that sexual orientation is a choice, which is a harmful and outdated belief that has been disproven by science. It is important to use language that acknowledges sexual orientation as an inherent aspect of a person's identity, rather than something that can be chosen.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence suggests that sexual orientation is a choice, which is a harmful and outdated belief that has been disproven by science. It is important to use language that acknowledges sexual orientation as an inherent aspect of a person's identity, rather than something that can be chosen."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This reflects an outdated and harmful misconception about the nature of sexual orientation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.927125871181488,
+    "sim_pred_nearest_train": 0.9479864835739136,
+    "nearest_train_idx": 108,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:40:54.948219"
+}

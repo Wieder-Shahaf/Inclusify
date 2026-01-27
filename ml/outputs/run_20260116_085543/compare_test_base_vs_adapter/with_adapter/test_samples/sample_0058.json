@@ -1,0 +1,27 @@
+{
+  "sample_idx": 58,
+  "split": "test",
+  "input_sentence": "Homosexuality is a choice, and people can choose to be heterosexual.",
+  "raw_output": "{\"category\": \"Identity Invalidation\", \"severity\": \"Factually Incorrect\", \"explanation\": \"This incorrectly frames sexual orientation as a conscious choice, denying its intrinsic nature.\"}",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Factually Incorrect",
+    "explanation": "This incorrectly frames sexual orientation as a conscious choice, denying its intrinsic nature."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Factually Incorrect",
+    "explanation": "Asserts that sexual orientation is a conscious decision, contradicting scientific understanding."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9888678789138794,
+    "sim_pred_nearest_train": 0.9946032762527466,
+    "nearest_train_idx": 221,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:11:36.091118"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 774,
+  "split": "train",
+  "input_sentence": "Many so-called 'transgender athletes' are simply men competing in women's sports to gain an unfair advantage.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The use of the term'so-called' to describe transgender athletes implies that their identity is not valid or recognized. Additionally, the implication that transgender athletes are competing to gain an unfair advantage is a stereotype and not supported by evidence.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The use of the term'so-called' to describe transgender athletes implies that their identity is not valid or recognized. Additionally, the implication that transgender athletes are competing to gain an unfair advantage is a stereotype and not supported by evidence."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Defamatory Stereotyping",
+    "severity": "Biased",
+    "explanation": "Promotes the harmful stereotype that transgender women are deliberately seeking to cheat in sports."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8801809549331665,
+    "sim_pred_nearest_train": 0.9296558499336243,
+    "nearest_train_idx": 3,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:38:46.538380"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 102,
+  "split": "test",
+  "input_sentence": "Stigma associated with sexual orientation can contribute to increased rates of substance use among LGBTQ+ individuals.",
+  "raw_output": "{\"category\": \"Social Contagion Narrative\", \"severity\": \"Correct\", \"explanation\": \"Links stigma to negative health outcomes, a key concept in minority stress theory.\"}",
+  "parsed_output": {
+    "category": "Social Contagion Narrative",
+    "severity": "Correct",
+    "explanation": "Links stigma to negative health outcomes, a key concept in minority stress theory."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Links social stigma to specific health behaviors."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9087865352630615,
+    "sim_pred_nearest_train": 0.9394600987434387,
+    "nearest_train_idx": 69,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Social Contagion Narrative",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:16:06.700115"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 243,
+  "split": "train",
+  "input_sentence": "The normalization of same-sex relationships will weaken the family unit.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that same-sex relationships are inherently harmful to the family unit, which is a harmful stereotype and invalidates the identities and experiences of LGBTQ+ individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that same-sex relationships are inherently harmful to the family unit, which is a harmful stereotype and invalidates the identities and experiences of LGBTQ+ individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Biased",
+    "explanation": "Asserts that same-sex relationships are detrimental to the structure and strength of families."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9160016775131226,
+    "sim_pred_nearest_train": 0.947515606880188,
+    "nearest_train_idx": 197,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:05:05.431306"
+}

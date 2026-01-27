@@ -1,0 +1,27 @@
+{
+  "sample_idx": 620,
+  "split": "train",
+  "input_sentence": "Polyamory is a practice of, or desire for, intimate relationships with more than one partner, with the informed consent of all partners.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is inclusive and accurately describes polyamory, emphasizing the importance of informed consent among all partners, which is a key aspect of LGBTQ+ inclusive language.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence is inclusive and accurately describes polyamory, emphasizing the importance of informed consent among all partners, which is a key aspect of LGBTQ+ inclusive language."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Accurate and ethical definition of polyamory, emphasizing consent."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9075369834899902,
+    "sim_pred_nearest_train": 0.9075369238853455,
+    "nearest_train_idx": 620,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:11:02.244121"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 370,
+  "split": "train",
+  "input_sentence": "Understanding the nuances of sexual and gender minority experiences is essential for effective social science research.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by referring to'sexual and gender minority experiences' instead of using outdated or biased terms.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by referring to'sexual and gender minority experiences' instead of using outdated or biased terms."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Stresses the need for nuanced understanding in academic research."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8773587942123413,
+    "sim_pred_nearest_train": 0.9125971794128418,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:27:08.704486"
+}

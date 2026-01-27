@@ -1,0 +1,27 @@
+{
+  "sample_idx": 121,
+  "split": "train",
+  "input_sentence": "Asexual individuals can experience romantic attraction and seek intimate relationships.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is inclusive and accurately reflects the diversity of human experiences and desires. It acknowledges that asexual individuals can experience romantic attraction and seek intimate relationships, which is a common aspect of many people's lives.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence is inclusive and accurately reflects the diversity of human experiences and desires. It acknowledges that asexual individuals can experience romantic attraction and seek intimate relationships, which is a common aspect of many people's lives."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Clarifies the distinction between sexual and romantic attraction for asexual individuals."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9206368327140808,
+    "sim_pred_nearest_train": 0.9206369519233704,
+    "nearest_train_idx": 121,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:43:41.334240"
+}

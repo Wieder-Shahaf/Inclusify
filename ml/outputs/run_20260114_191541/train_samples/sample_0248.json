@@ -1,0 +1,27 @@
+{
+  "sample_idx": 248,
+  "split": "train",
+  "input_sentence": "Transgender women are not biologically capable of being mothers.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"This statement is based on outdated and harmful beliefs about transgender individuals. It is important to recognize that transgender women, like all individuals, have the capacity to become mothers through various means, including surrogacy, adoption, and assisted reproductive technology.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "This statement is based on outdated and harmful beliefs about transgender individuals. It is important to recognize that transgender women, like all individuals, have the capacity to become mothers through various means, including surrogacy, adoption, and assisted reproductive technology."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Biased",
+    "explanation": "Denies the potential for transgender women to mother based on a narrow biological definition."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8991153240203857,
+    "sim_pred_nearest_train": 0.9448809623718262,
+    "nearest_train_idx": 770,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:05:56.404511"
+}

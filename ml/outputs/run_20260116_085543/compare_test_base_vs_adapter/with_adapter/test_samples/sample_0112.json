@@ -1,0 +1,27 @@
+{
+  "sample_idx": 112,
+  "split": "test",
+  "input_sentence": "The Human Rights Campaign is a prominent advocacy organization for LGBTQ+ equality.",
+  "raw_output": "{\"category\": NaN, \"severity\": \"Correct\", \"explanation\": \"Identifies a well-known and respected advocacy group.\"}",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "Identifies a well-known and respected advocacy group."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Accurate identification of a major LGBTQ+ advocacy group."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9349201917648315,
+    "sim_pred_nearest_train": 0.924757719039917,
+    "nearest_train_idx": 569,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:17:07.349093"
+}

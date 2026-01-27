@@ -1,0 +1,27 @@
+{
+  "sample_idx": 186,
+  "split": "test",
+  "input_sentence": "The belief that advocating for LGBTQ+ rights would lead to the normalization of pedophilia is a false and harmful equivalence.",
+  "raw_output": "```json\n{\n  \"category\": \"False Causality\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence correctly identifies the belief as false and harmful, without perpetuating harmful stereotypes or misinformation about LGBTQ+ individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "False Causality",
+    "severity": "Correct",
+    "explanation": "The sentence correctly identifies the belief as false and harmful, without perpetuating harmful stereotypes or misinformation about LGBTQ+ individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Defamatory Stereotyping",
+    "severity": "Outdated",
+    "explanation": "This sentence refutes an outdated and defamatory association used to discredit LGBTQ+ rights movements."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8962732553482056,
+    "sim_pred_nearest_train": 0.9537342190742493,
+    "nearest_train_idx": 653,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "False Causality",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T22:17:20.542902"
+}

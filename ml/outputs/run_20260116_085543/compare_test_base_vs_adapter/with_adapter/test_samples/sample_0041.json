@@ -1,0 +1,27 @@
+{
+  "sample_idx": 41,
+  "split": "test",
+  "input_sentence": "Gender identity is an individual's internal sense of being male, female, both, neither, or somewhere else along the gender spectrum.",
+  "raw_output": "{\"category\": NaN, \"severity\": \"Correct\", \"explanation\": \"Provides a comprehensive and inclusive definition of gender identity.\"}",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "Provides a comprehensive and inclusive definition of gender identity."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Provides a comprehensive definition of gender identity."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9591860771179199,
+    "sim_pred_nearest_train": 0.9623188376426697,
+    "nearest_train_idx": 261,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:09:55.085560"
+}

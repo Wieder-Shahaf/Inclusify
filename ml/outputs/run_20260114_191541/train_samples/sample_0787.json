@@ -1,0 +1,27 @@
+{
+  "sample_idx": 787,
+  "split": "train",
+  "input_sentence": "Psychiatrists once believed that lesbianism was a result of penis envy.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence references a historical belief that has been widely discredited and is no longer considered a valid or appropriate perspective in contemporary discussions about sexual orientation.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence references a historical belief that has been widely discredited and is no longer considered a valid or appropriate perspective in contemporary discussions about sexual orientation."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "False Causality",
+    "severity": "Outdated",
+    "explanation": "This represents a disproven and sexist Freudian theory applied to lesbian identity."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9150732159614563,
+    "sim_pred_nearest_train": 0.9712860584259033,
+    "nearest_train_idx": 156,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:41:03.901783"
+}

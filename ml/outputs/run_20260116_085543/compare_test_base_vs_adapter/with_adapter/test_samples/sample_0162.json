@@ -1,0 +1,27 @@
+{
+  "sample_idx": 162,
+  "split": "test",
+  "input_sentence": "Many of these 'gender identity disorders' are simply a reflection of societal shifts and can be managed with psychological counseling.",
+  "raw_output": "{\"category\": \"Medical Misinformation\", \"severity\": \"Biased\", \"explanation\": \"Frames gender identity as a societal problem that can be'managed' rather than a valid aspect of self.\"}",
+  "parsed_output": {
+    "category": "Medical Misinformation",
+    "severity": "Biased",
+    "explanation": "Frames gender identity as a societal problem that can be'managed' rather than a valid aspect of self."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Biased",
+    "explanation": "Misrepresents gender identity as a disorder and suggests it can be 'managed' or cured through therapy, ignoring the validity of gender identity affirmation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9814203381538391,
+    "sim_pred_nearest_train": 0.9793610572814941,
+    "nearest_train_idx": 773,
+    "nearest_train_severity": "Biased",
+    "nearest_train_category": "Medical Misinformation",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:22:02.519809"
+}

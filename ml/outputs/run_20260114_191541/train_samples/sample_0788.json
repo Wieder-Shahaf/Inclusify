@@ -1,0 +1,27 @@
+{
+  "sample_idx": 788,
+  "split": "train",
+  "input_sentence": "Conversion therapy practices aimed at changing sexual orientation or gender identity are widely condemned by medical and psychological organizations.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence accurately reflects the stance of medical and psychological organizations against conversion therapy practices, which are harmful and ineffective. The language is inclusive, using'sexual orientation' and 'gender identity' to refer to the aspects of a person's identity that conversion therapy aims to alter.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence accurately reflects the stance of medical and psychological organizations against conversion therapy practices, which are harmful and ineffective. The language is inclusive, using'sexual orientation' and 'gender identity' to refer to the aspects of a person's identity that conversion therapy aims to alter."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Accurately reflects the consensus against harmful conversion therapy."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9029056429862976,
+    "sim_pred_nearest_train": 0.9059695601463318,
+    "nearest_train_idx": 433,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:41:15.924477"
+}

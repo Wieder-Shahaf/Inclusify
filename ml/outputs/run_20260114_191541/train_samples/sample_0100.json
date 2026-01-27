@@ -1,0 +1,27 @@
+{
+  "sample_idx": 100,
+  "split": "train",
+  "input_sentence": "Some parents worry about LGBTQ+ education in schools.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym 'LGBTQ+', which is a widely recognized and inclusive term for the lesbian, gay, bisexual, transgender, queer, and other sexual and gender minority communities. The language is neutral and does not contain any offensive or biased terms.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym 'LGBTQ+', which is a widely recognized and inclusive term for the lesbian, gay, bisexual, transgender, queer, and other sexual and gender minority communities. The language is neutral and does not contain any offensive or biased terms."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Moral Panic",
+    "severity": "Potentially Offensive",
+    "explanation": "Validates anxieties that are often rooted in misinformation about curriculum."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8203650712966919,
+    "sim_pred_nearest_train": 0.9033699631690979,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:40:06.122563"
+}

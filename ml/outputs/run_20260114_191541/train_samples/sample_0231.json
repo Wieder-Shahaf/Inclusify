@@ -1,0 +1,27 @@
+{
+  "sample_idx": 231,
+  "split": "train",
+  "input_sentence": "The mental health impacts of discrimination on transgender individuals are well-documented.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is inclusive and accurately reflects the documented impacts of discrimination on transgender individuals, using appropriate terminology.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence is inclusive and accurately reflects the documented impacts of discrimination on transgender individuals, using appropriate terminology."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Acknowledges documented mental health consequences of discrimination."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9113785624504089,
+    "sim_pred_nearest_train": 0.9191885590553284,
+    "nearest_train_idx": 594,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:02:44.512363"
+}

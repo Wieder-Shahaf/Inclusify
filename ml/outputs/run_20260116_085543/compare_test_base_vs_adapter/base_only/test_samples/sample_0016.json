@@ -1,0 +1,27 @@
+{
+  "sample_idx": 16,
+  "split": "test",
+  "input_sentence": "The inclusion of sexual orientation and gender identity in non-discrimination laws is a key aspect of legal protections.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by explicitly mentioning sexual orientation and gender identity, which are key aspects of LGBTQ+ rights. It also frames these aspects as part of legal protections, which is accurate and supportive of LGBTQ+ inclusivity.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by explicitly mentioning sexual orientation and gender identity, which are key aspects of LGBTQ+ rights. It also frames these aspects as part of legal protections, which is accurate and supportive of LGBTQ+ inclusivity."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Accurate statement regarding legal frameworks for LGBTQ+ rights."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9220992922782898,
+    "sim_pred_nearest_train": 0.9150740504264832,
+    "nearest_train_idx": 371,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:28:22.273081"
+}

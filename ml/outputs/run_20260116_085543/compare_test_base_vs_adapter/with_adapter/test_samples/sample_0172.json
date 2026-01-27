@@ -1,0 +1,27 @@
+{
+  "sample_idx": 172,
+  "split": "test",
+  "input_sentence": "The increasing representation of transgender characters in media could be seen as a push for a particular agenda.",
+  "raw_output": "{\"category\": \"Cultural Threat Narrative\", \"severity\": \"Potentially Offensive\", \"explanation\": \"Interprets media representation as a deliberate attempt to influence societal attitudes or policy.\"}",
+  "parsed_output": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Interprets media representation as a deliberate attempt to influence societal attitudes or policy."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Negative Stereotyping",
+    "severity": "Potentially Offensive",
+    "explanation": "Attributes a motive of 'pushing an agenda' to the representation of transgender people, implying it's not organic or about authenticity."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9109082221984863,
+    "sim_pred_nearest_train": 0.964067280292511,
+    "nearest_train_idx": 374,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Cultural Threat Narrative",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:23:05.517557"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 324,
+  "split": "train",
+  "input_sentence": "The concept of asexuality is often misunderstood and dismissed.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that asexuality is not valid or recognized, which can be harmful to individuals who identify as asexual. It's important to use language that acknowledges and respects the identities of all individuals, including those who identify as asexual.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that asexuality is not valid or recognized, which can be harmful to individuals who identify as asexual. It's important to use language that acknowledges and respects the identities of all individuals, including those who identify as asexual."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Frames a valid sexual orientation as something that is prone to misunderstanding, implying it's not a complete or real identity."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9538381695747375,
+    "sim_pred_nearest_train": 0.9587737321853638,
+    "nearest_train_idx": 197,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T20:19:09.926148"
+}

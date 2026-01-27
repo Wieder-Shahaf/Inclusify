@@ -1,0 +1,27 @@
+{
+  "sample_idx": 21,
+  "split": "test",
+  "input_sentence": "Homosexuality can be cured through therapy.",
+  "raw_output": "```json\n{\n  \"category\": \"Medical Misinformation\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"The statement suggests that homosexuality can be 'cured' through therapy, which is a harmful and outdated belief. There is no scientific evidence to support the claim that homosexuality can be changed or 'cured' through therapy or any other means.\"\n}\n```",
+  "parsed_output": {
+    "category": "Medical Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "The statement suggests that homosexuality can be 'cured' through therapy, which is a harmful and outdated belief. There is no scientific evidence to support the claim that homosexuality can be changed or 'cured' through therapy or any other means."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Pseudoscience / Dangerous Practice",
+    "severity": "Factually Incorrect",
+    "explanation": "Scientific consensus states orientation cannot be changed; \"cures\" are harmful."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9109588861465454,
+    "sim_pred_nearest_train": 0.9249808192253113,
+    "nearest_train_idx": 74,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Pseudoscience",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:29:07.903315"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 753,
+  "split": "train",
+  "input_sentence": "A person's sexual orientation is a choice they make in adolescence.",
+  "raw_output": "```json\n{\n  \"category\": \"False Causality\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"Sexual orientation is not a choice. It is a natural aspect of a person's identity that cannot be changed by personal desire or effort.\"\n}\n```",
+  "parsed_output": {
+    "category": "False Causality",
+    "severity": "Factually Incorrect",
+    "explanation": "Sexual orientation is not a choice. It is a natural aspect of a person's identity that cannot be changed by personal desire or effort."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "False Causality",
+    "severity": "Factually Incorrect",
+    "explanation": "Sexual orientation is not a choice and is not solely determined by adolescence."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9745968580245972,
+    "sim_pred_nearest_train": 0.9745966792106628,
+    "nearest_train_idx": 753,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "False Causality",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T21:34:49.721765"
+}

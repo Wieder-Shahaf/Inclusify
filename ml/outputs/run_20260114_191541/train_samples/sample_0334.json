@@ -1,0 +1,27 @@
+{
+  "sample_idx": 334,
+  "split": "train",
+  "input_sentence": "Pronoun usage is a crucial aspect of respecting an individual's gender identity.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by mentioning 'pronoun usage' and 'gender identity', which are terms that encompass a wide range of gender expressions and identities, including those within the LGBTQ+ community.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by mentioning 'pronoun usage' and 'gender identity', which are terms that encompass a wide range of gender expressions and identities, including those within the LGBTQ+ community."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Highlights the importance of respecting personal pronouns in academic and social contexts."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8938041925430298,
+    "sim_pred_nearest_train": 0.9096791744232178,
+    "nearest_train_idx": 750,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:20:56.641144"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 768,
+  "split": "train",
+  "input_sentence": "Legal protections for LGBTQ+ people vary widely by country.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym LGBTQ+ to refer to the community, which is inclusive and widely recognized. It also accurately states that legal protections vary by country, without making any biased or offensive statements.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym LGBTQ+ to refer to the community, which is inclusive and widely recognized. It also accurately states that legal protections vary by country, without making any biased or offensive statements."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Factual observation of global geopolitics and law."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8461012840270996,
+    "sim_pred_nearest_train": 0.9101208448410034,
+    "nearest_train_idx": 728,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:37:45.819087"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 22,
+  "split": "test",
+  "input_sentence": "We need to be mindful of the fact that some patients may not be comfortable with their healthcare providers being openly gay.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that being openly gay is a personal characteristic that could be a source of discomfort for patients, potentially invalidating the identity of LGBTQ+ healthcare providers. It could be rephrased to focus on the comfort level of patients with healthcare providers' openness about their sexual orientation, without implying that being openly gay is inherently problematic.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that being openly gay is a personal characteristic that could be a source of discomfort for patients, potentially invalidating the identity of LGBTQ+ healthcare providers. It could be rephrased to focus on the comfort level of patients with healthcare providers' openness about their sexual orientation, without implying that being openly gay is inherently problematic."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Exclusionary Rhetoric",
+    "severity": "Potentially Offensive",
+    "explanation": "Prioritizes the comfort of the majority (or those with biases) over the right of individuals to be their authentic selves in professional settings."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9007105827331543,
+    "sim_pred_nearest_train": 0.9381715655326843,
+    "nearest_train_idx": 58,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:29:19.874175"
+}

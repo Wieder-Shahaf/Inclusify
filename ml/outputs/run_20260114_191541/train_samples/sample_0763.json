@@ -1,0 +1,27 @@
+{
+  "sample_idx": 763,
+  "split": "train",
+  "input_sentence": "The idea that same-sex attraction was a result of poor parenting was a common, though disproven, theory.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence references a historical theory that same-sex attraction was linked to poor parenting, which is now widely recognized as outdated and disproven. This theory was a form of pathologization, where LGBTQ+ individuals were stigmatized and their identities were reduced to external factors rather than inherent aspects of their being.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence references a historical theory that same-sex attraction was linked to poor parenting, which is now widely recognized as outdated and disproven. This theory was a form of pathologization, where LGBTQ+ individuals were stigmatized and their identities were reduced to external factors rather than inherent aspects of their being."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "False Causality",
+    "severity": "Outdated",
+    "explanation": "This sentence presents an outdated and incorrect causal link between parenting and sexual orientation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9242153167724609,
+    "sim_pred_nearest_train": 0.9567971229553223,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:36:46.857666"
+}

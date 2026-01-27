@@ -1,0 +1,27 @@
+{
+  "sample_idx": 207,
+  "split": "train",
+  "input_sentence": "The rise in people identifying as LGBTQ+ is a result of social contagion and peer pressure.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The term'social contagion' is often used in a derogatory manner to imply that LGBTQ+ identities are not genuine or are spread through external influences rather than personal identity. It is important to use more inclusive language that acknowledges the complexity of identity formation and the validity of LGBTQ+ identities.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The term'social contagion' is often used in a derogatory manner to imply that LGBTQ+ identities are not genuine or are spread through external influences rather than personal identity. It is important to use more inclusive language that acknowledges the complexity of identity formation and the validity of LGBTQ+ identities."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Biased",
+    "explanation": "Attributes LGBTQ+ identities to external influences like trends and peer pressure."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9229220151901245,
+    "sim_pred_nearest_train": 0.934758186340332,
+    "nearest_train_idx": 40,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Social Contagion Narrative",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:58:38.844983"
+}

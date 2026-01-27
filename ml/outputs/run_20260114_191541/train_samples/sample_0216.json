@@ -1,0 +1,27 @@
+{
+  "sample_idx": 216,
+  "split": "train",
+  "input_sentence": "Until recently, public health campaigns often conflated gay men with the spread of HIV.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence references a historical practice of conflating gay men with the spread of HIV, which is outdated and no longer appropriate. It is important to avoid perpetuating harmful stereotypes and to use language that is inclusive and respectful of all individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence references a historical practice of conflating gay men with the spread of HIV, which is outdated and no longer appropriate. It is important to avoid perpetuating harmful stereotypes and to use language that is inclusive and respectful of all individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Defamatory Stereotyping",
+    "severity": "Outdated",
+    "explanation": "This unfairly targeted and stigmatized an entire community during a health crisis."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9102435111999512,
+    "sim_pred_nearest_train": 0.959314227104187,
+    "nearest_train_idx": 366,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:00:17.747676"
+}

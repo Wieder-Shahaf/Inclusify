@@ -1,0 +1,27 @@
+{
+  "sample_idx": 374,
+  "split": "train",
+  "input_sentence": "We need to consider the potential impact on societal norms before embracing these new identities.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that the acceptance of new identities could have a negative impact on societal norms, which could be perceived as invalidating or stigmatizing the identities themselves.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that the acceptance of new identities could have a negative impact on societal norms, which could be perceived as invalidating or stigmatizing the identities themselves."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Frames the acceptance of LGBTQ+ identities as a threat to existing societal structures and norms."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.922419011592865,
+    "sim_pred_nearest_train": 0.9641754627227783,
+    "nearest_train_idx": 169,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:27:45.681256"
+}

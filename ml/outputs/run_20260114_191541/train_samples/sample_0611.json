@@ -1,0 +1,27 @@
+{
+  "sample_idx": 611,
+  "split": "train",
+  "input_sentence": "Hormone replacement therapy is a medically supervised treatment for some transgender individuals.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is inclusive and accurately describes hormone replacement therapy as a treatment option for transgender individuals, without any bias or misinformation.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence is inclusive and accurately describes hormone replacement therapy as a treatment option for transgender individuals, without any bias or misinformation."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Accurate description of a medical treatment option."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8852493762969971,
+    "sim_pred_nearest_train": 0.8993378281593323,
+    "nearest_train_idx": 482,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:09:34.088211"
+}

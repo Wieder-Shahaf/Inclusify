@@ -1,0 +1,27 @@
+{
+  "sample_idx": 311,
+  "split": "train",
+  "input_sentence": "Gender identity is solely determined by chromosomes.",
+  "raw_output": "```json\n{\n  \"category\": \"Medical Misinformation\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"Gender identity is not solely determined by chromosomes. Gender identity is a complex and multifaceted aspect of a person's identity that is influenced by a variety of factors, including but not limited to, chromosomes, hormones, and social and cultural factors.\"\n}\n```",
+  "parsed_output": {
+    "category": "Medical Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "Gender identity is not solely determined by chromosomes. Gender identity is a complex and multifaceted aspect of a person's identity that is influenced by a variety of factors, including but not limited to, chromosomes, hormones, and social and cultural factors."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Scientific Denialism",
+    "severity": "Factually Incorrect",
+    "explanation": "This is an oversimplification that ignores the complex interplay of biological, psychological, and social factors in gender identity."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8912286758422852,
+    "sim_pred_nearest_train": 0.8939464688301086,
+    "nearest_train_idx": 480,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Medical Misinformation",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:16:52.913323"
+}

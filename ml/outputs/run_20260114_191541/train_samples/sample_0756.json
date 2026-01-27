@@ -1,0 +1,27 @@
+{
+  "sample_idx": 756,
+  "split": "train",
+  "input_sentence": "The concept of 'gender role' was rigidly defined in older psychological frameworks, often aligning with traditional stereotypes.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The term 'gender role' is outdated and pathologizes gender expression. It implies that gender expression is a rigid concept that aligns with traditional stereotypes, which is not inclusive of diverse gender identities and expressions.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The term 'gender role' is outdated and pathologizes gender expression. It implies that gender expression is a rigid concept that aligns with traditional stereotypes, which is not inclusive of diverse gender identities and expressions."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Negative Stereotyping",
+    "severity": "Outdated",
+    "explanation": "This limited understanding of gender restricted individuals who did not conform to these narrow definitions."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9031568169593811,
+    "sim_pred_nearest_train": 0.9461272954940796,
+    "nearest_train_idx": 673,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:35:24.962361"
+}

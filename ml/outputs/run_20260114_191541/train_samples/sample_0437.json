@@ -1,0 +1,27 @@
+{
+  "sample_idx": 437,
+  "split": "train",
+  "input_sentence": "The concept that non-binary identities are a modern trend is a misrepresentation of historical gender diversity.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence accurately addresses the misconception that non-binary identities are a recent phenomenon, instead highlighting the historical presence of gender diversity.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Correct",
+    "explanation": "The sentence accurately addresses the misconception that non-binary identities are a recent phenomenon, instead highlighting the historical presence of gender diversity."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Erasure",
+    "severity": "Outdated",
+    "explanation": "This sentence challenges an outdated perspective that erases the historical existence of non-binary identities."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9138219356536865,
+    "sim_pred_nearest_train": 0.9402247667312622,
+    "nearest_train_idx": 298,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:38:32.813573"
+}

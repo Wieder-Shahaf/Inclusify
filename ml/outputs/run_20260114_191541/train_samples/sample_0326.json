@@ -1,0 +1,27 @@
+{
+  "sample_idx": 326,
+  "split": "train",
+  "input_sentence": "Some early psychological theories suggested that a dominant mother could cause a son to become gay.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence perpetuates a harmful and outdated belief that a person's sexual orientation can be caused by their upbringing or the actions of others. This perspective has been widely discredited by the scientific community and is considered harmful to the LGBTQ+ community.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence perpetuates a harmful and outdated belief that a person's sexual orientation can be caused by their upbringing or the actions of others. This perspective has been widely discredited by the scientific community and is considered harmful to the LGBTQ+ community."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "False Causality",
+    "severity": "Outdated",
+    "explanation": "This reflects an outdated and disproven theory linking parenting styles to sexual orientation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9108705520629883,
+    "sim_pred_nearest_train": 0.9595740437507629,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:19:30.732665"
+}

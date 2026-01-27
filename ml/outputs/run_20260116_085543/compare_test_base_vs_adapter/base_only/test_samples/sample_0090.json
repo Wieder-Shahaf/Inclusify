@@ -1,0 +1,27 @@
+{
+  "sample_idx": 90,
+  "split": "test",
+  "input_sentence": "The history of medical interventions for gender non-conformity is complex and evolving.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by acknowledging the complexity and evolution of medical interventions for gender non-conformity, without specifying gender or using outdated terms.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by acknowledging the complexity and evolution of medical interventions for gender non-conformity, without specifying gender or using outdated terms."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Acknowledges the historical development of medical approaches."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8879830837249756,
+    "sim_pred_nearest_train": 0.9169282913208008,
+    "nearest_train_idx": 266,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:39:51.736852"
+}

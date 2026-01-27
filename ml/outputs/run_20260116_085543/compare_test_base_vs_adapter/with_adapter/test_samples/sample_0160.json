@@ -1,0 +1,27 @@
+{
+  "sample_idx": 160,
+  "split": "test",
+  "input_sentence": "The idea that LGBTQ+ individuals posed a threat to children was a recurring, unsubstantiated claim.",
+  "raw_output": "{\"category\": \"Cultural Threat Narrative\", \"severity\": \"Outdated\", \"explanation\": \"This describes an outdated and harmful stereotype that falsely portrayed LGBTQ+ people as a danger to youth.\"}",
+  "parsed_output": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Outdated",
+    "explanation": "This describes an outdated and harmful stereotype that falsely portrayed LGBTQ+ people as a danger to youth."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Outdated",
+    "explanation": "This is a harmful and false narrative used to stigmatize and discriminate against LGBTQ+ people."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9882642030715942,
+    "sim_pred_nearest_train": 0.9863806366920471,
+    "nearest_train_idx": 690,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Cultural Threat Narrative",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:21:49.897947"
+}

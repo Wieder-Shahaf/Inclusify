@@ -1,0 +1,27 @@
+{
+  "sample_idx": 5,
+  "split": "train",
+  "input_sentence": "Some find the terminology around gender identity to be overly complex and unnecessary.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence acknowledges the complexity of gender identity terminology without invalidating or pathologizing it, showing an inclusive approach.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence acknowledges the complexity of gender identity terminology without invalidating or pathologizing it, showing an inclusive approach."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Erasure",
+    "severity": "Potentially Offensive",
+    "explanation": "Dismisses the importance and validity of specific language used to describe identities, potentially leading to their exclusion."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8723946809768677,
+    "sim_pred_nearest_train": 0.9306025505065918,
+    "nearest_train_idx": 261,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:22:32.782429"
+}

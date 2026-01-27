@@ -1,0 +1,27 @@
+{
+  "sample_idx": 161,
+  "split": "test",
+  "input_sentence": "Transgender identity is caused by peer pressure alone.",
+  "raw_output": "{\"category\": \"False Causality\", \"severity\": \"Factually Incorrect\", \"explanation\": \"This falsely attributes transgender identity to social influence rather than internal sense of self.\"}",
+  "parsed_output": {
+    "category": "False Causality",
+    "severity": "Factually Incorrect",
+    "explanation": "This falsely attributes transgender identity to social influence rather than internal sense of self."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "False Causality",
+    "severity": "Factually Incorrect",
+    "explanation": "Peer pressure cannot create a persistent gender identity where none exists."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9480262994766235,
+    "sim_pred_nearest_train": 0.9697043299674988,
+    "nearest_train_idx": 290,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "False Causality",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:21:55.879355"
+}

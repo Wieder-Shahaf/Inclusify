@@ -1,0 +1,27 @@
+{
+  "sample_idx": 452,
+  "split": "train",
+  "input_sentence": "There are historical instances where homosexuality was classified as a mental disorder, which continues to inform some societal views.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence acknowledges the historical classification of homosexuality as a mental disorder, which is outdated and no longer appropriate. It is important to recognize the evolution of understanding and the declassification of homosexuality as a mental disorder.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence acknowledges the historical classification of homosexuality as a mental disorder, which is outdated and no longer appropriate. It is important to recognize the evolution of understanding and the declassification of homosexuality as a mental disorder."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Pathologization",
+    "severity": "Potentially Offensive",
+    "explanation": "References past medical classifications that are now debunked, implying they might still hold some validity or contribute to ongoing stigma."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.916904628276825,
+    "sim_pred_nearest_train": 0.9689293503761292,
+    "nearest_train_idx": 548,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T20:41:16.328669"
+}

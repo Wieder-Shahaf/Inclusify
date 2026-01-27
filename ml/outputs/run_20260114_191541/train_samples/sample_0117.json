@@ -1,0 +1,27 @@
+{
+  "sample_idx": 117,
+  "split": "train",
+  "input_sentence": "Transgender identity is a form of self-harm that should be discouraged.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence pathologizes transgender identity, which is a harmful and outdated view. It also frames transgender identity as a form of self-harm, which is not accurate and can be offensive to transgender individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence pathologizes transgender identity, which is a harmful and outdated view. It also frames transgender identity as a form of self-harm, which is not accurate and can be offensive to transgender individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "Frames transgender identity as inherently harmful, contradicting medical and psychological consensus."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9036206603050232,
+    "sim_pred_nearest_train": 0.9762005805969238,
+    "nearest_train_idx": 662,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:43:00.978785"
+}

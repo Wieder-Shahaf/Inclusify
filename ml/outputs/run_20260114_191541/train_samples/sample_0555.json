@@ -1,0 +1,27 @@
+{
+  "sample_idx": 555,
+  "split": "train",
+  "input_sentence": "The notion that transgender people were simply 'confused' about their gender was a common dismissive attitude.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence accurately identifies a harmful and outdated belief about transgender individuals, emphasizing the importance of understanding and respecting their identities.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Correct",
+    "explanation": "The sentence accurately identifies a harmful and outdated belief about transgender individuals, emphasizing the importance of understanding and respecting their identities."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This reflects an outdated and dismissive attitude that invalidates the genuine gender identity of transgender individuals."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9551951885223389,
+    "sim_pred_nearest_train": 0.9607584476470947,
+    "nearest_train_idx": 617,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T20:59:43.601478"
+}

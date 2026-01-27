@@ -1,0 +1,27 @@
+{
+  "sample_idx": 421,
+  "split": "train",
+  "input_sentence": "Before the 1970s, homosexuality was often treated with electroshock therapy.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence uses the term 'homosexuality' which was historically used to pathologize LGBTQ+ individuals. The mention of 'electroshock therapy' as a treatment for homosexuality reflects outdated and harmful practices.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence uses the term 'homosexuality' which was historically used to pathologize LGBTQ+ individuals. The mention of 'electroshock therapy' as a treatment for homosexuality reflects outdated and harmful practices."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Medical Malpractice",
+    "severity": "Outdated",
+    "explanation": "This describes an unethical and harmful historical medical practice no longer considered acceptable."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9001880884170532,
+    "sim_pred_nearest_train": 0.9513887166976929,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:35:53.058073"
+}

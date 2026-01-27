@@ -1,0 +1,27 @@
+{
+  "sample_idx": 731,
+  "split": "train",
+  "input_sentence": "Is it possible that some people are simply 'confused' about their sexual orientation?",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The term 'confused' can be perceived as invalidating or pathologizing individuals' identities, implying that their sexual orientation is not valid or certain.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The term 'confused' can be perceived as invalidating or pathologizing individuals' identities, implying that their sexual orientation is not valid or certain."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Questions the certainty and validity of a person's declared sexual orientation, suggesting it might be a temporary state of confusion."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9555016756057739,
+    "sim_pred_nearest_train": 0.9555017948150635,
+    "nearest_train_idx": 731,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T21:31:01.116741"
+}

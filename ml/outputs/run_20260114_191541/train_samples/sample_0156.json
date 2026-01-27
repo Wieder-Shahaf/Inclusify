@@ -1,0 +1,27 @@
+{
+  "sample_idx": 156,
+  "split": "train",
+  "input_sentence": "The historical medical understanding of sexual orientation was often framed within a binary of normal/abnormal.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence uses the outdated and harmful binary of 'normal/abnormal' to describe the historical medical understanding of sexual orientation, which pathologizes non-heterosexual identities.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence uses the outdated and harmful binary of 'normal/abnormal' to describe the historical medical understanding of sexual orientation, which pathologizes non-heterosexual identities."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "This reflects an outdated view that pathologized anything outside of heterosexuality."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9611976146697998,
+    "sim_pred_nearest_train": 0.9625883102416992,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T19:49:51.896731"
+}

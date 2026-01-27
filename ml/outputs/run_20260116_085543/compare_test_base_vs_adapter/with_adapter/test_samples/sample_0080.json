@@ -1,0 +1,27 @@
+{
+  "sample_idx": 80,
+  "split": "test",
+  "input_sentence": "Allyship is just a performative trend for people to gain social clout.",
+  "raw_output": "{\"category\": \"Identity Invalidation\", \"severity\": \"Biased\", \"explanation\": \"Dismisses the genuine support of allies as superficial and attention-seeking.\"}",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Biased",
+    "explanation": "Dismisses the genuine support of allies as superficial and attention-seeking."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Tone Policing",
+    "severity": "Factually Incorrect",
+    "explanation": "This dismisses genuine efforts of support and solidarity by framing them as superficial or self-serving."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8951780796051025,
+    "sim_pred_nearest_train": 0.9700665473937988,
+    "nearest_train_idx": 11,
+    "nearest_train_severity": "Biased",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:13:50.327278"
+}

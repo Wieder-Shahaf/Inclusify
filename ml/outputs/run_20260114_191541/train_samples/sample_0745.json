@@ -1,0 +1,27 @@
+{
+  "sample_idx": 745,
+  "split": "train",
+  "input_sentence": "Non-monogamy is just an excuse for promiscuity and infidelity.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence invalidates the identities and choices of individuals who practice non-monogamy, framing it as an excuse for negative behaviors rather than a legitimate form of relationship structure. This language can be harmful and stigmatizing to those who identify as non-monogamous.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence invalidates the identities and choices of individuals who practice non-monogamy, framing it as an excuse for negative behaviors rather than a legitimate form of relationship structure. This language can be harmful and stigmatizing to those who identify as non-monogamous."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Negative Stereotyping",
+    "severity": "Biased",
+    "explanation": "Stereotypes non-monogamous relationships negatively, ignoring diverse ethical practices."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8930473327636719,
+    "sim_pred_nearest_train": 0.943307638168335,
+    "nearest_train_idx": 58,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:33:33.937601"
+}

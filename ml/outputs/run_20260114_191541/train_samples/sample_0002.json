@@ -1,0 +1,27 @@
+{
+  "sample_idx": 2,
+  "split": "train",
+  "input_sentence": "Older literature sometimes suggested that bisexuality was a manifestation of indecision or a desire for attention.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence suggests that bisexuality was historically viewed as a psychological issue, which is outdated and no longer supported by modern understanding and acceptance of sexual orientation.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence suggests that bisexuality was historically viewed as a psychological issue, which is outdated and no longer supported by modern understanding and acceptance of sexual orientation."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This invalidates bisexual identities by framing them as superficial or attention-seeking, rather than genuine orientations."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9099057912826538,
+    "sim_pred_nearest_train": 0.9604882001876831,
+    "nearest_train_idx": 156,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:22:07.718606"
+}

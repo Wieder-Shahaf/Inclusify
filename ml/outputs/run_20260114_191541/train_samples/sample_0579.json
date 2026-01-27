@@ -1,0 +1,27 @@
+{
+  "sample_idx": 579,
+  "split": "train",
+  "input_sentence": "Some believe that transgender identity is a social construct that can be unlearned.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence suggests that transgender identity can be 'unlearned,' which is a harmful and outdated belief. Historically, transgender people were pathologized and seen as having a mental disorder that could be 'cured.' This belief has been widely discredited and is no longer supported by the medical and psychological communities.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence suggests that transgender identity can be 'unlearned,' which is a harmful and outdated belief. Historically, transgender people were pathologized and seen as having a mental disorder that could be 'cured.' This belief has been widely discredited and is no longer supported by the medical and psychological communities."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Denies the inherent nature of transgender identity, framing it as something that can be changed or dismissed."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8922907114028931,
+    "sim_pred_nearest_train": 0.9491204023361206,
+    "nearest_train_idx": 430,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:04:04.205574"
+}

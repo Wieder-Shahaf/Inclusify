@@ -1,0 +1,27 @@
+{
+  "sample_idx": 221,
+  "split": "train",
+  "input_sentence": "Sexual orientation is a choice, and people can choose to be heterosexual.",
+  "raw_output": "```json\n{\n  \"category\": \"False Causality\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"The statement implies that sexual orientation is a choice, which is a widely debunked myth. Sexual orientation is a complex mix of biological, psychological, and environmental factors, and it is not something that can be chosen.\"\n}\n```",
+  "parsed_output": {
+    "category": "False Causality",
+    "severity": "Factually Incorrect",
+    "explanation": "The statement implies that sexual orientation is a choice, which is a widely debunked myth. Sexual orientation is a complex mix of biological, psychological, and environmental factors, and it is not something that can be chosen."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Factually Incorrect",
+    "explanation": "This inaccurately portrays sexual orientation as a conscious choice rather than an intrinsic aspect of identity."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9327239990234375,
+    "sim_pred_nearest_train": 0.9629687070846558,
+    "nearest_train_idx": 154,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "False Causality",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:01:03.399948"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 638,
+  "split": "train",
+  "input_sentence": "Understanding the diversity within the LGBTQ+ acronym is essential for respectful communication.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym 'LGBTQ+' and emphasizes the importance of understanding the diversity within it, which is inclusive and respectful.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym 'LGBTQ+' and emphasizes the importance of understanding the diversity within it, which is inclusive and respectful."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Promotes an understanding of the breadth of identities within the community."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8843392133712769,
+    "sim_pred_nearest_train": 0.9263408184051514,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:14:17.226702"
+}

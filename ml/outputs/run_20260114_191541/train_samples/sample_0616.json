@@ -1,0 +1,27 @@
+{
+  "sample_idx": 616,
+  "split": "train",
+  "input_sentence": "Societal acceptance of LGBTQ+ identities has increased significantly in many parts of the world.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym LGBTQ+ to refer to lesbian, gay, bisexual, transgender, and queer identities, which is inclusive and widely recognized. The language is neutral and does not contain any offensive or biased terms.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym LGBTQ+ to refer to lesbian, gay, bisexual, transgender, and queer identities, which is inclusive and widely recognized. The language is neutral and does not contain any offensive or biased terms."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Reflects observable trends in public opinion and legal recognition."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8355933427810669,
+    "sim_pred_nearest_train": 0.8980509042739868,
+    "nearest_train_idx": 15,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Erasure",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:10:20.484436"
+}

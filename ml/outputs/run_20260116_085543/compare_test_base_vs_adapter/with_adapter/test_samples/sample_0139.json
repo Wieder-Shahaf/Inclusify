@@ -1,0 +1,27 @@
+{
+  "sample_idx": 139,
+  "split": "test",
+  "input_sentence": "Research indicates a correlation between minority stress and negative health outcomes in LGBTQ+ individuals.",
+  "raw_output": "{\"category\": NaN, \"severity\": \"Correct\", \"explanation\": \"Acknowledges the scientific link between minority stress and health.\"}",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "Acknowledges the scientific link between minority stress and health."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Acknowledges the impact of societal discrimination on health."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9204115867614746,
+    "sim_pred_nearest_train": 0.9457453489303589,
+    "nearest_train_idx": 62,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:19:46.971084"
+}

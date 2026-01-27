@@ -1,0 +1,27 @@
+{
+  "sample_idx": 156,
+  "split": "test",
+  "input_sentence": "We should focus on treating gender dysphoria as a mental health issue, not a valid identity.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence invalidates the identity of individuals who experience gender dysphoria by suggesting it is not a valid identity. This language can be harmful and perpetuate stigma against transgender individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence invalidates the identity of individuals who experience gender dysphoria by suggesting it is not a valid identity. This language can be harmful and perpetuate stigma against transgender individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Pathologization",
+    "severity": "Biased",
+    "explanation": "Reverts to the outdated model of pathologizing gender dysphoria rather than affirming identities."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8905720710754395,
+    "sim_pred_nearest_train": 0.9605094790458679,
+    "nearest_train_idx": 401,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T22:11:58.647064"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 51,
+  "split": "test",
+  "input_sentence": "Sexual orientation was believed to be changeable with discipline.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence suggests that sexual orientation can be changed through discipline, which is a harmful and outdated belief that has been disproven by science. This belief is rooted in historical pathologization of LGBTQ+ identities.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence suggests that sexual orientation can be changed through discipline, which is a harmful and outdated belief that has been disproven by science. This belief is rooted in historical pathologization of LGBTQ+ identities."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Behavioral Modification Theory",
+    "severity": "Outdated",
+    "explanation": "A behavioral conditioning approach that proved ineffective and harmful."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8773351907730103,
+    "sim_pred_nearest_train": 0.9444177150726318,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:33:44.645006"
+}

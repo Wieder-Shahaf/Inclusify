@@ -1,0 +1,27 @@
+{
+  "sample_idx": 282,
+  "split": "train",
+  "input_sentence": "LGBTQ+ identities did not exist before modern times.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence implies that LGBTQ+ identities were not recognized or valid before modern times, which is a historical pathologization of LGBTQ+ identities. This perspective is outdated and no longer accurate, as it overlooks the existence and recognition of LGBTQ+ identities in various cultures and historical periods.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence implies that LGBTQ+ identities were not recognized or valid before modern times, which is a historical pathologization of LGBTQ+ identities. This perspective is outdated and no longer accurate, as it overlooks the existence and recognition of LGBTQ+ identities in various cultures and historical periods."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Erasure",
+    "severity": "Factually Incorrect",
+    "explanation": "Erases documented history of gender/sexual variance in antiquity (e.g., Two-Spirit, Hijra)."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.887067973613739,
+    "sim_pred_nearest_train": 0.9703500270843506,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:11:48.260663"
+}

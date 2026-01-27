@@ -1,0 +1,27 @@
+{
+  "sample_idx": 378,
+  "split": "train",
+  "input_sentence": "Sociological research consistently demonstrates that LGBTQ+ individuals face disproportionate levels of social exclusion.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym 'LGBTQ+', which is a widely accepted and inclusive term to refer to the lesbian, gay, bisexual, transgender, queer, and other sexual and gender minority individuals. The language is factually accurate and does not contain any biases or offensive terms.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym 'LGBTQ+', which is a widely accepted and inclusive term to refer to the lesbian, gay, bisexual, transgender, queer, and other sexual and gender minority individuals. The language is factually accurate and does not contain any biases or offensive terms."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Supported by sociological evidence regarding social exclusion faced by the LGBTQ+ community."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8902356624603271,
+    "sim_pred_nearest_train": 0.9001820683479309,
+    "nearest_train_idx": 15,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Erasure",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:28:29.580819"
+}

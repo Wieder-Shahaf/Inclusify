@@ -1,0 +1,27 @@
+{
+  "sample_idx": 55,
+  "split": "test",
+  "input_sentence": "Homosexuality is a mental disorder that can be treated.",
+  "raw_output": "{\"category\": \"Historical Pathologization\", \"severity\": \"Factually Incorrect\", \"explanation\": \"This revives outdated and harmful classifications of homosexuality as a mental illness.\"}",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Factually Incorrect",
+    "explanation": "This revives outdated and harmful classifications of homosexuality as a mental illness."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Pathologization",
+    "severity": "Factually Incorrect",
+    "explanation": "This reflects outdated and debunked views that classified homosexuality as a mental illness, which has been removed from diagnostic manuals."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.988314151763916,
+    "sim_pred_nearest_train": 0.9734679460525513,
+    "nearest_train_idx": 222,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:11:17.593674"
+}

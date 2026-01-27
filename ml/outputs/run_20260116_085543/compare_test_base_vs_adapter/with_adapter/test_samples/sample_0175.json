@@ -1,0 +1,27 @@
+{
+  "sample_idx": 175,
+  "split": "test",
+  "input_sentence": "The constant discussion of LGBTQ+ rights can make individuals who don't identify with these groups feel marginalized.",
+  "raw_output": "{\"category\": \"Tone Policing\", \"severity\": \"Potentially Offensive\", \"explanation\": \"Shifts focus from the rights of the marginalized group to the perceived discomfort of the majority.\"}",
+  "parsed_output": {
+    "category": "Tone Policing",
+    "severity": "Potentially Offensive",
+    "explanation": "Shifts focus from the rights of the marginalized group to the perceived discomfort of the majority."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Tone Policing",
+    "severity": "Biased",
+    "explanation": "Suggests that advocating for LGBTQ+ rights is inherently exclusionary or burdensome to those outside the community."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9376946091651917,
+    "sim_pred_nearest_train": 0.9850306510925293,
+    "nearest_train_idx": 276,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Tone Policing",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:23:23.979247"
+}

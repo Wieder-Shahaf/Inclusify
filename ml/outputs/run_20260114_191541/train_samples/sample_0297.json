@@ -1,0 +1,27 @@
+{
+  "sample_idx": 297,
+  "split": "train",
+  "input_sentence": "Gender-affirming care is recognized by major medical organizations as medically necessary for many transgender individuals.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses inclusive language by specifying 'transgender individuals' and acknowledges the medical necessity of gender-affirming care, which is a recognized and appropriate term in the context of LGBTQ+ health care.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses inclusive language by specifying 'transgender individuals' and acknowledges the medical necessity of gender-affirming care, which is a recognized and appropriate term in the context of LGBTQ+ health care."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Reflects the consensus of leading medical bodies regarding the importance of gender-affirming care."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9235998392105103,
+    "sim_pred_nearest_train": 0.9235997200012207,
+    "nearest_train_idx": 297,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:14:27.427306"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 70,
+  "split": "train",
+  "input_sentence": "The idea that sexual orientation can change over time is a belief held by some.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence is neutral and does not contain any language that could be considered offensive or biased against the LGBTQ+ community. It simply states a belief held by some individuals without making any value judgments or assumptions about sexual orientation.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence is neutral and does not contain any language that could be considered offensive or biased against the LGBTQ+ community. It simply states a belief held by some individuals without making any value judgments or assumptions about sexual orientation."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Potentially Offensive",
+    "explanation": "Can imply that sexual orientation is fluid or changeable in a way that is not supported by current psychological understanding, potentially fueling conversion therapy narratives."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8781459331512451,
+    "sim_pred_nearest_train": 0.9065607786178589,
+    "nearest_train_idx": 134,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:34:25.685091"
+}

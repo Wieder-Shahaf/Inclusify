@@ -1,0 +1,27 @@
+{
+  "sample_idx": 196,
+  "split": "test",
+  "input_sentence": "The historical persecution of LGBTQ+ individuals highlights the importance of ongoing advocacy for equality.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence uses the acronym LGBTQ+ to refer to lesbian, gay, bisexual, transgender, and queer individuals, which is inclusive and widely recognized. The language is factually accurate and does not contain any offensive or outdated terms.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence uses the acronym LGBTQ+ to refer to lesbian, gay, bisexual, transgender, and queer individuals, which is inclusive and widely recognized. The language is factually accurate and does not contain any offensive or outdated terms."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Draws a connection between historical injustices and current needs for advocacy."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8266029357910156,
+    "sim_pred_nearest_train": 0.8963326215744019,
+    "nearest_train_idx": 101,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Erasure",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T22:19:03.070945"
+}

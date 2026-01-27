@@ -1,0 +1,27 @@
+{
+  "sample_idx": 304,
+  "split": "train",
+  "input_sentence": "We should be cautious about affirming children's gender identities too early; they might regret it later.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that affirming a child's gender identity too early might lead to regret, which could be perceived as invalidating or questioning the validity of a child's gender identity. This could be harmful to children who are exploring their gender identity.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that affirming a child's gender identity too early might lead to regret, which could be perceived as invalidating or questioning the validity of a child's gender identity. This could be harmful to children who are exploring their gender identity."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Biased",
+    "explanation": "Suggests that affirming a child's identity is premature and implies it's not genuine, leading to potential regret."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9476763010025024,
+    "sim_pred_nearest_train": 0.9608907103538513,
+    "nearest_train_idx": 504,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T20:15:41.058683"
+}

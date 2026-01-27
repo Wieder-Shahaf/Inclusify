@@ -1,0 +1,27 @@
+{
+  "sample_idx": 435,
+  "split": "train",
+  "input_sentence": "We must be careful not to endorse all aspects of LGBTQ+ culture.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that certain aspects of LGBTQ+ culture are not acceptable or should be avoided, which can be perceived as invalidating the identities and experiences of LGBTQ+ individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that certain aspects of LGBTQ+ culture are not acceptable or should be avoided, which can be perceived as invalidating the identities and experiences of LGBTQ+ individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Othering / Incompatibility Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Suggests that LGBTQ+ culture is a monolithic entity with problematic elements, implying a need for distance or disapproval."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9380558133125305,
+    "sim_pred_nearest_train": 0.9648481607437134,
+    "nearest_train_idx": 197,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:38:15.764498"
+}

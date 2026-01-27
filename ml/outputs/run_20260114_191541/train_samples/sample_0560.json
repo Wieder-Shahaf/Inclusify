@@ -1,0 +1,27 @@
+{
+  "sample_idx": 560,
+  "split": "train",
+  "input_sentence": "The normalization of homosexuality is leading to a decline in societal morality and family values.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The term 'homosexuality' is outdated and pathologizing. It is more inclusive and respectful to use 'LGBTQ+ individuals' or'same-sex attraction' instead.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The term 'homosexuality' is outdated and pathologizing. It is more inclusive and respectful to use 'LGBTQ+ individuals' or'same-sex attraction' instead."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Biased",
+    "explanation": "Connects the acceptance of homosexuality to negative societal consequences and moral degradation."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8621399402618408,
+    "sim_pred_nearest_train": 0.9627297520637512,
+    "nearest_train_idx": 366,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:00:41.751870"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 308,
+  "split": "train",
+  "input_sentence": "Asexual people are just experiencing a lack of libido, which is a medical issue.",
+  "raw_output": "```json\n{\n  \"category\": \"Medical Misinformation\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"The statement implies that asexuality is a medical issue or a condition that can be diagnosed and treated, which is not accurate. Asexuality is a sexual orientation characterized by a lack of sexual attraction to others, and it is not a medical condition.\"\n}\n```",
+  "parsed_output": {
+    "category": "Medical Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "The statement implies that asexuality is a medical issue or a condition that can be diagnosed and treated, which is not accurate. Asexuality is a sexual orientation characterized by a lack of sexual attraction to others, and it is not a medical condition."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "This incorrectly medicalizes asexuality, conflating a lack of sexual attraction with a medical condition of low libido."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9615001678466797,
+    "sim_pred_nearest_train": 0.9615001678466797,
+    "nearest_train_idx": 308,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Medical Misinformation",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T20:16:21.581145"
+}

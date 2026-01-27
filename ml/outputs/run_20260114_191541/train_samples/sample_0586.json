@@ -1,0 +1,27 @@
+{
+  "sample_idx": 586,
+  "split": "train",
+  "input_sentence": "We should only recognize gender as assigned at birth.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"This sentence invalidates the identities of individuals who do not identify with the gender assigned to them at birth, including those who are non-binary, genderqueer, or genderfluid. It also disregards the experiences of those who have undergone gender-affirming surgeries or have undergone significant gender transitions.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "This sentence invalidates the identities of individuals who do not identify with the gender assigned to them at birth, including those who are non-binary, genderqueer, or genderfluid. It also disregards the experiences of those who have undergone gender-affirming surgeries or have undergone significant gender transitions."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Biased",
+    "explanation": "Denies the validity of gender identity that differs from assigned sex at birth."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9343972206115723,
+    "sim_pred_nearest_train": 0.9632983207702637,
+    "nearest_train_idx": 519,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T21:05:17.252816"
+}

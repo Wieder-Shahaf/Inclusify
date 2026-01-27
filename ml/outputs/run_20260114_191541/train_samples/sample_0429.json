@@ -1,0 +1,27 @@
+{
+  "sample_idx": 429,
+  "split": "train",
+  "input_sentence": "The LGBTQ+ agenda is pushing its values on everyone.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that the LGBTQ+ community is imposing its values on others, which can be perceived as invalidating the identities and rights of LGBTQ+ individuals. It also perpetuates a harmful stereotype that LGBTQ+ individuals are trying to impose their beliefs on others.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that the LGBTQ+ community is imposing its values on others, which can be perceived as invalidating the identities and rights of LGBTQ+ individuals. It also perpetuates a harmful stereotype that LGBTQ+ individuals are trying to impose their beliefs on others."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Othering / Incompatibility Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Frames LGBTQ+ advocacy as an aggressive imposition of values rather than a pursuit of equality and rights."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9246406555175781,
+    "sim_pred_nearest_train": 0.9593061804771423,
+    "nearest_train_idx": 203,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:37:19.156564"
+}

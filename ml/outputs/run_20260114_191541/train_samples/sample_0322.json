@@ -1,0 +1,27 @@
+{
+  "sample_idx": 322,
+  "split": "train",
+  "input_sentence": "Asexual individuals may not experience sexual attraction, but can still form meaningful romantic relationships.",
+  "raw_output": "```json\n{\n  \"category\": \"N/A\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence accurately describes asexual individuals and their capacity for forming romantic relationships, without any language that could be considered offensive or biased.\"\n}\n```",
+  "parsed_output": {
+    "category": "N/A",
+    "severity": "Correct",
+    "explanation": "The sentence accurately describes asexual individuals and their capacity for forming romantic relationships, without any language that could be considered offensive or biased."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": NaN,
+    "severity": "Correct",
+    "explanation": "Accurate understanding of asexuality and its relationship to romantic attraction."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9266522526741028,
+    "sim_pred_nearest_train": 0.9285123348236084,
+    "nearest_train_idx": 121,
+    "nearest_train_severity": "Correct",
+    "nearest_train_category": NaN,
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:18:47.446590"
+}

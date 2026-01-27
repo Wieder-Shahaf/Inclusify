@@ -1,0 +1,27 @@
+{
+  "sample_idx": 665,
+  "split": "train",
+  "input_sentence": "Conversion therapy was once considered an acceptable treatment.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The term 'conversion therapy' is outdated and pathologizes LGBTQ+ individuals, implying that their sexual orientation or gender identity is a disorder that needs to be 'converted' or changed.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The term 'conversion therapy' is outdated and pathologizes LGBTQ+ individuals, implying that their sexual orientation or gender identity is a disorder that needs to be 'converted' or changed."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Medical Malpractice",
+    "severity": "Outdated",
+    "explanation": "Describes a practice now condemned by every major medical body."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8718041181564331,
+    "sim_pred_nearest_train": 0.9464038610458374,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:19:06.397357"
+}

@@ -1,0 +1,27 @@
+{
+  "sample_idx": 107,
+  "split": "test",
+  "input_sentence": "Some parents are worried about their children being exposed to gay pride parades online.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that the presence of gay pride parades online is a cause for concern for parents, potentially invalidating the identity and experiences of LGBTQ+ individuals and their families.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that the presence of gay pride parades online is a cause for concern for parents, potentially invalidating the identity and experiences of LGBTQ+ individuals and their families."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Tone Policing",
+    "severity": "Potentially Offensive",
+    "explanation": "Focuses on parental discomfort and perceived inappropriate exposure rather than the positive nature of LGBTQ+ visibility."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9201270341873169,
+    "sim_pred_nearest_train": 0.9342831373214722,
+    "nearest_train_idx": 203,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T22:02:58.210412"
+}

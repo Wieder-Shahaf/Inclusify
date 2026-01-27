@@ -1,0 +1,27 @@
+{
+  "sample_idx": 609,
+  "split": "train",
+  "input_sentence": "Explaining your pronouns is an unnecessary political statement that alienates people.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence frames explaining one's pronouns as a political statement that alienates people, which can be perceived as invalidating the identity of individuals who choose to share their pronouns. This framing can be harmful and dismissive of the importance of respecting and using correct pronouns for transgender and non-binary individuals.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence frames explaining one's pronouns as a political statement that alienates people, which can be perceived as invalidating the identity of individuals who choose to share their pronouns. This framing can be harmful and dismissive of the importance of respecting and using correct pronouns for transgender and non-binary individuals."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Tone Policing",
+    "severity": "Factually Incorrect",
+    "explanation": "This dismisses the importance of pronouns as a way to express respect and affirm identity, framing it as an unnecessary or aggressive act."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9048120975494385,
+    "sim_pred_nearest_train": 0.947658896446228,
+    "nearest_train_idx": 3,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:09:14.397774"
+}

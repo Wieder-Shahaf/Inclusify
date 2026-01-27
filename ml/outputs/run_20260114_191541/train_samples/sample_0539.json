@@ -1,0 +1,27 @@
+{
+  "sample_idx": 539,
+  "split": "train",
+  "input_sentence": "Some parents worry their children might 'catch' being gay from friends.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The phrase 'catch being gay' implies that being LGBTQ+ is something that can be acquired or contracted, which is a harmful and outdated stereotype. It also invalidates the identity of LGBTQ+ individuals by suggesting that their sexual orientation is not inherent but rather something that can be influenced by external factors.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The phrase 'catch being gay' implies that being LGBTQ+ is something that can be acquired or contracted, which is a harmful and outdated stereotype. It also invalidates the identity of LGBTQ+ individuals by suggesting that their sexual orientation is not inherent but rather something that can be influenced by external factors."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Social Contagion Narrative",
+    "severity": "Potentially Offensive",
+    "explanation": "Promotes the false idea that sexual orientation is a choice or can be influenced by social interaction."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8656644225120544,
+    "sim_pred_nearest_train": 0.9049093127250671,
+    "nearest_train_idx": 361,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Social Contagion Narrative",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:56:54.740824"
+}

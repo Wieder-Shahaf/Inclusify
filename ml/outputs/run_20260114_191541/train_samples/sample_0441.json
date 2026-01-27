@@ -1,0 +1,27 @@
+{
+  "sample_idx": 441,
+  "split": "train",
+  "input_sentence": "The notion that a person can be 'cured' of their gender identity is a dangerous and outdated misconception.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence uses the term 'cured' which historically has been used in a pathologizing manner to suggest that being LGBTQ+ is a condition that can be 'cured' through therapy or other means. This language is outdated and no longer appropriate.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence uses the term 'cured' which historically has been used in a pathologizing manner to suggest that being LGBTQ+ is a condition that can be 'cured' through therapy or other means. This language is outdated and no longer appropriate."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Outdated",
+    "explanation": "This sentence directly refutes the outdated and harmful idea that gender identity can be eliminated."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8908565044403076,
+    "sim_pred_nearest_train": 0.9554908275604248,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:39:16.734192"
+}

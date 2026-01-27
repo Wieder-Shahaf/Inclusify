@@ -1,0 +1,27 @@
+{
+  "sample_idx": 115,
+  "split": "train",
+  "input_sentence": "Same-sex parenting harms child development.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence uses a broad and outdated claim that same-sex parenting harms child development, which has been widely debunked by research. This language pathologizes LGBTQ+ families and perpetuates harmful stereotypes.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence uses a broad and outdated claim that same-sex parenting harms child development, which has been widely debunked by research. This language pathologizes LGBTQ+ families and perpetuates harmful stereotypes."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Disproven Sociological Claim",
+    "severity": "Factually Incorrect",
+    "explanation": "70+ studies show children of gay parents fare as well as those of straight parents."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8942782282829285,
+    "sim_pred_nearest_train": 0.944403886795044,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T19:42:42.246711"
+}

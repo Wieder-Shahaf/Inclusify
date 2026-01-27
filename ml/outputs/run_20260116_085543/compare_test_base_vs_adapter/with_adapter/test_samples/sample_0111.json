@@ -1,0 +1,27 @@
+{
+  "sample_idx": 111,
+  "split": "test",
+  "input_sentence": "The rapid societal acceptance of LGBTQ+ relationships is causing discomfort for some traditionalists.",
+  "raw_output": "{\"category\": \"Tone Policing\", \"severity\": \"Potentially Offensive\", \"explanation\": \"Shifts focus from the rights of LGBTQ+ individuals to the discomfort of those who oppose their rights.\"}",
+  "parsed_output": {
+    "category": "Tone Policing",
+    "severity": "Potentially Offensive",
+    "explanation": "Shifts focus from the rights of LGBTQ+ individuals to the discomfort of those who oppose their rights."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Tone Policing",
+    "severity": "Potentially Offensive",
+    "explanation": "Prioritizes the discomfort of those resistant to change over the progress of LGBTQ+ rights and acceptance."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9839856624603271,
+    "sim_pred_nearest_train": 0.9815794825553894,
+    "nearest_train_idx": 762,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Tone Policing",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:17:02.975061"
+}

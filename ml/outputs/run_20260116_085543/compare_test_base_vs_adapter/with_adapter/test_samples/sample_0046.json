@@ -1,0 +1,27 @@
+{
+  "sample_idx": 46,
+  "split": "test",
+  "input_sentence": "The notion that gender identity can be fluid is a relatively new concept for many.",
+  "raw_output": "{\"category\": \"Identity Invalidation\", \"severity\": \"Potentially Offensive\", \"explanation\": \"Frames the understanding of fluid gender identity as a 'new concept' that may be unfamiliar or unsettling, potentially invalidating the experiences of those who identify in this way.\"}",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Frames the understanding of fluid gender identity as a 'new concept' that may be unfamiliar or unsettling, potentially invalidating the experiences of those who identify in this way."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Frames a valid identity as a fleeting or temporary idea rather than a stable aspect of self."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9589139223098755,
+    "sim_pred_nearest_train": 0.9871357679367065,
+    "nearest_train_idx": 519,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:10:25.082886"
+}

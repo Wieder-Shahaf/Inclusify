@@ -1,0 +1,27 @@
+{
+  "sample_idx": 430,
+  "split": "train",
+  "input_sentence": "The concept of 'gender identity disorder' was a term used in earlier diagnostic manuals.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The term 'gender identity disorder' is a historical term that was used in earlier diagnostic manuals to pathologize gender diversity. It is no longer appropriate to use this term as it is considered outdated and harmful.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The term 'gender identity disorder' is a historical term that was used in earlier diagnostic manuals to pathologize gender diversity. It is no longer appropriate to use this term as it is considered outdated and harmful."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "This refers to an outdated diagnostic term that pathologized transgender identities, which has since been revised."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9445152282714844,
+    "sim_pred_nearest_train": 0.9445152878761292,
+    "nearest_train_idx": 430,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T20:37:30.023240"
+}

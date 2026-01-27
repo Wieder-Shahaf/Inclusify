@@ -1,0 +1,27 @@
+{
+  "sample_idx": 169,
+  "split": "train",
+  "input_sentence": "Some older generations may struggle to understand or accept the terminology used by younger LGBTQ+ individuals.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Correct\",\n  \"explanation\": \"The sentence acknowledges the potential for misunderstanding or acceptance issues without invalidating the identities of LGBTQ+ individuals. It focuses on the generational gap rather than the individuals themselves.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Correct",
+    "explanation": "The sentence acknowledges the potential for misunderstanding or acceptance issues without invalidating the identities of LGBTQ+ individuals. It focuses on the generational gap rather than the individuals themselves."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Implies that the validity of terminology is dependent on acceptance by older generations, potentially dismissing current understanding."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9322154521942139,
+    "sim_pred_nearest_train": 0.9381489157676697,
+    "nearest_train_idx": 315,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T19:52:14.416715"
+}

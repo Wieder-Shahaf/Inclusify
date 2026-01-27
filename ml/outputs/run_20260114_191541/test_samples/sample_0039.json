@@ -1,0 +1,27 @@
+{
+  "sample_idx": 39,
+  "split": "test",
+  "input_sentence": "The increasing visibility of LGBTQ+ people is a sign of moral decline.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that the visibility of LGBTQ+ individuals is a negative development, which can be perceived as invalidating their identities and experiences.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that the visibility of LGBTQ+ individuals is a negative development, which can be perceived as invalidating their identities and experiences."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Cultural Threat Narrative",
+    "severity": "Biased",
+    "explanation": "Associates LGBTQ+ visibility with negative societal changes."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9181255102157593,
+    "sim_pred_nearest_train": 0.9624557495117188,
+    "nearest_train_idx": 58,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:50:27.041098"
+}

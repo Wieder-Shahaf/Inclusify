@@ -1,0 +1,27 @@
+{
+  "sample_idx": 630,
+  "split": "train",
+  "input_sentence": "Sexual orientation can be changed by willpower.",
+  "raw_output": "```json\n{\n  \"category\": \"Medical Misinformation\",\n  \"severity\": \"Factually Incorrect\",\n  \"explanation\": \"The statement that sexual orientation can be changed by willpower is a common misconception and not supported by scientific evidence. Sexual orientation is a complex aspect of a person's identity that cannot be changed through willpower or any other means.\"\n}\n```",
+  "parsed_output": {
+    "category": "Medical Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "The statement that sexual orientation can be changed by willpower is a common misconception and not supported by scientific evidence. Sexual orientation is a complex aspect of a person's identity that cannot be changed through willpower or any other means."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Psychological Misinformation",
+    "severity": "Factually Incorrect",
+    "explanation": "Suggests orientation is a choice, which psychological science refutes."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9044724702835083,
+    "sim_pred_nearest_train": 0.9256152510643005,
+    "nearest_train_idx": 59,
+    "nearest_train_severity": "Biased",
+    "nearest_train_category": "Medical Misinformation",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T21:12:50.707291"
+}

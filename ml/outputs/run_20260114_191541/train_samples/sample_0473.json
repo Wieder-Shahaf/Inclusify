@@ -1,0 +1,27 @@
+{
+  "sample_idx": 473,
+  "split": "train",
+  "input_sentence": "It was once believed that psychological interventions could 'cure' someone of their lesbian or gay identity.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence references the outdated belief that lesbian or gay identities could be 'cured' through psychological interventions, which is a harmful and pathologizing view that has been widely discredited and rejected by the medical and psychological communities.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence references the outdated belief that lesbian or gay identities could be 'cured' through psychological interventions, which is a harmful and pathologizing view that has been widely discredited and rejected by the medical and psychological communities."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Medical Misinformation",
+    "severity": "Outdated",
+    "explanation": "This describes the discredited and harmful practice of conversion therapy."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9057580828666687,
+    "sim_pred_nearest_train": 0.9660254716873169,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-14T20:44:56.122686"
+}

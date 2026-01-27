@@ -1,0 +1,27 @@
+{
+  "sample_idx": 163,
+  "split": "test",
+  "input_sentence": "Children raised by same-sex parents are more likely to experience developmental issues.",
+  "raw_output": "{\"category\": \"Disproven Sociological Claim\", \"severity\": \"Factually Incorrect\", \"explanation\": \"Studies have consistently shown that children of same-sex parents fare as well as those of heterosexual parents.\"}",
+  "parsed_output": {
+    "category": "Disproven Sociological Claim",
+    "severity": "Factually Incorrect",
+    "explanation": "Studies have consistently shown that children of same-sex parents fare as well as those of heterosexual parents."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "False Causality",
+    "severity": "Biased",
+    "explanation": "Asserts a link between family structure and negative outcomes without evidence."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.8842213749885559,
+    "sim_pred_nearest_train": 0.9750527143478394,
+    "nearest_train_idx": 115,
+    "nearest_train_severity": "Factually Incorrect",
+    "nearest_train_category": "Disproven Sociological Claim",
+    "severity_exact_match": false,
+    "category_exact_match": false
+  },
+  "timestamp": "2026-01-16T09:22:09.428958"
+}

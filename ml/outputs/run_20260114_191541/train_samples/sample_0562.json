@@ -1,0 +1,27 @@
+{
+  "sample_idx": 562,
+  "split": "train",
+  "input_sentence": "Many people who claim to be transgender are simply seeking attention or escaping personal problems.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"This sentence invalidates the identities of transgender individuals by suggesting that their experiences are not genuine or are motivated by external factors rather than their own identities. It also perpetuates harmful stereotypes about transgender people.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "This sentence invalidates the identities of transgender individuals by suggesting that their experiences are not genuine or are motivated by external factors rather than their own identities. It also perpetuates harmful stereotypes about transgender people."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Biased",
+    "explanation": "Attributes transgender identity to psychological issues or attention-seeking rather than genuine self-understanding."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9355111122131348,
+    "sim_pred_nearest_train": 0.9729887843132019,
+    "nearest_train_idx": 579,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T21:01:03.265323"
+}

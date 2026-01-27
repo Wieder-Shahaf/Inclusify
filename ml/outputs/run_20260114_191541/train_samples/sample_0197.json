@@ -1,0 +1,27 @@
+{
+  "sample_idx": 197,
+  "split": "train",
+  "input_sentence": "We shouldn't promote the idea that all sexual identities are equally valid.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that not all sexual identities are equally valid, which can be harmful and invalidating for individuals who identify with non-heterosexual or non-cisgender identities.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that not all sexual identities are equally valid, which can be harmful and invalidating for individuals who identify with non-heterosexual or non-cisgender identities."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "Suggests that some sexual identities are inherently less valid than others."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9689081907272339,
+    "sim_pred_nearest_train": 0.9689080715179443,
+    "nearest_train_idx": 197,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-14T19:56:56.859393"
+}

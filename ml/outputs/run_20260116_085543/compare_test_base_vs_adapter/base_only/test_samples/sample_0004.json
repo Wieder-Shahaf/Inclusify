@@ -1,0 +1,27 @@
+{
+  "sample_idx": 4,
+  "split": "test",
+  "input_sentence": "Older psychological theories sometimes posited that homosexuals suffered from a lack of masculine or feminine development.",
+  "raw_output": "```json\n{\n  \"category\": \"Historical Pathologization\",\n  \"severity\": \"Outdated\",\n  \"explanation\": \"The sentence uses outdated terminology ('homosexuals') and pathologizes LGBTQ+ individuals by suggesting they suffer from a lack of development, which is a harmful and inaccurate representation.\"\n}\n```",
+  "parsed_output": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "The sentence uses outdated terminology ('homosexuals') and pathologizes LGBTQ+ individuals by suggesting they suffer from a lack of development, which is a harmful and inaccurate representation."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Historical Pathologization",
+    "severity": "Outdated",
+    "explanation": "This reflects an outdated and pathologizing view of homosexuality as a developmental deficiency."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9660148024559021,
+    "sim_pred_nearest_train": 0.971793532371521,
+    "nearest_train_idx": 187,
+    "nearest_train_severity": "Outdated",
+    "nearest_train_category": "Historical Pathologization",
+    "severity_exact_match": true,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:26:34.910503"
+}

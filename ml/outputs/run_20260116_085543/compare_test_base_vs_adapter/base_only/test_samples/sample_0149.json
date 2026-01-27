@@ -1,0 +1,27 @@
+{
+  "sample_idx": 149,
+  "split": "test",
+  "input_sentence": "Asexual individuals are simply repressed or haven't experienced true love.",
+  "raw_output": "```json\n{\n  \"category\": \"Identity Invalidation\",\n  \"severity\": \"Potentially Offensive\",\n  \"explanation\": \"The sentence implies that asexuality is a result of repression or lack of experience, which is a harmful stereotype. It invalidates the identities and experiences of asexual individuals, suggesting they are somehow 'broken' or incomplete.\"\n}\n```",
+  "parsed_output": {
+    "category": "Identity Invalidation",
+    "severity": "Potentially Offensive",
+    "explanation": "The sentence implies that asexuality is a result of repression or lack of experience, which is a harmful stereotype. It invalidates the identities and experiences of asexual individuals, suggesting they are somehow 'broken' or incomplete."
+  },
+  "parse_error": null,
+  "gold_label": {
+    "category": "Identity Invalidation",
+    "severity": "Factually Incorrect",
+    "explanation": "This dismisses asexuality by attributing it to external factors like repression or lack of romantic experience."
+  },
+  "semantic_metrics": {
+    "sim_pred_gold": 0.9359318614006042,
+    "sim_pred_nearest_train": 0.9417862892150879,
+    "nearest_train_idx": 58,
+    "nearest_train_severity": "Potentially Offensive",
+    "nearest_train_category": "Identity Invalidation",
+    "severity_exact_match": false,
+    "category_exact_match": true
+  },
+  "timestamp": "2026-01-16T09:49:00.359177"
+}
