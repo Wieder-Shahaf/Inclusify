@@ -1,0 +1,50 @@
+# Python
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+
+# Virtual environments
+**/.venv
+**/venv
+**/.env
+
+# Git
+**/.git
+**/.gitignore
+
+# Node.js (frontend)
+**/node_modules
+**/.next
+**/dist
+
+# Documentation (not needed in container)
+**/*.md
+**/docs/
+
+# ML artifacts (large files, not for API container)
+**/ml/
+**/data/
+**/*.gguf
+**/*.bin
+**/*.safetensors
+
+# IDE
+**/.vscode
+**/.idea
+**/*.swp
+
+# Testing
+**/.coverage
+**/htmlcov
+**/.tox
+
+# Build artifacts
+**/*.egg-info
+**/build/
+**/*.whl
+
+# Planning (dev only)
+**/.planning
