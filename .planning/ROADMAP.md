@@ -40,12 +40,12 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Risk Flags**:
   - asyncpg pool exhaustion (PITFALLS.md #4) - configure timeouts and pool size
   - Azure Managed Identity token expiry (PITFALLS.md #5) - plan refresh callback
-**Plans**: TBD
+**Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 01-01: Docker multi-stage builds and compose setup
-- [ ] 01-02: Azure infrastructure provisioning (ACR, PostgreSQL, Key Vault)
-- [ ] 01-03: Activate asyncpg connection pool and repository layer
+- [ ] 01-01-PLAN.md — Docker multi-stage builds and compose setup (INFRA-01)
+- [ ] 01-02-PLAN.md — Azure infrastructure provisioning via CLI scripts (INFRA-02)
+- [ ] 01-03-PLAN.md — Activate asyncpg connection pool and health endpoint (DB-01)
 
 ### Phase 2: Core Services
 **Goal**: Users can authenticate and upload documents with proper text extraction
@@ -173,7 +173,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Infrastructure Foundation | 0/3 | Not started | - |
+| 1. Infrastructure Foundation | 0/3 | Planned | - |
 | 2. Core Services | 0/3 | Not started | - |
 | 3. LLM Integration | 0/3 | Not started | - |
 | 4. Frontend Integration | 0/3 | Not started | - |
