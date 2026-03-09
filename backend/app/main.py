@@ -1,4 +1,5 @@
 import logging
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -51,13 +52,20 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS middleware - allows frontend to call backend
+# CORS configuration
+# Default to localhost for development
+# Set ALLOWED_ORIGINS env var for production (comma-separated)
+_default_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+_env_origins = os.getenv("ALLOWED_ORIGINS", "")
+_allowed_origins = (
+    [o.strip() for o in _env_origins.split(",") if o.strip()]
+    if _env_origins
+    else _default_origins
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=_allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
