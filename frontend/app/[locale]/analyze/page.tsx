@@ -405,6 +405,7 @@ export default function AnalyzePage() {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
+                  dir={isHebrew ? 'rtl' : 'ltr'}
                   className="mt-4 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
                 >
                   <p className="text-sm text-red-700 dark:text-red-400">{errorMessage}</p>
