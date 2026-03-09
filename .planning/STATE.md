@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-stopped_at: Completed 02-02-PLAN.md (Docling Integration)
-last_updated: "2026-03-09T10:10:00Z"
-last_activity: 2026-03-09 - Completed Docling PDF parsing plan
+stopped_at: Completed 02-03-PLAN.md (RBAC Middleware)
+last_updated: "2026-03-09T10:15:00Z"
+last_activity: 2026-03-09 - Completed RBAC middleware plan
 progress:
   total_phases: 7
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 6
-  completed_plans: 5
-  percent: 83
+  completed_plans: 6
+  percent: 100
 ---
 
 # Project State
@@ -25,30 +25,30 @@ See: .planning/PROJECT.md (updated 2026-03-08)
 
 ## Current Position
 
-Phase: 2 of 7 (Core Services) - IN PROGRESS
-Plan: 2 of 3 in current phase (COMPLETE)
-Status: Plan 02-02 Complete, ready for 02-03
-Last activity: 2026-03-09 - Completed Docling PDF parsing plan
+Phase: 2 of 7 (Core Services) - COMPLETE
+Plan: 3 of 3 in current phase (COMPLETE)
+Status: Phase 2 Complete, ready for Phase 3
+Last activity: 2026-03-09 - Completed RBAC middleware plan
 
-Progress: [████████░░] 83%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 10 min
-- Total execution time: 0.80 hours
+- Total plans completed: 6
+- Average duration: 9 min
+- Total execution time: 0.83 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-infrastructure-foundation | 3 | 31 min | 10 min |
-| 02-core-services | 2 | 17 min | 8 min |
+| 02-core-services | 3 | 19 min | 6 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (8 min), 01-03 (21 min), 02-01 (9 min), 02-02 (8 min)
-- Trend: Good pace
+- Last 5 plans: 01-03 (21 min), 02-01 (9 min), 02-02 (8 min), 02-03 (2 min)
+- Trend: Good pace, RBAC plan very fast due to clear plan
 
 *Updated after each plan completion*
 
@@ -75,6 +75,8 @@ Recent decisions affecting current work:
 - Docling subprocess isolation: imports inside worker function for memory safety
 - pypdf for lightweight pre-validation before heavy Docling processing
 - Python 3.12 required for Docling (venv recreated via pyenv)
+- RBAC: Role hierarchy using numeric levels (site_admin=3 > org_admin=2 > user=1)
+- RBAC: 403 with "Insufficient permissions" for role failures (not 404)
 
 ### Key Research Findings
 
@@ -96,6 +98,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09T10:10:00Z
-Stopped at: Completed 02-02-PLAN.md (Docling Integration)
-Resume file: .planning/phases/02-core-services/02-03-PLAN.md
+Last session: 2026-03-09T10:15:00Z
+Stopped at: Completed 02-03-PLAN.md (RBAC Middleware)
+Resume file: .planning/phases/03-llm-integration/03-01-PLAN.md

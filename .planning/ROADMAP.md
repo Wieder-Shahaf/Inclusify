@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 ### Milestone 1: E2E Demo (Target: April 15, 2026)
 
 - [x] **Phase 1: Infrastructure Foundation** - Docker builds, Azure setup, DB activation
-- [ ] **Phase 2: Core Services** - Authentication, Docling parsing, connection pooling
+- [x] **Phase 2: Core Services** - Authentication, Docling parsing, RBAC middleware
 - [ ] **Phase 3: LLM Integration** - vLLM deployment, inference client, hybrid detection
 - [ ] **Phase 4: Frontend Integration** - Wire to real API, remove demo mode
 - [ ] **Phase 5: Production Deployment** - Azure Container Apps, E2E verification
@@ -66,8 +66,8 @@ Plans:
 
 Plans:
 - [x] 02-01-PLAN.md — JWT authentication with FastAPI Users 13.x and Redis (AUTH-01)
-- [ ] 02-02-PLAN.md — Docling document parsing with subprocess isolation (DOC-01)
-- [ ] 02-03-PLAN.md — RBAC middleware and protected routes (AUTH-02)
+- [x] 02-02-PLAN.md — Docling document parsing with subprocess isolation (DOC-01)
+- [x] 02-03-PLAN.md — RBAC middleware and protected routes (AUTH-02)
 
 ### Phase 3: LLM Integration
 **Goal**: Text analysis uses the fine-tuned LLM for contextual inclusive language detection
@@ -174,7 +174,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Infrastructure Foundation | 3/3 | Complete | 2026-03-09 |
-| 2. Core Services | 2/3 | In Progress|  |
+| 2. Core Services | 3/3 | Complete | 2026-03-09 |
 | 3. LLM Integration | 0/3 | Not started | - |
 | 4. Frontend Integration | 0/3 | Not started | - |
 | 5. Production Deployment | 0/2 | Not started | - |
@@ -182,7 +182,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 | 7. Production Hardening | 0/2 | Not started | - |
 
 **Milestone Progress:**
-- Milestone 1 (E2E Demo): 4/14 plans - Target April 15, 2026
+- Milestone 1 (E2E Demo): 6/14 plans - Target April 15, 2026
 - Milestone 2 (Final): 0/4 plans - Target July 8, 2026
 
 ## Requirement Coverage

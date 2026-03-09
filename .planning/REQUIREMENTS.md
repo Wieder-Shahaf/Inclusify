@@ -65,7 +65,7 @@ Requirements extracted from PROJECT.md for roadmap tracking.
 | INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 1, 5 | Complete |
 | AUTH-01 | Phase 2 | Complete |
-| AUTH-02 | Phase 2 | Pending |
+| AUTH-02 | Phase 2 | Complete |
 | DOC-01 | Phase 2 | Complete |
 | LLM-01 | Phase 3 | Pending |
 | LLM-02 | Phase 3 | Pending |
