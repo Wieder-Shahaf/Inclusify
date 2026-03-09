@@ -20,9 +20,9 @@ async def get_db(request: Request) -> AsyncGenerator[asyncpg.Connection, None]:
     pool = request.app.state.db_pool
 
     try:
-        async with asyncio.timeout(5):  # 5s acquire timeout per CONTEXT.md
-            async with pool.acquire() as conn:
-                yield conn
+        # Use asyncpg's built-in timeout parameter for acquire
+        async with pool.acquire(timeout=5.0) as conn:
+            yield conn
     except asyncio.TimeoutError:
         raise HTTPException(
             status_code=503,

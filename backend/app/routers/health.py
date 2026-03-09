@@ -37,11 +37,13 @@ async def health_check(request: Request):
     db_error = None
 
     # Check DB connectivity with 3s timeout per CONTEXT.md
+    async def _check_db():
+        async with pool.acquire() as conn:
+            await conn.fetchval("SELECT 1")
+
     try:
         start = datetime.now()
-        async with asyncio.timeout(3):
-            async with pool.acquire() as conn:
-                await conn.fetchval("SELECT 1")
+        await asyncio.wait_for(_check_db(), timeout=3.0)
         db_latency_ms = round((datetime.now() - start).total_seconds() * 1000, 2)
         db_status = "healthy"
     except asyncio.TimeoutError:
