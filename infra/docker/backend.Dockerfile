@@ -46,9 +46,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy installed packages from builder
 COPY --from=builder /install /usr/local
 
-# Create non-root user
+# Create non-root user with home directory (needed for Docling cache)
 RUN groupadd --gid 1000 appuser \
-    && useradd --uid 1000 --gid 1000 --shell /bin/bash appuser \
+    && useradd --uid 1000 --gid 1000 --shell /bin/bash --create-home appuser \
     && chown -R appuser:appuser /app
 
 # Copy application code
@@ -88,9 +88,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy installed packages from builder
 COPY --from=builder /install /usr/local
 
-# Create non-root user
+# Create non-root user with home directory (needed for Docling cache)
 RUN groupadd --gid 1000 appuser \
-    && useradd --uid 1000 --gid 1000 --shell /bin/bash appuser \
+    && useradd --uid 1000 --gid 1000 --shell /bin/bash --create-home appuser \
     && chown -R appuser:appuser /app
 
 # Copy application code
