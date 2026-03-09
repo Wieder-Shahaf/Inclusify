@@ -61,3 +61,7 @@ downloadable reports.
 
 ## Team
 Shahaf Wieder, Barak Sharon, Rasha Daher, Lama Zarka, Adan Daxa
+
+## Git Rules
+- Do NOT add "Co-Authored-By" lines to commit messages
+- Commits should only include the committer, not AI attribution

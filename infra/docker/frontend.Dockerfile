@@ -8,11 +8,11 @@ FROM node:22-slim AS deps
 
 WORKDIR /app
 
-# Copy package files
-COPY frontend/package.json frontend/package-lock.json* ./
+# Copy package.json only (skip lockfile to avoid platform mismatch)
+COPY frontend/package.json ./
 
-# Install dependencies
-RUN npm ci --legacy-peer-deps
+# Install dependencies (--force bypasses platform checks for optional deps)
+RUN npm cache clean --force && npm install --legacy-peer-deps --force
 
 # ============================================
 # Stage 2: Development - Hot-reload enabled
@@ -27,12 +27,8 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy application code
 COPY frontend/ .
 
-# Create non-root user
-RUN groupadd --gid 1001 nextjs \
-    && useradd --uid 1001 --gid 1001 --shell /bin/bash nextjs \
-    && chown -R nextjs:nextjs /app
-
-USER nextjs
+# In dev mode with volume mounts, run as root to avoid permission issues
+# Production stage still uses non-root user for security
 
 EXPOSE 3000
 

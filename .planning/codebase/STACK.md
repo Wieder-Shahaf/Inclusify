@@ -1,171 +1,227 @@
 # Technology Stack
 
-**Analysis Date:** 2026-03-08
+**Analysis Date:** 2026-03-09
 
 ## Languages
 
 **Primary:**
-- **TypeScript 5** - Frontend application and Next.js configuration
-- **Python 3.9+** - Backend API, ML pipeline, database operations
-- **SQL** - PostgreSQL schema and queries
+- **TypeScript 5.x** - Frontend application (`frontend/`), Next.js pages, API client, components
+- **Python 3.9+** - Backend API (`backend/app/`), ML pipeline (`ml/`), database operations
 
 **Secondary:**
-- **HTML/CSS** - Tailwind v4 for styling
-- **JSON** - Configuration files, i18n messages
+- **SQL (PostgreSQL)** - Database schema (`db/schema.sql`), seed data, queries
+- **CSS** - Tailwind v4 utility classes and custom theme (`frontend/app/globals.css`)
+- **JSON** - i18n messages (`frontend/messages/en.json`, `frontend/messages/he.json`)
 
 ## Runtime
 
 **Environment:**
-- **Node.js** - Frontend runtime (Next.js 16 with npm)
-- **Python 3.9+** - Backend runtime (FastAPI + asyncpg)
-- **PostgreSQL 13+** - Relational database
+- **Node.js >=18.0.0** - Frontend runtime (specified in root `package.json` engines)
+- **Python 3.9+** - Backend runtime (local system Python 3.9.6 detected)
+- **PostgreSQL 13+** - Relational database with pgcrypto extension
 
 **Package Managers:**
-- **npm** - Frontend dependencies (`frontend/package.json`)
-  - Lockfile: `package-lock.json` (present)
-- **pip** - Backend dependencies (`backend/requirements.txt`)
-  - No lockfile detected
+- **npm** - Frontend dependencies
+  - Root workspace: `package.json` (monorepo with `frontend/`, `backend/`, `shared/` workspaces)
+  - Frontend: `frontend/package.json`
+  - Lockfile: Present
+- **pip** - Backend Python dependencies
+  - Backend: `backend/requirements.txt` (8 packages)
+  - ML: `ml/requirements.txt` (49+ packages)
+  - No lockfile (consider adding `requirements.lock` or using Poetry)
 
 ## Frameworks
 
 **Core Frontend:**
-- **Next.js 16.0.10** - App Router, server components, API routes
-- **React 19.2.1** - UI component framework
-- **Tailwind CSS v4** - Utility-first styling via `@tailwindcss/postcss`
+- **Next.js 16.0.10** - App Router architecture with `[locale]` dynamic routing
+- **React 19.2.1** - UI component library (latest major version)
+- **Tailwind CSS v4** - Utility-first CSS via `@tailwindcss/postcss` plugin
 
 **Core Backend:**
-- **FastAPI 0.109.0** - Async REST API framework
-- **uvicorn 0.27.0** - ASGI server
+- **FastAPI 0.109.0** - Async REST API framework with Pydantic v2
+- **uvicorn 0.27.0** - ASGI server for production and development
 
-**UI Components & Utilities:**
+**UI Components:**
 - **Framer Motion 12.23.26** - Animation library for React
-- **Radix UI** (@radix-ui/react-dialog 1.1.15) - Unstyled accessible components
-- **Lucide React 0.561.0** - Icon library
-- **class-variance-authority 0.7.1** - Component variant utility
+- **Radix UI** - Unstyled accessible primitives
+  - `@radix-ui/react-dialog 1.1.15`
+- **Lucide React 0.561.0** - Icon library (Feather-derived)
+- **class-variance-authority 0.7.1** - Component variant utility (shadcn pattern)
 - **clsx 2.1.1** - Conditional className builder
-- **tailwind-merge 3.4.0** - Tailwind CSS class merging
+- **tailwind-merge 3.4.0** - Intelligent Tailwind class merging
+- **tw-animate-css 1.4.0** - Tailwind animation utilities
 
 **Internationalization:**
-- **next-intl 4.6.0** - Multi-language support for Next.js (Hebrew/English)
-  - Configuration: `frontend/i18n/request.ts`, `frontend/i18n/config.ts`, `frontend/i18n/navigation.ts`
+- **next-intl 4.6.0** - i18n for Next.js App Router
+  - Locales: `en`, `he` (English, Hebrew)
+  - Default: `en`
+  - Prefix strategy: `as-needed`
+  - Config: `frontend/i18n/config.ts`, `frontend/i18n/request.ts`, `frontend/i18n/navigation.ts`
   - Messages: `frontend/messages/{locale}.json`
 
-**ORM/Database:**
-- **Prisma 7.2.0** - Frontend database client (configured but using async migration pattern)
+**Database Access:**
+- **asyncpg 0.30.0** - Async PostgreSQL driver (backend)
+  - Connection: `backend/app/db/connection.py`
+  - Repository pattern: `backend/app/db/repository.py`
+- **Prisma 7.2.0** - ORM client (frontend, configured but not primary)
   - Config: `frontend/prisma.config.ts`
-  - Canonical schema: `db/schema.sql` (PostgreSQL-native, not Prisma-generated)
-- **asyncpg 0.30.0** - Async PostgreSQL driver for backend
-  - Direct async connection handling in `backend/app/db/connection.py`
-  - Repository layer in `backend/app/db/repository.py`
+  - **Note:** Canonical schema is `db/schema.sql`, not Prisma-generated
 
 **Testing:**
-- No test framework detected (pytest, Jest, Vitest not configured)
+- No test framework configured in `package.json` or `requirements.txt`
+- No `jest.config.*`, `vitest.config.*`, or `pytest.ini` detected
 
-**Build/Dev Tools:**
-- **Next.js ESLint** (eslint-config-next 16.0.10)
-- **ESLint 9** - Linting
-
-**ML/NLP Stack:**
-- **sentence-transformers 2.2.0** - Embedding models (`ml/embeddings/encoder.py`)
-- **torch 2.0.0+** - Deep learning framework
-- **scikit-learn 1.3.0** - ML utilities
-- **pandas 2.0.0** - Data manipulation
-- **numpy 1.24.0** - Numerical computing
-- **hdbscan 0.8.33** - Clustering algorithm
-- **beautifulsoup4 4.12.0** - HTML/text parsing
-- **pdfplumber 0.10.0** - PDF text extraction
-- **NLTK 3.8.0** - Natural language processing
-- **requests 2.31.0** - HTTP client
-
-**Document Processing:**
-- **PyMuPDF (fitz) 1.23.8** - PDF text extraction (current, being replaced by Docling in R&D)
-- **python-multipart 0.0.6** - File upload handling in FastAPI
-
-**Configuration & Secrets:**
-- **python-dotenv 1.0.1** - Environment variable loading
-- **pydantic-settings 2.1.0** - Configuration management for FastAPI
-- **pydantic 2.x** (implicit via pydantic-settings) - Data validation
-
-**HTTP:**
-- **httpx 0.26.0** - Async HTTP client (backend)
+**Linting/Formatting:**
+- **ESLint 9** - Linting for frontend
+  - Config: `frontend/eslint.config.mjs`
+  - Extends: `eslint-config-next/core-web-vitals`, `eslint-config-next/typescript`
 
 ## Key Dependencies
 
-**Critical:**
-- **Next.js 16** - Entire frontend framework, routing, SSR
-- **FastAPI 0.109.0** - Entire backend API, async support required
-- **PostgreSQL** - Canonical source of truth for schema and data
-- **asyncpg 0.30.0** - Only async Postgres driver for backend
+**Critical (Frontend):**
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `next` | 16.0.10 | Full-stack React framework |
+| `react` | 19.2.1 | UI library |
+| `next-intl` | 4.6.0 | Hebrew/English localization |
+| `framer-motion` | 12.23.26 | Animations and transitions |
 
-**Infrastructure:**
-- **uvicorn 0.27.0** - ASGI server for FastAPI
-- **python-multipart 0.0.6** - Required for file uploads in FastAPI
+**Critical (Backend):**
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `fastapi` | 0.109.0 | REST API framework |
+| `uvicorn` | 0.27.0 | ASGI server |
+| `asyncpg` | 0.30.0 | Async PostgreSQL driver |
+| `pydantic-settings` | 2.1.0 | Configuration management |
+| `python-multipart` | 0.0.6 | File upload handling |
+| `pymupdf` | 1.23.8 | PDF text extraction (being replaced by Docling) |
 
-**ML/Model:**
-- **sentence-transformers** - Embedding generation for text analysis
-- **torch** - LLM inference (lightblue/suzume-llama-3-8B-multilingual planned)
+**ML Pipeline (`ml/requirements.txt`):**
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `transformers` | >=4.30.0 | Hugging Face model loading |
+| `peft` | >=0.4.0 | LoRA adapter support |
+| `bitsandbytes` | >=0.41.0 | 4-bit quantization |
+| `accelerate` | >=0.20.0 | Model distribution |
+| `torch` | >=2.0.0 | Deep learning framework |
+| `sentence-transformers` | >=2.2.0 | Embedding models |
+| `hdbscan` | >=0.8.33 | Clustering algorithm |
+| `scikit-learn` | >=1.3.0 | ML utilities |
+| `pandas` | >=2.0.0 | Data manipulation |
+| `google-generativeai` | >=0.3.0 | Gemini API (data augmentation) |
+
+**Base Model:**
+- `lightblue/suzume-llama-3-8B-multilingual` - Multilingual LLM
+- LoRA adapters: `ml/LoRA_Adapters/`
+- Quantization: 4-bit NF4 via bitsandbytes
 
 ## Configuration
 
 **Environment Variables:**
 
-**Frontend** (`frontend/`):
-- `NEXT_PUBLIC_API_URL` - Backend API base URL (defaults to `http://localhost:8000`)
-- Loaded at build/runtime via Next.js env plugin
+**Frontend:**
+- `NEXT_PUBLIC_API_URL` - Backend API URL (default: `http://localhost:8000`)
+- `DATABASE_URL` - Prisma connection string (for Prisma client)
 
-**Backend** (`backend/`):
+**Backend (PostgreSQL via asyncpg):**
 - `PGHOST` - PostgreSQL hostname
 - `PGPORT` - PostgreSQL port
 - `PGDATABASE` - Database name
-- `PGUSER` - PostgreSQL user
+- `PGUSER` - PostgreSQL username
 - `PGPASSWORD` - PostgreSQL password
-- Loaded via `python-dotenv` in `backend/app/db/connection.py`
+- SSL: Required (`ssl="require"` in connection)
 
-**ML Pipeline** (`ml/`):
-- Environment configuration via `.env` file (not tracked in git)
+**ML Pipeline:**
+- Environment loaded via dotenv
+- Model paths: Hardcoded to `/home/azureuser/inclusify/ml/LoRA_Adapters` (Azure VM path)
 
 **Build Configuration:**
 
-**Frontend:**
-- `frontend/next.config.ts` - Next.js config with `next-intl` plugin
-- `frontend/tsconfig.json` - TypeScript compiler options
-- `frontend/.next/` - Build output directory
-- `frontend/node_modules/` - Dependencies
+**Frontend (`frontend/`):**
+- `next.config.ts` - Next.js config with next-intl plugin
+- `tsconfig.json` - TypeScript: ES2017 target, bundler module resolution
+- `postcss.config.mjs` - Tailwind CSS v4 via `@tailwindcss/postcss`
+- `eslint.config.mjs` - ESLint 9 flat config
+- Path alias: `@/*` -> `./*`
 
 **Backend:**
-- `backend/requirements.txt` - Python dependencies (no version locking via poetry/pip-tools)
-- Started via: `uvicorn app.main:app --reload --port 8000`
+- No dedicated config file - settings loaded via environment
+- Entry point: `uvicorn app.main:app --reload --port 8000`
 
 **Database:**
-- `db/schema.sql` - Canonical PostgreSQL schema (303 lines, not auto-generated)
-- `db/seed.sql` - Seed data
-- Applied via: `psql -f db/schema.sql`
+- Schema: `db/schema.sql` (303 lines, PostgreSQL-native with pgcrypto)
+- Seed: `db/seed.sql`
+- Apply: `psql -f db/schema.sql`
 
 ## Platform Requirements
 
 **Development:**
-- Node.js 18+ (implied by Next.js 16)
-- Python 3.9+ (backend/requirements.txt)
-- PostgreSQL 13+ (for asyncpg SSL connection)
-- CUDA/GPU (optional, for ML fine-tuning; inference planned for Azure VM with T4)
+- **Node.js 18+** - Required by Next.js 16
+- **Python 3.9+** - Backend and ML pipeline
+- **PostgreSQL 13+** - With pgcrypto extension, SSL support
+- **npm** - Frontend package management
+- **pip/venv** - Python virtual environment
 
-**Production:**
-- **Deployment Target:** Microsoft Azure (course requirement)
-- **Infra config:** Empty directory `/infra` - Docker, K8s, ARM templates to be added
-- **GPU:** Azure T4 VM for vLLM inference (planned, not yet integrated)
-- **Container:** No Dockerfile/docker-compose detected yet
+**Production (Planned):**
+- **Target:** Microsoft Azure (course requirement)
+- **GPU:** Azure VM with T4 GPU for vLLM inference
+- **Infra:** `infra/` directory empty - Docker, CI/CD, ARM templates to be added
 
-## Async/Concurrency
+**GPU Requirements (ML):**
+- **Fine-tuning:** CUDA-capable GPU with 16GB+ VRAM recommended
+- **Inference:** T4 GPU sufficient with 4-bit quantization
+- **Optional:** Flash Attention 2 for faster inference (falls back to SDPA)
 
-**Backend:**
-- Full async architecture: FastAPI + uvicorn + asyncpg
-- Connection pooling via asyncpg (planned via `request.app.state.db_pool` in `backend/app/db/deps.py`)
-- Async route handlers across `/api/v1/ingestion` and `/api/v1/analysis`
+## Development Commands
 
 **Frontend:**
-- Next.js SSR + client-side fetching
-- Framer Motion animations are client-side only
+```bash
+cd frontend && npm run dev      # Start dev server (port 3000)
+cd frontend && npm run build    # Production build
+cd frontend && npm run lint     # ESLint check
+```
+
+**Backend:**
+```bash
+cd backend && uvicorn app.main:app --reload --port 8000  # Dev server
+```
+
+**Database:**
+```bash
+psql -f db/schema.sql           # Apply schema
+psql -f db/seed.sql             # Load seed data
+```
+
+**ML:**
+```bash
+cd ml && python inference_demo.py                    # Interactive demo
+cd ml && python inference_demo.py --sentence "..."   # Single sentence
+```
+
+**Root Workspace:**
+```bash
+npm run dev              # Frontend dev (alias)
+npm run backend:dev      # Backend dev
+```
+
+## Architecture Notes
+
+**Async Pattern:**
+- Backend is fully async: FastAPI + uvicorn + asyncpg
+- Frontend uses Next.js Server Components + client-side fetch
+
+**API Contract:**
+- Base URL: `NEXT_PUBLIC_API_URL` (default `http://localhost:8000`)
+- Endpoints:
+  - `GET /` - Health check
+  - `POST /api/v1/ingestion/upload` - PDF upload
+  - `POST /api/v1/analysis/analyze` - Text analysis
+
+**Frontend API Client:**
+- Location: `frontend/lib/api/client.ts`
+- Functions: `analyzeText()`, `uploadFile()`, `healthCheck()`
+- Handles backend response transformation to frontend types
 
 ---
 
-*Stack analysis: 2026-03-08*
+*Stack analysis: 2026-03-09*

@@ -21,21 +21,21 @@ set -euo pipefail
 # Configuration
 # ============================================================================
 
-# Resource names
-RESOURCE_GROUP="${RESOURCE_GROUP:-inclusify-llm-rg}"
+# Resource names (matching existing InclusifyModel VM in Group07)
+RESOURCE_GROUP="${RESOURCE_GROUP:-Group07}"
 LOCATION="${LOCATION:-eastus}"
-VM_NAME="${VM_NAME:-inclusify-vllm}"
-VNET_NAME="${VNET_NAME:-inclusify-vnet}"
-SUBNET_NAME="${SUBNET_NAME:-llm-subnet}"
-NSG_NAME="${NSG_NAME:-inclusify-vllm-nsg}"
-NIC_NAME="${NIC_NAME:-inclusify-vllm-nic}"
-PUBLIC_IP_NAME="${PUBLIC_IP_NAME:-inclusify-vllm-ip}"
+VM_NAME="${VM_NAME:-InclusifyModel}"
+VNET_NAME="${VNET_NAME:-InclusifyModel-vnet}"
+SUBNET_NAME="${SUBNET_NAME:-default}"
+NSG_NAME="${NSG_NAME:-InclusifyModel-nsg}"
+NIC_NAME="${NIC_NAME:-inclusifymodel904_z1}"
+PUBLIC_IP_NAME="${PUBLIC_IP_NAME:-InclusifyModel-ip}"
 
 # VM configuration
 VM_SIZE="Standard_NC4as_T4_v3"  # 4 vCPU, 28GB RAM, T4 GPU (16GB VRAM)
 VM_IMAGE="Canonical:0001-com-ubuntu-server-jammy:22_04-lts-gen2:latest"
 ADMIN_USER="azureuser"
-SSH_KEY_PATH="${SSH_KEY_PATH:-$HOME/.ssh/id_rsa.pub}"
+SSH_KEY_PATH="${SSH_KEY_PATH:-$HOME/.ssh/id_ed25519.pub}"
 
 # OS disk size (default 128GB for model storage)
 OS_DISK_SIZE=128

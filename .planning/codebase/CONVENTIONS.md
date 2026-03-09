@@ -1,191 +1,387 @@
 # Coding Conventions
 
-**Analysis Date:** 2026-03-08
+**Analysis Date:** 2026-03-09
 
 ## Naming Patterns
 
 **Files:**
-- React components: PascalCase (e.g., `AnalysisSummary.tsx`, `ResultCard.tsx`)
-- Utilities and services: camelCase (e.g., `demoData.ts`, `client.ts`)
-- Configuration files: camelCase or snake_case for env-related files (e.g., `eslint.config.mjs`)
-- Python modules: snake_case (e.g., `connection.py`, `repository.py`)
+- React components: PascalCase (e.g., `AnalysisSummary.tsx`, `PaperUpload.tsx`, `HeroSection.tsx`)
+- Utilities and services: camelCase (e.g., `demoData.ts`, `client.ts`, `utils.ts`)
+- Configuration files: camelCase with `.config` suffix (e.g., `eslint.config.mjs`, `tsconfig.json`)
+- Python modules: snake_case (e.g., `connection.py`, `repository.py`, `router.py`)
 - Directory names: camelCase (e.g., `components/`, `lib/`, `modules/`)
+- i18n files: lowercase with `.json` (e.g., `en.json`, `he.json`)
 
 **Functions:**
-- TypeScript/JavaScript: camelCase for all functions (e.g., `analyzeText()`, `findOccurrences()`, `getScoreColor()`)
-- Python: snake_case for all functions (e.g., `get_org_by_slug()`, `create_document()`, `insert_finding()`)
-- Async functions: prefix convention not enforced; functions named naturally (e.g., `async def get_conn()`)
+- TypeScript/JavaScript: camelCase for all functions (e.g., `analyzeText()`, `findOccurrences()`, `handleFileSelect()`)
+- Python: snake_case for all functions (e.g., `get_org_by_slug()`, `create_document()`, `find_issues()`)
+- Event handlers: prefix with `handle` (e.g., `handleReset`, `handleFileSelect`, `handleDrop`)
+- Async functions: named naturally without prefix (e.g., `async def get_conn()`, `async function analyzeText()`)
 
 **Variables:**
 - TypeScript/React: camelCase (e.g., `viewState`, `selectedAnnotation`, `isHebrew`)
-- Constants: UPPER_CASE (e.g., `TERM_RULES`, `API_BASE_URL`, `defaultTranslations`)
-- Python: snake_case (e.g., `text_sha256`, `org_id`, `user_org_id`)
-- Component props: PascalCase in types (e.g., `AnalysisSummaryProps`, `AnalysisRequest`)
+- Constants: UPPER_CASE for static dictionaries (e.g., `TERM_RULES`, `API_BASE_URL`)
+- Python: snake_case (e.g., `text_sha256`, `org_id`, `private_mode`)
+- Boolean variables: prefix with `is`/`has`/`should` (e.g., `isHebrew`, `isExpanded`, `isDragging`)
 
 **Types:**
-- TypeScript: PascalCase for interfaces and types (e.g., `Annotation`, `Result`, `Severity`)
+- TypeScript interfaces: PascalCase (e.g., `Annotation`, `AnalysisResult`, `GlossaryTerm`)
+- TypeScript type aliases: PascalCase (e.g., `Severity`, `ViewState`, `Locale`)
+- Props types: ComponentName + `Props` suffix (e.g., `HeroSectionProps`, `PaperUploadProps`)
 - Python Pydantic models: PascalCase (e.g., `AnalysisRequest`, `AnalysisResponse`, `Issue`)
-- Enums/Literals: lowercase values in type definitions
 
 ## Code Style
 
 **Formatting:**
-- ESLint with Next.js core web vitals and TypeScript presets enforces frontend styling
-- Config file: `frontend/eslint.config.mjs` (ESLint v9+ flat config)
-- No Prettier config found; ESLint handles linting but not formatting
-- Indentation: 2 spaces (observed in all TypeScript/JSX files)
-- Line endings: LF (Unix style)
+- Indentation: 2 spaces (TypeScript/TSX), 4 spaces (Python)
+- Quotes: Single quotes in TypeScript, double quotes in Python
+- Semicolons: Not enforced (most files omit)
+- Max line length: ~100 characters observed
+- Trailing commas: Used in arrays and objects
 
 **Linting:**
-- ESLint: Uses `eslint-config-next/core-web-vitals` and `eslint-config-next/typescript`
-- Run command: `npm run lint` (defined in `frontend/package.json`)
-- Python: No linting config detected (no Black, pylint, or Ruff config)
+- ESLint: `eslint-config-next/core-web-vitals` and `eslint-config-next/typescript`
+- Config: `frontend/eslint.config.mjs` (ESLint v9 flat config)
+- Run: `cd frontend && npm run lint`
+- Python: No linting config detected (no Black, Ruff, or Flake8)
+
+**TypeScript Settings:**
+- Strict mode enabled
+- Path alias: `@/*` maps to frontend root
+- Target: ES2017
+- Module: ESNext with bundler resolution
 
 ## Import Organization
 
-**Order:**
-1. External libraries (React, Next.js, third-party packages)
-2. Relative imports from project (using `@/` path alias)
-3. Type imports (when separated, but typically mixed with regular imports)
+**Order (TypeScript):**
+1. React/Next.js core imports
+2. External library imports (framer-motion, lucide-react, next-intl)
+3. Internal imports using `@/` alias
+4. Relative imports from same directory
+5. Type imports (inline with regular imports)
 
-**Path Aliases:**
-- Frontend: `@/*` maps to `./` (root of frontend directory, allowing `@/lib`, `@/components`, etc.)
-- Example: `import { cn } from '@/lib/utils'`
-
-**Example from codebase:**
+**Example:**
 ```typescript
-import { motion } from 'framer-motion';
+'use client';
+
+import { useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations, useLocale } from 'next-intl';
 import { cn } from '@/lib/utils';
-import { Severity } from './SeverityBadge';
-import { TrendingUp, AlertCircle, ... } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import SeverityBadge from './SeverityBadge';
+import type { Annotation } from '@/components/AnnotatedText';
+```
+
+**Order (Python):**
+1. Standard library imports
+2. Third-party imports (fastapi, pydantic, asyncpg)
+3. Local application imports (app.db, app.modules)
+
+**Example:**
+```python
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
+from typing import Optional, Literal
+import asyncio
+
+from app.db.deps import get_db
+from app.db import repository as repo
+```
+
+## Component Patterns (Frontend)
+
+**Client Components:**
+- Mark with `'use client';` directive at top of file
+- Use React hooks for state and effects
+- Handle events with `useCallback` for memoization
+
+**Server Components:**
+- No directive needed (default in App Router)
+- Use async functions for data fetching
+- Access translations with `getTranslations()` (not `useTranslations()`)
+
+**Props Pattern:**
+- Define interface for props
+- Destructure in function signature
+- Provide default values inline
+
+```typescript
+interface HeroSectionProps {
+  locale: string;
+  isHebrew: boolean;
+  translations: {
+    headline: string;
+    headlineTop: string;
+    headlineBottom: string;
+    // ...
+  };
+}
+
+export default function HeroSection({ locale, isHebrew, translations }: HeroSectionProps) {
+  // ...
+}
+```
+
+**Component Composition:**
+- Pass translation objects as props rather than using hooks in child components
+- Keep translation key access in parent, pass strings to children
+- Use `cn()` utility for conditional class merging
+
+```typescript
+// Parent (page)
+const uploadTranslations = {
+  title: t('uploadTitle'),
+  description: t('uploadDesc'),
+  // ...
+};
+<PaperUpload translations={uploadTranslations} />
+
+// Child component
+export default function PaperUpload({ translations }: PaperUploadProps) {
+  const t = { ...defaultTranslations, ...translations };
+  // Use t.title, t.description, etc.
+}
+```
+
+## i18n Patterns
+
+**Configuration:**
+- Location: `frontend/i18n/config.ts`
+- Locales: `['en', 'he']` with `'en'` as default
+- Provider: `NextIntlClientProvider` wraps app in locale layout
+
+**Message Files:**
+- Location: `frontend/messages/{locale}.json`
+- Structure: Nested keys by page/feature (e.g., `app.title`, `analyzer.placeholder`, `severity.outdated`)
+- Both locales maintain identical key structure
+
+**Usage in Client Components:**
+```typescript
+const t = useTranslations('analyzer');
+const locale = useLocale();
+const isHebrew = locale === 'he';
+
+// Access keys
+{t('uploadTitle')}
+{t('processing.uploading')}  // Nested keys
+```
+
+**Usage in Server Components:**
+```typescript
+const t = await getTranslations();
+const { locale } = await params;
+setRequestLocale(locale);
+
+// Access with full namespace
+{t('home.heroHeadline')}
+```
+
+**RTL Handling:**
+```typescript
+const isRtl = locale === 'he';
+<html lang={locale} dir={isRtl ? 'rtl' : 'ltr'}>
+```
+
+## API Conventions
+
+**Route Structure:**
+- Base path: `/api/v1/{module}/{action}`
+- Modules: `ingestion`, `analysis`
+- Examples: `POST /api/v1/analysis/analyze`, `POST /api/v1/ingestion/upload`
+
+**Request Models (Pydantic):**
+```python
+class AnalysisRequest(BaseModel):
+    text: str = Field(..., min_length=1)
+    language: Optional[Literal['en', 'he', 'auto']] = 'auto'
+    private_mode: Optional[bool] = True
+```
+
+**Response Models:**
+```python
+class AnalysisResponse(BaseModel):
+    original_text: str
+    analysis_status: str
+    issues_found: list[Issue]
+    corrected_text: Optional[str] = None
+    note: Optional[str] = None
+```
+
+**Error Responses:**
+```python
+raise HTTPException(status_code=400, detail="Invalid file type. Currently only PDF is supported.")
+raise HTTPException(status_code=500, detail=f"DB error: {e}")
+```
+
+**Frontend API Client:**
+- Location: `frontend/lib/api/client.ts`
+- Pattern: Export async functions per endpoint
+- Transform backend responses to frontend-friendly format
+
+```typescript
+export async function analyzeText(
+  text: string,
+  options?: { language?: 'en' | 'he' | 'auto'; privateMode?: boolean }
+): Promise<AnalysisResult> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/analysis/analyze`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text, language: options?.language || 'auto' }),
+  });
+  // Transform and return
+}
+```
+
+## Styling Conventions
+
+**Tailwind CSS:**
+- Version: v4 with PostCSS
+- Custom theme in `frontend/app/globals.css`
+- Custom colors: `pride-purple`, `pride-pink`, `pride-blue`, etc.
+- Dark mode: Class-based (`.dark` on html element)
+
+**Utility Classes Pattern:**
+```typescript
+<div className={cn(
+  'rounded-xl border p-5 transition-all cursor-pointer',
+  config.bgColor,
+  config.borderColor,
+  isExpanded && 'ring-2 ring-pride-purple/30'
+)}/>
+```
+
+**Custom Component Classes:**
+```css
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2
+         font-medium transition-all focus:outline-none focus:ring-2
+         bg-gradient-to-tr from-pride-purple to-pride-pink text-white;
+}
+
+.glass {
+  @apply bg-white/60 dark:bg-slate-900/50 backdrop-blur-md
+         border border-white/40 dark:border-slate-800/50;
+}
 ```
 
 ## Error Handling
 
-**TypeScript/Frontend Patterns:**
-- Try-catch blocks in async functions (e.g., `client.ts` `healthCheck()`)
-- Direct error propagation with descriptive messages (e.g., `throw new Error(\`Analysis failed: ${response.status}\`)`)
-- HTTPException in FastAPI routes with status codes and detail messages
-- No global error boundary or centralized error handler detected
+**Frontend:**
+- Try-catch in async functions
+- Descriptive error messages with context
+- No global error boundary yet
 
-**Python Backend Patterns:**
-- FastAPI HTTPException for error responses (e.g., status_code=400, detail="...")
-- Early validation in route handlers
-- Async context managers for transactional safety (e.g., `async with conn.transaction()`)
-- Direct exception chaining in catch blocks: `raise HTTPException(status_code=500, detail=f"DB error: {e}")`
-
-## Logging
-
-**Framework:** console for development, no structured logging detected
-
-**Patterns:**
-- TypeScript: Direct `console.error()` in catch blocks (e.g., ingestion router)
-- Python: `print()` for error logging (e.g., `print(f"Error processing file: {str(e)}")`)
-- No centralized logger or log levels enforced
-- Recommendation: Logging is minimal and suitable for demo/development stage
-
-## Comments
-
-**When to Comment:**
-- Docstrings required in Python functions for clarity (observed in backend routers)
-- Inline comments explain complex logic or configuration (e.g., CORS setup, TODO annotations)
-- Section headers with `=` dividers separate major code blocks (seen in `analysis/router.py`)
-
-**JSDoc/TSDoc:**
-- Not consistently used in TypeScript code
-- Python functions have docstrings describing purpose and parameters
-- Example: `"""Analyze text for non-inclusive LGBTQ+ language."""`
-
-**Example from codebase:**
-```python
-@router.post("/analyze", response_model=AnalysisResponse)
-async def analyze_text(request: AnalysisRequest):
-    """
-    Analyze text for non-inclusive LGBTQ+ language.
-
-    **CURRENT STATUS: DEMO MODE (Rule-Based Detection)**
-
-    This endpoint currently uses keyword matching as a placeholder.
-    """
-```
-
-## Function Design
-
-**Size:** Functions tend to be compact (50-100 lines max for complex logic)
-
-**Parameters:**
-- TypeScript: Prefer destructuring for props (e.g., `function ResultCard({ r, bgColor })`)
-- Pydantic for request validation in FastAPI (automatic validation)
-- Optional parameters with defaults (e.g., `language: Optional[Literal['en', 'he', 'auto']] = 'auto'`)
-
-**Return Values:**
-- Explicit types in signatures (TypeScript: `Promise<AnalysisResult>`, Python: type hints)
-- Void functions avoid explicit returns
-- Pydantic models for structured responses
-
-**Example:**
 ```typescript
-async function findOccurrences(text: string, phrase: string): Array<{ start: number; end: number }> {
-  const occurrences: Array<{ start: number; end: number }> = [];
-  // ... logic ...
-  return occurrences;
+if (!response.ok) {
+  const errorText = await response.text();
+  throw new Error(`Analysis failed: ${response.status} - ${errorText}`);
 }
 ```
 
-## Module Design
+**Backend:**
+- HTTPException with status codes
+- Detail messages for debugging
+- Transaction rollback on failure
 
-**Exports:**
-- TypeScript: Named exports preferred (e.g., `export async function analyzeText()`)
-- Default exports for pages and main components (e.g., `export default function AnalyzePage()`)
-- Python: No explicit export statements; functions are accessed via imports
-
-**Barrel Files:**
-- Used in some modules (e.g., `frontend/app/[locale]/`)
-- Not consistently applied across all directories
-
-## State Management (Frontend)
-
-**Pattern:** React hooks (useState, useCallback) for local component state
-
-**Example:**
-```typescript
-const [viewState, setViewState] = useState<ViewState>('upload');
-const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | null>(null);
-const handleReset = useCallback(() => { ... }, []);
+```python
+try:
+    async with conn.transaction():
+        # operations
+except Exception as e:
+    raise HTTPException(status_code=500, detail=f"DB error: {e}")
 ```
 
-**Internationalization (i18n):**
-- next-intl for multi-language support (English/Hebrew)
-- Accessed via `useTranslations()` hook (e.g., `const t = useTranslations('severity')`)
-- Translations keys are hierarchical (e.g., `severity.outdated`, `recommendations.biased`)
+## Comments
 
-## Database Code (Python)
+**Documentation Comments:**
+- Python: Docstrings for public functions and classes
+- TypeScript: JSDoc not consistently used
+- Section dividers with `===` in Python for major code blocks
 
-**Pattern:** Repository layer with asyncpg for raw SQL execution
-
-**Characteristics:**
-- All queries are parameterized (`$1, $2` placeholders) for SQL injection prevention
-- Async/await for non-blocking I/O
-- Type hints on all function parameters and returns
-- Examples: `backend/app/db/repository.py`
-
-**Example:**
 ```python
-async def create_document(
-    conn: asyncpg.Connection,
-    org_id,
-    user_id,
-    input_type: str,
-    # ... more params ...
-) -> int:
+# =============================================================================
+# DEMO: Rule-Based Term Dictionary
+# =============================================================================
+```
+
+**TODO Annotations:**
+```python
+# TODO (for model integration):
+# - [ ] Add Azure ML endpoint client
+# - [ ] Load system prompt for LLM
+```
+
+## Database Patterns (Python)
+
+**Repository Layer:**
+- Location: `backend/app/db/repository.py`
+- Pattern: One function per query
+- All async with asyncpg
+- Parameterized queries (`$1, $2`) for security
+
+**Connection:**
+```python
+async def get_conn() -> asyncpg.Connection:
+    return await asyncpg.connect(
+        host=os.environ["PGHOST"],
+        # ...
+    )
+```
+
+**Query Pattern:**
+```python
+async def create_document(conn: asyncpg.Connection, org_id, user_id, ...) -> int:
     row = await conn.fetchrow(
-        """INSERT INTO documents ... RETURNING document_id;""",
-        org_id, user_id, input_type, ...
+        """INSERT INTO documents (...) VALUES ($1,$2,...) RETURNING document_id;""",
+        org_id, user_id, ...
     )
     return row["document_id"]
 ```
 
+## State Management
+
+**Local State:**
+- useState for component state
+- useCallback for event handlers (memoization)
+- useMemo for computed values
+
+```typescript
+const [viewState, setViewState] = useState<ViewState>('upload');
+const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | null>(null);
+
+const handleReset = useCallback(() => {
+  setViewState('upload');
+  setFileName('');
+}, []);
+```
+
+**No Global State:**
+- No Redux, Zustand, or Context API usage detected
+- State is component-local or passed via props
+
+## Animation Patterns
+
+**Framer Motion:**
+- Used extensively for UI animations
+- AnimatePresence for enter/exit transitions
+- motion components for animated elements
+
+```typescript
+<AnimatePresence mode="wait">
+  {viewState === 'upload' && (
+    <motion.div
+      key="upload"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* content */}
+    </motion.div>
+  )}
+</AnimatePresence>
+```
+
 ---
 
-*Convention analysis: 2026-03-08*
+*Convention analysis: 2026-03-09*
