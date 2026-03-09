@@ -206,7 +206,17 @@
     "viewDetails": "הצג פרטים מלאים",
     "exportReport": "ייצוא דוח",
     "sampleFileName": "מסמך_אקדמי_לדוגמה.txt",
-    "serviceUnavailable": "שירות הניתוח לא זמין זמנית. ניתן להמשיך לגלוש."
+    "serviceUnavailable": "שירות הניתוח לא זמין זמנית. ניתן להמשיך לגלוש.",
+    "basicAnalysisMode": "מצב ניתוח בסיסי",
+    "basicAnalysisModeDesc": "ניתוח AI מתקדם לא זמין",
+    "errors": {
+      "generic": "לא ניתן לנתח את המסמך. אנא נסו שנית.",
+      "passwordProtected": "קובץ ה-PDF מוגן בסיסמה. אנא הסירו את הסיסמה ונסו שוב.",
+      "corruptedFile": "הקובץ נראה פגום. אנא נסו קובץ אחר.",
+      "tooManyPages": "המסמך עולה על מגבלת 50 העמודים. אנא נסו מסמך קצר יותר.",
+      "fileTooLarge": "הקובץ עולה על מגבלת 50MB. אנא נסו קובץ קטן יותר.",
+      "uploadFailed": "העלאת הקובץ נכשלה. אנא נסו שוב."
+    }
   },
   "severity": {
     "outdated": "מיושן",

@@ -206,7 +206,17 @@
     "viewDetails": "View full details",
     "exportReport": "Export Report",
     "sampleFileName": "sample_academic_paper.txt",
-    "serviceUnavailable": "Analysis service temporarily unavailable. You can still browse."
+    "serviceUnavailable": "Analysis service temporarily unavailable. You can still browse.",
+    "basicAnalysisMode": "Basic analysis mode",
+    "basicAnalysisModeDesc": "Advanced AI analysis unavailable",
+    "errors": {
+      "generic": "Unable to analyze document. Please try again.",
+      "passwordProtected": "This PDF is password-protected. Please remove the password and try again.",
+      "corruptedFile": "The file appears to be corrupted. Please try a different file.",
+      "tooManyPages": "This document exceeds the 50 page limit. Please try a shorter document.",
+      "fileTooLarge": "This file exceeds the 50MB limit. Please try a smaller file.",
+      "uploadFailed": "Failed to upload file. Please try again."
+    }
   },
   "severity": {
     "outdated": "Outdated",
