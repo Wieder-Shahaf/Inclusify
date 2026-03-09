@@ -90,7 +90,7 @@ Plans:
 Plans:
 - [x] 03-00-PLAN.md — Test stubs for vLLM deployment, client, and hybrid detection (LLM-01, LLM-02)
 - [ ] 03-01-PLAN.md — vLLM deployment on Azure GPU VM with GPTQ quantization (LLM-01)
-- [ ] 03-02-PLAN.md — vLLM client with circuit breaker and sentence splitting (LLM-02)
+- [x] 03-02-PLAN.md — vLLM client with circuit breaker and sentence splitting (LLM-02)
 - [ ] 03-03-PLAN.md — Hybrid detection integration into analysis endpoint (LLM-02)
 
 ### Phase 4: Frontend Integration
@@ -177,14 +177,14 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 |-------|----------------|--------|-----------|
 | 1. Infrastructure Foundation | 3/3 | Complete | 2026-03-09 |
 | 2. Core Services | 3/3 | Complete | 2026-03-09 |
-| 3. LLM Integration | 0/3 | Planned | - |
+| 3. LLM Integration | 2/4 | In Progress | - |
 | 4. Frontend Integration | 0/3 | Not started | - |
 | 5. Production Deployment | 0/2 | Not started | - |
 | 6. Admin & Analytics | 0/2 | Not started | - |
 | 7. Production Hardening | 0/2 | Not started | - |
 
 **Milestone Progress:**
-- Milestone 1 (E2E Demo): 6/14 plans - Target April 15, 2026
+- Milestone 1 (E2E Demo): 8/15 plans - Target April 15, 2026
 - Milestone 2 (Final): 0/4 plans - Target July 8, 2026
 
 ## Requirement Coverage
