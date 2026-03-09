@@ -433,6 +433,14 @@ export default function AnalyzePage() {
                     <h2 className="font-semibold text-lg text-slate-800 dark:text-white flex items-center gap-2">
                       <FileText className="w-5 h-5 text-pride-purple" />
                       {fileName}
+                      {analysisMode === 'rules_only' && (
+                        <span
+                          className="ml-2 px-2 py-0.5 text-xs rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
+                          title={t('basicAnalysisModeDesc')}
+                        >
+                          {t('basicAnalysisMode')}
+                        </span>
+                      )}
                     </h2>
                     <p className="text-sm text-slate-500">
                       {totalIssues} {totalIssues === 1 ? t('issueFound') : t('issuesFoundPlural')}

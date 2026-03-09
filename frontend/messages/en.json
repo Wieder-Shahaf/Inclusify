@@ -163,7 +163,8 @@
       "generating": "Generating insights",
       "generatingDesc": "Preparing your personalized report...",
       "complete": "Analysis complete",
-      "completeDesc": "Your results are ready!"
+      "completeDesc": "Your results are ready!",
+      "takingLonger": "Analysis is taking longer than usual..."
     },
     "summaryCard": {
       "score": "Inclusivity Score",

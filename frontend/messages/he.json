@@ -163,7 +163,8 @@
       "generating": "מייצר תובנות",
       "generatingDesc": "מכין את הדוח המותאם אישית שלך...",
       "complete": "הניתוח הושלם",
-      "completeDesc": "התוצאות מוכנות!"
+      "completeDesc": "התוצאות מוכנות!",
+      "takingLonger": "הניתוח לוקח יותר זמן מהרגיל..."
     },
     "summaryCard": {
       "score": "ציון מכלילות",
