@@ -60,6 +60,8 @@ export default function AnalyzePage() {
   const [analysisMode, setAnalysisMode] = useState<'llm' | 'hybrid' | 'rules_only' | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [processingStage, setProcessingStage] = useState<'uploading' | 'parsing' | 'analyzing' | 'generating' | 'complete'>('uploading');
+  const [showExtendedWait, setShowExtendedWait] = useState(false);
 
   // Health check on mount with 30-second polling
   useEffect(() => {
@@ -71,6 +73,18 @@ export default function AnalyzePage() {
     const interval = setInterval(checkHealth, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // Extended wait timer - shows message after 15 seconds of processing
+  useEffect(() => {
+    if (viewState !== 'processing' || USE_DEMO) {
+      setShowExtendedWait(false);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setShowExtendedWait(true);
+    }, 15000);
+    return () => clearTimeout(timer);
+  }, [viewState]);
 
   // Error handler that maps backend errors to user-friendly messages
   const handleApiError = useCallback((error: unknown) => {
@@ -108,14 +122,20 @@ export default function AnalyzePage() {
 
     // Real API path
     try {
+      setProcessingStage('uploading');
+
       // Upload and extract text
       const uploadResult = await uploadFile(file);
+
+      setProcessingStage('analyzing');
 
       // Analyze the extracted text
       const result = await analyzeText(uploadResult.text, {
         language: locale as 'en' | 'he' | 'auto',
         privateMode: true,
       });
+
+      setProcessingStage('complete');
 
       // Calculate score using severity weights (offensive > incorrect > biased > outdated)
       const weights = { outdated: 1, biased: 2, incorrect: 3, offensive: 4 };
@@ -185,6 +205,8 @@ export default function AnalyzePage() {
     setAnalysisMode(null);
     setPendingFile(null);
     setErrorMessage(null);
+    setShowExtendedWait(false);
+    setProcessingStage('uploading');
   }, []);
 
   const handleIssueClick = useCallback((result: AnalysisData['results'][0]) => {
@@ -403,8 +425,11 @@ export default function AnalyzePage() {
             >
               <ProcessingAnimation
                 fileName={fileName}
-                onComplete={handleProcessingComplete}
+                stage={USE_DEMO ? undefined : processingStage}
+                onComplete={USE_DEMO ? handleProcessingComplete : undefined}
                 translations={processingTranslations}
+                showExtendedWait={showExtendedWait}
+                extendedWaitMessage={t('processing.takingLonger')}
               />
             </motion.div>
           )}
