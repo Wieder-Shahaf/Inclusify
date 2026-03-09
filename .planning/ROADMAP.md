@@ -107,12 +107,12 @@ Plans:
   - CORS in production (PITFALLS.md #7) - configure allowed origins
   - Next.js static files missing (PITFALLS.md #8) - copy in Dockerfile
   - RTL rendering breaks (PITFALLS.md #9) - test Hebrew flow
-**Plans**: TBD
+**Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 04-01: Wire frontend API client to real backend
-- [ ] 04-02: Error handling and loading states
-- [ ] 04-03: Hebrew/English end-to-end testing
+- [ ] 04-01-PLAN.md — Wire frontend API client and add demo mode toggle (FE-01)
+- [ ] 04-02-PLAN.md — Health check, error handling, and processing UX (FE-01)
+- [ ] 04-03-PLAN.md — E2E verification and CORS configuration (FE-01)
 
 ### Phase 5: Production Deployment
 **Goal**: Application is deployed to Azure and accessible for E2E demo
@@ -178,13 +178,13 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 | 1. Infrastructure Foundation | 3/3 | Complete | 2026-03-09 |
 | 2. Core Services | 3/3 | Complete | 2026-03-09 |
 | 3. LLM Integration | 4/4 | Complete   | 2026-03-09 |
-| 4. Frontend Integration | 0/3 | Not started | - |
+| 4. Frontend Integration | 0/3 | Planned | - |
 | 5. Production Deployment | 0/2 | Not started | - |
 | 6. Admin & Analytics | 0/2 | Not started | - |
 | 7. Production Hardening | 0/2 | Not started | - |
 
 **Milestone Progress:**
-- Milestone 1 (E2E Demo): 8/15 plans - Target April 15, 2026
+- Milestone 1 (E2E Demo): 10/15 plans - Target April 15, 2026
 - Milestone 2 (Final): 0/4 plans - Target July 8, 2026
 
 ## Requirement Coverage
