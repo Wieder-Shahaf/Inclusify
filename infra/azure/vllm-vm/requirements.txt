@@ -2,8 +2,13 @@
 # Install with: pip install -r requirements.txt
 
 # vLLM inference server
-# T4 GPU compatible, OpenAI-compatible API
-vllm>=0.9.0
+# Pinned to 0.4.x for T4 GPU compatibility (uses xformers, not FlashInfer)
+# FlashInfer requires compute capability 8.0+, T4 is 7.5
+vllm>=0.4.0,<0.5.0
+
+# xformers for efficient attention on T4 GPU
+# Required by vLLM 0.4.x for compute capability 7.5
+xformers>=0.0.23
 
 # GPTQ quantization (official replacement for auto-gptq)
 # Required for 4-bit quantization of the base model
