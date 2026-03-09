@@ -72,6 +72,9 @@ Recent decisions affecting current work:
 - SQLAlchemy Uuid type for cross-database compatibility (PostgreSQL/SQLite)
 - Redis optional for graceful local dev without full Docker stack
 - JWT role claim added via custom JWTStrategyWithRole.write_token
+- Docling subprocess isolation: imports inside worker function for memory safety
+- pypdf for lightweight pre-validation before heavy Docling processing
+- Python 3.12 required for Docling (venv recreated via pyenv)
 
 ### Key Research Findings
 
@@ -93,6 +96,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09T10:08:43Z
-Stopped at: Completed 02-01-PLAN.md (JWT Authentication)
-Resume file: .planning/phases/02-core-services/02-02-PLAN.md
+Last session: 2026-03-09T10:10:00Z
+Stopped at: Completed 02-02-PLAN.md (Docling Integration)
+Resume file: .planning/phases/02-core-services/02-03-PLAN.md
