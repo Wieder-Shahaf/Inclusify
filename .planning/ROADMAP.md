@@ -85,9 +85,10 @@ Plans:
   - Hebrew tokenization (PITFALLS.md #12) - validate with Hebrew test set
 **Critical Path**: This phase gates the E2E demo. vLLM must be working.
 **Parallelization**: VM deployment (03-01) and backend client (03-02) can run in parallel (Wave 1). Hybrid integration (03-03) depends on client (Wave 2).
-**Plans**: 3 plans in 2 waves
+**Plans**: 4 plans in 3 waves
 
 Plans:
+- [x] 03-00-PLAN.md — Test stubs for vLLM deployment, client, and hybrid detection (LLM-01, LLM-02)
 - [ ] 03-01-PLAN.md — vLLM deployment on Azure GPU VM with GPTQ quantization (LLM-01)
 - [ ] 03-02-PLAN.md — vLLM client with circuit breaker and sentence splitting (LLM-02)
 - [ ] 03-03-PLAN.md — Hybrid detection integration into analysis endpoint (LLM-02)
