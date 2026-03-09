@@ -21,6 +21,7 @@ interface BackendAnalysisResponse {
   issues_found: BackendIssue[];
   corrected_text?: string;
   note?: string;
+  analysis_mode?: 'llm' | 'hybrid' | 'rules_only';
 }
 
 // Frontend analysis result
@@ -30,6 +31,7 @@ export interface AnalysisResult {
   counts: Record<Severity, number>;
   originalText: string;
   correctedText?: string;
+  analysisMode?: 'llm' | 'hybrid' | 'rules_only';
 }
 
 // Map backend severity to frontend severity
@@ -137,6 +139,7 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
     counts,
     originalText: response.original_text,
     correctedText: response.corrected_text,
+    analysisMode: response.analysis_mode,
   };
 }
 
@@ -186,7 +189,7 @@ export async function uploadFile(file: File): Promise<{ text: string; filename: 
 
   const data = await response.json();
   return {
-    text: data.text_preview || '',
+    text: data.full_text || data.text_preview || '',
     filename: data.filename,
     pageCount: data.page_count,
   };

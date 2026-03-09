@@ -7,6 +7,7 @@ class UploadResponse(BaseModel):
     content_type: str
     page_count: int
     text_preview: str
+    full_text: str
     full_text_length: int
 
 

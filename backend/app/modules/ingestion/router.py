@@ -56,5 +56,6 @@ async def upload_document(
         content_type=file.content_type,
         page_count=result["page_count"],
         text_preview=result["text"][:500] + "..." if len(result["text"]) > 500 else result["text"],
+        full_text=result["text"],
         full_text_length=len(result["text"])
     )
