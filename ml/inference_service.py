@@ -81,18 +81,21 @@ def load_model(adapter_path: str = "/home/azureuser/inclusify/ml/LoRA_Adapters")
 
     quantization_config = BitsAndBytesConfig(
         load_in_4bit=True,
-        bnb_4bit_compute_dtype=torch.bfloat16,
+        bnb_4bit_compute_dtype=torch.float16,  # T4 doesn't support bfloat16
         bnb_4bit_use_double_quant=True,
         bnb_4bit_quant_type="nf4"
     )
 
     # Use SDPA (PyTorch native scaled dot product attention) - T4 compatible
+    # Limit memory to avoid OOM during loading
     _model = AutoModelForCausalLM.from_pretrained(
         base_model_id,
         quantization_config=quantization_config,
         device_map="auto",
         trust_remote_code=True,
         attn_implementation="sdpa",
+        torch_dtype=torch.float16,
+        low_cpu_mem_usage=True,
     )
 
     if Path(adapter_path).exists():
@@ -104,12 +107,8 @@ def load_model(adapter_path: str = "/home/azureuser/inclusify/ml/LoRA_Adapters")
 
     _model.eval()
 
-    # Try torch.compile for faster inference
-    try:
-        _model = torch.compile(_model, mode="reduce-overhead")
-        logger.info("Model compiled with torch.compile()")
-    except Exception as e:
-        logger.warning(f"torch.compile() not available: {e}")
+    # Skip torch.compile on T4 - can cause OOM during warmup
+    # torch.compile is better suited for A100/H100 GPUs
 
     device = next(_model.parameters()).device
     logger.info(f"Model ready on device: {device}")
