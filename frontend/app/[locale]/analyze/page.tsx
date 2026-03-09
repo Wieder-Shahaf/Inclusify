@@ -57,6 +57,9 @@ export default function AnalyzePage() {
   const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [backendHealthy, setBackendHealthy] = useState<boolean | null>(null);
+  const [analysisMode, setAnalysisMode] = useState<'llm' | 'hybrid' | 'rules_only' | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Health check on mount with 30-second polling
   useEffect(() => {
@@ -69,10 +72,87 @@ export default function AnalyzePage() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleFileSelect = useCallback((file: File) => {
+  // Error handler that maps backend errors to user-friendly messages
+  const handleApiError = useCallback((error: unknown) => {
+    let message = t('errors.generic');
+
+    if (error instanceof Error) {
+      const errorText = error.message.toLowerCase();
+      if (errorText.includes('password-protected') || errorText.includes('password')) {
+        message = t('errors.passwordProtected');
+      } else if (errorText.includes('corrupted')) {
+        message = t('errors.corruptedFile');
+      } else if (errorText.includes('50 pages') || errorText.includes('page limit')) {
+        message = t('errors.tooManyPages');
+      } else if (errorText.includes('50mb') || errorText.includes('file size')) {
+        message = t('errors.fileTooLarge');
+      } else if (errorText.includes('upload')) {
+        message = t('errors.uploadFailed');
+      }
+    }
+
+    setErrorMessage(message);
+    setViewState('upload');
+  }, [t]);
+
+  const handleFileSelect = useCallback(async (file: File) => {
+    setErrorMessage(null);  // Clear any previous error
     setFileName(file.name);
     setViewState('processing');
-  }, []);
+
+    if (USE_DEMO) {
+      // Demo path: store file for demo processing animation to handle
+      setPendingFile(file);
+      return;
+    }
+
+    // Real API path
+    try {
+      // Upload and extract text
+      const uploadResult = await uploadFile(file);
+
+      // Analyze the extracted text
+      const result = await analyzeText(uploadResult.text, {
+        language: locale as 'en' | 'he' | 'auto',
+        privateMode: true,
+      });
+
+      // Calculate score using severity weights (offensive > incorrect > biased > outdated)
+      const weights = { outdated: 1, biased: 2, incorrect: 3, offensive: 4 };
+      const wordCount = uploadResult.text.split(/\s+/).filter(Boolean).length;
+      const totalWeightedIssues =
+        result.counts.outdated * weights.outdated +
+        result.counts.biased * weights.biased +
+        result.counts.incorrect * weights.incorrect +
+        result.counts.offensive * weights.offensive;
+      const score = Math.max(0, Math.round(100 - (totalWeightedIssues / Math.max(wordCount, 1)) * 200));
+
+      // Generate recommendations based on issue counts
+      const recommendations: string[] = [];
+      if (result.counts.offensive > 0) recommendations.push(t('recommendations.offensive'));
+      if (result.counts.incorrect > 0) recommendations.push(t('recommendations.incorrect'));
+      if (result.counts.biased > 0) recommendations.push(t('recommendations.biased'));
+      if (result.counts.outdated > 0) recommendations.push(t('recommendations.outdated'));
+      if (recommendations.length === 0) recommendations.push(t('recommendations.excellent'));
+
+      setAnalysis({
+        text: uploadResult.text,
+        annotations: result.annotations,
+        results: result.results,
+        counts: result.counts,
+        summary: {
+          totalIssues: Object.values(result.counts).reduce((a, b) => a + b, 0),
+          score,
+          recommendations,
+        },
+      });
+      setAnalysisMode(result.analysisMode || null);
+      setViewState('results');
+    } catch (error) {
+      console.error('Analysis failed:', error);
+      handleApiError(error);
+    }
+  }, [locale, t, handleApiError]);
 
   const handleUseSample = useCallback(() => {
     setFileName(t('sampleFileName'));
@@ -102,6 +182,9 @@ export default function AnalyzePage() {
     setAnalysis(emptyAnalysis);
     setSelectedAnnotation(null);
     setSidePanelOpen(false);
+    setAnalysisMode(null);
+    setPendingFile(null);
+    setErrorMessage(null);
   }, []);
 
   const handleIssueClick = useCallback((result: AnalysisData['results'][0]) => {
