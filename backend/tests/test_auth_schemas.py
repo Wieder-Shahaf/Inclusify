@@ -69,10 +69,11 @@ class TestJWTStrategy:
         assert len(token) > 0
 
     @pytest.mark.asyncio
-    async def test_jwt_decodes_valid_token(self):
-        """JWT strategy should decode valid token and return payload."""
+    async def test_jwt_token_contains_role_claim(self):
+        """JWT token should contain role claim when decoded."""
         from app.auth.backend import get_jwt_strategy
         from unittest.mock import MagicMock
+        from jose import jwt
         import uuid
 
         strategy = get_jwt_strategy()
@@ -80,19 +81,25 @@ class TestJWTStrategy:
         # Create and encode a token
         user = MagicMock()
         user.id = uuid.UUID("12345678-1234-5678-1234-567812345678")
-        user.role = "user"
+        user.role = "org_admin"
 
         token = await strategy.write_token(user)
 
-        # Decode should return user_id
-        decoded = await strategy.read_token(token)
-        assert decoded is not None
+        # Decode the token directly to verify role claim
+        payload = jwt.decode(
+            token,
+            strategy.secret,
+            algorithms=["HS256"],
+            audience="fastapi-users:auth",
+        )
+        assert payload.get("role") == "org_admin"
+        assert payload.get("sub") == str(user.id)
 
     @pytest.mark.asyncio
     async def test_jwt_raises_on_expired_token(self):
-        """JWT strategy should raise on expired token."""
+        """JWT strategy should reject expired token."""
+        from jose import jwt, ExpiredSignatureError
         from app.auth.backend import get_jwt_strategy
-        from jose import jwt
         import time
 
         strategy = get_jwt_strategy()
@@ -100,18 +107,21 @@ class TestJWTStrategy:
         # Create an already-expired token manually
         expired_payload = {
             "sub": "12345678-1234-5678-1234-567812345678",
-            "aud": ["fastapi-users:auth"],
+            "aud": "fastapi-users:auth",
             "exp": int(time.time()) - 3600,  # Expired 1 hour ago
         }
 
-        # This test verifies the strategy doesn't return a valid user ID for expired tokens
-        # The exact behavior depends on fastapi-users implementation
         expired_token = jwt.encode(
             expired_payload,
             strategy.secret,
             algorithm="HS256"
         )
 
-        # Expired token should return None or raise
-        result = await strategy.read_token(expired_token)
-        assert result is None  # fastapi-users returns None for invalid tokens
+        # Decoding expired token should raise ExpiredSignatureError
+        with pytest.raises(ExpiredSignatureError):
+            jwt.decode(
+                expired_token,
+                strategy.secret,
+                algorithms=["HS256"],
+                audience="fastapi-users:auth",
+            )

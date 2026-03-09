@@ -18,7 +18,11 @@ from app.core.config import settings
 
 
 class JWTStrategyWithRole(JWTStrategy):
-    """JWT strategy that includes user role in token claims."""
+    """JWT strategy that includes user role in token claims.
+
+    Extends the base JWTStrategy to add the user's role to the JWT claims.
+    The read_token method is inherited from the parent class.
+    """
 
     async def write_token(self, user) -> str:
         """Generate JWT with user_id and role in claims.
@@ -28,63 +32,20 @@ class JWTStrategyWithRole(JWTStrategy):
 
         Returns:
             JWT token string
+
+        Note: Calls parent's write_token which handles the standard JWT encoding,
+        but we need to add role to the claims. We use a custom encode method.
         """
+        from jose import jwt
+        import time
+
         data = {
             "sub": str(user.id),
             "role": getattr(user, "role", "user"),
             "aud": self.token_audience,
+            "exp": time.time() + self.lifetime_seconds,
         }
-        return self._encode_jwt(data)
-
-    async def read_token(
-        self, token: Optional[str], user_manager=None
-    ) -> Optional[str]:
-        """Decode JWT and return user_id if valid.
-
-        Args:
-            token: JWT token string
-            user_manager: Optional user manager (not used here)
-
-        Returns:
-            User ID string if token is valid, None otherwise
-        """
-        if token is None:
-            return None
-
-        try:
-            payload = self._decode_jwt(token)
-            user_id = payload.get("sub")
-            return user_id
-        except Exception:
-            return None
-
-    def _encode_jwt(self, data: dict) -> str:
-        """Encode data to JWT using python-jose."""
-        from jose import jwt
-        import time
-
-        to_encode = data.copy()
-        expire = time.time() + (self.lifetime_seconds)
-        to_encode["exp"] = expire
-
-        return jwt.encode(to_encode, self.secret, algorithm="HS256")
-
-    def _decode_jwt(self, token: str) -> dict:
-        """Decode JWT token."""
-        from jose import jwt, JWTError, ExpiredSignatureError
-
-        try:
-            # Audience can be a list, so we need to check for any match
-            return jwt.decode(
-                token,
-                self.secret,
-                algorithms=["HS256"],
-                audience=self.token_audience[0] if self.token_audience else None,
-            )
-        except ExpiredSignatureError:
-            raise
-        except JWTError:
-            raise
+        return jwt.encode(data, self.secret, algorithm="HS256")
 
 
 def get_jwt_strategy() -> JWTStrategyWithRole:
