@@ -84,12 +84,13 @@ Plans:
   - vLLM timeout cascading (ARCHITECTURE.md) - 30s timeout + fallback
   - Hebrew tokenization (PITFALLS.md #12) - validate with Hebrew test set
 **Critical Path**: This phase gates the E2E demo. vLLM must be working.
-**Plans**: TBD
+**Parallelization**: VM deployment (03-01) and backend client (03-02) can run in parallel (Wave 1). Hybrid integration (03-03) depends on client (Wave 2).
+**Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 03-01: vLLM deployment on Azure GPU VM
-- [ ] 03-02: vLLM client integration in FastAPI
-- [ ] 03-03: Hybrid detection logic (rule + LLM merge)
+- [ ] 03-01-PLAN.md — vLLM deployment on Azure GPU VM with GPTQ quantization (LLM-01)
+- [ ] 03-02-PLAN.md — vLLM client with circuit breaker and sentence splitting (LLM-02)
+- [ ] 03-03-PLAN.md — Hybrid detection integration into analysis endpoint (LLM-02)
 
 ### Phase 4: Frontend Integration
 **Goal**: Frontend displays real analysis results from the production backend
@@ -175,7 +176,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 |-------|----------------|--------|-----------|
 | 1. Infrastructure Foundation | 3/3 | Complete | 2026-03-09 |
 | 2. Core Services | 3/3 | Complete | 2026-03-09 |
-| 3. LLM Integration | 0/3 | Not started | - |
+| 3. LLM Integration | 0/3 | Planned | - |
 | 4. Frontend Integration | 0/3 | Not started | - |
 | 5. Production Deployment | 0/2 | Not started | - |
 | 6. Admin & Analytics | 0/2 | Not started | - |
