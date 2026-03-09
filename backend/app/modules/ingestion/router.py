@@ -4,9 +4,11 @@ Replaces PyMuPDF with Docling for superior layout preservation in academic paper
 Uses subprocess isolation to protect the API server from memory exhaustion.
 """
 
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from app.modules.ingestion.service import parse_pdf_async
 from app.modules.ingestion.schemas import UploadResponse
+from app.auth.users import current_active_user
+from app.db.models import User
 
 router = APIRouter()
 
@@ -15,9 +17,14 @@ MAX_FILE_SIZE = 50 * 1024 * 1024
 
 
 @router.post("/upload", response_model=UploadResponse)
-async def upload_document(file: UploadFile = File(...)):
+async def upload_document(
+    file: UploadFile = File(...),
+    current_user: User = Depends(current_active_user)
+):
     """
     Upload a PDF and extract text using Docling.
+
+    Requires authentication. User info available for tracking uploads.
 
     Limits:
     - Max 50 pages

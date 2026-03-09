@@ -31,6 +31,9 @@ import asyncio
 import hashlib
 import time
 
+from app.auth.users import current_active_user
+from app.db.models import User
+
 # [CONFLICT 1 SOLVED] Friend's imports are saved here but disabled
 # --- PENDING DB INTEGRATION (Uncomment when DB is ready) ---
 # from app.db.deps import get_db
@@ -262,12 +265,16 @@ def find_issues(text: str) -> list[Issue]:
 
 # [CONFLICT 3 SOLVED] Kept your simple function definition here
 @router.post("/analyze", response_model=AnalysisResponse)
-async def analyze_text(request: AnalysisRequest):
+async def analyze_text(
+    request: AnalysisRequest,
+    current_user: User = Depends(current_active_user)
+):
     """
     Analyze text for non-inclusive LGBTQ+ language.
 
     **CURRENT STATUS: DEMO MODE (Rule-Based Detection)**
 
+    Requires authentication. User info available for logging/tracking.
     This endpoint currently uses keyword matching as a placeholder.
     """
     # Small delay to simulate processing (can be removed in production)
