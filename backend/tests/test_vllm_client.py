@@ -164,53 +164,141 @@ class TestSentenceSplitter:
 class TestParseOutput:
     """Test LLM output parsing."""
 
-    @pytest.mark.skip(reason="LLM client module not yet implemented")
     def test_parse_llm_output_valid(self):
         """Valid JSON parses correctly."""
-        pass
+        from app.modules.analysis.llm_client import parse_llm_output
 
-    @pytest.mark.skip(reason="LLM client module not yet implemented")
+        raw = '{"category": "N/A", "severity": "Correct", "explanation": "Good text"}'
+        result = parse_llm_output(raw)
+
+        assert result is not None
+        assert result["category"] == "N/A"
+        assert result["severity"] == "Correct"
+        assert result["explanation"] == "Good text"
+
     def test_parse_llm_output_markdown(self):
         """JSON in markdown code block parses correctly."""
-        pass
+        from app.modules.analysis.llm_client import parse_llm_output
 
-    @pytest.mark.skip(reason="LLM client module not yet implemented")
+        raw = '''```json
+{"category": "Historical Pathologization", "severity": "Outdated", "explanation": "Uses outdated terminology"}
+```'''
+        result = parse_llm_output(raw)
+
+        assert result is not None
+        assert result["category"] == "Historical Pathologization"
+        assert result["severity"] == "Outdated"
+
     def test_parse_llm_output_invalid(self):
         """Invalid JSON returns None."""
-        pass
+        from app.modules.analysis.llm_client import parse_llm_output
+
+        result = parse_llm_output("This is not JSON at all")
+        assert result is None
+
+        result = parse_llm_output("{invalid json}")
+        assert result is None
 
 
 class TestSeverityMapping:
     """Test severity mapping."""
 
-    @pytest.mark.skip(reason="LLM client module not yet implemented")
     def test_map_severity_all_cases(self):
         """Severity mapping works correctly."""
-        pass
+        from app.modules.analysis.llm_client import map_severity
 
-    @pytest.mark.skip(reason="LLM client module not yet implemented")
+        assert map_severity("Outdated") == "outdated"
+        assert map_severity("Biased") == "biased"
+        assert map_severity("Potentially Offensive") == "offensive"
+        assert map_severity("Factually Incorrect") == "incorrect"
+
     def test_map_severity_correct_returns_none(self):
         """'Correct' severity returns None to skip."""
-        pass
+        from app.modules.analysis.llm_client import map_severity
+
+        result = map_severity("Correct")
+        assert result is None
 
 
 class TestVLLMClient:
     """Test vLLM client."""
 
-    @pytest.mark.skip(reason="LLM client module not yet implemented")
-    @pytest.mark.asyncio
-    async def test_vllm_client_success(self):
-        """Client returns parsed response on success."""
-        pass
+    @pytest.fixture
+    def mock_vllm_response(self):
+        """Create mock httpx response with valid JSON."""
+        from unittest.mock import MagicMock
 
-    @pytest.mark.skip(reason="LLM client module not yet implemented")
+        response = MagicMock()
+        response.json.return_value = {
+            "choices": [{
+                "message": {
+                    "content": '{"category": "N/A", "severity": "Correct", "explanation": "Good"}'
+                }
+            }]
+        }
+        response.raise_for_status = MagicMock()
+        return response
+
+    @pytest.mark.asyncio
+    async def test_vllm_client_success(self, mock_vllm_response):
+        """Client returns parsed response on success."""
+        from unittest.mock import AsyncMock, patch, MagicMock
+        from app.modules.analysis.llm_client import VLLMClient
+
+        # Create async context manager mock
+        mock_client_instance = AsyncMock()
+        mock_client_instance.post.return_value = mock_vllm_response
+
+        mock_client_class = MagicMock()
+        mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_client_instance)
+        mock_client_class.return_value.__aexit__ = AsyncMock(return_value=None)
+
+        with patch('app.modules.analysis.llm_client.httpx.AsyncClient', mock_client_class):
+            client = VLLMClient()
+            result = await client.analyze_sentence("Test sentence.")
+
+        assert result is not None
+        assert result["category"] == "N/A"
+        assert result["severity"] == "Correct"
+
     @pytest.mark.asyncio
     async def test_vllm_client_timeout(self):
         """Client returns None on timeout."""
-        pass
+        from unittest.mock import AsyncMock, patch, MagicMock
+        import httpx
+        from app.modules.analysis.llm_client import VLLMClient
 
-    @pytest.mark.skip(reason="LLM client module not yet implemented")
+        # Create async context manager mock that raises timeout
+        mock_client_instance = AsyncMock()
+        mock_client_instance.post.side_effect = httpx.TimeoutException("Timeout")
+
+        mock_client_class = MagicMock()
+        mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_client_instance)
+        mock_client_class.return_value.__aexit__ = AsyncMock(return_value=None)
+
+        with patch('app.modules.analysis.llm_client.httpx.AsyncClient', mock_client_class):
+            client = VLLMClient()
+            result = await client.analyze_sentence("Test sentence.")
+
+        assert result is None
+
     @pytest.mark.asyncio
     async def test_vllm_client_circuit_open(self):
         """Client returns None when circuit is open."""
-        pass
+        from unittest.mock import AsyncMock, patch, MagicMock
+        from pybreaker import CircuitBreakerError
+        from app.modules.analysis.llm_client import VLLMClient
+
+        # Create async context manager mock that raises CircuitBreakerError
+        mock_client_instance = AsyncMock()
+        mock_client_instance.post.side_effect = CircuitBreakerError()
+
+        mock_client_class = MagicMock()
+        mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_client_instance)
+        mock_client_class.return_value.__aexit__ = AsyncMock(return_value=None)
+
+        with patch('app.modules.analysis.llm_client.httpx.AsyncClient', mock_client_class):
+            client = VLLMClient()
+            result = await client.analyze_sentence("Test sentence.")
+
+        assert result is None
