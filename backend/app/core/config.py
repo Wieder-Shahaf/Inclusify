@@ -30,6 +30,12 @@ class Settings(BaseSettings):
     # Redis Configuration
     REDIS_URL: str = "redis://localhost:6379"
 
+    # vLLM Configuration
+    VLLM_URL: str = "http://localhost:8001"
+    VLLM_TIMEOUT: float = 30.0
+    VLLM_CIRCUIT_FAIL_MAX: int = 3
+    VLLM_CIRCUIT_RESET_TIMEOUT: int = 60
+
     # Database Configuration (SQLAlchemy URL)
     # Constructed from PG* env vars for PostgreSQL, or SQLite for dev
     DATABASE_URL: Optional[str] = None
