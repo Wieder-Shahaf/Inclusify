@@ -152,11 +152,19 @@ class HybridDetector:
                 # Map severity and create issue if not "Correct"
                 severity = map_severity(result.get("severity", ""))
                 if severity is not None:
+                    # Safely extract string fields (handle nan/None)
+                    category = result.get("category", "LLM Detected")
+                    if not isinstance(category, str) or category != category:  # nan check
+                        category = "LLM Detected"
+                    explanation = result.get("explanation", "")
+                    if not isinstance(explanation, str) or explanation != explanation:
+                        explanation = ""
+
                     issue = Issue(
                         span=sentence,
                         severity=severity,
-                        type=result.get("category", "LLM Detected"),
-                        description=result.get("explanation", ""),
+                        type=category,
+                        description=explanation,
                         suggestion=None,
                         start=start_offset,
                         end=end_offset,
