@@ -12,7 +12,8 @@ class TestParsePdfSync:
         """Test that >50 page PDFs are rejected with specific message."""
         from app.modules.ingestion.service import _parse_pdf_sync
 
-        with patch('app.modules.ingestion.service.PdfReader') as mock_reader:
+        # Mock pypdf.PdfReader where it's imported inside _parse_pdf_sync
+        with patch('pypdf.PdfReader') as mock_reader:
             mock_instance = MagicMock()
             mock_instance.pages = [MagicMock()] * 55  # 55 pages
             mock_reader.return_value = mock_instance
@@ -27,7 +28,7 @@ class TestParsePdfSync:
         from app.modules.ingestion.service import _parse_pdf_sync
         from pypdf.errors import PdfReadError
 
-        with patch('app.modules.ingestion.service.PdfReader') as mock_reader:
+        with patch('pypdf.PdfReader') as mock_reader:
             mock_reader.side_effect = PdfReadError("File is encrypted")
 
             result = _parse_pdf_sync(MINIMAL_PDF)
@@ -38,7 +39,7 @@ class TestParsePdfSync:
         from app.modules.ingestion.service import _parse_pdf_sync
         from pypdf.errors import PdfReadError
 
-        with patch('app.modules.ingestion.service.PdfReader') as mock_reader:
+        with patch('pypdf.PdfReader') as mock_reader:
             mock_reader.side_effect = PdfReadError("Invalid PDF structure")
 
             result = _parse_pdf_sync(b"not a pdf")
@@ -56,8 +57,8 @@ class TestParsePdfSync:
         mock_result.document.export_to_markdown.return_value = "# Document Title\n\nSample text content."
         mock_converter_instance.convert.return_value = mock_result
 
-        with patch('app.modules.ingestion.service.PdfReader', return_value=mock_reader_instance):
-            with patch('app.modules.ingestion.service.DocumentConverter', return_value=mock_converter_instance):
+        with patch('pypdf.PdfReader', return_value=mock_reader_instance):
+            with patch('docling.document_converter.DocumentConverter', return_value=mock_converter_instance):
                 result = _parse_pdf_sync(MINIMAL_PDF)
                 assert "text" in result
                 assert "page_count" in result
