@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Phase 2 context gathered
-last_updated: "2026-03-09T09:38:25.040Z"
-last_activity: 2026-03-09 - Completed asyncpg pool + health check plan
+status: in-progress
+stopped_at: Completed 02-02-PLAN.md (Docling Integration)
+last_updated: "2026-03-09T10:10:00Z"
+last_activity: 2026-03-09 - Completed Docling PDF parsing plan
 progress:
   total_phases: 7
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
-  percent: 100
+  total_plans: 6
+  completed_plans: 5
+  percent: 83
 ---
 
 # Project State
@@ -21,32 +21,33 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-08)
 
 **Core value:** Academics can identify and fix non-inclusive language in their work before publication
-**Current focus:** Phase 1 - Infrastructure Foundation
+**Current focus:** Phase 2 - Core Services
 
 ## Current Position
 
-Phase: 1 of 7 (Infrastructure Foundation) - COMPLETE
-Plan: 3 of 3 in current phase
-Status: Phase Complete
-Last activity: 2026-03-09 - Completed asyncpg pool + health check plan
+Phase: 2 of 7 (Core Services) - IN PROGRESS
+Plan: 2 of 3 in current phase (COMPLETE)
+Status: Plan 02-02 Complete, ready for 02-03
+Last activity: 2026-03-09 - Completed Docling PDF parsing plan
 
-Progress: [██████████] 100%
+Progress: [████████░░] 83%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
+- Total plans completed: 5
 - Average duration: 10 min
-- Total execution time: 0.52 hours
+- Total execution time: 0.80 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-infrastructure-foundation | 3 | 31 min | 10 min |
+| 02-core-services | 2 | 17 min | 8 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (2 min), 01-02 (8 min), 01-03 (21 min)
+- Last 5 plans: 01-02 (8 min), 01-03 (21 min), 02-01 (9 min), 02-02 (8 min)
 - Trend: Good pace
 
 *Updated after each plan completion*
@@ -68,6 +69,9 @@ Recent decisions affecting current work:
 - Idempotent provisioning pattern for Azure resources
 - asyncio.wait_for for Python 3.9 compatibility (not asyncio.timeout)
 - asyncpg pool: min=2, max=10, 5s acquire timeout, 60s command timeout
+- SQLAlchemy Uuid type for cross-database compatibility (PostgreSQL/SQLite)
+- Redis optional for graceful local dev without full Docker stack
+- JWT role claim added via custom JWTStrategyWithRole.write_token
 
 ### Key Research Findings
 
@@ -89,6 +93,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09T09:38:25.037Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-core-services/02-CONTEXT.md
+Last session: 2026-03-09T10:08:43Z
+Stopped at: Completed 02-01-PLAN.md (JWT Authentication)
+Resume file: .planning/phases/02-core-services/02-02-PLAN.md

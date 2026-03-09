@@ -65,7 +65,7 @@ Plans:
 **Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 02-01-PLAN.md — JWT authentication with FastAPI Users 13.x and Redis (AUTH-01)
+- [x] 02-01-PLAN.md — JWT authentication with FastAPI Users 13.x and Redis (AUTH-01)
 - [ ] 02-02-PLAN.md — Docling document parsing with subprocess isolation (DOC-01)
 - [ ] 02-03-PLAN.md — RBAC middleware and protected routes (AUTH-02)
 
@@ -174,7 +174,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Infrastructure Foundation | 3/3 | Complete | 2026-03-09 |
-| 2. Core Services | 0/3 | Planned | - |
+| 2. Core Services | 1/3 | In Progress | - |
 | 3. LLM Integration | 0/3 | Not started | - |
 | 4. Frontend Integration | 0/3 | Not started | - |
 | 5. Production Deployment | 0/2 | Not started | - |
@@ -182,7 +182,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 | 7. Production Hardening | 0/2 | Not started | - |
 
 **Milestone Progress:**
-- Milestone 1 (E2E Demo): 3/14 plans - Target April 15, 2026
+- Milestone 1 (E2E Demo): 4/14 plans - Target April 15, 2026
 - Milestone 2 (Final): 0/4 plans - Target July 8, 2026
 
 ## Requirement Coverage
