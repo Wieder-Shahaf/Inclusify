@@ -125,13 +125,21 @@ def generate_response(messages: list[Message], max_tokens: int = 256) -> tuple[s
     # Convert messages to chat format
     chat_messages = [{"role": m.role, "content": m.content} for m in messages]
 
-    input_ids = _tokenizer.apply_chat_template(
+    # Tokenize with chat template
+    encoded = _tokenizer.apply_chat_template(
         chat_messages,
         add_generation_prompt=True,
-        return_tensors="pt"
-    ).to(_model.device)
+        return_tensors="pt",
+        return_dict=True,
+    )
 
-    attention_mask = torch.ones_like(input_ids)
+    # Handle both dict and tensor returns
+    if isinstance(encoded, dict):
+        input_ids = encoded["input_ids"].to(_model.device)
+        attention_mask = encoded.get("attention_mask", torch.ones_like(input_ids)).to(_model.device)
+    else:
+        input_ids = encoded.to(_model.device)
+        attention_mask = torch.ones_like(input_ids)
 
     terminators = [
         _tokenizer.eos_token_id,
