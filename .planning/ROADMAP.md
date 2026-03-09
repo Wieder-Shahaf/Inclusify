@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Infrastructure Foundation** - Docker builds, Azure setup, DB activation
 - [x] **Phase 2: Core Services** - Authentication, Docling parsing, RBAC middleware
-- [ ] **Phase 3: LLM Integration** - vLLM deployment, inference client, hybrid detection
+- [x] **Phase 3: LLM Integration** - vLLM deployment, inference client, hybrid detection (completed 2026-03-09)
 - [ ] **Phase 4: Frontend Integration** - Wire to real API, remove demo mode
 - [ ] **Phase 5: Production Deployment** - Azure Container Apps, E2E verification
 
@@ -177,7 +177,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 |-------|----------------|--------|-----------|
 | 1. Infrastructure Foundation | 3/3 | Complete | 2026-03-09 |
 | 2. Core Services | 3/3 | Complete | 2026-03-09 |
-| 3. LLM Integration | 2/4 | In Progress | - |
+| 3. LLM Integration | 4/4 | Complete   | 2026-03-09 |
 | 4. Frontend Integration | 0/3 | Not started | - |
 | 5. Production Deployment | 0/2 | Not started | - |
 | 6. Admin & Analytics | 0/2 | Not started | - |
