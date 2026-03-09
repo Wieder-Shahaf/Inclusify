@@ -51,6 +51,8 @@ services:
       - PGUSER=${PGUSER:-postgres}
       - PGPASSWORD=${PGPASSWORD:-devpassword}
       - PGSSL=${PGSSL:-}
+      # LLM inference service (transformers-based, not vLLM)
+      - VLLM_URL=${VLLM_URL:-http://52.224.246.238:8001}
     ports:
       - "8000:8000"
     volumes:
