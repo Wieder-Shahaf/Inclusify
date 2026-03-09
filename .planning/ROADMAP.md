@@ -61,13 +61,13 @@ Plans:
   - passlib deprecation (PITFALLS.md #3) - use FastAPI Users 13.x + pwdlib
   - Docling memory exhaustion (PITFALLS.md #2) - page limits, subprocess isolation
   - JWT refresh race condition (PITFALLS.md #10) - implement mutex pattern
-**Parallelization**: Auth and Docling can be developed in parallel
-**Plans**: TBD
+**Parallelization**: Auth (02-01) and Docling (02-02) can run in parallel (Wave 1). RBAC (02-03) depends on Auth (Wave 2).
+**Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 02-01: JWT authentication with FastAPI Users and Redis
-- [ ] 02-02: Docling document parsing integration
-- [ ] 02-03: RBAC middleware and protected routes
+- [ ] 02-01-PLAN.md — JWT authentication with FastAPI Users 13.x and Redis (AUTH-01)
+- [ ] 02-02-PLAN.md — Docling document parsing with subprocess isolation (DOC-01)
+- [ ] 02-03-PLAN.md — RBAC middleware and protected routes (AUTH-02)
 
 ### Phase 3: LLM Integration
 **Goal**: Text analysis uses the fine-tuned LLM for contextual inclusive language detection
@@ -174,7 +174,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Infrastructure Foundation | 3/3 | Complete | 2026-03-09 |
-| 2. Core Services | 0/3 | Not started | - |
+| 2. Core Services | 0/3 | Planned | - |
 | 3. LLM Integration | 0/3 | Not started | - |
 | 4. Frontend Integration | 0/3 | Not started | - |
 | 5. Production Deployment | 0/2 | Not started | - |
