@@ -2,25 +2,25 @@
 Analysis Router - LGBTQ+ Inclusive Language Detection
 
 =============================================================================
-                            DEMO / PLACEHOLDER
+                        HYBRID DETECTION (LLM + Rules)
 =============================================================================
-This module currently uses RULE-BASED detection as a placeholder.
+This module uses hybrid detection combining:
+- LLM (lightblue/suzume-llama-3-8B-multilingual) for contextual analysis
+- Rule-based detection as fallback for high-precision known terms
 
-In production, this will be replaced with:
-- Fine-tuned LLM (lightblue/suzume-llama-3-8B-multilingual)
-- QLoRA adapter weights trained on LGBTQ+ inclusive language corpus
-- Azure ML Online Endpoint for inference
+Detection modes (reported in analysis_mode field):
+- "llm": All sentences successfully analyzed by LLM
+- "hybrid": Some LLM success + some rule-based fallback
+- "rules_only": LLM unavailable, using rule-based only
 
-The rule-based approach below serves as:
-1. A working demo for stakeholder presentations
-2. A fallback when the model endpoint is unavailable
-3. A baseline for high-precision detection of known terms
+The rule-based approach serves as:
+1. A fallback when the LLM endpoint is unavailable
+2. A baseline for high-precision detection of known terms
+3. Complementary detection for terms not in LLM training
 
-TODO (for model integration):
-- [ ] Add Azure ML endpoint client in inference.py
-- [ ] Load system prompt for LLM
-- [ ] Implement hybrid detection (rules + LLM)
+TODO (remaining):
 - [ ] Add confidence scores from model
+- [ ] Enable DB persistence (commented code below)
 =============================================================================
 """
 
@@ -261,10 +261,15 @@ def find_issues(text: str) -> list[Issue]:
 
 
 # =============================================================================
-# ACTIVE ENDPOINT (Simple Demo Version)
+# ACTIVE ENDPOINT (Hybrid Detection)
 # =============================================================================
 
-# [CONFLICT 3 SOLVED] Kept your simple function definition here
+from app.modules.analysis.hybrid_detector import HybridDetector
+
+# Module-level detector instance (created once, reused)
+_hybrid_detector = HybridDetector()
+
+
 @router.post("/analyze", response_model=AnalysisResponse)
 async def analyze_text(
     request: AnalysisRequest,
@@ -273,24 +278,29 @@ async def analyze_text(
     """
     Analyze text for non-inclusive LGBTQ+ language.
 
-    **CURRENT STATUS: DEMO MODE (Rule-Based Detection)**
+    **CURRENT STATUS: HYBRID DETECTION (LLM + Rules)**
+
+    Uses LLM for contextual analysis with rule-based fallback.
+    Response includes analysis_mode field indicating detection method:
+    - "llm": All LLM success
+    - "hybrid": Partial LLM + partial rules
+    - "rules_only": LLM unavailable, rules only
 
     Requires authentication. User info available for logging/tracking.
-    This endpoint currently uses keyword matching as a placeholder.
     """
-    # Small delay to simulate processing (can be removed in production)
-    await asyncio.sleep(0.3)
+    # Use hybrid detector (LLM + rules fallback)
+    issues, analysis_mode = await _hybrid_detector.analyze(
+        request.text,
+        language=request.language or "auto"
+    )
 
-    # DEMO: Use rule-based detection
-    issues = find_issues(request.text)
-
-    # [CONFLICT 4 SOLVED] Kept your simple return statement
     return AnalysisResponse(
         original_text=request.text,
         analysis_status="Success",
         issues_found=issues,
         corrected_text=None,  # TODO: Generate with LLM
-        note=f"DEMO MODE: Found {len(issues)} issue(s) using rule-based detection. LLM integration pending."
+        note=f"Found {len(issues)} issue(s). Mode: {analysis_mode}",
+        analysis_mode=analysis_mode,
     )
 
 
