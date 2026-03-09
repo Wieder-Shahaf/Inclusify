@@ -1,0 +1,27 @@
+# Inclusify vLLM VM Dependencies
+# Install with: pip install -r requirements.txt
+
+# vLLM inference server
+# T4 GPU compatible, OpenAI-compatible API
+vllm>=0.9.0
+
+# GPTQ quantization (official replacement for auto-gptq)
+# Required for 4-bit quantization of the base model
+gptqmodel>=1.0.0
+
+# PyTorch with CUDA support
+# Should be installed separately via PyTorch's install instructions
+# for proper CUDA version matching
+torch>=2.0.0
+
+# Transformers for tokenizer and model loading
+transformers>=4.40.0
+
+# Hugging Face Hub for model downloads
+huggingface-hub>=0.20.0
+
+# Accelerate for efficient model loading
+accelerate>=0.25.0
+
+# PEFT for LoRA adapter support (if loading adapters separately)
+peft>=0.8.0
