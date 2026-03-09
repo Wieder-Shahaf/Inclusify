@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import AnnotationSidePanel from '@/components/AnnotationSidePanel';
@@ -9,8 +9,10 @@ import PaperUpload from '@/components/PaperUpload';
 import ProcessingAnimation from '@/components/ProcessingAnimation';
 import AnalysisSummary from '@/components/AnalysisSummary';
 import IssueTooltip from '@/components/IssueTooltip';
+import HealthWarningBanner from '@/components/HealthWarningBanner';
 import { Annotation } from '@/components/AnnotatedText';
 import { getSampleText, analyzeDemoText } from '@/lib/utils/demoData';
+import { analyzeText, uploadFile, healthCheck } from '@/lib/api/client';
 import { RotateCcw, FileText, ChevronLeft, ChevronRight, Scan, BarChart3, ShieldCheck } from 'lucide-react';
 
 type ViewState = 'upload' | 'processing' | 'results';
@@ -41,6 +43,9 @@ const emptyAnalysis: AnalysisData = {
   summary: { totalIssues: 0, score: 100, recommendations: [] },
 };
 
+// Demo mode toggle: when true, uses local demo data instead of real API
+const USE_DEMO = process.env.NEXT_PUBLIC_USE_DEMO_MODE === 'true';
+
 export default function AnalyzePage() {
   const t = useTranslations('analyzer');
   const locale = useLocale();
@@ -51,6 +56,18 @@ export default function AnalyzePage() {
   const [analysis, setAnalysis] = useState<AnalysisData>(emptyAnalysis);
   const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
+  const [backendHealthy, setBackendHealthy] = useState<boolean | null>(null);
+
+  // Health check on mount with 30-second polling
+  useEffect(() => {
+    const checkHealth = async () => {
+      const healthy = await healthCheck();
+      setBackendHealthy(healthy);
+    };
+    checkHealth();
+    const interval = setInterval(checkHealth, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleFileSelect = useCallback((file: File) => {
     setFileName(file.name);
@@ -212,6 +229,9 @@ export default function AnalyzePage() {
 
   return (
     <>
+      {backendHealthy === false && (
+        <HealthWarningBanner message={t('serviceUnavailable')} />
+      )}
       <div className="flex flex-col flex-1">
         <AnimatePresence mode="wait">
           {/* Upload State */}

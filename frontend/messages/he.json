@@ -205,7 +205,8 @@
     "hoverHint": "לחצו על טקסט מודגש לפרטים",
     "viewDetails": "הצג פרטים מלאים",
     "exportReport": "ייצוא דוח",
-    "sampleFileName": "מסמך_אקדמי_לדוגמה.txt"
+    "sampleFileName": "מסמך_אקדמי_לדוגמה.txt",
+    "serviceUnavailable": "שירות הניתוח לא זמין זמנית. ניתן להמשיך לגלוש."
   },
   "severity": {
     "outdated": "מיושן",

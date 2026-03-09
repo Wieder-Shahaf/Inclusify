@@ -205,7 +205,8 @@
     "hoverHint": "Click highlighted text for details",
     "viewDetails": "View full details",
     "exportReport": "Export Report",
-    "sampleFileName": "sample_academic_paper.txt"
+    "sampleFileName": "sample_academic_paper.txt",
+    "serviceUnavailable": "Analysis service temporarily unavailable. You can still browse."
   },
   "severity": {
     "outdated": "Outdated",
