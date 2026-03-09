@@ -33,7 +33,11 @@ ARG GIT_COMMIT
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     BUILD_TIME=${BUILD_TIME} \
-    GIT_COMMIT=${GIT_COMMIT}
+    GIT_COMMIT=${GIT_COMMIT} \
+    # Cache directories for Docling/RapidOCR (writable by appuser)
+    HF_HOME=/home/appuser/.cache/huggingface \
+    TORCH_HOME=/home/appuser/.cache/torch \
+    XDG_CACHE_HOME=/home/appuser/.cache
 
 WORKDIR /app
 
@@ -51,6 +55,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy installed packages from builder
 COPY --from=builder /install /usr/local
+
+# Fix permissions for RapidOCR model downloads (Docling dependency)
+RUN chmod -R 777 /usr/local/lib/python3.12/site-packages/rapidocr*/models 2>/dev/null || true
 
 # Create non-root user with home directory (needed for Docling cache)
 RUN groupadd --gid 1000 appuser \
@@ -93,6 +100,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy installed packages from builder
 COPY --from=builder /install /usr/local
+
+# Fix permissions for RapidOCR model downloads (Docling dependency)
+RUN chmod -R 777 /usr/local/lib/python3.12/site-packages/rapidocr*/models 2>/dev/null || true
 
 # Create non-root user with home directory (needed for Docling cache)
 RUN groupadd --gid 1000 appuser \
