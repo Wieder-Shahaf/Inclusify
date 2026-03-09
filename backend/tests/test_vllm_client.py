@@ -115,25 +115,50 @@ class TestCircuitBreaker:
 class TestSentenceSplitter:
     """Test sentence splitting with offsets."""
 
-    @pytest.mark.skip(reason="Sentence splitter module not yet implemented")
     def test_sentence_split_english(self):
         """English text splits with correct offsets."""
-        pass
+        from app.modules.analysis.sentence_splitter import split_with_offsets
 
-    @pytest.mark.skip(reason="Sentence splitter module not yet implemented")
+        result = split_with_offsets("Hello. World.", "en")
+
+        # Should return list of (sentence, start, end) tuples
+        assert len(result) == 2
+        assert result[0][0] == "Hello."
+        assert result[0][1] == 0  # start offset
+        assert result[0][2] == 6  # end offset
+        assert result[1][0] == "World."
+        assert result[1][1] == 7  # start offset
+        assert result[1][2] == 13  # end offset
+
     def test_sentence_split_hebrew(self):
         """Hebrew text splits without breaking mid-word."""
-        pass
+        from app.modules.analysis.sentence_splitter import split_with_offsets
 
-    @pytest.mark.skip(reason="Sentence splitter module not yet implemented")
+        # Simple Hebrew sentences with period
+        hebrew_text = "שלום עולם. מה שלומך?"
+        result = split_with_offsets(hebrew_text, "he")
+
+        # Should have 2 sentences
+        assert len(result) == 2
+        # First sentence should not be broken mid-word
+        assert "שלום עולם." in result[0][0]
+
     def test_sentence_split_empty(self):
         """Empty string returns empty list."""
-        pass
+        from app.modules.analysis.sentence_splitter import split_with_offsets
 
-    @pytest.mark.skip(reason="Sentence splitter module not yet implemented")
+        result = split_with_offsets("", "en")
+        assert result == []
+
     def test_sentence_split_single(self):
         """Single sentence returns list with one tuple."""
-        pass
+        from app.modules.analysis.sentence_splitter import split_with_offsets
+
+        result = split_with_offsets("Just one sentence.", "en")
+        assert len(result) == 1
+        assert result[0][0] == "Just one sentence."
+        assert result[0][1] == 0
+        assert result[0][2] == 18
 
 
 class TestParseOutput:
