@@ -1,6 +1,6 @@
 [Unit]
-Description=vLLM Inference Server for Inclusify
-Documentation=https://docs.vllm.ai/
+Description=Inclusify Inference Service (Transformers + LoRA)
+Documentation=https://github.com/inclusify
 After=network.target
 
 [Service]
@@ -15,25 +15,15 @@ Environment="HF_HOME=/home/azureuser/.cache/huggingface"
 Environment="PATH=/home/azureuser/inclusify/.venv/bin:/usr/local/cuda-12.4/bin:/usr/local/bin:/usr/bin:/bin"
 Environment="LD_LIBRARY_PATH=/usr/local/cuda-12.4/lib64"
 
-# vLLM serve command
-# - Model: GPTQ-quantized suzume-llama-3-8B
-# - dtype: float16 (T4 supports float16, not bfloat16)
-# - max-model-len: 2048 (reduced from 4096 to save VRAM)
-# - host: 127.0.0.1 (localhost only, no public access)
-# - port: 8001 (internal vLLM API)
-# - enable-lora: Load LoRA adapters dynamically
-# - lora-modules: Inclusify fine-tuned adapter
-# - gpu-memory-utilization: 0.9 (90% of VRAM for model + KV cache)
-ExecStart=/home/azureuser/inclusify/.venv/bin/python -m vllm.entrypoints.openai.api_server \
-    --model /home/azureuser/models/suzume-llama-3-8B-gptq \
-    --dtype float16 \
-    --max-model-len 2048 \
+# Inference service using transformers directly (T4 compatible)
+# - Uses bitsandbytes 4-bit quantization
+# - Loads LoRA adapter from ml/LoRA_Adapters
+# - Exposes OpenAI-compatible API on port 8001
+# - Binds to localhost only (no public access)
+ExecStart=/home/azureuser/inclusify/.venv/bin/python /home/azureuser/inclusify/ml/inference_service.py \
     --host 127.0.0.1 \
     --port 8001 \
-    --enable-lora \
-    --lora-modules inclusify=/home/azureuser/inclusify/ml/LoRA_Adapters \
-    --gpu-memory-utilization 0.9 \
-    --trust-remote-code
+    --adapter-path /home/azureuser/inclusify/ml/LoRA_Adapters
 
 # Restart configuration
 Restart=always
