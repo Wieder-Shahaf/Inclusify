@@ -39,3 +39,43 @@ async def test_client(mock_pool):
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         yield client
+
+
+# vLLM mock fixtures for Phase 03 LLM integration tests
+@pytest.fixture
+def mock_vllm_response():
+    """Mock successful vLLM chat completions response."""
+    return {
+        "id": "test-id",
+        "object": "chat.completion",
+        "created": 1234567890,
+        "model": "inclusify",
+        "choices": [{
+            "index": 0,
+            "message": {
+                "role": "assistant",
+                "content": '{"category": "Pathologizing Language", "severity": "Biased", "explanation": "Test explanation"}'
+            },
+            "finish_reason": "stop"
+        }],
+        "usage": {"prompt_tokens": 10, "completion_tokens": 20, "total_tokens": 30}
+    }
+
+
+@pytest.fixture
+def mock_vllm_timeout_response():
+    """Mock vLLM timeout scenario."""
+    import httpx
+    return httpx.TimeoutException("Connection timed out")
+
+
+@pytest.fixture
+def sample_text_english():
+    """Sample English text for testing."""
+    return "The homosexual lifestyle is a choice. Gender identity disorder requires treatment."
+
+
+@pytest.fixture
+def sample_text_hebrew():
+    """Sample Hebrew text for testing."""
+    return "הומוסקסואליות היא מחלה. סטיית מין דורשת טיפול."

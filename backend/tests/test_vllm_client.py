@@ -1,124 +1,107 @@
 """
-Tests for vLLM client, circuit breaker, and sentence splitter modules.
-
-Tests organized by module:
-- TestVLLMSettings: Configuration tests
-- TestCircuitBreaker: Circuit breaker behavior
-- TestSentenceSplitter: Sentence splitting with offsets
-- TestLLMParsing: Output parsing
-- TestVLLMClient: Client integration
+Test stubs for vLLM client, circuit breaker, and sentence splitter.
+These tests will fail until Plan 03-02 implementation completes.
 """
-
 import pytest
 
 
-class TestVLLMSettings:
-    """Test vLLM settings in config."""
-
-    def test_settings_has_vllm_url(self):
-        """Settings should have VLLM_URL field."""
-        from app.core.config import settings
-        assert hasattr(settings, 'VLLM_URL')
-        assert settings.VLLM_URL == "http://localhost:8001"
-
-    def test_settings_has_vllm_timeout(self):
-        """Settings should have VLLM_TIMEOUT field."""
-        from app.core.config import settings
-        assert hasattr(settings, 'VLLM_TIMEOUT')
-        assert settings.VLLM_TIMEOUT == 30.0
-
-    def test_settings_has_circuit_fail_max(self):
-        """Settings should have VLLM_CIRCUIT_FAIL_MAX field."""
-        from app.core.config import settings
-        assert hasattr(settings, 'VLLM_CIRCUIT_FAIL_MAX')
-        assert settings.VLLM_CIRCUIT_FAIL_MAX == 3
-
-    def test_settings_has_circuit_reset_timeout(self):
-        """Settings should have VLLM_CIRCUIT_RESET_TIMEOUT field."""
-        from app.core.config import settings
-        assert hasattr(settings, 'VLLM_CIRCUIT_RESET_TIMEOUT')
-        assert settings.VLLM_CIRCUIT_RESET_TIMEOUT == 60
-
-
 class TestCircuitBreaker:
-    """Test circuit breaker behavior."""
+    """Tests for circuit breaker behavior."""
 
-    @pytest.mark.skip(reason="Circuit breaker module not yet implemented")
+    @pytest.mark.skip(reason="Wave 0 stub - implement in 03-02")
     def test_circuit_breaker_opens_after_failures(self):
-        """Circuit opens after fail_max consecutive failures."""
+        """Circuit breaker opens after 3 consecutive failures."""
+        # After 3 failures, CircuitBreakerError raised on next call
         pass
 
-    @pytest.mark.skip(reason="Circuit breaker module not yet implemented")
+    @pytest.mark.skip(reason="Wave 0 stub - implement in 03-02")
     def test_circuit_breaker_auto_recovers(self):
-        """Circuit auto-recovers after reset_timeout."""
+        """Circuit breaker auto-recovers after timeout."""
+        # After reset_timeout (60s), circuit moves to half-open
+        pass
+
+    @pytest.mark.skip(reason="Wave 0 stub - implement in 03-02")
+    def test_circuit_breaker_closes_on_success(self):
+        """Successful call in half-open state closes circuit."""
         pass
 
 
 class TestSentenceSplitter:
-    """Test sentence splitting with offsets."""
+    """Tests for sentence splitting with offsets."""
 
-    @pytest.mark.skip(reason="Sentence splitter module not yet implemented")
-    def test_sentence_split_english(self):
+    @pytest.mark.skip(reason="Wave 0 stub - implement in 03-02")
+    def test_sentence_split_english(self, sample_text_english):
         """English text splits with correct offsets."""
+        # "Hello. World." -> [("Hello.", 0, 6), ("World.", 7, 13)]
         pass
 
-    @pytest.mark.skip(reason="Sentence splitter module not yet implemented")
-    def test_sentence_split_hebrew(self):
-        """Hebrew text splits without breaking mid-word."""
+    @pytest.mark.skip(reason="Wave 0 stub - implement in 03-02")
+    def test_sentence_split_hebrew(self, sample_text_hebrew):
+        """Hebrew text splits correctly without breaking mid-word."""
         pass
 
-    @pytest.mark.skip(reason="Sentence splitter module not yet implemented")
+    @pytest.mark.skip(reason="Wave 0 stub - implement in 03-02")
     def test_sentence_split_empty(self):
         """Empty string returns empty list."""
         pass
 
-    @pytest.mark.skip(reason="Sentence splitter module not yet implemented")
+    @pytest.mark.skip(reason="Wave 0 stub - implement in 03-02")
     def test_sentence_split_single(self):
         """Single sentence returns list with one tuple."""
         pass
 
 
-class TestLLMParsing:
-    """Test LLM output parsing."""
-
-    @pytest.mark.skip(reason="LLM client module not yet implemented")
-    def test_parse_llm_output_valid(self):
-        """Valid JSON parses correctly."""
-        pass
-
-    @pytest.mark.skip(reason="LLM client module not yet implemented")
-    def test_parse_llm_output_markdown(self):
-        """JSON in markdown code block parses correctly."""
-        pass
-
-    @pytest.mark.skip(reason="LLM client module not yet implemented")
-    def test_parse_llm_output_invalid(self):
-        """Invalid JSON returns None."""
-        pass
-
-    @pytest.mark.skip(reason="LLM client module not yet implemented")
-    def test_map_severity(self):
-        """Severity mapping works correctly."""
-        pass
-
-
 class TestVLLMClient:
-    """Test vLLM client."""
+    """Tests for async vLLM HTTP client."""
 
-    @pytest.mark.skip(reason="LLM client module not yet implemented")
+    @pytest.mark.skip(reason="Wave 0 stub - implement in 03-02")
     @pytest.mark.asyncio
-    async def test_vllm_client_success(self):
-        """Client returns parsed response on success."""
+    async def test_analyze_sentence_success(self, mock_vllm_response):
+        """Successful analysis returns parsed JSON."""
         pass
 
-    @pytest.mark.skip(reason="LLM client module not yet implemented")
+    @pytest.mark.skip(reason="Wave 0 stub - implement in 03-02")
     @pytest.mark.asyncio
-    async def test_vllm_client_timeout(self):
-        """Client returns None on timeout."""
+    async def test_analyze_sentence_timeout(self, mock_vllm_timeout_response):
+        """Timeout returns None instead of raising."""
         pass
 
-    @pytest.mark.skip(reason="LLM client module not yet implemented")
+    @pytest.mark.skip(reason="Wave 0 stub - implement in 03-02")
     @pytest.mark.asyncio
-    async def test_vllm_client_circuit_open(self):
-        """Client returns None when circuit is open."""
+    async def test_analyze_sentence_circuit_open(self):
+        """Returns None when circuit breaker is open."""
+        pass
+
+
+class TestParseOutput:
+    """Tests for LLM output parsing."""
+
+    @pytest.mark.skip(reason="Wave 0 stub - implement in 03-02")
+    def test_parse_llm_output_valid(self):
+        """Valid JSON parsing."""
+        pass
+
+    @pytest.mark.skip(reason="Wave 0 stub - implement in 03-02")
+    def test_parse_llm_output_markdown(self):
+        """JSON in markdown code block."""
+        pass
+
+    @pytest.mark.skip(reason="Wave 0 stub - implement in 03-02")
+    def test_parse_llm_output_invalid(self):
+        """Returns None for invalid JSON."""
+        pass
+
+
+class TestSeverityMapping:
+    """Tests for severity mapping."""
+
+    @pytest.mark.skip(reason="Wave 0 stub - implement in 03-02")
+    def test_map_severity_all_cases(self):
+        """All severity mappings correct."""
+        # Outdated -> outdated, Biased -> biased, etc.
+        pass
+
+    @pytest.mark.skip(reason="Wave 0 stub - implement in 03-02")
+    def test_map_severity_correct_returns_none(self):
+        """'Correct' severity returns None (skip)."""
         pass
