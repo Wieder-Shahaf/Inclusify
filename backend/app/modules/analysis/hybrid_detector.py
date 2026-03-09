@@ -5,6 +5,7 @@ Combines LLM-based contextual analysis with rule-based term detection.
 LLM results are preferred for overlapping spans; rule-based serves as fallback.
 """
 
+import asyncio
 from typing import TYPE_CHECKING
 
 from app.modules.analysis.llm_client import VLLMClient, map_severity
@@ -142,9 +143,21 @@ class HybridDetector:
         llm_success_count = 0
         llm_failure_count = 0
 
-        # Process each sentence with LLM
-        for sentence, start_offset, end_offset in sentences:
+        # Process sentences in PARALLEL with asyncio.gather
+        async def analyze_one(sentence: str, start_offset: int, end_offset: int):
             result = await self.client.analyze_sentence(sentence)
+            return (result, sentence, start_offset, end_offset)
+
+        # Run all analyses concurrently
+        tasks = [analyze_one(s, start, end) for s, start, end in sentences]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        for item in results:
+            if isinstance(item, Exception):
+                llm_failure_count += 1
+                continue
+
+            result, sentence, start_offset, end_offset = item
 
             if result is not None:
                 llm_success_count += 1
