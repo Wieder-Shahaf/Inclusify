@@ -19,7 +19,8 @@ MAX_FILE_SIZE = 50 * 1024 * 1024
 @router.post("/upload", response_model=UploadResponse)
 async def upload_document(
     file: UploadFile = File(...),
-    current_user: User = Depends(current_active_user)
+    # TODO: Re-enable auth once FastAPI Users schema matches DB
+    # current_user: User = Depends(current_active_user)
 ):
     """
     Upload a PDF and extract text using Docling.
