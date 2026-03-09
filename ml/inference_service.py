@@ -133,8 +133,11 @@ def generate_response(messages: list[Message], max_tokens: int = 256) -> tuple[s
         return_dict=True,
     )
 
-    # Handle both dict and tensor returns
-    if isinstance(encoded, dict):
+    # Handle BatchEncoding (dict-like) and tensor returns
+    if hasattr(encoded, "input_ids"):
+        input_ids = encoded["input_ids"].to(_model.device)
+        attention_mask = encoded["attention_mask"].to(_model.device)
+    elif hasattr(encoded, "__getitem__") and "input_ids" in encoded:
         input_ids = encoded["input_ids"].to(_model.device)
         attention_mask = encoded.get("attention_mask", torch.ones_like(input_ids)).to(_model.device)
     else:
