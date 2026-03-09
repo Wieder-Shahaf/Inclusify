@@ -61,7 +61,7 @@ Requirements extracted from PROJECT.md for roadmap tracking.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DB-01 | Phase 1 | Pending |
+| DB-01 | Phase 1 | Complete |
 | INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 1, 5 | Complete |
 | AUTH-01 | Phase 2 | Pending |
