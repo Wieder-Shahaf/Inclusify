@@ -72,6 +72,7 @@ class AnalysisResponse(BaseModel):
     issues_found: list[Issue]
     corrected_text: Optional[str] = None
     note: Optional[str] = None
+    analysis_mode: Literal['llm', 'hybrid', 'rules_only'] = 'rules_only'
 
 
 # =============================================================================
