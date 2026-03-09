@@ -78,3 +78,83 @@ class TestParsePdfAsync:
         result = await parse_pdf_async(MINIMAL_PDF, timeout=0.001)
         assert "error" in result
         assert "timed out" in result["error"]
+
+
+class TestUploadEndpoint:
+    """Integration tests for upload endpoint."""
+
+    @pytest.mark.asyncio
+    async def test_upload_non_pdf_rejected(self, test_client):
+        """Test non-PDF files are rejected."""
+        from io import BytesIO
+
+        response = await test_client.post(
+            "/api/v1/ingestion/upload",
+            files={"file": ("test.txt", BytesIO(b"hello"), "text/plain")}
+        )
+        assert response.status_code == 400
+        assert "PDF" in response.json()["detail"]
+
+    @pytest.mark.asyncio
+    async def test_upload_oversized_file_rejected(self, test_client):
+        """Test files over 50MB are rejected."""
+        from io import BytesIO
+
+        # Create a "large" file header (we mock the actual size check)
+        large_content = b"x" * (50 * 1024 * 1024 + 1)  # Just over 50MB
+
+        response = await test_client.post(
+            "/api/v1/ingestion/upload",
+            files={"file": ("large.pdf", BytesIO(large_content), "application/pdf")}
+        )
+        assert response.status_code == 400
+        assert "50MB" in response.json()["detail"]
+
+    @pytest.mark.asyncio
+    async def test_upload_valid_pdf_returns_response(self, test_client):
+        """Test valid PDF returns UploadResponse structure."""
+        from io import BytesIO
+
+        mock_result = {"text": "# Test\n\nDocument content", "page_count": 3}
+
+        with patch('app.modules.ingestion.router.parse_pdf_async', return_value=mock_result):
+            response = await test_client.post(
+                "/api/v1/ingestion/upload",
+                files={"file": ("test.pdf", BytesIO(MINIMAL_PDF), "application/pdf")}
+            )
+            assert response.status_code == 200
+            data = response.json()
+            assert data["filename"] == "test.pdf"
+            assert data["page_count"] == 3
+            assert "text_preview" in data
+            assert "full_text_length" in data
+
+    @pytest.mark.asyncio
+    async def test_upload_page_limit_error(self, test_client):
+        """Test >50 page PDF returns 400."""
+        from io import BytesIO
+
+        mock_result = {"error": "Document exceeds 50 page limit (100 pages)"}
+
+        with patch('app.modules.ingestion.router.parse_pdf_async', return_value=mock_result):
+            response = await test_client.post(
+                "/api/v1/ingestion/upload",
+                files={"file": ("large.pdf", BytesIO(MINIMAL_PDF), "application/pdf")}
+            )
+            assert response.status_code == 400
+            assert "50 page limit" in response.json()["detail"]
+
+    @pytest.mark.asyncio
+    async def test_upload_password_protected_error(self, test_client):
+        """Test password-protected PDF returns 400."""
+        from io import BytesIO
+
+        mock_result = {"error": "PDF is password-protected"}
+
+        with patch('app.modules.ingestion.router.parse_pdf_async', return_value=mock_result):
+            response = await test_client.post(
+                "/api/v1/ingestion/upload",
+                files={"file": ("secret.pdf", BytesIO(MINIMAL_PDF), "application/pdf")}
+            )
+            assert response.status_code == 400
+            assert "password-protected" in response.json()["detail"]
