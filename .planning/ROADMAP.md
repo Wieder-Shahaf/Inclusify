@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Infrastructure Foundation** - Docker builds, Azure setup, DB activation
 - [x] **Phase 2: Core Services** - Authentication, Docling parsing, RBAC middleware
 - [x] **Phase 3: LLM Integration** - vLLM deployment, inference client, hybrid detection (completed 2026-03-09)
-- [ ] **Phase 4: Frontend Integration** - Wire to real API, remove demo mode
+- [x] **Phase 4: Frontend Integration** - Wire to real API, remove demo mode (completed 2026-03-09)
 - [ ] **Phase 5: Production Deployment** - Azure Container Apps, E2E verification
 
 ### Milestone 2: Final Presentation (Target: July 8, 2026)
@@ -110,9 +110,9 @@ Plans:
 **Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 04-01-PLAN.md — Wire frontend API client and add demo mode toggle (FE-01)
-- [ ] 04-02-PLAN.md — Health check, error handling, and processing UX (FE-01)
-- [ ] 04-03-PLAN.md — E2E verification and CORS configuration (FE-01)
+- [x] 04-01-PLAN.md — Wire frontend API client and add demo mode toggle (FE-01)
+- [x] 04-02-PLAN.md — Health check, error handling, and processing UX (FE-01)
+- [x] 04-03-PLAN.md — E2E verification and CORS configuration (FE-01)
 
 ### Phase 5: Production Deployment
 **Goal**: Application is deployed to Azure and accessible for E2E demo
@@ -178,7 +178,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 | 1. Infrastructure Foundation | 3/3 | Complete | 2026-03-09 |
 | 2. Core Services | 3/3 | Complete | 2026-03-09 |
 | 3. LLM Integration | 4/4 | Complete   | 2026-03-09 |
-| 4. Frontend Integration | 2/3 | In Progress|  |
+| 4. Frontend Integration | 3/3 | Complete   | 2026-03-09 |
 | 5. Production Deployment | 0/2 | Not started | - |
 | 6. Admin & Analytics | 0/2 | Not started | - |
 | 7. Production Hardening | 0/2 | Not started | - |
