@@ -9,7 +9,7 @@ from concurrent.futures import ProcessPoolExecutor
 from functools import partial
 
 MAX_PAGES = 50
-TIMEOUT_SECONDS = 60
+TIMEOUT_SECONDS = 120  # Increased for first-run model downloads
 
 
 def _parse_pdf_sync(file_bytes: bytes, max_pages: int = MAX_PAGES) -> dict:
