@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: LLM Integration** - vLLM deployment, inference client, hybrid detection (completed 2026-03-09)
 - [x] **Phase 4: Frontend Integration** - Wire to real API, remove demo mode (completed 2026-03-09)
 - [ ] **Phase 5: Production Deployment** - Azure Container Apps, E2E verification
-- [ ] **Phase 5.1: Azure Infrastructure** - Create PostgreSQL, ACR, Container Apps in Group07 (INSERTED)
+- [x] **Phase 5.1: Azure Infrastructure** - Create PostgreSQL, ACR, Container Apps in Group07 (INSERTED) (completed 2026-03-10)
 - [ ] **Phase 5.2: Model Migration** - Install vLLM on VM, download Qwen2.5-3B-AWQ (INSERTED)
 - [ ] **Phase 5.3: Auth Frontend** - Build login/register pages with OAuth (INSERTED)
 - [ ] **Phase 5.4: LoRA Retraining** - Train unified adapter on Qwen2.5 for Hebrew/English (INSERTED)
@@ -230,7 +230,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 | 3. LLM Integration | 4/4 | Complete   | 2026-03-09 |
 | 4. Frontend Integration | 3/3 | Complete   | 2026-03-09 |
 | 5. Production Deployment | 1/3 | In Progress | - |
-| 5.1. Azure Infrastructure | 0/1 | Not started | - |
+| 5.1. Azure Infrastructure | 1/1 | Complete   | 2026-03-10 |
 | 5.2. Model Migration | 0/? | Not started | - |
 | 5.3. Auth Frontend | 0/? | Not started | - |
 | 5.4. LoRA Retraining | 0/? | Not started | - |
