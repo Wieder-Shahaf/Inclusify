@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v0.6
 milestone_name: milestone
-status: Phase 5 started - Validation scripts created
-stopped_at: Phase 05.2 context gathered
-last_updated: "2026-03-10T22:17:29.586Z"
-last_activity: 2026-03-10 - Created Azure validation and E2E test scripts
+status: Phase 5.2 complete - vLLM deployed with GPTQ model
+stopped_at: Completed 05.2-01-PLAN.md
+last_updated: "2026-03-11T22:51:44.000Z"
+last_activity: 2026-03-11 - Deployed vLLM 0.6.6 with Qwen2.5-3B-Instruct-GPTQ-Int4 on VM
 progress:
   total_phases: 11
   completed_phases: 5
-  total_plans: 17
-  completed_plans: 15
-  percent: 88
+  total_plans: 18
+  completed_plans: 16
+  percent: 89
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-08)
 
 ## Current Position
 
-Phase: 5 of 7 (Production Deployment) - IN PROGRESS
-Plan: 1 of 3 in current phase (05-00 complete)
-Status: Phase 5 started - Validation scripts created
-Last activity: 2026-03-10 - Created Azure validation and E2E test scripts
+Phase: 5.2 of 7 (Model Migration) - COMPLETE
+Plan: 1 of 1 in current phase (05.2-01 complete)
+Status: Phase 5.2 complete - vLLM deployed with GPTQ model
+Last activity: 2026-03-11 - Deployed vLLM 0.6.6 with Qwen2.5-3B-Instruct-GPTQ-Int4 on VM
 
-Progress: [█████████░] 88%
+Progress: [█████████░] 89%
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Progress: [█████████░] 88%
 | Phase 04 P03 | 5min | 4 tasks | 2 files |
 | Phase 05 P00 | 2min | 2 tasks | 2 files |
 | Phase 05.1 P01 | 3min | 3 tasks | 3 files |
+| Phase 05.2 P01 | 16min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -96,11 +97,15 @@ Recent decisions affecting current work:
 - [Phase 05]: Validation script uses SKIP for not-yet-deployed resources (graceful pre-deployment)
 - [Phase 05.1]: Group07 as default resource group for all Azure resources
 - [Phase 05.1]: VNet discovery from InclusifyModel VM instead of hardcoded VNet name
+- [Phase 05.2]: GPTQ instead of AWQ (T4 GPU compute capability 7.5 requires GPTQ)
+- [Phase 05.2]: vLLM 0.6.6 with transformers 4.57.6 (5.x incompatible)
+- [Phase 05.2]: Dedicated vllm-venv on VM for isolation
 
 ### Key Research Findings
 
 From .planning/research/:
-- vLLM v0.17.0 with `--dtype=float` for T4 GPU (no bfloat16)
+- vLLM v0.6.6 with `--dtype=half` for T4 GPU (0.17.0 requires CUDA 12.9+)
+- AWQ incompatible with T4 (compute capability 7.5, requires 8.0+) - use GPTQ-Int4
 - FastAPI Users 13.x + pwdlib (not passlib - deprecated)
 - Docling 2.76.0 for document parsing
 - Azure Container Apps over AKS (simpler)
@@ -112,8 +117,7 @@ None yet.
 
 ### Blockers/Concerns
 
-- Azure T4 GPU quota must be validated on student account (Phase 3 blocker)
-- vLLM VRAM fit (8B model + LoRA on 16GB T4) needs testing
+- vLLM currently localhost only - may need VNet binding for Container Apps access
 
 ### Roadmap Evolution
 
@@ -124,6 +128,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10T22:17:29.583Z
-Stopped at: Phase 05.2 context gathered
-Resume file: .planning/phases/05.2-model-migration-install-vllm-on-vm-download-qwen2-5-3b-awq/05.2-CONTEXT.md
+Last session: 2026-03-11T22:51:44.000Z
+Stopped at: Completed 05.2-01-PLAN.md
+Resume file: .planning/phases/05.2-model-migration-install-vllm-on-vm-download-qwen2-5-3b-awq/05.2-01-SUMMARY.md

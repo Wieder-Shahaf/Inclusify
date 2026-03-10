@@ -20,7 +20,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Frontend Integration** - Wire to real API, remove demo mode (completed 2026-03-09)
 - [ ] **Phase 5: Production Deployment** - Azure Container Apps, E2E verification
 - [x] **Phase 5.1: Azure Infrastructure** - Create PostgreSQL, ACR, Container Apps in Group07 (INSERTED) (completed 2026-03-10)
-- [ ] **Phase 5.2: Model Migration** - Install vLLM on VM, download Qwen2.5-3B-GPTQ (INSERTED)
+- [x] **Phase 5.2: Model Migration** - Install vLLM on VM, download Qwen2.5-3B-GPTQ (INSERTED) (completed 2026-03-11)
 - [ ] **Phase 5.3: Auth Frontend** - Build login/register pages with OAuth (INSERTED)
 - [ ] **Phase 5.4: LoRA Retraining** - Train unified adapter on Qwen2.5 for Hebrew/English (INSERTED)
 
@@ -162,7 +162,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 05.2-01-PLAN.md — Install vLLM, download GPTQ model, configure systemd service (LLM-01)
+- [x] 05.2-01-PLAN.md — Install vLLM, download GPTQ model, configure systemd service (LLM-01)
 
 ### Phase 05.3: Auth Frontend - Build login/register pages with OAuth (INSERTED)
 
@@ -231,7 +231,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 | 4. Frontend Integration | 3/3 | Complete   | 2026-03-09 |
 | 5. Production Deployment | 1/3 | In Progress | - |
 | 5.1. Azure Infrastructure | 1/1 | Complete   | 2026-03-10 |
-| 5.2. Model Migration | 0/1 | Not started | - |
+| 5.2. Model Migration | 1/1 | Complete | 2026-03-11 |
 | 5.3. Auth Frontend | 0/? | Not started | - |
 | 5.4. LoRA Retraining | 0/? | Not started | - |
 | 6. Admin & Analytics | 0/2 | Not started | - |
