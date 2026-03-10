@@ -148,7 +148,7 @@ Plans:
 **Requirements**: INFRA-02 (Azure deployment complete)
 **Depends on:** Phase 5
 **Environment:** Local (run scripts from dev machine)
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 05.1-01-PLAN.md — Update Azure scripts for Group07 and VNet discovery (INFRA-02)
