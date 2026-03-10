@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     VLLM_TIMEOUT: float = 30.0
     VLLM_CIRCUIT_FAIL_MAX: int = 3
     VLLM_CIRCUIT_RESET_TIMEOUT: int = 60
+    VLLM_MODEL_NAME: str = "/home/azureuser/models/Qwen2.5-3B-Instruct-GPTQ-Int4"
 
     # Database Configuration (SQLAlchemy URL)
     # Constructed from PG* env vars for PostgreSQL, or SQLite for dev
