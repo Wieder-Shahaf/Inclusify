@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
+milestone: v0.6
 milestone_name: milestone
-status: verifying
-stopped_at: Completed 05-00-PLAN.md
-last_updated: "2026-03-10T20:32:02.201Z"
-last_activity: 2026-03-09 - Completed E2E verification and CORS configuration
+status: Phase 5 started - Validation scripts created
+stopped_at: Phase 5.1 context gathered
+last_updated: "2026-03-10T21:46:22.435Z"
+last_activity: 2026-03-10 - Created Azure validation and E2E test scripts
 progress:
-  total_phases: 7
+  total_phases: 11
   completed_phases: 4
   total_plans: 16
   completed_plans: 14
-  percent: 100
+  percent: 88
 ---
 
 # Project State
@@ -112,8 +112,15 @@ None yet.
 - Azure T4 GPU quota must be validated on student account (Phase 3 blocker)
 - vLLM VRAM fit (8B model + LoRA on 16GB T4) needs testing
 
+### Roadmap Evolution
+
+- Phase 05.1 inserted after Phase 05: Azure Infrastructure - Create PostgreSQL, ACR, Container Apps in Group07 (URGENT)
+- Phase 05.2 inserted after Phase 05: Model Migration - Install vLLM on VM, download Qwen2.5-3B-AWQ (URGENT)
+- Phase 05.3 inserted after Phase 05: Auth Frontend - Build login/register pages with OAuth (URGENT)
+- Phase 05.4 inserted after Phase 05: LoRA Retraining - Train unified adapter on Qwen2.5 for Hebrew/English (URGENT)
+
 ## Session Continuity
 
-Last session: 2026-03-10T20:32:02.199Z
-Stopped at: Completed 05-00-PLAN.md
-Resume file: None
+Last session: 2026-03-10T21:46:22.433Z
+Stopped at: Phase 5.1 context gathered
+Resume file: .planning/phases/05.1-azure-infrastructure-create-postgresql-acr-container-apps-in-group07/05.1-CONTEXT.md
