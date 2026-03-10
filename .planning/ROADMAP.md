@@ -120,19 +120,20 @@ Plans:
 **Requirements**: INFRA-02 (Azure deployment complete)
 **Success Criteria** (what must be TRUE):
   1. Frontend and backend containers run on Azure Container Apps
-  2. vLLM service accessible from backend container
+  2. vLLM service accessible from backend container via VNet integration
   3. Complete flow works: upload PDF -> analysis -> view results
-  4. Application accessible via public URL with HTTPS
-  5. Secrets managed via Azure Key Vault (no env vars with credentials)
+  4. Application accessible via public URL with HTTPS (*.azurecontainerapps.io)
+  5. Secrets managed via Container Apps secrets (per user decision)
 **Risk Flags**:
   - Cold start delays (PITFALLS.md #11) - keep minReplicas=1
-  - Streaming broken by proxy (PITFALLS.md #6) - disable buffering
+  - VNet subnet too small - use /27 minimum for Container Apps Environment
+  - PostgreSQL firewall blocking Container Apps - add outbound IPs to firewall rules
 **Demo Checkpoint**: April 15, 2026 deadline
-**Plans**: TBD
+**Plans**: 2 plans in 2 waves
 
 Plans:
-- [ ] 05-01: Azure Container Apps deployment
-- [ ] 05-02: E2E integration testing and demo preparation
+- [ ] 05-01-PLAN.md — Azure Container Apps deployment with VNet integration (INFRA-02)
+- [ ] 05-02-PLAN.md — GitHub Actions CI/CD and E2E verification (INFRA-02)
 
 ---
 
@@ -179,12 +180,12 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 | 2. Core Services | 3/3 | Complete | 2026-03-09 |
 | 3. LLM Integration | 4/4 | Complete   | 2026-03-09 |
 | 4. Frontend Integration | 3/3 | Complete   | 2026-03-09 |
-| 5. Production Deployment | 0/2 | Not started | - |
+| 5. Production Deployment | 0/2 | Planned | - |
 | 6. Admin & Analytics | 0/2 | Not started | - |
 | 7. Production Hardening | 0/2 | Not started | - |
 
 **Milestone Progress:**
-- Milestone 1 (E2E Demo): 10/15 plans - Target April 15, 2026
+- Milestone 1 (E2E Demo): 13/15 plans - Target April 15, 2026
 - Milestone 2 (Final): 0/4 plans - Target July 8, 2026
 
 ## Requirement Coverage
