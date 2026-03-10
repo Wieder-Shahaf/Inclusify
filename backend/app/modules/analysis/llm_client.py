@@ -137,7 +137,7 @@ class VLLMClient:
             response = await client.post(
                 f"{self.base_url}/v1/chat/completions",
                 json={
-                    "model": "lightblue/suzume-llama-3-8B-multilingual",
+                    "model": settings.VLLM_MODEL_NAME,
                     "messages": [
                         {"role": "system", "content": SYSTEM_PROMPT},
                         {"role": "user", "content": f'Analyze this sentence for LGBTQ+ inclusive language compliance:\n"{sentence}"'}
