@@ -1,29 +1,32 @@
 [Unit]
-Description=Inclusify Inference Service (Transformers + LoRA)
-Documentation=https://github.com/inclusify
+Description=vLLM Inference Server (Qwen2.5-3B-GPTQ)
+Documentation=https://docs.vllm.ai
 After=network.target
 
 [Service]
 Type=simple
 User=azureuser
 Group=azureuser
-WorkingDirectory=/home/azureuser/inclusify
+WorkingDirectory=/home/azureuser
 
 # Environment configuration
 Environment="CUDA_VISIBLE_DEVICES=0"
-Environment="HF_HOME=/home/azureuser/.cache/huggingface"
-Environment="PATH=/home/azureuser/inclusify/.venv/bin:/usr/local/cuda-12.4/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PATH=/home/azureuser/vllm-venv/bin:/usr/local/cuda-12.4/bin:/usr/local/bin:/usr/bin:/bin"
 Environment="LD_LIBRARY_PATH=/usr/local/cuda-12.4/lib64"
 
-# Inference service using transformers directly (T4 compatible)
-# - Uses bitsandbytes 4-bit quantization
-# - Loads LoRA adapter from ml/LoRA_Adapters
-# - Exposes OpenAI-compatible API on port 8001
-# - Binds to localhost only (no public access)
-ExecStart=/home/azureuser/inclusify/.venv/bin/python /home/azureuser/inclusify/ml/inference_service.py \
-    --host 127.0.0.1 \
+# vLLM serve command
+# - GPTQ model (not AWQ - T4 incompatible)
+# - dtype=half (not bfloat16 - T4 incompatible)
+# - max-model-len=2048 (saves VRAM, sufficient for sentence analysis)
+# - host=127.0.0.1 (localhost only, VNet access via private IP not needed for now)
+# - gpu-memory-utilization=0.9 (leave 10% headroom)
+ExecStart=/home/azureuser/vllm-venv/bin/vllm serve \
+    /home/azureuser/models/Qwen2.5-3B-Instruct-GPTQ-Int4 \
+    --dtype half \
+    --max-model-len 2048 \
     --port 8001 \
-    --adapter-path /home/azureuser/inclusify/ml/LoRA_Adapters
+    --host 127.0.0.1 \
+    --gpu-memory-utilization 0.9
 
 # Restart configuration
 Restart=always
@@ -35,13 +38,6 @@ TimeoutStopSec=30
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=vllm
-
-# Security hardening
-NoNewPrivileges=true
-ProtectSystem=strict
-ProtectHome=read-only
-ReadWritePaths=/home/azureuser/models /home/azureuser/.cache
-PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target
