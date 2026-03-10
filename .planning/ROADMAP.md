@@ -159,7 +159,7 @@ Plans:
 **Requirements**: LLM-01 (vLLM deployed on Azure VM)
 **Depends on:** Phase 5.1
 **Environment:** VM (SSH to InclusifyModel) + Local (backend code)
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 05.2-01-PLAN.md — Install vLLM, download GPTQ model, configure systemd service (LLM-01)
