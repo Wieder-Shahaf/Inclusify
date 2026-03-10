@@ -19,6 +19,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: LLM Integration** - vLLM deployment, inference client, hybrid detection (completed 2026-03-09)
 - [x] **Phase 4: Frontend Integration** - Wire to real API, remove demo mode (completed 2026-03-09)
 - [ ] **Phase 5: Production Deployment** - Azure Container Apps, E2E verification
+- [ ] **Phase 5.1: Azure Infrastructure** - Create PostgreSQL, ACR, Container Apps in Group07 (INSERTED)
+- [ ] **Phase 5.2: Model Migration** - Install vLLM on VM, download Qwen2.5-3B-AWQ (INSERTED)
+- [ ] **Phase 5.3: Auth Frontend** - Build login/register pages with OAuth (INSERTED)
+- [ ] **Phase 5.4: LoRA Retraining** - Train unified adapter on Qwen2.5 for Hebrew/English (INSERTED)
 
 ### Milestone 2: Final Presentation (Target: July 8, 2026)
 
@@ -138,6 +142,50 @@ Plans:
 
 ---
 
+### Phase 05.1: Azure Infrastructure - Create PostgreSQL, ACR, Container Apps in Group07 (INSERTED)
+
+**Goal:** Modify azure-setup.sh to deploy all Azure resources to Group07 with dynamic VNet discovery from InclusifyModel VM
+**Requirements**: INFRA-02 (Azure deployment complete)
+**Depends on:** Phase 5
+**Environment:** Local (run scripts from dev machine)
+**Plans:** 1 plan
+
+Plans:
+- [ ] 05.1-01-PLAN.md — Update Azure scripts for Group07 and VNet discovery (INFRA-02)
+
+### Phase 05.2: Model Migration - Install vLLM on VM, download Qwen2.5-3B-AWQ (INSERTED)
+
+**Goal:** SSH to InclusifyModel VM, install vLLM v0.6.0+, download and test Qwen2.5-3B-Instruct-AWQ
+**Requirements**: LLM-01 (vLLM deployed on Azure VM)
+**Depends on:** Phase 5.1
+**Environment:** VM (SSH to InclusifyModel)
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 05.2 to break down)
+
+### Phase 05.3: Auth Frontend - Build login/register pages with OAuth (INSERTED)
+
+**Goal:** Build login/register pages, AuthContext, OAuth integration for frontend
+**Requirements**: AUTH-01 (Authentication)
+**Depends on:** Phase 5.1
+**Environment:** Local (frontend development)
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 05.3 to break down)
+
+### Phase 05.4: LoRA Retraining - Train unified adapter on Qwen2.5 for Hebrew/English (INSERTED)
+
+**Goal:** Adapt training for Qwen2.5 architecture, train unified LoRA adapter for Hebrew/English
+**Requirements**: LLM-02 (LLM inference integrated)
+**Depends on:** Phase 5.2
+**Environment:** VM (SSH to InclusifyModel)
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 05.4 to break down)
+
 ### Phase 6: Admin & Analytics
 **Goal**: Administrators can manage users/organizations and view usage analytics
 **Depends on**: Phase 5
@@ -182,11 +230,15 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 | 3. LLM Integration | 4/4 | Complete   | 2026-03-09 |
 | 4. Frontend Integration | 3/3 | Complete   | 2026-03-09 |
 | 5. Production Deployment | 1/3 | In Progress | - |
+| 5.1. Azure Infrastructure | 0/1 | Not started | - |
+| 5.2. Model Migration | 0/? | Not started | - |
+| 5.3. Auth Frontend | 0/? | Not started | - |
+| 5.4. LoRA Retraining | 0/? | Not started | - |
 | 6. Admin & Analytics | 0/2 | Not started | - |
 | 7. Production Hardening | 0/2 | Not started | - |
 
 **Milestone Progress:**
-- Milestone 1 (E2E Demo): 14/16 plans - Target April 15, 2026
+- Milestone 1 (E2E Demo): 14/17+ plans - Target April 15, 2026 (4 urgent phases inserted)
 - Milestone 2 (Final): 0/4 plans - Target July 8, 2026
 
 ## Requirement Coverage
@@ -197,7 +249,7 @@ All 13 v1 requirements mapped:
 |-------------|-------------|-------|
 | DB-01 | Database connected to backend | Phase 1 |
 | INFRA-01 | Docker containerization | Phase 1 |
-| INFRA-02 | Azure deployment | Phase 1, 5 |
+| INFRA-02 | Azure deployment | Phase 1, 5, 5.1 |
 | AUTH-01 | Authentication (email/password) | Phase 2 |
 | AUTH-02 | Simple RBAC (user/admin) | Phase 2 |
 | DOC-01 | Docling replaces PyMuPDF | Phase 2 |
