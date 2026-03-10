@@ -6,12 +6,14 @@ set -euo pipefail
 # Usage: ./scripts/validate-azure.sh [--pre-deploy]
 
 # Configuration
-RESOURCE_GROUP="${RESOURCE_GROUP:-inclusify-rg}"
+RESOURCE_GROUP="${RESOURCE_GROUP:-Group07}"
 ACR_NAME="${ACR_NAME:-inclusifyacr}"
 PG_SERVER="${PG_SERVER:-inclusify-db}"
 CONTAINER_ENV="${CONTAINER_ENV:-inclusify-env}"
 BACKEND_APP="${BACKEND_APP:-inclusify-backend}"
 FRONTEND_APP="${FRONTEND_APP:-inclusify-frontend}"
+VM_NAME="${VM_NAME:-InclusifyModel}"
+CONTAINERAPPS_SUBNET="${CONTAINERAPPS_SUBNET:-containerapps-subnet}"
 
 # Parse arguments
 PRE_DEPLOY_ONLY=false
@@ -77,6 +79,38 @@ if az group show --name "$RESOURCE_GROUP" --output none 2>/dev/null; then
   check_pass "Resource Group '$RESOURCE_GROUP' exists"
 else
   check_fail "Resource Group '$RESOURCE_GROUP' not found"
+fi
+
+# ============================================
+# Section 2.5: VNet Discovery
+# ============================================
+echo ""
+echo "--- VNet Discovery ---"
+# Discover VNet from VM
+NIC_ID=$(az vm show --name "$VM_NAME" --resource-group "$RESOURCE_GROUP" \
+  --query 'networkProfile.networkInterfaces[0].id' -o tsv 2>/dev/null || echo "")
+
+if [ -n "$NIC_ID" ]; then
+  SUBNET_ID=$(az network nic show --ids "$NIC_ID" \
+    --query 'ipConfigurations[0].subnet.id' -o tsv 2>/dev/null || echo "")
+  if [ -n "$SUBNET_ID" ]; then
+    VNET_NAME=$(echo "$SUBNET_ID" | cut -d'/' -f9)
+    check_pass "VNet discovered from VM '$VM_NAME': $VNET_NAME"
+  else
+    check_fail "Could not extract VNet from VM NIC"
+  fi
+else
+  check_fail "VM '$VM_NAME' not found in '$RESOURCE_GROUP'"
+fi
+
+# Check Container Apps subnet
+if [ -n "${VNET_NAME:-}" ]; then
+  if az network vnet subnet show --resource-group "$RESOURCE_GROUP" --vnet-name "$VNET_NAME" \
+    --name "$CONTAINERAPPS_SUBNET" --output none 2>/dev/null; then
+    check_pass "Container Apps subnet '$CONTAINERAPPS_SUBNET' exists in VNet"
+  else
+    check_skip "Container Apps subnet not yet created (run azure-setup.sh first)"
+  fi
 fi
 
 # ============================================
