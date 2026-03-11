@@ -78,11 +78,8 @@ class Qwen3Config:
         "up_proj", "down_proj", "gate_proj"
     ]
 
-    # Qwen3.5 thinking mode settings
-    enable_thinking: bool = True  # Enable reasoning mode for bias detection
-    thinking_temperature: float = 1.0
-    thinking_top_p: float = 0.95
-    thinking_presence_penalty: float = 1.5
+    # Note: "Thinking mode" is an inference-time feature, not used during training
+    # Training uses same data format as Qwen2.5 (system prompt in prepare_data.py)
 
 
 def create_lora_config(rank: int, alpha: int, dropout: float) -> LoraConfig:
@@ -196,16 +193,6 @@ def train_single_config(
     # Save adapter
     trainer.save_model(str(output_dir))
 
-    # Save thinking mode config alongside adapter
-    thinking_config = {
-        "enable_thinking": Qwen3Config.enable_thinking,
-        "temperature": Qwen3Config.thinking_temperature,
-        "top_p": Qwen3Config.thinking_top_p,
-        "presence_penalty": Qwen3Config.thinking_presence_penalty,
-    }
-    with open(output_dir / "thinking_config.json", "w") as f:
-        json.dump(thinking_config, f, indent=2)
-
     # Calculate duration
     duration_min = (time.time() - start_time) / 60
 
@@ -250,7 +237,7 @@ def main():
     print("\n" + "="*70)
     print("Qwen3.5-0.8B QLoRA Grid Search")
     print(f"Quantization: {'Enabled (4-bit)' if args.quantize else 'Disabled (FP16)'}")
-    print(f"Thinking Mode: {'Enabled' if Qwen3Config.enable_thinking else 'Disabled'}")
+    print(f"Batch Size: {Qwen3Config.batch_size} (4x larger than 3B)")
     print("="*70)
 
     # Determine model path (download from HF if not cached on VM)
