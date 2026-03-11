@@ -15,7 +15,8 @@ import { Annotation } from '@/components/AnnotatedText';
 import { getSampleText, analyzeDemoText } from '@/lib/utils/demoData';
 import { analyzeText, uploadFile, healthCheck } from '@/lib/api/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { RotateCcw, FileText, ChevronLeft, ChevronRight, Scan, BarChart3, ShieldCheck } from 'lucide-react';
+import { RotateCcw, FileText, ChevronLeft, ChevronRight, Scan, BarChart3, ShieldCheck, Lock } from 'lucide-react';
+import PrivateModeToggle from '@/components/PrivateModeToggle';
 
 type ViewState = 'upload' | 'processing' | 'results';
 
@@ -66,6 +67,7 @@ export default function AnalyzePage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [processingStage, setProcessingStage] = useState<'uploading' | 'parsing' | 'analyzing' | 'generating' | 'complete'>('uploading');
   const [showExtendedWait, setShowExtendedWait] = useState(false);
+  const [privateMode, setPrivateMode] = useState(false); // Default OFF per user decision
 
   // Health check on mount with 30-second polling
   useEffect(() => {
@@ -136,7 +138,7 @@ export default function AnalyzePage() {
       // Analyze the extracted text
       const result = await analyzeText(uploadResult.text, {
         language: locale as 'en' | 'he' | 'auto',
-        privateMode: true,
+        privateMode: privateMode,
       });
 
       setProcessingStage('complete');
@@ -176,7 +178,7 @@ export default function AnalyzePage() {
       console.error('Analysis failed:', error);
       handleApiError(error);
     }
-  }, [locale, t, handleApiError]);
+  }, [locale, t, handleApiError, privateMode]);
 
   const handleUseSample = useCallback(() => {
     setFileName(t('sampleFileName'));
@@ -212,6 +214,7 @@ export default function AnalyzePage() {
     setShowExtendedWait(false);
     setProcessingStage('uploading');
     setShowGuestPrompt(true);
+    setPrivateMode(false);
   }, []);
 
   const handleIssueClick = useCallback((result: AnalysisData['results'][0]) => {
@@ -374,6 +377,14 @@ export default function AnalyzePage() {
                 </motion.p>
               </div>
 
+              {/* Private Mode Toggle */}
+              <div className="mb-4 flex justify-center">
+                <PrivateModeToggle
+                  checked={privateMode}
+                  onCheckedChange={setPrivateMode}
+                />
+              </div>
+
               {/* Upload Component */}
               <PaperUpload
                 onFileSelect={handleFileSelect}
@@ -464,6 +475,12 @@ export default function AnalyzePage() {
                     <h2 className="font-semibold text-lg text-slate-800 dark:text-white flex items-center gap-2">
                       <FileText className="w-5 h-5 text-pride-purple" />
                       {fileName}
+                      {privateMode && (
+                        <span className="ml-2 flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-pride-purple/10 text-pride-purple">
+                          <Lock className="w-3 h-3" />
+                          {t('privateMode.badge')}
+                        </span>
+                      )}
                       {analysisMode === 'rules_only' && (
                         <span
                           className="ml-2 px-2 py-0.5 text-xs rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
