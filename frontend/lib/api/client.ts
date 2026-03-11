@@ -1,8 +1,50 @@
 import type { Annotation } from '@/components/AnnotatedText';
 import type { Result } from '@/components/ResultCard';
 import type { Severity } from '@/components/SeverityBadge';
+import { toast } from 'sonner';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+// Fetch wrapper that handles 401 responses with toast and redirect
+export async function fetchWithAuth(
+  url: string,
+  options: RequestInit = {}
+): Promise<Response> {
+  const token = typeof window !== 'undefined'
+    ? localStorage.getItem('auth_token')
+    : null;
+
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+
+  if (response.status === 401) {
+    // Clear auth state
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_token_expiry');
+
+      // Show toast
+      toast.error('Session expired. Please log in again.');
+
+      // Get current locale from URL
+      const pathParts = window.location.pathname.split('/');
+      const locale = pathParts[1] === 'he' ? 'he' : 'en';
+
+      // Redirect with return URL
+      const returnUrl = encodeURIComponent(window.location.pathname);
+      window.location.href = `/${locale}/login?returnUrl=${returnUrl}`;
+    }
+
+    throw new Error('Session expired');
+  }
+
+  return response;
+}
 
 // Types matching backend response
 interface BackendIssue {
@@ -149,9 +191,11 @@ export async function analyzeText(
   options?: {
     language?: 'en' | 'he' | 'auto';
     privateMode?: boolean;
+    useAuth?: boolean;
   }
 ): Promise<AnalysisResult> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/analysis/analyze`, {
+  const fetchFn = options?.useAuth ? fetchWithAuth : fetch;
+  const response = await fetchFn(`${API_BASE_URL}/api/v1/analysis/analyze`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
