@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -15,6 +15,8 @@ import { Annotation } from '@/components/AnnotatedText';
 import { getSampleText, analyzeDemoText } from '@/lib/utils/demoData';
 import { analyzeText, uploadFile, healthCheck } from '@/lib/api/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLiveAnnouncer } from '@/contexts/LiveAnnouncerContext';
+import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import { RotateCcw, FileText, ChevronLeft, ChevronRight, Scan, BarChart3, ShieldCheck, Lock } from 'lucide-react';
 import PrivateModeToggle from '@/components/PrivateModeToggle';
 
@@ -54,6 +56,8 @@ export default function AnalyzePage() {
   const locale = useLocale();
   const isHebrew = locale === 'he';
   const { user } = useAuth();
+  const { announce } = useLiveAnnouncer();
+  const issuesListRef = useRef<HTMLDivElement>(null);
 
   const [viewState, setViewState] = useState<ViewState>('upload');
   const [fileName, setFileName] = useState('');
@@ -113,12 +117,14 @@ export default function AnalyzePage() {
 
     setErrorMessage(message);
     setViewState('upload');
-  }, [t]);
+    announce(message, 'assertive');
+  }, [t, announce]);
 
   const handleFileSelect = useCallback(async (file: File) => {
     setErrorMessage(null);  // Clear any previous error
     setFileName(file.name);
     setViewState('processing');
+    announce(t('a11y.uploadStarted'));
 
     if (USE_DEMO) {
       // Demo path: store file for demo processing animation to handle
@@ -174,11 +180,12 @@ export default function AnalyzePage() {
       });
       setAnalysisMode(result.analysisMode || null);
       setViewState('results');
+      announce(t('a11y.analysisComplete', { count: Object.values(result.counts).reduce((a, b) => a + b, 0) }));
     } catch (error) {
       console.error('Analysis failed:', error);
       handleApiError(error);
     }
-  }, [locale, t, handleApiError, privateMode]);
+  }, [locale, t, handleApiError, privateMode, announce]);
 
   const handleUseSample = useCallback(() => {
     setFileName(t('sampleFileName'));
@@ -231,6 +238,18 @@ export default function AnalyzePage() {
     setSelectedAnnotation(annotation);
     setSidePanelOpen(true);
   }, []);
+
+  // Keyboard navigation for issues list
+  useKeyboardNavigation({
+    containerRef: issuesListRef,
+    itemSelector: 'button[role="listitem"]',
+    enabled: viewState === 'results' && analysis.results.length > 0,
+    onSelect: (_, index) => {
+      if (analysis.results[index]) {
+        handleIssueClick(analysis.results[index]);
+      }
+    },
+  });
 
   // Render highlighted text with tooltips
   const renderHighlightedText = () => {
@@ -546,7 +565,12 @@ export default function AnalyzePage() {
                         </span>
                       </h3>
                     </div>
-                    <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                    <div
+                      ref={issuesListRef}
+                      className="divide-y divide-slate-100 dark:divide-slate-800"
+                      role="list"
+                      aria-label={t('a11y.issuesList')}
+                    >
                       {analysis.results.length === 0 ? (
                         <div className="p-6 text-center">
                           <div className="text-3xl mb-2">🎉</div>
@@ -558,7 +582,9 @@ export default function AnalyzePage() {
                           <motion.button
                             key={i}
                             onClick={() => handleIssueClick(result)}
-                            className="w-full px-4 py-3 text-start hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                            className="w-full px-4 py-3 text-start hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pride-purple focus-visible:ring-inset"
+                            role="listitem"
+                            tabIndex={0}
                             initial={{ opacity: 0, x: isHebrew ? -20 : 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: i * 0.05 }}
