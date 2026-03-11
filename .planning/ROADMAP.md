@@ -232,7 +232,7 @@ Plans:
 **Plans**: 2 plans in 2 waves
 
 Plans:
-- [ ] 07-01-PLAN.md — Private mode toggle, Jest/test infrastructure, backend skip logic (PRIV-01)
+- [x] 07-01-PLAN.md — Private mode toggle, Jest/test infrastructure, backend skip logic (PRIV-01)
 - [ ] 07-02-PLAN.md — WCAG AA contrast fixes, live announcer, keyboard navigation (A11Y-01)
 
 ## Progress
@@ -253,11 +253,11 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 | 5.4. LoRA Retraining | 0/? | Not started | - |
 | 5.5. Backend OAuth | 0/2 | Not started | - |
 | 6. Admin & Analytics | 2/2 | Complete | 2026-03-11 |
-| 7. Production Hardening | 0/2 | Not started | - |
+| 7. Production Hardening | 1/2 | In Progress | - |
 
 **Milestone Progress:**
 - Milestone 1 (E2E Demo): 14/25 plans - Target April 15, 2026 (5 urgent phases inserted)
-- Milestone 2 (Final): 2/4 plans - Target July 8, 2026
+- Milestone 2 (Final): 3/4 plans - Target July 8, 2026
 
 ## Requirement Coverage
 
