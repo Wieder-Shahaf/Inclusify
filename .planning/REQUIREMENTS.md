@@ -73,7 +73,7 @@ Requirements extracted from PROJECT.md for roadmap tracking.
 | ADMIN-01 | Phase 6 | Complete |
 | ADMIN-02 | Phase 6 | Complete |
 | PRIV-01 | Phase 7 | Complete |
-| A11Y-01 | Phase 7 | Pending |
+| A11Y-01 | Phase 7 | Complete |
 
 **Coverage:** 13/13 requirements mapped to phases
 
