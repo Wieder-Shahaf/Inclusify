@@ -16,6 +16,7 @@ from app.auth.users import (
     users_router,
     create_db_and_tables,
 )
+from app.auth.oauth import google_oauth_router
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +79,9 @@ app.include_router(health_router)
 app.include_router(auth_router, prefix="/auth/jwt", tags=["Auth"])
 app.include_router(register_router, prefix="/auth/jwt", tags=["Auth"])
 app.include_router(users_router, prefix="/users", tags=["Users"])
+
+# Google OAuth router
+app.include_router(google_oauth_router, prefix="/auth/google", tags=["Auth"])
 
 # API routers
 app.include_router(ingestion_router.router, prefix="/api/v1/ingestion", tags=["Ingestion"])
