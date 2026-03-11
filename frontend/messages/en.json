@@ -238,6 +238,11 @@
       "title": "Create an account to save your analysis history",
       "cta": "Sign up free",
       "dismiss": "Maybe later"
+    },
+    "privateMode": {
+      "label": "Private mode",
+      "tooltip": "Your document will not be stored. Analysis runs in memory only.",
+      "badge": "Private"
     }
   },
   "severity": {
