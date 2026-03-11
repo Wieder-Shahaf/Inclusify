@@ -174,9 +174,9 @@ Plans:
 **Plans:** 1/4 plans executed
 
 Plans:
-- [ ] 05.3-01-PLAN.md — Auth foundation: dependencies, AuthContext, auth API functions (AUTH-01)
-- [ ] 05.3-02-PLAN.md — Login and register pages with forms and Google OAuth button (AUTH-01)
-- [ ] 05.3-03-PLAN.md — Navbar integration with UserDropdown and admin link hiding (AUTH-01)
+- [x] 05.3-01-PLAN.md — Auth foundation: dependencies, AuthContext, auth API functions (AUTH-01)
+- [x] 05.3-02-PLAN.md — Login and register pages with forms and Google OAuth button (AUTH-01)
+- [x] 05.3-03-PLAN.md — Navbar integration with UserDropdown and admin link hiding (AUTH-01)
 - [ ] 05.3-04-PLAN.md — Protected routes, 401 handling, guest user prompt (AUTH-01)
 
 ### Phase 05.4: LoRA Retraining - Train unified adapter on Qwen2.5 for Hebrew/English (INSERTED)

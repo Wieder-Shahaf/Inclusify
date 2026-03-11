@@ -108,6 +108,7 @@ Recent decisions affecting current work:
 - [Phase 05.3]: Token storage in localStorage with expiry tracking (rememberMe: 30 days vs 1 day)
 - [Phase 05.3]: Avatar uses email hash for consistent color assignment (no Gravatar)
 - [Phase 05.3]: Admin nav link hidden for non-admin users (role-based visibility)
+- [Phase 05.3]: Suspense boundaries required for useSearchParams in Next.js 14+
 
 ### Key Research Findings
 
