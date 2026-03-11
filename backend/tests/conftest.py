@@ -9,7 +9,12 @@ pytest_plugins = ('pytest_asyncio',)
 
 @pytest.fixture
 def mock_pool():
-    """Create a mock asyncpg pool for testing without real DB"""
+    """Create a mock asyncpg pool for testing without real DB.
+
+    Supports admin endpoints by returning proper mock data for:
+    - Analytics KPIs (fetchval returns int counts)
+    - Paginated lists (fetch returns list of dicts)
+    """
     pool = MagicMock()
     pool.get_size.return_value = 5
     pool.get_idle_size.return_value = 3
@@ -18,7 +23,12 @@ def mock_pool():
 
     # Mock connection context manager
     mock_conn = MagicMock()
-    mock_conn.fetchval = AsyncMock(return_value=1)
+
+    # fetchval returns count values for analytics queries
+    mock_conn.fetchval = AsyncMock(return_value=0)
+
+    # fetch returns empty list by default for paginated queries
+    mock_conn.fetch = AsyncMock(return_value=[])
 
     async_ctx = MagicMock()
     async_ctx.__aenter__ = AsyncMock(return_value=mock_conn)

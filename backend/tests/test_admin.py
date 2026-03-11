@@ -317,8 +317,23 @@ class TestRecentActivity:
 
 
 # ============================================================================
-# Endpoint Tests (Task 3) - Stubs for integration tests
+# Endpoint Tests (Task 3) - Integration tests with real JWT tokens
 # ============================================================================
+
+def create_test_token(role: str) -> str:
+    """Create a test JWT with specified role.
+
+    Uses the same approach as test_rbac.py for consistency.
+    """
+    from jose import jwt
+    from app.core.config import settings
+
+    return jwt.encode(
+        {"sub": str(uuid4()), "role": role, "aud": ["fastapi-users:auth"]},
+        settings.JWT_SECRET,
+        algorithm="HS256"
+    )
+
 
 class TestAdminEndpointAuth:
     """Test admin endpoint authentication and authorization."""
@@ -326,79 +341,82 @@ class TestAdminEndpointAuth:
     @pytest.mark.asyncio
     async def test_non_admin_gets_403_forbidden(self, test_client):
         """Non-admin users receive 403 Forbidden on admin endpoints."""
-        # Mock a non-admin token
-        from unittest.mock import patch
+        token = create_test_token("user")
 
-        with patch("app.auth.deps.get_current_user_from_token") as mock_auth:
-            mock_auth.return_value = {"sub": str(uuid4()), "role": "user"}
+        response = await test_client.get(
+            "/api/v1/admin/analytics",
+            headers={"Authorization": f"Bearer {token}"}
+        )
 
-            response = await test_client.get(
-                "/api/v1/admin/analytics",
-                headers={"Authorization": "Bearer fake-user-token"}
-            )
+        assert response.status_code == 403
+        assert response.json()["detail"] == "Insufficient permissions"
 
-            assert response.status_code == 403
+    @pytest.mark.asyncio
+    async def test_org_admin_gets_403_forbidden(self, test_client):
+        """org_admin users also receive 403 Forbidden (site_admin only in v1)."""
+        token = create_test_token("org_admin")
+
+        response = await test_client.get(
+            "/api/v1/admin/analytics",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_no_token_returns_401(self, test_client):
+        """Missing token returns 401 Unauthorized."""
+        response = await test_client.get("/api/v1/admin/analytics")
+
+        assert response.status_code == 401
 
     @pytest.mark.asyncio
     async def test_admin_can_access_analytics_endpoint(self, test_client):
-        """Admin users can access admin endpoints."""
-        from unittest.mock import patch
+        """Admin users can access analytics endpoint."""
+        token = create_test_token("site_admin")
 
-        with patch("app.auth.deps.get_current_user_from_token") as mock_auth:
-            mock_auth.return_value = {"sub": str(uuid4()), "role": "site_admin"}
+        response = await test_client.get(
+            "/api/v1/admin/analytics?days=30",
+            headers={"Authorization": f"Bearer {token}"}
+        )
 
-            response = await test_client.get(
-                "/api/v1/admin/analytics?days=30",
-                headers={"Authorization": "Bearer fake-admin-token"}
-            )
-
-            # Should return 200 (or appropriate response from mocked DB)
-            assert response.status_code == 200
+        assert response.status_code == 200
 
     @pytest.mark.asyncio
     async def test_admin_can_access_users_endpoint(self, test_client):
         """Admin can access users list endpoint."""
-        from unittest.mock import patch
+        token = create_test_token("site_admin")
 
-        with patch("app.auth.deps.get_current_user_from_token") as mock_auth:
-            mock_auth.return_value = {"sub": str(uuid4()), "role": "site_admin"}
+        response = await test_client.get(
+            "/api/v1/admin/users",
+            headers={"Authorization": f"Bearer {token}"}
+        )
 
-            response = await test_client.get(
-                "/api/v1/admin/users",
-                headers={"Authorization": "Bearer fake-admin-token"}
-            )
-
-            assert response.status_code == 200
+        assert response.status_code == 200
 
     @pytest.mark.asyncio
     async def test_admin_can_access_organizations_endpoint(self, test_client):
         """Admin can access organizations list endpoint."""
-        from unittest.mock import patch
+        token = create_test_token("site_admin")
 
-        with patch("app.auth.deps.get_current_user_from_token") as mock_auth:
-            mock_auth.return_value = {"sub": str(uuid4()), "role": "site_admin"}
+        response = await test_client.get(
+            "/api/v1/admin/organizations",
+            headers={"Authorization": f"Bearer {token}"}
+        )
 
-            response = await test_client.get(
-                "/api/v1/admin/organizations",
-                headers={"Authorization": "Bearer fake-admin-token"}
-            )
-
-            assert response.status_code == 200
+        assert response.status_code == 200
 
     @pytest.mark.asyncio
     async def test_admin_can_access_activity_endpoint(self, test_client):
         """Admin can access activity endpoint."""
-        from unittest.mock import patch
+        token = create_test_token("site_admin")
 
-        with patch("app.auth.deps.get_current_user_from_token") as mock_auth:
-            mock_auth.return_value = {"sub": str(uuid4()), "role": "site_admin"}
+        response = await test_client.get(
+            "/api/v1/admin/activity?days=30",
+            headers={"Authorization": f"Bearer {token}"}
+        )
 
-            response = await test_client.get(
-                "/api/v1/admin/activity?days=30",
-                headers={"Authorization": "Bearer fake-admin-token"}
-            )
-
-            assert response.status_code == 200
+        assert response.status_code == 200
 
 
 class TestAdminEndpointResponses:
@@ -407,40 +425,80 @@ class TestAdminEndpointResponses:
     @pytest.mark.asyncio
     async def test_analytics_response_matches_schema(self, test_client):
         """Analytics endpoint returns response matching AnalyticsResponse schema."""
-        from unittest.mock import patch
+        token = create_test_token("site_admin")
 
-        with patch("app.auth.deps.get_current_user_from_token") as mock_auth:
-            mock_auth.return_value = {"sub": str(uuid4()), "role": "site_admin"}
+        response = await test_client.get(
+            "/api/v1/admin/analytics?days=30",
+            headers={"Authorization": f"Bearer {token}"}
+        )
 
-            response = await test_client.get(
-                "/api/v1/admin/analytics?days=30",
-                headers={"Authorization": "Bearer fake-admin-token"}
-            )
-
-            assert response.status_code == 200
-            data = response.json()
-            assert "total_users" in data
-            assert "active_users" in data
-            assert "total_analyses" in data
-            assert "documents_processed" in data
+        assert response.status_code == 200
+        data = response.json()
+        assert "total_users" in data
+        assert "active_users" in data
+        assert "total_analyses" in data
+        assert "documents_processed" in data
+        # All values should be integers
+        assert isinstance(data["total_users"], int)
+        assert isinstance(data["active_users"], int)
+        assert isinstance(data["total_analyses"], int)
+        assert isinstance(data["documents_processed"], int)
 
     @pytest.mark.asyncio
     async def test_users_response_matches_schema(self, test_client):
         """Users endpoint returns response matching UsersListResponse schema."""
-        from unittest.mock import patch
+        token = create_test_token("site_admin")
 
-        with patch("app.auth.deps.get_current_user_from_token") as mock_auth:
-            mock_auth.return_value = {"sub": str(uuid4()), "role": "site_admin"}
+        response = await test_client.get(
+            "/api/v1/admin/users",
+            headers={"Authorization": f"Bearer {token}"}
+        )
 
-            response = await test_client.get(
-                "/api/v1/admin/users",
-                headers={"Authorization": "Bearer fake-admin-token"}
-            )
+        assert response.status_code == 200
+        data = response.json()
+        assert "users" in data
+        assert "total" in data
+        assert "page" in data
+        assert "page_size" in data
+        assert "total_pages" in data
+        # Validate types
+        assert isinstance(data["users"], list)
+        assert isinstance(data["total"], int)
+        assert data["page"] == 1
+        assert data["page_size"] == 20
 
-            assert response.status_code == 200
-            data = response.json()
-            assert "users" in data
-            assert "total" in data
-            assert "page" in data
-            assert "page_size" in data
-            assert "total_pages" in data
+    @pytest.mark.asyncio
+    async def test_organizations_response_matches_schema(self, test_client):
+        """Organizations endpoint returns response matching OrgsListResponse schema."""
+        token = create_test_token("site_admin")
+
+        response = await test_client.get(
+            "/api/v1/admin/organizations",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert "organizations" in data
+        assert "total" in data
+        assert "page" in data
+        assert "page_size" in data
+        assert "total_pages" in data
+
+    @pytest.mark.asyncio
+    async def test_activity_response_matches_schema(self, test_client):
+        """Activity endpoint returns response matching ActivityResponse schema."""
+        token = create_test_token("site_admin")
+
+        response = await test_client.get(
+            "/api/v1/admin/activity?days=30",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert "activity" in data
+        assert "total" in data
+        assert "page" in data
+        assert "page_size" in data
+        assert "total_pages" in data
