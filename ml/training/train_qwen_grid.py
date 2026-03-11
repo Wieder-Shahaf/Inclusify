@@ -20,9 +20,8 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     TrainingArguments,
-    BitsAndBytesConfig,
 )
-from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
+from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer
 
 # Add project root to path for imports
@@ -96,26 +95,22 @@ def train_single_config(
 
     start_time = time.time()
 
-    # Configure 4-bit quantization for QLoRA
-    print("Configuring 4-bit quantization...")
-    bnb_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",  # NormalFloat4 quantization
-        bnb_4bit_compute_dtype=torch.float16,  # Compute in fp16
-        bnb_4bit_use_double_quant=True,  # Nested quantization for additional memory savings
-    )
-
-    # Load fresh base model for each config with 4-bit quantization
-    print("Loading base model in 4-bit...")
+    # Load GPTQ-quantized model (already in 4-bit Int4 format)
+    print("Loading GPTQ 4-bit quantized model...")
     base_model = AutoModelForCausalLM.from_pretrained(
         model_path,
-        quantization_config=bnb_config,
         device_map="auto",
         torch_dtype=torch.float16,
     )
 
-    # Prepare model for k-bit training (required for QLoRA)
-    base_model = prepare_model_for_kbit_training(base_model)
+    # Prepare model for training with gradient checkpointing
+    base_model.gradient_checkpointing_enable()
+
+    # Enable input gradients for LoRA training on quantized model
+    for param in base_model.parameters():
+        param.requires_grad = False  # Freeze base model
+        if param.ndim == 1:  # Enable gradients for layer norms
+            param.data = param.data.to(torch.float32)
 
     # Create LoRA config
     lora_config = create_lora_config(rank, alpha, dropout)

@@ -36,7 +36,7 @@ class TrainingConfig:
 
     # Training
     num_epochs: int = 3
-    batch_size: int = 8  # Increased from 4 (QLoRA 4-bit saves ~50% memory)
+    batch_size: int = 4  # Conservative for GPTQ training
     learning_rate: float = 2e-4
     warmup_steps: int = 100
     max_seq_length: int = 512
