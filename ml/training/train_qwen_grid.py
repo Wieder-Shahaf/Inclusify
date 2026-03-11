@@ -15,12 +15,14 @@ import time
 from pathlib import Path
 
 import torch
+import numpy as np
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     TrainingArguments,
+    BitsAndBytesConfig,
 )
-from peft import LoraConfig, get_peft_model
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from trl import SFTTrainer
 
 # Add project root to path for imports
@@ -28,6 +30,37 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from ml.training.config import get_grid, CONFIG
 from ml.training.prepare_data import prepare_datasets
+
+
+def compute_metrics(eval_pred):
+    """Compute token-level accuracy for evaluation.
+
+    Args:
+        eval_pred: Tuple of (predictions, labels) from trainer
+
+    Returns:
+        Dict with accuracy metric
+    """
+    predictions, labels = eval_pred
+
+    # predictions shape: (batch_size, seq_len, vocab_size)
+    # Get predicted token IDs (argmax over vocab dimension)
+    if len(predictions.shape) == 3:
+        predictions = np.argmax(predictions, axis=-1)
+
+    # Flatten both arrays for token-level comparison
+    predictions = predictions.flatten()
+    labels = labels.flatten()
+
+    # Ignore padding tokens (label = -100)
+    mask = labels != -100
+    predictions = predictions[mask]
+    labels = labels[mask]
+
+    # Calculate accuracy: percentage of correctly predicted tokens
+    accuracy = (predictions == labels).astype(np.float32).mean()
+
+    return {"accuracy": float(accuracy)}
 
 
 def create_lora_config(rank: int, alpha: int, dropout: float) -> LoraConfig:
@@ -63,13 +96,26 @@ def train_single_config(
 
     start_time = time.time()
 
-    # Load fresh base model for each config to avoid PEFT conflicts
-    print("Loading base model...")
+    # Configure 4-bit quantization for QLoRA
+    print("Configuring 4-bit quantization...")
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_quant_type="nf4",  # NormalFloat4 quantization
+        bnb_4bit_compute_dtype=torch.float16,  # Compute in fp16
+        bnb_4bit_use_double_quant=True,  # Nested quantization for additional memory savings
+    )
+
+    # Load fresh base model for each config with 4-bit quantization
+    print("Loading base model in 4-bit...")
     base_model = AutoModelForCausalLM.from_pretrained(
         model_path,
-        torch_dtype="auto",
-        device_map="auto"
+        quantization_config=bnb_config,
+        device_map="auto",
+        torch_dtype=torch.float16,
     )
+
+    # Prepare model for k-bit training (required for QLoRA)
+    base_model = prepare_model_for_kbit_training(base_model)
 
     # Create LoRA config
     lora_config = create_lora_config(rank, alpha, dropout)
@@ -100,7 +146,8 @@ def train_single_config(
         fp16=CONFIG.fp16,
         optim=CONFIG.optim,
         report_to="tensorboard",
-        gradient_checkpointing=False,  # Disable to avoid extra memory overhead
+        gradient_checkpointing=True,  # Enable for QLoRA memory efficiency
+        gradient_checkpointing_kwargs={"use_reentrant": False},  # Recommended for newer PyTorch
     )
 
     # Create trainer
@@ -111,6 +158,7 @@ def train_single_config(
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
+        compute_metrics=compute_metrics,  # Enable accuracy computation
     )
 
     # Train
@@ -132,7 +180,7 @@ def train_single_config(
         "alpha": alpha,
         "dropout": dropout,
         "val_loss": eval_metrics["eval_loss"],
-        "val_accuracy": eval_metrics.get("eval_accuracy", 0.0),
+        "val_accuracy": eval_metrics.get("eval_accuracy", 0.0),  # Now computed by compute_metrics
         "duration_min": round(duration_min, 2),
         "trainable_params": model.num_parameters(only_trainable=True),
         "total_params": model.num_parameters(),
@@ -141,6 +189,7 @@ def train_single_config(
     print(f"\n{'='*70}")
     print(f"Completed: {config_name}")
     print(f"  Validation loss: {results['val_loss']:.4f}")
+    print(f"  Validation accuracy: {results['val_accuracy']:.2%}")
     print(f"  Duration: {results['duration_min']:.2f} min")
     print(f"{'='*70}\n")
 
