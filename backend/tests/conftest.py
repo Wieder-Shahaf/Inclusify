@@ -79,3 +79,36 @@ def sample_text_english():
 def sample_text_hebrew():
     """Sample Hebrew text for testing."""
     return "הומוסקסואליות היא מחלה. סטיית מין דורשת טיפול."
+
+
+# Google OAuth mock fixtures for Phase 05.5
+@pytest.fixture
+def mock_google_oauth_response():
+    """Mock successful Google OAuth token exchange response."""
+    return {
+        "access_token": "mock-google-access-token",
+        "token_type": "Bearer",
+        "expires_in": 3600,
+        "id_token": "mock-id-token",
+    }
+
+
+@pytest.fixture
+def mock_google_user_info():
+    """Mock Google user info response (from id_token or userinfo endpoint)."""
+    return {
+        "sub": "google-user-id-12345",
+        "email": "oauthuser@gmail.com",
+        "email_verified": True,
+        "name": "OAuth Test User",
+        "picture": "https://example.com/photo.jpg",
+    }
+
+
+@pytest.fixture
+def mock_google_oauth_error():
+    """Mock Google OAuth error response."""
+    return {
+        "error": "access_denied",
+        "error_description": "User denied access",
+    }
