@@ -148,12 +148,12 @@ def train_single_config(
     # Create trainer
     # Note: TRL 0.29.0 - we already applied PEFT via get_peft_model() above
     # Do NOT pass peft_config again (would error: "PeftModel with peft_config")
+    # Note: compute_metrics disabled (causes OOM), use mean_token_accuracy from logs instead
     trainer = SFTTrainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
-        compute_metrics=compute_metrics,  # Enable accuracy computation
     )
 
     # Train
@@ -169,13 +169,14 @@ def train_single_config(
     duration_min = (time.time() - start_time) / 60
 
     # Collect results
+    # Note: val_accuracy comes from trainer's built-in mean_token_accuracy during eval
     results = {
         "config": config_name,
         "rank": rank,
         "alpha": alpha,
         "dropout": dropout,
         "val_loss": eval_metrics["eval_loss"],
-        "val_accuracy": eval_metrics.get("eval_accuracy", 0.0),  # Now computed by compute_metrics
+        "val_accuracy": eval_metrics.get("eval_mean_token_accuracy", 0.0),  # Built-in metric
         "duration_min": round(duration_min, 2),
         "trainable_params": model.num_parameters(only_trainable=True),
         "total_params": model.num_parameters(),
@@ -184,7 +185,8 @@ def train_single_config(
     print(f"\n{'='*70}")
     print(f"Completed: {config_name}")
     print(f"  Validation loss: {results['val_loss']:.4f}")
-    print(f"  Validation accuracy: {results['val_accuracy']:.2%}")
+    if results['val_accuracy'] > 0:
+        print(f"  Validation accuracy: {results['val_accuracy']:.2%}")
     print(f"  Duration: {results['duration_min']:.2f} min")
     print(f"{'='*70}\n")
 

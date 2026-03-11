@@ -36,7 +36,7 @@ class TrainingConfig:
 
     # Training
     num_epochs: int = 3
-    batch_size: int = 4  # Conservative for GPTQ training
+    batch_size: int = 2  # Reduced to 2 for GPTQ memory constraints
     learning_rate: float = 2e-4
     warmup_steps: int = 100
     max_seq_length: int = 512
