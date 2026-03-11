@@ -27,3 +27,6 @@ ml/data/private/
 
 .claude
 CLAUDE.md
+
+Azure_env_key.txt
+admin-request-email-SHORT.txt
