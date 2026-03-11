@@ -37,6 +37,11 @@ class Settings(BaseSettings):
     VLLM_CIRCUIT_RESET_TIMEOUT: int = 60
     VLLM_MODEL_NAME: str = "/home/azureuser/models/Qwen2.5-3B-Instruct-GPTQ-Int4"
 
+    # Google OAuth Configuration
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+    FRONTEND_URL: str = "http://localhost:3000"
+
     # Database Configuration (SQLAlchemy URL)
     # Constructed from PG* env vars for PostgreSQL, or SQLite for dev
     DATABASE_URL: Optional[str] = None
