@@ -204,20 +204,20 @@ Plans:
 - [ ] TBD (run /gsd:plan-phase 05.4 to break down)
 
 ### Phase 6: Admin & Analytics
-**Goal**: Administrators can manage users/organizations and view usage analytics
+**Goal**: Site administrators can view usage analytics and manage users/organizations (view-only in v1)
 **Depends on**: Phase 5
 **Requirements**: ADMIN-01 (Admin dashboard with real analytics), ADMIN-02 (Admin user/organization management)
 **Success Criteria** (what must be TRUE):
-  1. Admin can view list of users and organizations
-  2. Admin can create, edit, and deactivate users
-  3. Admin can view usage metrics (analyses run, documents processed)
-  4. Dashboard shows aggregate statistics (total users, recent activity)
-  5. Non-admin users cannot access admin routes
-**Plans**: TBD
+  1. Admin can view KPI metrics (total users, active users, total analyses, documents processed)
+  2. Admin can view list of users with email search and pagination
+  3. Admin can view list of organizations with user counts
+  4. Admin can view recent activity with issue counts
+  5. Non-admin users receive 403 Forbidden on admin endpoints (404 on admin UI)
+**Plans**: 2 plans in 2 waves
 
 Plans:
-- [ ] 06-01: Admin dashboard backend (analytics queries, admin routes)
-- [ ] 06-02: Admin dashboard frontend (user/org management UI)
+- [ ] 06-01-PLAN.md — Admin API endpoints with analytics queries and RBAC protection (ADMIN-01, ADMIN-02)
+- [ ] 06-02-PLAN.md — Admin dashboard frontend with tabs and real API integration (ADMIN-01, ADMIN-02)
 
 ### Phase 7: Production Hardening
 **Goal**: Application meets privacy and accessibility requirements for final presentation
