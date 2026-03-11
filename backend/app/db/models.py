@@ -11,8 +11,10 @@ from fastapi_users_db_sqlalchemy import (
     SQLAlchemyBaseUserTableUUID,
     SQLAlchemyBaseOAuthAccountTableUUID,
 )
-from sqlalchemy import String, Uuid
+from sqlalchemy import ForeignKey, String, Uuid
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
+from fastapi_users_db_sqlalchemy.generics import GUID
 
 
 class Base(DeclarativeBase):
@@ -30,6 +32,11 @@ class OAuthAccount(SQLAlchemyBaseOAuthAccountTableUUID, Base):
     """
 
     __tablename__ = "oauth_accounts"
+
+    # Override user_id to point to "users" table (not default "user")
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        GUID, ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
 
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
