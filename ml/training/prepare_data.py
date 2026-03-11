@@ -18,7 +18,7 @@ def load_dataset(csv_path: str) -> pd.DataFrame:
         csv_path: Path to augmented_dataset.csv
 
     Returns:
-        DataFrame with validated columns
+        DataFrame with validated columns (duplicates removed)
 
     Raises:
         ValueError: If required columns are missing or data has null values
@@ -34,6 +34,13 @@ def load_dataset(csv_path: str) -> pd.DataFrame:
     null_counts = df[required_columns].isnull().sum()
     if null_counts.any():
         raise ValueError(f"Null values found in required columns: {null_counts[null_counts > 0].to_dict()}")
+
+    # Remove duplicate sentences (keep first occurrence)
+    # This prevents data leakage during train/val split
+    original_count = len(df)
+    df = df.drop_duplicates(subset=["Sentence"], keep="first")
+    if len(df) < original_count:
+        print(f"Warning: Removed {original_count - len(df)} duplicate sentences")
 
     return df
 
