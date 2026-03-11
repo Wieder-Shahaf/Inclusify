@@ -23,6 +23,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5.2: Model Migration** - Install vLLM on VM, download Qwen2.5-3B-GPTQ (INSERTED) (gap closure in progress) (completed 2026-03-10)
 - [ ] **Phase 5.3: Auth Frontend** - Build login/register pages with OAuth (INSERTED)
 - [ ] **Phase 5.4: LoRA Retraining** - Train unified adapter on Qwen2.5 for Hebrew/English (INSERTED)
+- [ ] **Phase 5.5: Backend OAuth** - Add Google OAuth endpoints to FastAPI (INSERTED)
 
 ### Milestone 2: Final Presentation (Target: July 8, 2026)
 
@@ -142,6 +143,18 @@ Plans:
 
 ---
 
+### Phase 05.5: Backend OAuth - Add Google OAuth endpoints to FastAPI (INSERTED)
+
+**Goal:** Add Google OAuth endpoints to FastAPI backend enabling users to sign in with Google
+**Requirements**: AUTH-01 (Authentication)
+**Depends on:** Phase 05.3 (Auth Frontend)
+**Environment:** Local (backend development)
+**Plans:** 2 plans in 2 waves
+
+Plans:
+- [ ] 05.5-01-PLAN.md — Wave 0 test infrastructure: httpx-oauth dependency, OAuth mock fixtures, test stubs (AUTH-01)
+- [ ] 05.5-02-PLAN.md — Google OAuth implementation: OAuthAccount model, OAuth router, callback with JWT redirect (AUTH-01)
+
 ### Phase 05.1: Azure Infrastructure - Create PostgreSQL, ACR, Container Apps in Group07 (INSERTED)
 
 **Goal:** Modify azure-setup.sh to deploy all Azure resources to Group07 with dynamic VNet discovery from InclusifyModel VM
@@ -238,11 +251,12 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 | 5.2. Model Migration | 2/2 | Complete   | 2026-03-10 |
 | 5.3. Auth Frontend | 3/4 | In Progress|  |
 | 5.4. LoRA Retraining | 0/? | Not started | - |
+| 5.5. Backend OAuth | 0/2 | Not started | - |
 | 6. Admin & Analytics | 0/2 | Not started | - |
 | 7. Production Hardening | 0/2 | Not started | - |
 
 **Milestone Progress:**
-- Milestone 1 (E2E Demo): 14/23 plans - Target April 15, 2026 (4 urgent phases inserted)
+- Milestone 1 (E2E Demo): 14/25 plans - Target April 15, 2026 (5 urgent phases inserted)
 - Milestone 2 (Final): 0/4 plans - Target July 8, 2026
 
 ## Requirement Coverage
@@ -254,7 +268,7 @@ All 13 v1 requirements mapped:
 | DB-01 | Database connected to backend | Phase 1 |
 | INFRA-01 | Docker containerization | Phase 1 |
 | INFRA-02 | Azure deployment | Phase 1, 5, 5.1 |
-| AUTH-01 | Authentication (email/password) | Phase 2, 5.3 |
+| AUTH-01 | Authentication (email/password) | Phase 2, 5.3, 5.5 |
 | AUTH-02 | Simple RBAC (user/admin) | Phase 2 |
 | DOC-01 | Docling replaces PyMuPDF | Phase 2 |
 | LLM-01 | vLLM deployed on Azure VM | Phase 3, 5.2 |
