@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import AdminDashboard from '@/components/dashboard/AdminDashboard';
+import { AdminGuard } from '@/components/auth/AuthGuard';
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -69,5 +70,9 @@ export default async function AdminPage({ params }: Props) {
     runs: t('admin.runs'),
   };
 
-  return <AdminDashboard translations={translations} />;
+  return (
+    <AdminGuard>
+      <AdminDashboard translations={translations} />
+    </AdminGuard>
+  );
 }
