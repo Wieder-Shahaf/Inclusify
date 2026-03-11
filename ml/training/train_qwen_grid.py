@@ -43,7 +43,7 @@ def create_lora_config(rank: int, alpha: int, dropout: float) -> LoraConfig:
 
 
 def train_single_config(
-    base_model,
+    model_path: str,
     tokenizer,
     train_dataset,
     val_dataset,
@@ -63,10 +63,18 @@ def train_single_config(
 
     start_time = time.time()
 
+    # Load fresh base model for each config to avoid PEFT conflicts
+    print("Loading base model...")
+    base_model = AutoModelForCausalLM.from_pretrained(
+        model_path,
+        torch_dtype="auto",
+        device_map="auto"
+    )
+
     # Create LoRA config
     lora_config = create_lora_config(rank, alpha, dropout)
 
-    # Attach LoRA to fresh copy of base model
+    # Attach LoRA adapter
     model = get_peft_model(base_model, lora_config)
     model.print_trainable_parameters()
 
@@ -96,14 +104,13 @@ def train_single_config(
     )
 
     # Create trainer
-    # Note: TRL 0.29.0 automatically detects "text" field in dataset
-    # No need to specify dataset_text_field parameter (removed in TRL 0.29.0)
+    # Note: TRL 0.29.0 - we already applied PEFT via get_peft_model() above
+    # Do NOT pass peft_config again (would error: "PeftModel with peft_config")
     trainer = SFTTrainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
-        peft_config=lora_config,
     )
 
     # Train
@@ -137,8 +144,8 @@ def train_single_config(
     print(f"  Duration: {results['duration_min']:.2f} min")
     print(f"{'='*70}\n")
 
-    # Clean up
-    del model, trainer
+    # Clean up to free GPU memory before next config
+    del model, trainer, base_model
     torch.cuda.empty_cache()
 
     return results
@@ -151,15 +158,10 @@ def main():
     print("Qwen2.5 QLoRA Grid Search")
     print("="*70)
 
-    # Load base model and tokenizer
-    print("\n[1/3] Loading base model and tokenizer...")
+    # Load tokenizer (model will be loaded fresh for each config)
+    print("\n[1/3] Loading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(CONFIG.model_path)
-    base_model = AutoModelForCausalLM.from_pretrained(
-        CONFIG.model_path,
-        torch_dtype="auto",  # Uses fp16 on T4
-        device_map="auto"
-    )
-    print(f"Model loaded: {CONFIG.model_path}")
+    print(f"Tokenizer loaded: {CONFIG.model_path}")
 
     # Prepare datasets
     print("\n[2/3] Preparing datasets...")
@@ -180,7 +182,7 @@ def main():
 
         try:
             config_results = train_single_config(
-                base_model=base_model,
+                model_path=CONFIG.model_path,
                 tokenizer=tokenizer,
                 train_dataset=train_dataset,
                 val_dataset=val_dataset,
