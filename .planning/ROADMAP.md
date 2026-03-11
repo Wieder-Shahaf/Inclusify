@@ -27,7 +27,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 ### Milestone 2: Final Presentation (Target: July 8, 2026)
 
-- [ ] **Phase 6: Admin & Analytics** - Admin dashboard, user/org management, analytics
+- [x] **Phase 6: Admin & Analytics** - Admin dashboard, user/org management, analytics (completed 2026-03-11)
 - [ ] **Phase 7: Production Hardening** - Private mode, accessibility, polish
 
 ## Phase Details
@@ -216,8 +216,8 @@ Plans:
 **Plans**: 2 plans in 2 waves
 
 Plans:
-- [ ] 06-01-PLAN.md — Admin API endpoints with analytics queries and RBAC protection (ADMIN-01, ADMIN-02)
-- [ ] 06-02-PLAN.md — Admin dashboard frontend with tabs and real API integration (ADMIN-01, ADMIN-02)
+- [x] 06-01-PLAN.md — Admin API endpoints with analytics queries and RBAC protection (ADMIN-01, ADMIN-02)
+- [x] 06-02-PLAN.md — Admin dashboard frontend with tabs and real API integration (ADMIN-01, ADMIN-02)
 
 ### Phase 7: Production Hardening
 **Goal**: Application meets privacy and accessibility requirements for final presentation
