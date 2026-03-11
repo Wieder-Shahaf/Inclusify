@@ -7,7 +7,7 @@ asyncpg==0.30.0
 python-dotenv==1.0.1
 
 # Auth (FastAPI Users 13.x)
-fastapi-users[sqlalchemy]==13.0.0
+fastapi-users[sqlalchemy,oauth]==13.0.0
 pwdlib[argon2]==0.2.0
 python-jose[cryptography]==3.3.0
 redis==5.0.0
