@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { Oswald, Raleway, Noto_Sans_Hebrew } from 'next/font/google';
 import { locales, type Locale } from '@/i18n/config';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { LiveAnnouncerProvider } from '@/contexts/LiveAnnouncerContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Toaster } from '@/components/ui/toaster';
@@ -79,14 +80,16 @@ export default async function LocaleLayout({ children, params }: Props) {
       <body className={`${oswald.variable} ${raleway.variable} ${notoSansHebrew.variable} min-h-dvh bg-hero-gradient transition-colors duration-300`}>
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
-            <div className="min-h-screen flex flex-col">
-              <Navbar />
-              <main className="container-px mx-auto max-w-7xl flex-1 flex flex-col min-h-0">
-                {children}
-              </main>
-              <Footer />
-            </div>
-            <Toaster />
+            <LiveAnnouncerProvider>
+              <div className="min-h-screen flex flex-col">
+                <Navbar />
+                <main className="container-px mx-auto max-w-7xl flex-1 flex flex-col min-h-0">
+                  {children}
+                </main>
+                <Footer />
+              </div>
+              <Toaster />
+            </LiveAnnouncerProvider>
           </AuthProvider>
         </NextIntlClientProvider>
       </body>
