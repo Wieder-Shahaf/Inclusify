@@ -19,11 +19,17 @@
     "subtitle": "מעקב אחר שימוש בפלטפורמה ואיסוף תובנות",
     "refresh": "רענון",
     "lastUpdated": "עודכן לאחרונה",
+    "tabs": {
+      "overview": "סקירה",
+      "users": "משתמשים",
+      "organizations": "ארגונים"
+    },
     "timeRanges": {
       "today": "היום",
-      "week": "השבוע",
-      "month": "החודש",
-      "year": "השנה"
+      "week": "7 ימים אחרונים",
+      "month": "30 ימים אחרונים",
+      "quarter": "90 ימים אחרונים",
+      "year": "כל הזמנים"
     },
     "kpi": {
       "totalAnalyses": "סה״כ ניתוחים",
@@ -56,6 +62,13 @@
       "analyzed": "נותח",
       "found": "נמצאו",
       "issues": "בעיות"
+    },
+    "users": {
+      "searchPlaceholder": "חיפוש לפי אימייל...",
+      "noResults": "לא נמצאו משתמשים"
+    },
+    "orgs": {
+      "noResults": "לא נמצאו ארגונים"
     },
     "health": {
       "apiLatency": "זמן תגובה API",

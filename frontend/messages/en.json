@@ -19,11 +19,17 @@
     "subtitle": "Monitor platform usage and gather insights",
     "refresh": "Refresh",
     "lastUpdated": "Last updated",
+    "tabs": {
+      "overview": "Overview",
+      "users": "Users",
+      "organizations": "Organizations"
+    },
     "timeRanges": {
       "today": "Today",
-      "week": "This Week",
-      "month": "This Month",
-      "year": "This Year"
+      "week": "Last 7 days",
+      "month": "Last 30 days",
+      "quarter": "Last 90 days",
+      "year": "All time"
     },
     "kpi": {
       "totalAnalyses": "Total Analyses",
@@ -56,6 +62,13 @@
       "analyzed": "analyzed",
       "found": "found",
       "issues": "issues"
+    },
+    "users": {
+      "searchPlaceholder": "Search by email...",
+      "noResults": "No users found"
+    },
+    "orgs": {
+      "noResults": "No organizations found"
     },
     "health": {
       "apiLatency": "API Latency",
