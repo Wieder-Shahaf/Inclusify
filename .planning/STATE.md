@@ -4,7 +4,7 @@ milestone: v0.6
 milestone_name: milestone
 status: Admin dashboard frontend with SWR integration
 stopped_at: Completed 06-02-PLAN.md
-last_updated: "2026-03-11T11:42:49.706Z"
+last_updated: "2026-03-11T12:04:54.910Z"
 last_activity: 2026-03-11 - Admin dashboard tabs with real API data, EN/HE translations
 progress:
   total_phases: 12
