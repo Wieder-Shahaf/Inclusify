@@ -96,13 +96,13 @@ def train_single_config(
     )
 
     # Create trainer
+    # Note: Removed tokenizer and max_seq_length params due to TRL version compatibility
+    # Datasets are pre-tokenized in prepare_datasets()
     trainer = SFTTrainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
-        tokenizer=tokenizer,
-        max_seq_length=CONFIG.max_seq_length,
         peft_config=lora_config,
         dataset_text_field="text",  # Field added by prepare_datasets
     )

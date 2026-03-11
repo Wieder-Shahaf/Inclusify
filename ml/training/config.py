@@ -50,7 +50,7 @@ class TrainingConfig:
     # Logging
     logging_steps: int = 10
     eval_steps: int = 50
-    save_strategy: str = "epoch"
+    save_strategy: str = "steps"  # Must match eval_strategy for load_best_model_at_end
 
     # Output
     output_dir: str = "/home/azureuser/inclusify/ml/adapters"  # VM path
