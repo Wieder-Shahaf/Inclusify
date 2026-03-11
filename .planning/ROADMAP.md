@@ -22,7 +22,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5.1: Azure Infrastructure** - Create PostgreSQL, ACR, Container Apps in Group07 (INSERTED) (completed 2026-03-10)
 - [x] **Phase 5.2: Model Migration** - Install vLLM on VM, download Qwen2.5-3B-GPTQ (INSERTED) (gap closure in progress) (completed 2026-03-10)
 - [ ] **Phase 5.3: Auth Frontend** - Build login/register pages with OAuth (INSERTED)
-- [ ] **Phase 5.4: LoRA Retraining** - Train unified adapter on Qwen2.5 for Hebrew/English (INSERTED)
+- [ ] **Phase 5.4: LoRA Retraining** - Train unified adapter on Qwen2.5 for English (INSERTED)
 - [ ] **Phase 5.5: Backend OAuth** - Add Google OAuth endpoints to FastAPI (INSERTED)
 
 ### Milestone 2: Final Presentation (Target: July 8, 2026)
@@ -192,16 +192,19 @@ Plans:
 - [x] 05.3-03-PLAN.md — Navbar integration with UserDropdown and admin link hiding (AUTH-01)
 - [ ] 05.3-04-PLAN.md — Protected routes, 401 handling, guest user prompt (AUTH-01)
 
-### Phase 05.4: LoRA Retraining - Train unified adapter on Qwen2.5 for Hebrew/English (INSERTED)
+### Phase 05.4: LoRA Retraining - Train unified adapter on Qwen2.5 for English (INSERTED)
 
-**Goal:** Adapt training for Qwen2.5 architecture, train unified LoRA adapter for Hebrew/English
+**Goal:** English-only pilot to validate Qwen2.5 + QLoRA architecture. Grid search 9 hyperparameter configs (3 ranks × 3 dropout values). Target validation accuracy >80% before scaling to Hebrew.
 **Requirements**: LLM-02 (LLM inference integrated)
 **Depends on:** Phase 5.2
 **Environment:** VM (SSH to InclusifyModel)
-**Plans:** 0 plans
+**Plans:** 4 plans in 4 waves
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 05.4 to break down)
+- [ ] 05.4-01-PLAN.md — Data preparation pipeline and test infrastructure (Wave 1) (LLM-02)
+- [ ] 05.4-02-PLAN.md — Grid search training script for 9 QLoRA configs (Wave 2) (LLM-02)
+- [ ] 05.4-03-PLAN.md — Evaluate all configs, identify best adapter (Wave 3, has checkpoint) (LLM-02)
+- [ ] 05.4-04-PLAN.md — Integrate winning adapter with vLLM service (Wave 4) (LLM-02)
 
 ### Phase 6: Admin & Analytics
 **Goal**: Site administrators can view usage analytics and manage users/organizations (view-only in v1)
@@ -250,13 +253,13 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 | 5.1. Azure Infrastructure | 1/1 | Complete   | 2026-03-10 |
 | 5.2. Model Migration | 2/2 | Complete   | 2026-03-10 |
 | 5.3. Auth Frontend | 3/4 | In Progress|  |
-| 5.4. LoRA Retraining | 0/? | Not started | - |
+| 5.4. LoRA Retraining | 0/4 | Not started | - |
 | 5.5. Backend OAuth | 0/2 | Not started | - |
 | 6. Admin & Analytics | 2/2 | Complete | 2026-03-11 |
 | 7. Production Hardening | 1/2 | In Progress | - |
 
 **Milestone Progress:**
-- Milestone 1 (E2E Demo): 14/25 plans - Target April 15, 2026 (5 urgent phases inserted)
+- Milestone 1 (E2E Demo): 14/29 plans - Target April 15, 2026 (5 urgent phases inserted)
 - Milestone 2 (Final): 3/4 plans - Target July 8, 2026
 
 ## Requirement Coverage
@@ -272,7 +275,7 @@ All 13 v1 requirements mapped:
 | AUTH-02 | Simple RBAC (user/admin) | Phase 2 |
 | DOC-01 | Docling replaces PyMuPDF | Phase 2 |
 | LLM-01 | vLLM deployed on Azure VM | Phase 3, 5.2 |
-| LLM-02 | LLM inference integrated | Phase 3 |
+| LLM-02 | LLM inference integrated | Phase 3, 5.4 |
 | FE-01 | Frontend wired to real API | Phase 4 |
 | ADMIN-01 | Admin dashboard with analytics | Phase 6 |
 | ADMIN-02 | Admin user/org management | Phase 6 |
