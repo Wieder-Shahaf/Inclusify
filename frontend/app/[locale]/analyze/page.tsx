@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import AnnotationSidePanel from '@/components/AnnotationSidePanel';
 import SeverityBadge from '@/components/SeverityBadge';
 import PaperUpload from '@/components/PaperUpload';
@@ -13,6 +14,7 @@ import HealthWarningBanner from '@/components/HealthWarningBanner';
 import { Annotation } from '@/components/AnnotatedText';
 import { getSampleText, analyzeDemoText } from '@/lib/utils/demoData';
 import { analyzeText, uploadFile, healthCheck } from '@/lib/api/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { RotateCcw, FileText, ChevronLeft, ChevronRight, Scan, BarChart3, ShieldCheck } from 'lucide-react';
 
 type ViewState = 'upload' | 'processing' | 'results';
@@ -50,6 +52,7 @@ export default function AnalyzePage() {
   const t = useTranslations('analyzer');
   const locale = useLocale();
   const isHebrew = locale === 'he';
+  const { user } = useAuth();
 
   const [viewState, setViewState] = useState<ViewState>('upload');
   const [fileName, setFileName] = useState('');
@@ -58,6 +61,7 @@ export default function AnalyzePage() {
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [backendHealthy, setBackendHealthy] = useState<boolean | null>(null);
   const [analysisMode, setAnalysisMode] = useState<'llm' | 'hybrid' | 'rules_only' | null>(null);
+  const [showGuestPrompt, setShowGuestPrompt] = useState(true);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [processingStage, setProcessingStage] = useState<'uploading' | 'parsing' | 'analyzing' | 'generating' | 'complete'>('uploading');
@@ -207,6 +211,7 @@ export default function AnalyzePage() {
     setErrorMessage(null);
     setShowExtendedWait(false);
     setProcessingStage('uploading');
+    setShowGuestPrompt(true);
   }, []);
 
   const handleIssueClick = useCallback((result: AnalysisData['results'][0]) => {
@@ -557,6 +562,34 @@ export default function AnalyzePage() {
                       )}
                     </div>
                   </div>
+
+                  {/* Guest Prompt - show after analysis for non-authenticated users */}
+                  {!user && showGuestPrompt && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="p-4 bg-gradient-to-r from-pride-purple/10 to-pride-blue/10 rounded-lg border border-pride-purple/20"
+                    >
+                      <p className="text-sm text-slate-700 dark:text-slate-300 mb-3">
+                        {t('guestPrompt.title')}
+                      </p>
+                      <div className="flex gap-3">
+                        <Link
+                          href={`/${locale}/register`}
+                          className="px-4 py-2 text-sm font-medium rounded-lg bg-pride-purple text-white hover:bg-pride-purple/90 transition-colors"
+                        >
+                          {t('guestPrompt.cta')}
+                        </Link>
+                        <button
+                          onClick={() => setShowGuestPrompt(false)}
+                          className="text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+                        >
+                          {t('guestPrompt.dismiss')}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
               </div>
             </motion.div>

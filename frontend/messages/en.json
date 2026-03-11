@@ -220,6 +220,11 @@
       "tooManyPages": "This document exceeds the 50 page limit. Please try a shorter document.",
       "fileTooLarge": "This file exceeds the 50MB limit. Please try a smaller file.",
       "uploadFailed": "Failed to upload file. Please try again."
+    },
+    "guestPrompt": {
+      "title": "Create an account to save your analysis history",
+      "cta": "Sign up free",
+      "dismiss": "Maybe later"
     }
   },
   "severity": {
