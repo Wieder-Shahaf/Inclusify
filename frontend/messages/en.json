@@ -225,6 +225,37 @@
     "offensive": "Potentially offensive",
     "incorrect": "Factually incorrect"
   },
+  "auth": {
+    "login": "Login",
+    "register": "Create Account",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "rememberMe": "Remember me for 30 days",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "signUp": "Sign up",
+    "signIn": "Sign in",
+    "orContinueWith": "or",
+    "googleSignIn": "Sign in with Google",
+    "loggingIn": "Signing in...",
+    "registering": "Creating account...",
+    "loginSuccess": "Welcome back!",
+    "registerSuccess": "Account created successfully!",
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email",
+      "passwordRequired": "Password is required",
+      "passwordMin": "Password must be at least 8 characters",
+      "passwordMatch": "Passwords must match"
+    },
+    "errors": {
+      "invalidCredentials": "Invalid email or password",
+      "emailExists": "An account with this email already exists",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
   "glossary": {
     "title": "LGBTQ+ Glossary",
     "subtitle": "A comprehensive guide to LGBTQ+ terminology for inclusive academic writing. Definitions sourced from leading advocacy organizations.",

@@ -225,6 +225,37 @@
     "offensive": "עלול לפגוע",
     "incorrect": "שגוי עובדתית"
   },
+  "auth": {
+    "login": "התחברות",
+    "register": "יצירת חשבון",
+    "email": "אימייל",
+    "password": "סיסמה",
+    "confirmPassword": "אימות סיסמה",
+    "rememberMe": "זכור אותי ל-30 יום",
+    "forgotPassword": "שכחת סיסמה?",
+    "noAccount": "אין לך חשבון?",
+    "hasAccount": "יש לך כבר חשבון?",
+    "signUp": "הרשמה",
+    "signIn": "התחברות",
+    "orContinueWith": "או",
+    "googleSignIn": "התחברות עם Google",
+    "loggingIn": "מתחבר...",
+    "registering": "יוצר חשבון...",
+    "loginSuccess": "ברוך שובך!",
+    "registerSuccess": "החשבון נוצר בהצלחה!",
+    "validation": {
+      "emailRequired": "אימייל נדרש",
+      "emailInvalid": "נא להזין אימייל תקין",
+      "passwordRequired": "סיסמה נדרשת",
+      "passwordMin": "הסיסמה חייבת להכיל לפחות 8 תווים",
+      "passwordMatch": "הסיסמאות חייבות להיות זהות"
+    },
+    "errors": {
+      "invalidCredentials": "אימייל או סיסמה שגויים",
+      "emailExists": "חשבון עם אימייל זה כבר קיים",
+      "generic": "משהו השתבש. נא לנסות שוב."
+    }
+  },
   "glossary": {
     "title": "מילון מונחי להט״ב+",
     "subtitle": "מדריך מקיף למונחי להט״ב+ לכתיבה אקדמית מכלילה. הגדרות ממקורות מוסמכים.",
