@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v0.6
 milestone_name: milestone
 status: completed
-stopped_at: Completed 05.5-01-PLAN.md
-last_updated: "2026-03-11T10:32:24.642Z"
-last_activity: 2026-03-11 - Deployed vLLM 0.6.6 with Qwen2.5-3B-Instruct-GPTQ-Int4 on VM
+stopped_at: Completed 05.5-02-PLAN.md
+last_updated: "2026-03-11T10:37:15Z"
+last_activity: 2026-03-11 - Google OAuth endpoints implemented with 6 passing tests
 progress:
   total_phases: 12
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 25
-  completed_plans: 22
-  percent: 89
+  completed_plans: 23
+  percent: 92
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-08)
 
 ## Current Position
 
-Phase: 05.5 (Backend OAuth) - IN PROGRESS
-Plan: 1 of 2 in current phase (05.5-01 complete)
-Status: OAuth test infrastructure ready
-Last activity: 2026-03-11 - Created OAuth test stubs and mock fixtures
+Phase: 05.5 (Backend OAuth) - COMPLETE
+Plan: 2 of 2 in current phase (all plans complete)
+Status: Google OAuth backend fully implemented
+Last activity: 2026-03-11 - Google OAuth endpoints with authorize/callback, 6 tests passing
 
-Progress: [█████████░] 88%
+Progress: [█████████░] 92%
 
 ## Performance Metrics
 
@@ -63,6 +63,7 @@ Progress: [█████████░] 88%
 | Phase 05.3 P03 | 2 | 3 tasks | 7 files |
 | Phase 05.3 P04 | 4min | 4 tasks | 7 files |
 | Phase 05.5 P01 | 2min | 3 tasks | 3 files |
+| Phase 05.5 P02 | 4min | 7 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -113,6 +114,10 @@ Recent decisions affecting current work:
 - [Phase 05.3]: Suspense boundaries required for useSearchParams in Next.js 14+
 - [Phase 05.3]: Admin page returns 404 for non-admins (not login redirect)
 - [Phase 05.5]: Used oauth extra on fastapi-users instead of direct httpx-oauth dependency
+- [Phase 05.5]: Override OAuthAccount.user_id FK to point to 'users' table (not default 'user')
+- [Phase 05.5]: Backend-only OAuth flow: code exchange on server, redirect to frontend with token
+- [Phase 05.5]: Auto-link accounts by email when Google email matches existing user
+- [Phase 05.5]: Trust Google email verification (set is_verified=True)
 
 ### Key Research Findings
 
@@ -142,6 +147,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-11T10:32:24.640Z
-Stopped at: Completed 05.5-01-PLAN.md
+Last session: 2026-03-11T10:37:15Z
+Stopped at: Completed 05.5-02-PLAN.md
 Resume file: None

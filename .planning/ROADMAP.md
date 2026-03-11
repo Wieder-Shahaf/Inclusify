@@ -149,7 +149,7 @@ Plans:
 **Requirements**: AUTH-01 (Authentication)
 **Depends on:** Phase 05.3 (Auth Frontend)
 **Environment:** Local (backend development)
-**Plans:** 2 plans in 2 waves
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 05.5-01-PLAN.md — Wave 0 test infrastructure: httpx-oauth dependency, OAuth mock fixtures, test stubs (AUTH-01)
