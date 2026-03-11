@@ -20,7 +20,7 @@ from app.auth.backend import auth_backend
 from app.auth.manager import UserManager
 from app.auth.schemas import UserCreate, UserRead, UserUpdate
 from app.core.config import settings
-from app.db.models import Base, User
+from app.db.models import Base, User, OAuthAccount
 
 # SQLAlchemy async engine and session factory
 engine = create_async_engine(settings.DATABASE_URL, echo=False)
@@ -42,8 +42,8 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
 async def get_user_db(
     session: AsyncSession = Depends(get_async_session),
 ) -> AsyncGenerator[SQLAlchemyUserDatabase, None]:
-    """Dependency that provides user database adapter."""
-    yield SQLAlchemyUserDatabase(session, User)
+    """Dependency that provides user database adapter with OAuth support."""
+    yield SQLAlchemyUserDatabase(session, User, OAuthAccount)
 
 
 async def get_user_manager(
