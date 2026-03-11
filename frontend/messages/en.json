@@ -9,7 +9,10 @@
     "privateMode": "Private mode",
     "settings": "Settings",
     "footerCopyright": "Achva LGBT — INCLUSIFY",
-    "footerTagline": "Built with accessibility and inclusion in mind."
+    "footerTagline": "Built with accessibility and inclusion in mind.",
+    "login": "Login",
+    "profile": "Profile",
+    "myAnalyses": "My Analyses"
   },
   "admin": {
     "title": "Analytics Dashboard",
@@ -227,6 +230,9 @@
   },
   "auth": {
     "login": "Login",
+    "logout": "Logout",
+    "profile": "Profile",
+    "myAnalyses": "My Analyses",
     "register": "Create Account",
     "email": "Email",
     "password": "Password",

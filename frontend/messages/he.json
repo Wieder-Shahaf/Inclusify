@@ -9,7 +9,10 @@
     "privateMode": "מצב פרטי",
     "settings": "הגדרות",
     "footerCopyright": "Achva LGBT — INCLUSIFY",
-    "footerTagline": "נבנה מתוך מחויבות לנגישות והכלה."
+    "footerTagline": "נבנה מתוך מחויבות לנגישות והכלה.",
+    "login": "התחברות",
+    "profile": "פרופיל",
+    "myAnalyses": "הניתוחים שלי"
   },
   "admin": {
     "title": "לוח בקרה אנליטי",
@@ -227,6 +230,9 @@
   },
   "auth": {
     "login": "התחברות",
+    "logout": "התנתקות",
+    "profile": "פרופיל",
+    "myAnalyses": "הניתוחים שלי",
     "register": "יצירת חשבון",
     "email": "אימייל",
     "password": "סיסמה",
