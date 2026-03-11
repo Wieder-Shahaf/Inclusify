@@ -279,6 +279,11 @@ async def analyze_text(
     """
     Analyze text for non-inclusive LGBTQ+ language.
 
+    **PRIVACY MODE:**
+    When private_mode=True (default), analysis runs entirely in-memory.
+    No documents, analysis_runs, or findings are persisted to the database.
+    This ensures user privacy for sensitive academic content.
+
     **CURRENT STATUS: HYBRID DETECTION (LLM + Rules)**
 
     Uses LLM for contextual analysis with rule-based fallback.
@@ -309,6 +314,10 @@ async def analyze_text(
 # SAVED: FRIEND'S DB IMPLEMENTATION (Commented Out)
 # =============================================================================
 # TODO: Uncomment this section (and imports at top) when Docker/Postgres is running.
+# --- DB PERSISTENCE (only for non-private mode) ---
+# When private_mode=False, the commented code below can be enabled to persist
+# documents, analysis_runs, and findings to the database.
+# When private_mode=True, skip all DB operations entirely.
 # -----------------------------------------------------------------------------
 
 """
