@@ -128,7 +128,7 @@ def train_single_config(
         run_name=config_name,
         num_train_epochs=CONFIG.num_epochs,
         per_device_train_batch_size=CONFIG.batch_size,
-        per_device_eval_batch_size=CONFIG.batch_size,
+        per_device_eval_batch_size=1,  # Reduced to 1 to avoid OOM during eval
         learning_rate=CONFIG.learning_rate,
         warmup_steps=CONFIG.warmup_steps,
         logging_dir=str(log_dir),
