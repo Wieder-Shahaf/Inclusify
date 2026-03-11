@@ -167,14 +167,17 @@ Plans:
 
 ### Phase 05.3: Auth Frontend - Build login/register pages with OAuth (INSERTED)
 
-**Goal:** Build login/register pages, AuthContext, OAuth integration for frontend
+**Goal:** Build frontend authentication UI with login/register pages, AuthContext for state management, Google OAuth integration, and navbar auth state display
 **Requirements**: AUTH-01 (Authentication)
 **Depends on:** Phase 5.1
 **Environment:** Local (frontend development)
-**Plans:** 0 plans
+**Plans:** 4 plans in 3 waves
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 05.3 to break down)
+- [ ] 05.3-01-PLAN.md — Auth foundation: dependencies, AuthContext, auth API functions (AUTH-01)
+- [ ] 05.3-02-PLAN.md — Login and register pages with forms and Google OAuth button (AUTH-01)
+- [ ] 05.3-03-PLAN.md — Navbar integration with UserDropdown and admin link hiding (AUTH-01)
+- [ ] 05.3-04-PLAN.md — Protected routes, 401 handling, guest user prompt (AUTH-01)
 
 ### Phase 05.4: LoRA Retraining - Train unified adapter on Qwen2.5 for Hebrew/English (INSERTED)
 
@@ -233,13 +236,13 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 | 5. Production Deployment | 1/3 | In Progress | - |
 | 5.1. Azure Infrastructure | 1/1 | Complete   | 2026-03-10 |
 | 5.2. Model Migration | 2/2 | Complete   | 2026-03-10 |
-| 5.3. Auth Frontend | 0/? | Not started | - |
+| 5.3. Auth Frontend | 0/4 | Not started | - |
 | 5.4. LoRA Retraining | 0/? | Not started | - |
 | 6. Admin & Analytics | 0/2 | Not started | - |
 | 7. Production Hardening | 0/2 | Not started | - |
 
 **Milestone Progress:**
-- Milestone 1 (E2E Demo): 14/19 plans - Target April 15, 2026 (4 urgent phases inserted)
+- Milestone 1 (E2E Demo): 14/23 plans - Target April 15, 2026 (4 urgent phases inserted)
 - Milestone 2 (Final): 0/4 plans - Target July 8, 2026
 
 ## Requirement Coverage
@@ -251,7 +254,7 @@ All 13 v1 requirements mapped:
 | DB-01 | Database connected to backend | Phase 1 |
 | INFRA-01 | Docker containerization | Phase 1 |
 | INFRA-02 | Azure deployment | Phase 1, 5, 5.1 |
-| AUTH-01 | Authentication (email/password) | Phase 2 |
+| AUTH-01 | Authentication (email/password) | Phase 2, 5.3 |
 | AUTH-02 | Simple RBAC (user/admin) | Phase 2 |
 | DOC-01 | Docling replaces PyMuPDF | Phase 2 |
 | LLM-01 | vLLM deployed on Azure VM | Phase 3, 5.2 |
