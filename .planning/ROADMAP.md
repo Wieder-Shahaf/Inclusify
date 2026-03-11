@@ -229,11 +229,11 @@ Plans:
   3. Application passes WCAG 2.1 AA automated checks
   4. Keyboard navigation works throughout application
   5. Screen reader announces analysis results properly
-**Plans**: TBD
+**Plans**: 2 plans in 2 waves
 
 Plans:
-- [ ] 07-01: Private mode enforcement and verification
-- [ ] 07-02: WCAG 2.1 accessibility audit and fixes
+- [ ] 07-01-PLAN.md — Private mode toggle, Jest/test infrastructure, backend skip logic (PRIV-01)
+- [ ] 07-02-PLAN.md — WCAG AA contrast fixes, live announcer, keyboard navigation (A11Y-01)
 
 ## Progress
 
@@ -252,12 +252,12 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 | 5.3. Auth Frontend | 3/4 | In Progress|  |
 | 5.4. LoRA Retraining | 0/? | Not started | - |
 | 5.5. Backend OAuth | 0/2 | Not started | - |
-| 6. Admin & Analytics | 1/2 | In Progress|  |
+| 6. Admin & Analytics | 2/2 | Complete | 2026-03-11 |
 | 7. Production Hardening | 0/2 | Not started | - |
 
 **Milestone Progress:**
 - Milestone 1 (E2E Demo): 14/25 plans - Target April 15, 2026 (5 urgent phases inserted)
-- Milestone 2 (Final): 0/4 plans - Target July 8, 2026
+- Milestone 2 (Final): 2/4 plans - Target July 8, 2026
 
 ## Requirement Coverage
 
