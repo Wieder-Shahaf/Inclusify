@@ -252,7 +252,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 | 5.3. Auth Frontend | 3/4 | In Progress|  |
 | 5.4. LoRA Retraining | 0/? | Not started | - |
 | 5.5. Backend OAuth | 0/2 | Not started | - |
-| 6. Admin & Analytics | 0/2 | Not started | - |
+| 6. Admin & Analytics | 1/2 | In Progress|  |
 | 7. Production Hardening | 0/2 | Not started | - |
 
 **Milestone Progress:**

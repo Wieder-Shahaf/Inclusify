@@ -70,8 +70,8 @@ Requirements extracted from PROJECT.md for roadmap tracking.
 | LLM-01 | Phase 3 | Complete |
 | LLM-02 | Phase 3 | Complete |
 | FE-01 | Phase 4 | Complete |
-| ADMIN-01 | Phase 6 | Pending |
-| ADMIN-02 | Phase 6 | Pending |
+| ADMIN-01 | Phase 6 | Complete |
+| ADMIN-02 | Phase 6 | Complete |
 | PRIV-01 | Phase 7 | Pending |
 | A11Y-01 | Phase 7 | Pending |
 
