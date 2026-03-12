@@ -241,6 +241,13 @@ def main():
             )
             results.append(config_results)
 
+            # Save results incrementally after each config
+            results_path = Path(CONFIG.output_dir) / "grid_search_results.json"
+            results_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(results_path, "w") as f:
+                json.dump(results, f, indent=2)
+            print(f"Progress saved: {len(results)}/{len(grid)} configs")
+
         except Exception as e:
             print(f"\n{'='*70}")
             print(f"ERROR in {config_name}: {e}")
