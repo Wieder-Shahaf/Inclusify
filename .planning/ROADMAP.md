@@ -20,9 +20,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Frontend Integration** - Wire to real API, remove demo mode (completed 2026-03-09)
 - [ ] **Phase 5: Production Deployment** - Azure Container Apps, E2E verification
 - [x] **Phase 5.1: Azure Infrastructure** - Create PostgreSQL, ACR, Container Apps in Group07 (INSERTED) (completed 2026-03-10)
-- [x] **Phase 5.2: Model Migration** - Install vLLM on VM, download Qwen2.5-3B-GPTQ (INSERTED) (gap closure in progress) (completed 2026-03-10)
+- [x] **Phase 5.2: Model Migration** - Install vLLM on VM, download Qwen2.5-3B-GPTQ (INSERTED) (completed 2026-03-10)
 - [ ] **Phase 5.3: Auth Frontend** - Build login/register pages with OAuth (INSERTED)
-- [ ] **Phase 5.4: LoRA Retraining** - Train unified adapter on Qwen2.5 for English (INSERTED)
+- [x] **Phase 5.4: LoRA Retraining** - Train unified adapter on Qwen2.5 for English (INSERTED) (completed 2026-03-13)
+- [ ] **Phase 5.4.1: Dataset Synthesis** - Scale to 10K samples + Hebrew equivalent (INSERTED)
 - [ ] **Phase 5.5: Backend OAuth** - Add Google OAuth endpoints to FastAPI (INSERTED)
 
 ### Milestone 2: Final Presentation (Target: July 8, 2026)
@@ -198,13 +199,40 @@ Plans:
 **Requirements**: LLM-02 (LLM inference integrated)
 **Depends on:** Phase 5.2
 **Environment:** VM (SSH to InclusifyModel)
-**Plans:** 2/4 plans executed
+**Status:** ✅ COMPLETE (2026-03-13)
+**Plans:** 4/4 plans executed
 
 Plans:
-- [ ] 05.4-01-PLAN.md — Data preparation pipeline and test infrastructure (Wave 1) (LLM-02)
-- [ ] 05.4-02-PLAN.md — Grid search training script for 9 QLoRA configs (Wave 2) (LLM-02)
-- [ ] 05.4-03-PLAN.md — Evaluate all configs, identify best adapter (Wave 3, has checkpoint) (LLM-02)
-- [ ] 05.4-04-PLAN.md — Integrate winning adapter with vLLM service (Wave 4) (LLM-02)
+- [x] 05.4-01-PLAN.md — Data preparation pipeline and test infrastructure (Wave 1) (LLM-02)
+- [x] 05.4-02-PLAN.md — Grid search training script for 9 QLoRA configs (Wave 2) (LLM-02)
+- [x] 05.4-03-PLAN.md — Evaluate all configs, identify best adapter (Wave 3, has checkpoint) (LLM-02)
+- [x] 05.4-04-PLAN.md — Integrate winning adapter with vLLM service (Wave 4) (LLM-02)
+
+**Results Achieved:**
+- Best adapter: qwen_r8_d0.2 (rank=8, dropout=0.2, val_loss=0.4937)
+- Performance: 90.0% F1, 100% Precision, 81.9% Recall
+- vLLM deployment: 34.5 req/sec throughput (7.7x optimization)
+- All artifacts: ml/adapters/qwen_r8_d0.2/, ml/analysis/*.json, ml/analysis/*.png
+
+### Phase 05.4.1: Dataset Synthesis - Scale to 10K samples + Hebrew equivalent (INSERTED)
+
+**Goal:** Synthesize 10K English samples using LLM Batch APIs and create culturally-appropriate Hebrew equivalent with LGBTQ+ terminology validation
+**Requirements**: LLM-02 (LLM inference integrated), LANG-01 (Hebrew language support)
+**Depends on:** Phase 5.4
+**Environment:** Local + VM (LLM-based synthesis)
+**Plans:** 3 plans in 3 waves
+
+Plans:
+- [ ] 05.4.1-01-PLAN.md — English dataset synthesis: Batch API pipeline, stratified generation, 1K → 11K raw (Wave 1)
+- [ ] 05.4.1-02-PLAN.md — Hebrew translation: Cultural adaptation with Achva LGBT terminology glossary (Wave 2)
+- [ ] 05.4.1-03-PLAN.md — Quality validation: Semantic deduplication, diversity metrics, manual review samples (Wave 3)
+
+**Success Criteria** (what must be TRUE):
+  1. English dataset expanded from 1,001 → 10,000 samples with diverse variations
+  2. Hebrew dataset created with 10,000 culturally appropriate samples
+  3. Both datasets maintain class balance (appropriate vs problematic ~20/80 ratio ±2%)
+  4. Samples validated for quality (no near-duplicates >0.85 similarity, diversity >0.7)
+  5. Datasets saved as data/english_10k.csv and data/hebrew_10k.csv
 
 ### Phase 6: Admin & Analytics
 **Goal**: Site administrators can view usage analytics and manage users/organizations (view-only in v1)
@@ -253,13 +281,14 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 | 5.1. Azure Infrastructure | 1/1 | Complete   | 2026-03-10 |
 | 5.2. Model Migration | 2/2 | Complete   | 2026-03-10 |
 | 5.3. Auth Frontend | 3/4 | In Progress|  |
-| 5.4. LoRA Retraining | 0/4 | Not started | - |
+| 5.4. LoRA Retraining | 4/4 | Complete ✅ | 2026-03-13 |
+| 5.4.1. Dataset Synthesis | 0/3 | Not started | - |
 | 5.5. Backend OAuth | 0/2 | Not started | - |
 | 6. Admin & Analytics | 2/2 | Complete | 2026-03-11 |
 | 7. Production Hardening | 1/2 | In Progress | - |
 
 **Milestone Progress:**
-- Milestone 1 (E2E Demo): 14/29 plans - Target April 15, 2026 (5 urgent phases inserted)
+- Milestone 1 (E2E Demo): 18/32 plans - Target April 15, 2026 (6 urgent phases inserted)
 - Milestone 2 (Final): 3/4 plans - Target July 8, 2026
 
 ## Requirement Coverage
