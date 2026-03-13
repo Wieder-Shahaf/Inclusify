@@ -116,7 +116,7 @@ class TestBatchProcessor:
             ]
         )
 
-        requests = [{"custom_id": "req_1", "params": {"model": "test", "max_tokens": 100, "messages": []}}]
+        requests = [{"custom_id": "req_1", "params": {"model": "test", "max_tokens": 100, "messages": [{"role": "user", "content": "test"}]}}]
 
         # Should succeed after retries
         batch_id = processor.submit_batch(requests, custom_id_prefix="test", max_retries=3)
@@ -223,7 +223,7 @@ class TestModuleLevelFunctions:
         mock_processor.submit_batch.return_value = "batch_123"
         mock_processor_class.return_value = mock_processor
 
-        requests = [{"custom_id": "req_1", "params": {"model": "test", "max_tokens": 100, "messages": []}}]
+        requests = [{"custom_id": "req_1", "params": {"model": "test", "max_tokens": 100, "messages": [{"role": "user", "content": "test"}]}}]
         batch_id = submit_batch(requests, api_key="test_key", model="test_model")
 
         assert batch_id == "batch_123"
@@ -239,4 +239,4 @@ class TestModuleLevelFunctions:
         results = poll_results("batch_123", api_key="test_key")
 
         assert len(results) == 1
-        mock_processor.poll_results.assert_called_once_with("batch_123", poll_interval=60)
+        mock_processor.poll_results.assert_called_once_with("batch_123", poll_interval=60, timeout=86400)
