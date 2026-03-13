@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v0.6
 milestone_name: milestone
 status: completed
-stopped_at: Completed 05.4.1-00-PLAN.md
-last_updated: "2026-03-13T19:18:20.596Z"
+stopped_at: Completed 05.4.1-01-PLAN.md (blocked on ANTHROPIC_API_KEY for synthesis execution)
+last_updated: "2026-03-13T19:22:41.418Z"
 last_activity: 2026-03-11 - Grid search script with 9 configs, GPU memory management, VM validated
 progress:
   total_phases: 13
   completed_phases: 10
   total_plans: 37
-  completed_plans: 30
+  completed_plans: 31
   percent: 88
 ---
 
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-08)
 
 ## Current Position
 
-Phase: 05.4 (LoRA Retraining) - IN PROGRESS
-Plan: 2 of 4 in current phase (completed)
-Status: Phase 05.4 Plan 02 complete - Automated grid search training script ready
-Last activity: 2026-03-11 - Grid search script with 9 configs, GPU memory management, VM validated
+Phase: 05.4.1 (Dataset Synthesis) - IN PROGRESS
+Plan: 1 of 4 in current phase (completed)
+Status: Phase 05.4.1 Plan 01 complete - English synthesis pipeline ready (blocked on API key)
+Last activity: 2026-03-13 - Claude Batch API integration, TDD workflow, stratified generation
 
-Progress: [█████████░] 88%
+Progress: [████████░░] 84%
 
 ## Performance Metrics
 
@@ -71,6 +71,7 @@ Progress: [█████████░] 88%
 | Phase 05.4 P01 | 279 | 3 tasks | 4 files |
 | Phase 05.4 P02 | 4 | 3 tasks | 3 files |
 | Phase 05.4.1 P00 | 141 | 3 tasks | 10 files |
+| Phase 05.4.1 P01 | 6 | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -138,6 +139,8 @@ Recent decisions affecting current work:
 - [Phase 05.4]: Qwen2.5 chat template via tokenizer (not manual string concatenation)
 - [Phase 05.4]: Grid search: alpha = 2 * rank scaling, sequential training, paged_adamw_8bit for VRAM
 - [Phase 05.4.1]: Test infrastructure created before implementation (Wave 0 pattern) with shared fixtures in conftest.py
+- [Phase 05.4.1]: Use Claude Opus 4.6 via Message Batches API for 50% cost savings on 11K sample generation
+- [Phase 05.4.1]: Stratified sampling maintains class distribution when scaling from 988 to 11K samples
 
 ### Key Research Findings
 
@@ -167,6 +170,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-13T19:18:20.594Z
-Stopped at: Completed 05.4.1-00-PLAN.md
+Last session: 2026-03-13T19:22:41.416Z
+Stopped at: Completed 05.4.1-01-PLAN.md (blocked on ANTHROPIC_API_KEY for synthesis execution)
 Resume file: None
