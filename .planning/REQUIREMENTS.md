@@ -37,6 +37,12 @@ Requirements extracted from PROJECT.md for roadmap tracking.
 | LLM-01 | vLLM deployed on Azure VM with T4 GPU | Critical | 3 |
 | LLM-02 | LLM inference integrated into analysis endpoint | Critical | 3 |
 
+### Language Support
+
+| ID | Requirement | Priority | Phase |
+|----|-------------|----------|-------|
+| LANG-01 | Hebrew language support (dataset, model, UI) | High | 05.4.1 |
+
 ### Frontend
 
 | ID | Requirement | Priority | Phase |
@@ -69,13 +75,14 @@ Requirements extracted from PROJECT.md for roadmap tracking.
 | DOC-01 | Phase 2 | Complete |
 | LLM-01 | Phase 3 | Complete |
 | LLM-02 | Phase 3 | Complete |
+| LANG-01 | Phase 05.4.1 | In Progress |
 | FE-01 | Phase 4 | Complete |
 | ADMIN-01 | Phase 6 | Complete |
 | ADMIN-02 | Phase 6 | Complete |
 | PRIV-01 | Phase 7 | Complete |
 | A11Y-01 | Phase 7 | Complete |
 
-**Coverage:** 13/13 requirements mapped to phases
+**Coverage:** 14/14 requirements mapped to phases
 
 ## Out of Scope (v2+)
 
