@@ -220,9 +220,10 @@ Plans:
 **Requirements**: LLM-02 (LLM inference integrated), LANG-01 (Hebrew language support)
 **Depends on:** Phase 5.4
 **Environment:** Local + VM (LLM-based synthesis)
-**Plans:** 3 plans in 3 waves
+**Plans:** 4 plans in 3 waves
 
 Plans:
+- [ ] 05.4.1-00-PLAN.md — Test infrastructure scaffolds: conftest.py fixtures, pytest.ini, test stubs for TDD tasks (Wave 0)
 - [ ] 05.4.1-01-PLAN.md — English dataset synthesis: Batch API pipeline, stratified generation, 1K → 11K raw (Wave 1)
 - [ ] 05.4.1-02-PLAN.md — Hebrew translation: Cultural adaptation with Achva LGBT terminology glossary (Wave 2)
 - [ ] 05.4.1-03-PLAN.md — Quality validation: Semantic deduplication, diversity metrics, manual review samples (Wave 3)
