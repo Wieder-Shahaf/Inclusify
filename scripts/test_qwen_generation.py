@@ -11,7 +11,7 @@ from pathlib import Path
 
 # vLLM endpoint (adjust if different)
 VLLM_ENDPOINT = "http://localhost:8000/v1/completions"  # or your VM IP
-VLLM_MODEL = "Qwen/Qwen2.5-7B-Instruct"  # or 14B if available
+VLLM_MODEL = "Qwen/Qwen2.5-3B-Instruct"
 
 def load_examples():
     """Load example samples for each severity label."""
@@ -88,7 +88,7 @@ def test_qwen_generation(vllm_url=None):
             json={
                 "model": VLLM_MODEL,
                 "prompt": prompt,
-                "max_tokens": 4000,
+                "max_tokens": 2500,
                 "temperature": 0.8,
                 "top_p": 0.9,
             },
