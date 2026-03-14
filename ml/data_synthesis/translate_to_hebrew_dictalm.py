@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 # Configuration
 DICTALM_ENDPOINT = os.getenv("DICTALM_ENDPOINT", "http://localhost:8001/v1")
-DICTALM_MODEL = "dicta-il/DictaLM-3.0-Nemotron-12B-Instruct"
+DICTALM_MODEL = os.getenv("DICTALM_MODEL", "dicta-il/DictaLM-3.0-1.7B-Instruct")
 INPUT_CSV = "data/english_10k.csv"
 OUTPUT_CSV = "data/hebrew_10k.csv"
 INTERMEDIATE_DIR = "data/intermediate/"

@@ -54,7 +54,7 @@ async def test_translation():
 
         try:
             response = await client.chat.completions.create(
-                model="dicta-il/DictaLM-3.0-Nemotron-12B-Instruct",
+                model="dicta-il/DictaLM-3.0-1.7B-Instruct",
                 messages=[
                     {"role": "system", "content": "אתה מתרגם מומחה לעברית."},
                     {"role": "user", "content": prompt}
