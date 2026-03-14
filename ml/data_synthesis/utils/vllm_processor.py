@@ -16,6 +16,14 @@ from openai import AsyncOpenAI
 
 from ml.data_synthesis.utils.json_extractor import extract_json, validate_sample_schema
 
+# Import Hebrew validator if available (optional)
+try:
+    from ml.data_synthesis.utils.hebrew_validator import validate_hebrew_translation
+    _has_hebrew_validator = True
+except ImportError:
+    _has_hebrew_validator = False
+    validate_hebrew_translation = None
+
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +62,8 @@ class VLLMProcessor:
         batch_size: int = 64,
         max_throughput: int = 30,
         max_tokens: int = 1500,
-        temperature: float = 0.9
+        temperature: float = 0.9,
+        strict_validation: bool = True
     ) -> List[Dict]:
         """
         Process requests in batches with rate limiting.
@@ -111,7 +120,8 @@ class VLLMProcessor:
                 self._generate_single(
                     request=req,
                     max_tokens=max_tokens,
-                    temperature=temperature
+                    temperature=temperature,
+                    strict_validation=strict_validation
                 )
                 for req in chunk
             ]
@@ -155,7 +165,8 @@ class VLLMProcessor:
         request: Dict,
         max_tokens: int,
         temperature: float,
-        max_retries: int = 3
+        max_retries: int = 3,
+        strict_validation: bool = True
     ) -> Dict:
         """
         Generate single sample with retry logic.
@@ -199,9 +210,19 @@ class VLLMProcessor:
                 # Parse JSON
                 data = extract_json(content)
 
-                # Validate schema
-                if not validate_sample_schema(data):
-                    raise ValueError(f"Schema validation failed: {data}")
+                # Validate schema (lenient for Hebrew translation)
+                if strict_validation:
+                    if not validate_sample_schema(data):
+                        raise ValueError(f"Schema validation failed: {data}")
+                else:
+                    # Lenient validation: just check we have some content
+                    if _has_hebrew_validator:
+                        if not validate_hebrew_translation(data):
+                            raise ValueError(f"Hebrew validation failed: no valid content in {data}")
+                    else:
+                        # Minimal validation: has dict with values
+                        if not data or not any(isinstance(v, str) and len(v) > 10 for v in data.values()):
+                            raise ValueError(f"Validation failed: no substantive content in {data}")
 
                 return {
                     "custom_id": custom_id,

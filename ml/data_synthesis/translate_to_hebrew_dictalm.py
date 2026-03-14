@@ -26,6 +26,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from ml.data_synthesis.utils.vllm_processor import VLLMProcessor
 from ml.data_synthesis.utils.json_extractor import extract_json
+from ml.data_synthesis.utils.hebrew_validator import extract_hebrew_fields, quick_hebrew_quality_check
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -147,7 +148,8 @@ async def translate_batch(requests: List[Dict]) -> List[Dict]:
         batch_size=BATCH_SIZE,
         max_throughput=MAX_THROUGHPUT,
         max_tokens=1000,
-        temperature=0.3
+        temperature=0.3,
+        strict_validation=False  # Lenient for Hebrew (flexible field names)
     )
 
     logger.info(f"Translation completed: {len(results)} results")
@@ -184,12 +186,14 @@ def parse_and_save_translations(
                 logger.warning(f"Unexpected result format for {custom_id}, trying fallback")
                 continue
 
-            # Validate has required fields
-            hebrew_sentence = data.get('hebrew_sentence', '').strip()
-            hebrew_explanation = data.get('hebrew_explanation', '').strip()
+            # Extract Hebrew fields (flexible field names)
+            extracted = extract_hebrew_fields(data)
+
+            hebrew_sentence = extracted.get('sentence', '').strip()
+            hebrew_explanation = extracted.get('explanation', '').strip()
 
             if not hebrew_sentence or not hebrew_explanation:
-                logger.warning(f"Missing Hebrew content in {custom_id}")
+                logger.warning(f"Missing Hebrew content in {custom_id}: {data}")
                 errors.append(custom_id)
                 continue
 
