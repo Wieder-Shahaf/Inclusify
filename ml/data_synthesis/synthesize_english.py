@@ -218,17 +218,22 @@ def parse_and_save_results(
             invalid_count += 1
             continue
 
-        # Extract message content
+        # Extract message content (format differs between Claude and vLLM)
         try:
-            message = result.get('message', {})
-            content_blocks = message.get('content', [])
-            if not content_blocks:
-                logger.warning(f"No content in result: {custom_id}")
-                invalid_count += 1
-                continue
+            # vLLM format: result.data already contains parsed JSON
+            if 'data' in result and isinstance(result['data'], dict):
+                data = result['data']
+            # Claude format: result.message.content[0].text contains JSON string
+            else:
+                message = result.get('message', {})
+                content_blocks = message.get('content', [])
+                if not content_blocks:
+                    logger.warning(f"No content in result: {custom_id}")
+                    invalid_count += 1
+                    continue
 
-            text = content_blocks[0].get('text', '')
-            data = json.loads(text)
+                text = content_blocks[0].get('text', '')
+                data = json.loads(text)
 
             # Validate schema
             sentence = data.get('sentence', '').strip()
