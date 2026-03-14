@@ -1,0 +1,78 @@
+{
+  "phase": 1,
+  "elapsed_seconds": 31.459341764450073,
+  "samples_count": 10,
+  "seconds_per_sample": 3.1459341764450075,
+  "translations": [
+    {
+      "id": 0,
+      "original_english": "Gender variance in youth often manifests as a developmental fluctuation that might be transient and requires neither intervention nor abstinence from exploration.",
+      "severity_label": "Outdated",
+      "explanation": "This variation maintains the same critical framing of dismissing gender variance as a phase ('ignored'), but shifts the clinical vocabulary to 'transient' and 'developmental fluctuation' while keeping the dismissive tone. The term 'intervention' is implied through the 'requires' construction, reinforcing the original severity classification.",
+      "hebrew_translation": "ה,variations in גוון גוף בקרב התינוקות מופיעות לעיתים כפוגעה מתפתחת שיכולה להיות תקנית ו.needs neither מענה ולא חסינות ממריאת השוואה."
+    },
+    {
+      "id": 1,
+      "original_english": "Historical psychiatric frameworks did not delineate gender identity from sexual orientation, leading to inconsistent and misleading categorizations.",
+      "severity_label": "Outdated",
+      "explanation": "This sentence reflects the outdated psychiatric classifications in which gender identity and sexual orientation were not clearly distinguished, leading to inconsistent diagnostic practices and potentially misleading categorizations.",
+      "hebrew_translation": "הherited קהילתיות רפואית לא הבדלה בין הגדרת הגדרת גender לníorientation סקסואלית, מה שגרם ל.Classifications שגויות und מפוקעות."
+    },
+    {
+      "id": 2,
+      "original_english": "Historically, the notion that gender exists along a continuum has been met with skepticism in psychological discourse, potentially undermining the legitimacy of contemporary gender identity research.",
+      "severity_label": "Potentially Offensive",
+      "explanation": "The sample maintains the potential for offense by framing a well-established concept as historically skeptical, which could lead to questioning the validity or importance of gender diversity research. The language implies that the recognition of gender as a spectrum is not well-established in mainstream discourse, which may inadvertently undermine the validity of the LGBTQ+ community's experiences.",
+      "hebrew_translation": "ב역שנים, הניסוח שברובות הגברות קיימים על ציר סינון נפגש עם ספקות ב discsurs של פסיכולוגיה, האפשרי לפגוע ב路ותקיות של מחקר הגדרת הגברות המודרני."
+    },
+    {
+      "id": 3,
+      "original_english": "When engaging children in discussions about gender transition, policymakers must be cautious to avoid perpetuating harmful narratives that suggest developmental harm from gender-affirming care.",
+      "severity_label": "Potentially Offensive",
+      "explanation": "The sample maintains the potentially offensive framing by referencing unsubstantiated concerns about developmental disruptions in gender-affirming care, but shifts the perspective from an individual to a policy context. This change in framing while preserving the core issue and implied negativity ensures the severity classification is maintained.",
+      "hebrew_translation": "כאשר engaging ילדים בדروس על תהליך הTRANSITION גברתי,应当使用更准确的术语，如“ przeżycia גברתיים”或“ przeżycия גברתיות”，以确保准确传达学术和敏感话题。在此類情境下，政策制定者必須謹慎行事，避免傳播有害的敘事，這些敘事暗示了從性別肯定療法中會產生發展上的傷害。"
+    },
+    {
+      "id": 4,
+      "original_english": "The use of the term 'gender dysphoria' has been improperly expanded to encompass unchallenged adolescent insecurities, potentially diminishing its validity as a medical construct.",
+      "severity_label": "Biased",
+      "explanation": "The variation maintains the biased framing of the misuse and misrepresentation of 'gender dysphoria' as a label for typical adolescent experiences. The vocabulary is changed (e.g., 'gender dysphoria' to 'term,' 'labeling' instead of 'label'), and the sentence structure is altered (passive to active, different clause emphasis). The domain remains within gender dysphoria studies, and the perspective shifts from an individual student's experience to a more general academic consideration.",
+      "hebrew_translation": "استخدام המונח 'דיספריה גמישת גברת' נבנה בצורה לא נכונה כדי להפוך את התחושות של ספק גמישת גברת של סטודנטים צעירים ללא תרגום, מה שיכולה להוריד את עוצמתו ככלי רפואי."
+    },
+    {
+      "id": 5,
+      "original_english": "The LGBTQ+ population is often overly sensitive and seeks status as a vulnerable group to garner attention and support.",
+      "severity_label": "Biased",
+      "explanation": "This variation maintains the biased framing by dismissing the experiences of discrimination and harm faced by the LGBTQ+ community, implying that they focus on status and attention rather than validity. The language is softened to \"seek status\" and \"support\" but retains the underlying biased sentiment.",
+      "hebrew_translation": "{\n  \"hebrew_sentence\": \"אוכלוסיית LGBTQ+' היא箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕箕"
+    },
+    {
+      "id": 6,
+      "original_english": "Transgender identities are not solely attributable to peer influence but may be influenced by a complex interplay of social, psychological, and biological factors.",
+      "severity_label": "Factually Incorrect",
+      "explanation": "Maintains the functional semantic claim that transgender identities are not solely caused by peer pressure, but instead are influenced by a combination of social, psychological, and biological factors. The hedging language in the new version introduces a nuanced understanding that is academically rigorous but differentiates the original misleading claim.",
+      "hebrew_translation": "��ות גוויות לא מוגדרים כהeses על ידי השפעת חברה אלא עשויים להשתנות על ידי תערובת של מטרות חברתיות, פסיכולוגיות וביולוגיות."
+    },
+    {
+      "id": 7,
+      "original_english": "Research findings from multiple contemporary studies indicate that bisexual individuals exhibit diverse patterns of intimate relationships, and portrayals of promiscuity as default behavior are inaccurate and harmful stigmas.",
+      "severity_label": "Factually Incorrect",
+      "explanation": "This variation maintains the false claim that bisexual individuals are promiscuous and notes the harmful nature of such stereotypes. The phrasing emphasizes research findings and nuances in behavior instead of directly contradicting the original false statement.",
+      "hebrew_translation": "תוצאות מחקר מعدות מודernen של מחקר מציאות מצביעות על כך queers bisexualים מציינים אינטimitות מופרדת של יחסים, וхаושips מתייחסים למשהו כ comport מופל כצ痕 סכנתוני ומרDATED."
+    },
+    {
+      "id": 8,
+      "original_english": "The incorporation of inclusive terminology in scholarly investigations is paramount for the integrity of empirical data.",
+      "severity_label": "Correct",
+      "explanation": "Preserved the importance of language in ensuring accurate research findings without altering the accuracy, respect, or evidence-based nature of the language.",
+      "hebrew_translation": "ההכreesת תכונות שומן במחקר סוציologic-מדעי היא נורמה חשובה להצלחת הנתונים empiryczים."
+    },
+    {
+      "id": 9,
+      "original_english": "Major health and psychological associations have consistently dismissed conversion therapy as scientifically and ethically indefensible.",
+      "severity_label": "Correct",
+      "explanation": "This variation changes the terminology to reflect modern language used by professional organizations, maintains the academic tone and relevance to health and psychology domains, and shifts the framing to a more critical stance while preserving the message of discrediting conversion therapy.",
+      "hebrew_translation": "agensות הבריאות והפסיכולוגיה הדרשותincessית הורConventionת את ה-Treatment שטוחות את ה-Treatment כלא סופisticated ועוסק בethics."
+    }
+  ]
+}
