@@ -301,27 +301,37 @@ Output format:
 
 ---
 
-### Secondary Model (Optional): **Dicta-LM 3.0-1.7B**
+### Secondary Model (Recommended for Validation): **DictaLM-3.0-1.7B-Thinking**
 
-**Why:**
-- ✅ Israeli sovereign model (SOTA Hebrew)
+**Why:** (See detailed justification: `DICTALM_JUSTIFICATION.md`)
+- ✅ Israeli sovereign model (SOTA Hebrew) - [Technical Report](https://arxiv.org/abs/2602.02104)
+- ✅ **Reasoning capabilities** via thinking blocks (GRPO-trained)
 - ✅ 65K context window
-- ✅ 1.7B fits on T4 GPU
-- ✅ Open-weight (free)
+- ✅ 1.7B fits on T4 GPU (~6-8GB VRAM)
+- ✅ Open-weight (Apache 2.0, free)
+- ✅ Bilingual training (Hebrew + English)
+- ✅ **Explainable validation** decisions
 
 **When to use:**
-- Phase 2 native generation (if Qwen quality insufficient)
-- Quality refinement pass
-- Israeli cultural context validation
+- **Phase 3: Translation quality validation** (targeted, 10-15% of samples)
+- Terminology correctness checking
+- Cultural appropriateness assessment
+- Israeli context validation
 
 **Setup Required:**
 ```bash
-# Test on VM
-vllm serve dicta-il/DictaLM-3.0-1.7B-Instruct \
+# Deploy on VM
+vllm serve dicta-il/DictaLM-3.0-1.7B-Thinking \
   --port 8001 \
-  --gpu-memory-utilization 0.5 \
-  --max-model-len 4096
+  --gpu-memory-utilization 0.4 \
+  --max-model-len 4096 \
+  --reasoning_parser deepseek_r1
 ```
+
+**Citation:**
+> Shmidman, S., Shmidman, A., Cohen, A. D. N., & Koppel, M. (2025).
+> *Dicta-LM 3.0: Advancing The Frontier of Hebrew Sovereign LLMs.*
+> Technical Report. https://arxiv.org/abs/2602.02104
 
 ---
 
@@ -563,7 +573,17 @@ Use these standard Hebrew LGBTQ+ terms:
 ## 12. References
 
 ### Hebrew NLP & Models
-- [Dicta-LM 3.0 Technical Report (Feb 2026)](https://arxiv.org/abs/2602.02104)
+
+**Primary:**
+- **[Dicta-LM 3.0 Technical Report (Feb 2026)](https://arxiv.org/abs/2602.02104)** ⭐ PRIMARY SOURCE
+  - Shmidman, S., Shmidman, A., Cohen, A. D. N., & Koppel, M. (2025)
+  - *Dicta-LM 3.0: Advancing The Frontier of Hebrew Sovereign LLMs*
+  - DICTA / Jerusalem, Israel
+  - **See detailed analysis:** `DICTALM_JUSTIFICATION.md`
+- [DictaLM-3.0-1.7B-Thinking Model Card](https://huggingface.co/dicta-il/DictaLM-3.0-1.7B-Thinking)
+- [DictaLM 3.0 Collection](https://huggingface.co/collections/dicta-il/dictalm-30-collection)
+
+**Supporting:**
 - [AlephBERT: Hebrew Pre-trained Language Model](https://arxiv.org/abs/2104.04052)
 - [Hebrew Open Leaderboard](https://huggingface.co/blog/leaderboard-hebrew)
 - [NNLP-IL Hebrew Resources](https://github.com/NNLP-IL/Hebrew-Resources)
