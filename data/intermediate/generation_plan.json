@@ -1,0 +1,243 @@
+{
+  "metadata": {
+    "current_samples": 100,
+    "target_samples": 11000,
+    "samples_to_generate": 10900,
+    "num_batches": 10,
+    "estimated_time_minutes": 30
+  },
+  "batches": [
+    {
+      "batch_id": 1,
+      "label": "Biased",
+      "count": 1090,
+      "domain_focus": "psychology,sociology,medicine",
+      "output_file": "data/intermediate/batch_001_biased.json"
+    },
+    {
+      "batch_id": 2,
+      "label": "Biased",
+      "count": 1090,
+      "domain_focus": "law,education,anthropology",
+      "output_file": "data/intermediate/batch_002_biased.json"
+    },
+    {
+      "batch_id": 3,
+      "label": "Correct",
+      "count": 1090,
+      "domain_focus": "psychology,sociology,medicine",
+      "output_file": "data/intermediate/batch_003_correct.json"
+    },
+    {
+      "batch_id": 4,
+      "label": "Correct",
+      "count": 1090,
+      "domain_focus": "law,education,anthropology",
+      "output_file": "data/intermediate/batch_004_correct.json"
+    },
+    {
+      "batch_id": 5,
+      "label": "Factually Incorrect",
+      "count": 1090,
+      "domain_focus": "psychology,sociology,medicine",
+      "output_file": "data/intermediate/batch_005_factually_incorrect.json"
+    },
+    {
+      "batch_id": 6,
+      "label": "Factually Incorrect",
+      "count": 1090,
+      "domain_focus": "law,education,anthropology",
+      "output_file": "data/intermediate/batch_006_factually_incorrect.json"
+    },
+    {
+      "batch_id": 7,
+      "label": "Outdated",
+      "count": 1090,
+      "domain_focus": "psychology,sociology,medicine",
+      "output_file": "data/intermediate/batch_007_outdated.json"
+    },
+    {
+      "batch_id": 8,
+      "label": "Outdated",
+      "count": 1090,
+      "domain_focus": "law,education,anthropology",
+      "output_file": "data/intermediate/batch_008_outdated.json"
+    },
+    {
+      "batch_id": 9,
+      "label": "Potentially Offensive",
+      "count": 1090,
+      "domain_focus": "psychology,sociology,medicine",
+      "output_file": "data/intermediate/batch_009_potentially_offensive.json"
+    },
+    {
+      "batch_id": 10,
+      "label": "Potentially Offensive",
+      "count": 1090,
+      "domain_focus": "law,education,anthropology",
+      "output_file": "data/intermediate/batch_010_potentially_offensive.json"
+    }
+  ],
+  "examples": {
+    "Correct": [
+      {
+        "Sentence": "Major medical associations recognize gender dysphoria as a real clinical condition.",
+        "Severity Label": "Correct",
+        "Rule Category": "N/A",
+        "Explanation": "Accurate reflection of current consensus from bodies like the APA and WPATH."
+      },
+      {
+        "Sentence": "Sexual orientation is not considered a mental disorder by modern psychiatry.",
+        "Severity Label": "Correct",
+        "Rule Category": "N/A",
+        "Explanation": "Factually accurate; removed from DSM in 1973 and ICD in 1990."
+      },
+      {
+        "Sentence": "LGBTQ+ people experience higher rates of discrimination compared to the general population.",
+        "Severity Label": "Correct",
+        "Rule Category": "N/A",
+        "Explanation": "Supported by numerous sociological studies and crime statistics."
+      },
+      {
+        "Sentence": "Same-sex relationships have been documented across cultures and history.",
+        "Severity Label": "Correct",
+        "Rule Category": "N/A",
+        "Explanation": "Anthropological and historical evidence supports this statement."
+      },
+      {
+        "Sentence": "Transgender people exist in all societies and age groups.",
+        "Severity Label": "Correct",
+        "Rule Category": "N/A",
+        "Explanation": "Demographically accurate statement regarding global populations."
+      }
+    ],
+    "Outdated": [
+      {
+        "Sentence": "Homosexuality was listed as a mental illness in diagnostic manuals.",
+        "Severity Label": "Outdated",
+        "Rule Category": "Historical Pathologization",
+        "Explanation": "While historically true, it reflects a medical view that has been overturned."
+      },
+      {
+        "Sentence": "Conversion therapy was once considered an acceptable treatment.",
+        "Severity Label": "Outdated",
+        "Rule Category": "Historical Medical Malpractice",
+        "Explanation": "Describes a practice now condemned by every major medical body."
+      },
+      {
+        "Sentence": "Gender variance in children is usually just a phase that should be ignored.",
+        "Severity Label": "Outdated",
+        "Rule Category": "Dismissal of Identity",
+        "Explanation": "\"Ignoring\" is an obsolete approach; modern standards favor support/exploration."
+      },
+      {
+        "Sentence": "Same-sex parenting was previously believed to harm children.",
+        "Severity Label": "Outdated",
+        "Rule Category": "Disproven Sociological Theory",
+        "Explanation": "Older studies claimed this, but 30+ years of data show no negative impact."
+      },
+      {
+        "Sentence": "Psychiatry once classified transgender identity as a disorder.",
+        "Severity Label": "Outdated",
+        "Rule Category": "Historical Pathologization",
+        "Explanation": "Refers to previous DSM versions; now framed as \"dysphoria\" (distress) not disorder."
+      }
+    ],
+    "Biased": [
+      {
+        "Sentence": "Many transgender people are just confused about their identity.",
+        "Severity Label": "Biased",
+        "Rule Category": "Identity Invalidation / Infantlization",
+        "Explanation": "Subjective dismissal of identity, framing it as a cognitive failure."
+      },
+      {
+        "Sentence": "LGBTQ+ activism exaggerates discrimination for political gain.",
+        "Severity Label": "Biased",
+        "Rule Category": "Minimization of Harm",
+        "Explanation": "Frames documented systemic issues as manipulative political strategy."
+      },
+      {
+        "Sentence": "Children are influenced into identifying as LGBTQ+ by social media.",
+        "Severity Label": "Biased",
+        "Rule Category": "Social Contagion Narrative",
+        "Explanation": "Attributes identity formation to external \"trends\" rather than internal sense of self."
+      },
+      {
+        "Sentence": "Gay relationships are less stable than heterosexual ones.",
+        "Severity Label": "Biased",
+        "Rule Category": "Negative Stereotyping",
+        "Explanation": "Generalization that ignores external stressors (legal/social) affecting stability."
+      },
+      {
+        "Sentence": "Transgender identities reflect modern social trends rather than biology.",
+        "Severity Label": "Biased",
+        "Rule Category": "Denial of Biological Basis",
+        "Explanation": "Dismisses biological components of identity in favor of a \"lifestyle\" narrative."
+      }
+    ],
+    "Potentially Offensive": [
+      {
+        "Sentence": "Some people feel uncomfortable sharing spaces with transgender individuals.",
+        "Severity Label": "Potentially Offensive",
+        "Rule Category": "Exclusionary Rhetoric",
+        "Explanation": "Prioritizes majority comfort over minority access; often used to justify segregation."
+      },
+      {
+        "Sentence": "LGBTQ+ lifestyles conflict with certain cultural values.",
+        "Severity Label": "Potentially Offensive",
+        "Rule Category": "Othering / Incompatibility Narrative",
+        "Explanation": "Frames the group as inherently alien or hostile to culture."
+      },
+      {
+        "Sentence": "Pride events can make some communities uneasy.",
+        "Severity Label": "Potentially Offensive",
+        "Rule Category": "Tone Policing",
+        "Explanation": "Shifts focus from the purpose of the event (rights) to the discomfort of observers."
+      },
+      {
+        "Sentence": "Not everyone agrees with non-binary identities.",
+        "Severity Label": "Potentially Offensive",
+        "Rule Category": "Identity Denial",
+        "Explanation": "Frames the existence of a person as a matter of opinion or debate."
+      },
+      {
+        "Sentence": "Discussions about sexuality may not be appropriate for children.",
+        "Severity Label": "Potentially Offensive",
+        "Rule Category": "Sexualization of Identity",
+        "Explanation": "Conflates identity/family structure with explicit sexual acts."
+      }
+    ],
+    "Factually Incorrect": [
+      {
+        "Sentence": "Homosexuality can be cured through therapy.",
+        "Severity Label": "Factually Incorrect",
+        "Rule Category": "Pseudoscience / Dangerous Practice",
+        "Explanation": "Scientific consensus states orientation cannot be changed; \"cures\" are harmful."
+      },
+      {
+        "Sentence": "Most transgender people detransition after a few years.",
+        "Severity Label": "Factually Incorrect",
+        "Rule Category": "False Statistics",
+        "Explanation": "Studies show detransition rates are very low (approx 1-3%), usually due to lack of support."
+      },
+      {
+        "Sentence": "Being gay is caused by childhood trauma.",
+        "Severity Label": "Factually Incorrect",
+        "Rule Category": "False Causality / Pathologization",
+        "Explanation": "No empirical evidence supports trauma as the root cause of sexual orientation."
+      },
+      {
+        "Sentence": "LGBTQ+ people are more likely to be criminals.",
+        "Severity Label": "Factually Incorrect",
+        "Rule Category": "Defamatory Stereotyping",
+        "Explanation": "False correlation; conflates identity with criminality (historical fallacy)."
+      },
+      {
+        "Sentence": "Gender identity is determined solely by social influence.",
+        "Severity Label": "Factually Incorrect",
+        "Rule Category": "Scientific Denialism",
+        "Explanation": "Ignores biological, hormonal, and psychological factors of identity."
+      }
+    ]
+  }
+}

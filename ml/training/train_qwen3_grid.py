@@ -72,10 +72,10 @@ class Qwen3Config:
     output_dir: str = "/home/azureuser/inclusify/ml/adapters/qwen3"
     log_dir: str = "/home/azureuser/inclusify/ml/logs/qwen3"
 
-    # LoRA target modules (same as Qwen2.5)
+    # LoRA target modules (Qwen3.5 uses Gated Delta Net architecture, different from Qwen2.5)
     target_modules: list = [
-        "q_proj", "k_proj", "v_proj", "o_proj",
-        "up_proj", "down_proj", "gate_proj"
+        "in_proj_qkv", "out_proj",  # Attention projections
+        "up_proj", "down_proj", "gate_proj"  # MLP projections (same as Qwen2.5)
     ]
 
     # Note: "Thinking mode" is an inference-time feature, not used during training
@@ -142,6 +142,10 @@ def train_single_config(
         )
         # Enable gradient checkpointing for memory efficiency
         base_model.gradient_checkpointing_enable()
+
+    # Resize embeddings to match tokenizer (critical for Qwen3.5)
+    # Tokenizer has special tokens (e.g., EOS=248046) beyond base vocab size
+    base_model.resize_token_embeddings(len(tokenizer))
 
     # Create LoRA config
     lora_config = create_lora_config(rank, alpha, dropout)

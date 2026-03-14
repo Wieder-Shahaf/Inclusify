@@ -1,0 +1,38 @@
+{
+  "baseline": {
+    "mean_latency_ms": 222.8901481628418,
+    "throughput_req_per_sec": 4.486515031025094
+  },
+  "batched": {
+    "2": {
+      "batch_size": 2,
+      "mean_latency_ms": 256.0437250137329,
+      "throughput_req_per_sec": 3.905582923175973,
+      "speedup_vs_baseline": 0.8705159564089573
+    },
+    "4": {
+      "batch_size": 4,
+      "mean_latency_ms": 174.50043559074402,
+      "throughput_req_per_sec": 5.730644720826374,
+      "speedup_vs_baseline": 1.2773042508935977
+    },
+    "8": {
+      "batch_size": 8,
+      "mean_latency_ms": 110.40107409159343,
+      "throughput_req_per_sec": 9.0578828895302,
+      "speedup_vs_baseline": 2.0189128592890557
+    },
+    "16": {
+      "batch_size": 16,
+      "mean_latency_ms": 74.92720584074657,
+      "throughput_req_per_sec": 13.346287089971593,
+      "speedup_vs_baseline": 2.974755906907591
+    }
+  },
+  "kv_cache_batched": {
+    "batch_size": 16,
+    "mean_latency_ms": 75.24203757445018,
+    "throughput_req_per_sec": 13.290442846002465,
+    "speedup_vs_baseline": 2.9623087750952704
+  }
+}
