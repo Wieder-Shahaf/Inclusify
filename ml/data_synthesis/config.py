@@ -1,23 +1,52 @@
 """Configuration for data synthesis pipeline.
 
 Environment variables:
-- ANTHROPIC_API_KEY: API key for Claude (required)
-- BATCH_SIZE: Number of requests per batch (default 2000)
+- ANTHROPIC_API_KEY: API key for Claude (required if VLLM_ENABLED=false)
+- VLLM_ENABLED: Use vLLM instead of Claude (default: true)
+- VLLM_ENDPOINT: vLLM API endpoint (default: http://localhost:8000/v1)
+- VLLM_MODEL: Model name (default: Qwen/Qwen2.5-3B-Instruct)
+- VLLM_BATCH_SIZE: Requests per batch for vLLM (default: 64)
+- VLLM_MAX_THROUGHPUT: Max requests per second (default: 30)
+- BATCH_SIZE: Number of requests per batch for Claude (default 2000)
 """
 
 import os
 from typing import Dict
 
-# Claude API configuration
-MODEL = "claude-opus-4-20250514"  # Claude Opus 4.6
-MAX_TOKENS = 500
-TEMPERATURE = 0.9  # Higher temperature for diversity
+# Backend selection
+VLLM_ENABLED = os.getenv("VLLM_ENABLED", "true").lower() == "true"
+
+# vLLM configuration
+VLLM_ENDPOINT = os.getenv("VLLM_ENDPOINT", "http://localhost:8000/v1")
+VLLM_MODEL = os.getenv("VLLM_MODEL", "Qwen/Qwen2.5-3B-Instruct")
+VLLM_LORA_PATH = None  # Use base model for maximum diversity
+VLLM_BATCH_SIZE = int(os.getenv("VLLM_BATCH_SIZE", "64"))
+VLLM_MAX_THROUGHPUT = int(os.getenv("VLLM_MAX_THROUGHPUT", "30"))  # req/sec
+
+# Qwen-specific generation parameters
+QWEN_MAX_TOKENS = int(os.getenv("QWEN_MAX_TOKENS", "1500"))
+QWEN_TEMPERATURE = float(os.getenv("QWEN_TEMPERATURE", "0.9"))
+
+# Claude API configuration (legacy)
+CLAUDE_MODEL = "claude-opus-4-20250514"  # Claude Opus 4.6
+CLAUDE_MAX_TOKENS = 500
+CLAUDE_TEMPERATURE = 0.9
+CLAUDE_BATCH_SIZE = int(os.getenv("BATCH_SIZE", "2000"))
 
 # API credentials
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 
-# Batch processing
-BATCH_SIZE = int(os.getenv("BATCH_SIZE", "2000"))  # Requests per batch
+# Active configuration based on backend
+if VLLM_ENABLED:
+    MODEL = VLLM_MODEL
+    MAX_TOKENS = QWEN_MAX_TOKENS
+    TEMPERATURE = QWEN_TEMPERATURE
+    BATCH_SIZE = VLLM_BATCH_SIZE
+else:
+    MODEL = CLAUDE_MODEL
+    MAX_TOKENS = CLAUDE_MAX_TOKENS
+    TEMPERATURE = CLAUDE_TEMPERATURE
+    BATCH_SIZE = CLAUDE_BATCH_SIZE
 
 # Generation targets
 TOTAL_TARGET = 11000  # 10% buffer for deduplication (target is 10K after filtering)

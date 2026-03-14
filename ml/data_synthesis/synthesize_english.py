@@ -16,6 +16,7 @@ import os
 import json
 import logging
 import random
+import asyncio
 from typing import Dict, List, Any
 from pathlib import Path
 import pandas as pd
@@ -31,8 +32,19 @@ from ml.data_synthesis.config import (
     OUTPUT_CSV,
     INTERMEDIATE_DIR,
     TOTAL_TARGET,
+    VLLM_ENABLED,
+    VLLM_ENDPOINT,
+    VLLM_MODEL,
+    VLLM_LORA_PATH,
+    VLLM_BATCH_SIZE,
+    VLLM_MAX_THROUGHPUT,
 )
-from ml.data_synthesis.utils.batch_processor import BatchProcessor
+
+# Import appropriate processor based on backend
+if VLLM_ENABLED:
+    from ml.data_synthesis.utils.vllm_processor import VLLMProcessor
+else:
+    from ml.data_synthesis.utils.batch_processor import BatchProcessor
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -99,8 +111,11 @@ def generate_batch_requests(
         List of batch request dictionaries
     """
     if system_prompt is None:
-        # Load system prompt from file
-        prompt_file = Path(__file__).parent / "prompts" / "english_variations.txt"
+        # Load appropriate system prompt based on backend
+        if VLLM_ENABLED:
+            prompt_file = Path(__file__).parent / "prompts" / "english_variations_qwen.txt"
+        else:
+            prompt_file = Path(__file__).parent / "prompts" / "english_variations.txt"
         with open(prompt_file, 'r') as f:
             system_prompt = f.read().strip()
 
@@ -262,8 +277,8 @@ def main():
     """Main orchestration function."""
     logger.info("=== Starting English dataset synthesis ===")
 
-    # Check API key
-    if not ANTHROPIC_API_KEY:
+    # Check API key (only required for Claude backend)
+    if not VLLM_ENABLED and not ANTHROPIC_API_KEY:
         raise ValueError("ANTHROPIC_API_KEY environment variable not set")
 
     # Step 1: Load existing dataset
@@ -279,33 +294,63 @@ def main():
     os.makedirs(INTERMEDIATE_DIR, exist_ok=True)
     intermediate_jsonl = os.path.join(INTERMEDIATE_DIR, "english_raw_11k.jsonl")
 
-    # Step 4: Submit and poll batches
-    processor = BatchProcessor(api_key=ANTHROPIC_API_KEY, model=MODEL)
-
-    # Split requests into chunks
-    chunk_size = BATCH_SIZE
-    num_chunks = (len(requests) + chunk_size - 1) // chunk_size
-    logger.info(f"Splitting {len(requests)} requests into {num_chunks} batches (size {chunk_size})")
-
+    # Step 4: Process requests with appropriate backend
     all_results = []
-    for i in range(num_chunks):
-        start_idx = i * chunk_size
-        end_idx = min((i + 1) * chunk_size, len(requests))
-        chunk = requests[start_idx:end_idx]
 
-        logger.info(f"=== Batch {i + 1}/{num_chunks} ===")
-        logger.info(f"Submitting {len(chunk)} requests...")
+    if VLLM_ENABLED:
+        logger.info(f"Using vLLM backend: {VLLM_ENDPOINT}")
+        logger.info(f"Model: {VLLM_MODEL}")
+        logger.info(f"Batch size: {VLLM_BATCH_SIZE}, Max throughput: {VLLM_MAX_THROUGHPUT} req/sec")
 
-        # Submit batch
-        batch_id = processor.submit_batch(chunk, custom_id_prefix=f"batch_{i}")
-        logger.info(f"Batch submitted: {batch_id}")
+        # Create vLLM processor
+        processor = VLLMProcessor(
+            endpoint=VLLM_ENDPOINT,
+            model=VLLM_MODEL,
+            lora_path=VLLM_LORA_PATH
+        )
 
-        # Poll for completion
-        logger.info("Polling for completion (this may take several hours)...")
-        results = processor.poll_results(batch_id, poll_interval=60)
-
+        # Process all requests in one async call
+        logger.info(f"Processing {len(requests)} requests...")
+        results = asyncio.run(processor.generate_batch(
+            requests=requests,
+            batch_size=VLLM_BATCH_SIZE,
+            max_throughput=VLLM_MAX_THROUGHPUT,
+            max_tokens=MAX_TOKENS,
+            temperature=TEMPERATURE
+        ))
         all_results.extend(results)
-        logger.info(f"Batch {i + 1}/{num_chunks} completed with {len(results)} results")
+        logger.info(f"vLLM processing completed with {len(results)} results")
+
+    else:
+        logger.info(f"Using Claude Batch API backend")
+        logger.info(f"Model: {MODEL}")
+
+        # Create Claude batch processor
+        processor = BatchProcessor(api_key=ANTHROPIC_API_KEY, model=MODEL)
+
+        # Split requests into chunks
+        chunk_size = BATCH_SIZE
+        num_chunks = (len(requests) + chunk_size - 1) // chunk_size
+        logger.info(f"Splitting {len(requests)} requests into {num_chunks} batches (size {chunk_size})")
+
+        for i in range(num_chunks):
+            start_idx = i * chunk_size
+            end_idx = min((i + 1) * chunk_size, len(requests))
+            chunk = requests[start_idx:end_idx]
+
+            logger.info(f"=== Batch {i + 1}/{num_chunks} ===")
+            logger.info(f"Submitting {len(chunk)} requests...")
+
+            # Submit batch
+            batch_id = processor.submit_batch(chunk, custom_id_prefix=f"batch_{i}")
+            logger.info(f"Batch submitted: {batch_id}")
+
+            # Poll for completion
+            logger.info("Polling for completion (this may take several hours)...")
+            results = processor.poll_results(batch_id, poll_interval=60)
+
+            all_results.extend(results)
+            logger.info(f"Batch {i + 1}/{num_chunks} completed with {len(results)} results")
 
     # Save intermediate results
     with open(intermediate_jsonl, 'w') as f:
