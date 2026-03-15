@@ -15,7 +15,7 @@ def load_dataset(csv_path: str) -> pd.DataFrame:
     """Load Inclusify augmented dataset and validate required columns.
 
     Args:
-        csv_path: Path to augmented_dataset.csv
+        csv_path: Path to augmented_dataset.csv or combined_multilingual_20k.csv
 
     Returns:
         DataFrame with validated columns (duplicates removed)
@@ -24,6 +24,19 @@ def load_dataset(csv_path: str) -> pd.DataFrame:
         ValueError: If required columns are missing or data has null values
     """
     df = pd.read_csv(csv_path)
+
+    # Normalize column names: support both old (capitalized) and new (lowercase) formats
+    column_mapping = {
+        'sentence': 'Sentence',
+        'severity_label': 'Severity Label',
+        'explanation': 'Explanation'
+    }
+
+    # Rename columns if they exist in lowercase format
+    rename_dict = {old: new for old, new in column_mapping.items() if old in df.columns}
+    if rename_dict:
+        df = df.rename(columns=rename_dict)
+        print(f"Normalized column names: {list(rename_dict.keys())} -> {list(rename_dict.values())}")
 
     required_columns = ["Sentence", "Severity Label", "Explanation"]
     missing_columns = [col for col in required_columns if col not in df.columns]
