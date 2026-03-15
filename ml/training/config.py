@@ -4,9 +4,10 @@ import itertools
 from dataclasses import dataclass
 from typing import List, Tuple
 
-# Grid search space (user decision from CONTEXT.md)
-RANKS = [8, 16, 32]
-DROPOUTS = [0.05, 0.1, 0.2]
+# Grid search space
+# Using only the proven best config from Phase 05.4: rank=8, dropout=0.2
+RANKS = [8]  # Best performer: 90% F1, lowest val_loss (0.4937)
+DROPOUTS = [0.2]  # Best performer with rank=8
 
 # Alpha scaling rule: alpha = 2 * rank
 def get_alpha(rank: int) -> int:
@@ -30,8 +31,8 @@ class TrainingConfig:
     model_path: str = "/home/azureuser/models/Qwen2.5-3B-Instruct-GPTQ-Int4"  # VM path
 
     # Data
-    csv_path: str = "/home/azureuser/inclusify/data/augmented_dataset.csv"  # VM path
-    test_size: float = 0.2
+    csv_path: str = "/home/azureuser/inclusify/data/combined_multilingual_20k.csv"  # VM path (20K: 16K train + 4K val)
+    test_size: float = 0.2  # 80% train (15.9K), 20% val (4K)
     random_state: int = 42
 
     # Training
