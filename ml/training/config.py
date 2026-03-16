@@ -43,7 +43,7 @@ class TrainingConfig:
     max_seq_length: int = 512
 
     # Optimizer
-    optim: str = "adamw_hf"  # HuggingFace AdamW implementation (most compatible)
+    optim: str = "adamw_8bit"  # 8-bit AdamW from bitsandbytes (memory efficient)
 
     # Precision
     fp16: bool = False  # Disable mixed precision to avoid BFloat16 AMP errors on T4
