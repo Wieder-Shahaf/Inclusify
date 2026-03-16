@@ -27,8 +27,8 @@ class TrainingConfig:
     """Fixed training hyperparameters."""
 
     # Model
-    model_name: str = "Qwen/Qwen2.5-3B-Instruct-GPTQ-Int4"
-    model_path: str = "/home/azureuser/models/Qwen2.5-3B-Instruct-GPTQ-Int4"  # VM path
+    model_name: str = "Qwen/Qwen2.5-3B-Instruct"
+    model_path: str = "/home/azureuser/models/Qwen2.5-3B-Instruct"  # VM path (FP16, quantized to 4-bit NF4 at load time)
 
     # Data
     csv_path: str = "/home/azureuser/inclusify/data/combined_multilingual_20k.csv"  # VM path (20K: 16K train + 4K val)
