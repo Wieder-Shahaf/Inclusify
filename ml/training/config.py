@@ -37,7 +37,7 @@ class TrainingConfig:
 
     # Training
     num_epochs: int = 3
-    batch_size: int = 2  # Reduced to 2 for GPTQ memory constraints
+    batch_size: int = 4  # Optimized for NF4 on T4 (2x faster than batch=2)
     learning_rate: float = 2e-4
     warmup_steps: int = 100
     max_seq_length: int = 512
@@ -51,7 +51,7 @@ class TrainingConfig:
 
     # Logging
     logging_steps: int = 10
-    eval_steps: int = 50
+    eval_steps: int = 500  # Reduced frequency for faster training (evaluate less often)
     save_strategy: str = "steps"  # Must match eval_strategy for load_best_model_at_end
 
     # Output
