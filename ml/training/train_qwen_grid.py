@@ -29,7 +29,7 @@ from transformers import (
     TrainingArguments,
     BitsAndBytesConfig,
 )
-from peft import LoraConfig, get_peft_model
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from trl import SFTTrainer
 
 # Add project root to path for imports
@@ -124,8 +124,9 @@ def train_single_config(
     print(f"✓ Model loaded and quantized to 4-bit NF4")
     print(f"  VRAM usage: ~1.5-2 GB (vs ~6-7 GB for FP16)")
 
-    # Enable gradient checkpointing for memory efficiency
-    base_model.gradient_checkpointing_enable()
+    # Prepare model for k-bit training (essential for bitsandbytes + LoRA)
+    print("Preparing model for k-bit training...")
+    base_model = prepare_model_for_kbit_training(base_model)
 
     # Create LoRA config
     lora_config = create_lora_config(rank, alpha, dropout)
