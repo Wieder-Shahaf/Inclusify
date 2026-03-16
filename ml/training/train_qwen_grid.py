@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
 """
-Automated grid search for Qwen2.5 QLoRA hyperparameters.
-Trains 9 configurations (3 ranks × 3 dropout values) sequentially.
+QLoRA training for Qwen2.5-3B using bitsandbytes 4-bit NF4 quantization.
+
+Approach:
+- Loads FP16 base model (Qwen2.5-3B-Instruct)
+- Quantizes to 4-bit NF4 on-the-fly using bitsandbytes
+- Trains LoRA adapters in FP16
+- Uses proven optimal config: rank=8, dropout=0.2
+
+Dataset: 20K multilingual samples (10K English + 10K Hebrew)
 
 Usage:
     python ml/training/train_qwen_grid.py
 
-Estimated time: ~1 hour per config × 9 configs = 9-10 hours total
+Estimated time: ~6-10 hours (vs 51 hours for FP16 training)
 """
 
 import json
@@ -20,6 +27,7 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     TrainingArguments,
+    BitsAndBytesConfig,
 )
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer
@@ -95,22 +103,29 @@ def train_single_config(
 
     start_time = time.time()
 
-    # Load GPTQ-quantized model (already in 4-bit Int4 format)
-    print("Loading GPTQ 4-bit quantized model...")
-    base_model = AutoModelForCausalLM.from_pretrained(
-        model_path,
-        device_map="auto",
-        torch_dtype=torch.float16,
+    # Configure bitsandbytes 4-bit quantization (QLoRA)
+    print("Configuring 4-bit NF4 quantization with bitsandbytes...")
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=True,                      # Enable 4-bit quantization
+        bnb_4bit_use_double_quant=True,         # Double quantization for extra memory savings
+        bnb_4bit_quant_type="nf4",              # NormalFloat 4-bit (optimal for normally distributed weights)
+        bnb_4bit_compute_dtype=torch.float16   # Compute in FP16 (T4 compatible)
     )
 
-    # Prepare model for training with gradient checkpointing
-    base_model.gradient_checkpointing_enable()
+    # Load FP16 base model and quantize to 4-bit on-the-fly
+    print(f"Loading base model from {model_path}")
+    print("(FP16 on disk → 4-bit NF4 in GPU memory)")
+    base_model = AutoModelForCausalLM.from_pretrained(
+        model_path,
+        quantization_config=bnb_config,  # Apply 4-bit quantization during load
+        device_map="auto",
+    )
 
-    # Enable input gradients for LoRA training on quantized model
-    for param in base_model.parameters():
-        param.requires_grad = False  # Freeze base model
-        if param.ndim == 1:  # Enable gradients for layer norms
-            param.data = param.data.to(torch.float32)
+    print(f"✓ Model loaded and quantized to 4-bit NF4")
+    print(f"  VRAM usage: ~1.5-2 GB (vs ~6-7 GB for FP16)")
+
+    # Enable gradient checkpointing for memory efficiency
+    base_model.gradient_checkpointing_enable()
 
     # Create LoRA config
     lora_config = create_lora_config(rank, alpha, dropout)
