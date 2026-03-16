@@ -154,6 +154,7 @@ def train_single_config(
         load_best_model_at_end=True,
         metric_for_best_model="eval_loss",
         fp16=CONFIG.fp16,
+        bf16=False,  # Explicitly disable BF16 (T4 only emulates it, causes errors with optimizer)
         optim=CONFIG.optim,
         report_to="tensorboard",
         gradient_checkpointing=True,  # Enable for QLoRA memory efficiency
