@@ -43,7 +43,7 @@ class TrainingConfig:
     max_seq_length: int = 512
 
     # Optimizer
-    optim: str = "paged_adamw_8bit"  # Critical for T4 VRAM
+    optim: str = "adamw_torch"  # Standard PyTorch AdamW (compatible with FP16 on T4)
 
     # Precision
     fp16: bool = True  # T4 doesn't support bf16

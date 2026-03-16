@@ -156,7 +156,7 @@ def train_single_config(
         fp16=CONFIG.fp16,
         bf16=False,  # Explicitly disable BF16 (T4 only emulates it, causes errors with optimizer)
         optim=CONFIG.optim,
-        optim_args="{'use_foreach': False}",  # Disable foreach to avoid BF16 AMP issues on T4
+        optim_args=None,  # Use default optimizer args
         report_to="tensorboard",
         gradient_checkpointing=True,  # Enable for QLoRA memory efficiency
         gradient_checkpointing_kwargs={"use_reentrant": False},  # Recommended for newer PyTorch
