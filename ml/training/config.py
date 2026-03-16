@@ -43,10 +43,11 @@ class TrainingConfig:
     max_seq_length: int = 512
 
     # Optimizer
-    optim: str = "adamw_torch"  # Standard PyTorch AdamW (compatible with FP16 on T4)
+    optim: str = "adamw_hf"  # HuggingFace AdamW implementation (most compatible)
 
     # Precision
-    fp16: bool = True  # T4 doesn't support bf16
+    fp16: bool = False  # Disable mixed precision to avoid BFloat16 AMP errors on T4
+    tf32: bool = False  # Disable TF32
 
     # Logging
     logging_steps: int = 10
