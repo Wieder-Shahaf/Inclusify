@@ -166,12 +166,12 @@ def train_single_config(
     # Create trainer
     # Note: TRL 0.29.0 - we already applied PEFT via get_peft_model() above
     # Do NOT pass peft_config again (would error: "PeftModel with peft_config")
-    # Note: compute_metrics disabled (causes OOM), use mean_token_accuracy from logs instead
     trainer = SFTTrainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
+        compute_metrics=compute_metrics,  # Compute token-level accuracy during eval
     )
 
     # Train
@@ -187,14 +187,14 @@ def train_single_config(
     duration_min = (time.time() - start_time) / 60
 
     # Collect results
-    # Note: val_accuracy comes from trainer's built-in mean_token_accuracy during eval
+    # Note: val_accuracy comes from compute_metrics or trainer's built-in mean_token_accuracy
     results = {
         "config": config_name,
         "rank": rank,
         "alpha": alpha,
         "dropout": dropout,
         "val_loss": eval_metrics["eval_loss"],
-        "val_accuracy": eval_metrics.get("eval_mean_token_accuracy", 0.0),  # Built-in metric
+        "val_accuracy": eval_metrics.get("eval_accuracy") or eval_metrics.get("eval_mean_token_accuracy", 0.0),
         "duration_min": round(duration_min, 2),
         "trainable_params": model.num_parameters(only_trainable=True),
         "total_params": model.num_parameters(),

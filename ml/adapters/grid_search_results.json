@@ -1,101 +1,14 @@
 [
   {
-    "config": "qwen_r8_d0.05",
-    "rank": 8,
-    "alpha": 16,
-    "dropout": 0.05,
-    "val_loss": 0.49636226892471313,
-    "val_accuracy": 0.0,
-    "duration_min": 55.06,
-    "trainable_params": 14966784,
-    "total_params": 326281216
-  },
-  {
-    "config": "qwen_r8_d0.1",
-    "rank": 8,
-    "alpha": 16,
-    "dropout": 0.1,
-    "val_loss": 0.49574923515319824,
-    "val_accuracy": 0.0,
-    "duration_min": 54.55,
-    "trainable_params": 14966784,
-    "total_params": 326281216
-  },
-  {
     "config": "qwen_r8_d0.2",
     "rank": 8,
     "alpha": 16,
     "dropout": 0.2,
-    "val_loss": 0.49367547035217285,
-    "val_accuracy": 0.0,
-    "duration_min": 54.55,
+    "val_loss": 0.8413100838661194,
+    "val_accuracy": 0.7911185588769779,
+    "duration_min": 839.9,
     "trainable_params": 14966784,
-    "total_params": 326281216
-  },
-  {
-    "config": "qwen_r16_d0.05",
-    "rank": 16,
-    "alpha": 32,
-    "dropout": 0.05,
-    "val_loss": 0.5141306519508362,
-    "val_accuracy": 0.0,
-    "duration_min": 54.72,
-    "trainable_params": 29933568,
-    "total_params": 341248000
-  },
-  {
-    "config": "qwen_r16_d0.1",
-    "rank": 16,
-    "alpha": 32,
-    "dropout": 0.1,
-    "val_loss": 0.5136311054229736,
-    "val_accuracy": 0.0,
-    "duration_min": 54.71,
-    "trainable_params": 29933568,
-    "total_params": 341248000
-  },
-  {
-    "config": "qwen_r16_d0.2",
-    "rank": 16,
-    "alpha": 32,
-    "dropout": 0.2,
-    "val_loss": 0.5108610391616821,
-    "val_accuracy": 0.0,
-    "duration_min": 54.73,
-    "trainable_params": 29933568,
-    "total_params": 341248000
-  },
-  {
-    "config": "qwen_r32_d0.05",
-    "rank": 32,
-    "alpha": 64,
-    "dropout": 0.05,
-    "val_loss": 0.5210219025611877,
-    "val_accuracy": 0.0,
-    "duration_min": 54.98,
-    "trainable_params": 59867136,
-    "total_params": 371181568
-  },
-  {
-    "config": "qwen_r32_d0.1",
-    "rank": 32,
-    "alpha": 64,
-    "dropout": 0.1,
-    "val_loss": 0.5195607542991638,
-    "val_accuracy": 0.0,
-    "duration_min": 54.98,
-    "trainable_params": 59867136,
-    "total_params": 371181568
-  },
-  {
-    "config": "qwen_r32_d0.2",
-    "rank": 32,
-    "alpha": 64,
-    "dropout": 0.2,
-    "val_loss": 0.5114818811416626,
-    "val_accuracy": 0.0,
-    "duration_min": 54.97,
-    "trainable_params": 59867136,
-    "total_params": 371181568
+    "total_params": 3100905472,
+    "note": "Accuracy extracted from training logs (eval_mean_token_accuracy)"
   }
 ]
