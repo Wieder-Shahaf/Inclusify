@@ -21,7 +21,6 @@ build/
 *.ckpt
 *.pt
 *.bin
-*.safetensors
 ml/data/raw/
 ml/data/private/
 
