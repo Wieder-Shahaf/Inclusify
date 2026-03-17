@@ -2,14 +2,14 @@
 library_name: peft
 model_name: qwen_r8_d0.2
 tags:
-- base_model:adapter:/home/azureuser/models/Qwen2.5-3B-Instruct-GPTQ-Int4
+- base_model:adapter:/home/azureuser/models/Qwen2.5-3B-Instruct
 - lora
 - sft
 - transformers
 - trl
 licence: license
 pipeline_tag: text-generation
-base_model: /home/azureuser/models/Qwen2.5-3B-Instruct-GPTQ-Int4
+base_model: /home/azureuser/models/Qwen2.5-3B-Instruct
 ---
 
 # Model Card for qwen_r8_d0.2
@@ -41,7 +41,7 @@ This model was trained with SFT.
 - PEFT 0.18.1
 - TRL: 0.29.0
 - Transformers: 4.57.6
-- Pytorch: 2.5.1
+- Pytorch: 2.10.0
 - Datasets: 4.7.0
 - Tokenizers: 0.22.2
 
