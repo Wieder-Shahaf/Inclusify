@@ -6,7 +6,7 @@ set -euo pipefail
 # Requires: az login, PG_PASSWORD, JWT_SECRET environment variables
 
 # Configuration
-RESOURCE_GROUP="${RESOURCE_GROUP:-inclusify-rg}"
+RESOURCE_GROUP="${RESOURCE_GROUP:-Group07}"
 ACR_NAME="${ACR_NAME:-inclusifyacr}"
 CONTAINERAPPS_ENV="${CONTAINERAPPS_ENV:-inclusify-env}"
 IMAGE_TAG="${IMAGE_TAG:-latest}"
@@ -126,14 +126,34 @@ else
     --output none
 fi
 
-# Configure health probes for backend
+# Configure health probes for backend via YAML patch
 echo "  Configuring health probes..."
+PROBE_YAML=$(mktemp)
+cat > "$PROBE_YAML" << 'PROBEEOF'
+properties:
+  template:
+    containers:
+      - name: inclusify-backend
+        probes:
+          - type: Startup
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 30
+          - type: Liveness
+            httpGet:
+              path: /health
+              port: 8000
+            periodSeconds: 30
+PROBEEOF
 az containerapp update \
   --name "$BACKEND_APP" \
   --resource-group "$RESOURCE_GROUP" \
-  --container-name "$BACKEND_APP" \
-  --set-env-vars "STARTUP_PROBE_CONFIGURED=true" \
-  --output none 2>/dev/null || true
+  --yaml "$PROBE_YAML" \
+  --output none 2>/dev/null || echo "  Warning: Could not configure health probes via YAML (may need manual setup)"
+rm -f "$PROBE_YAML"
 
 # Get backend FQDN
 BACKEND_FQDN=$(az containerapp show \
