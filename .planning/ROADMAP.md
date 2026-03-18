@@ -139,7 +139,7 @@ Plans:
 
 Plans:
 - [x] 05-00-PLAN.md — Validation and E2E test scripts (Wave 0 prerequisite)
-- [ ] 05-01-PLAN.md — Azure Container Apps deployment with VNet integration (INFRA-02)
+- [x] 05-01-PLAN.md — Azure Container Apps deployment with VNet integration (INFRA-02)
 - [ ] 05-02-PLAN.md — GitHub Actions CI/CD and E2E verification (INFRA-02)
 
 ---
@@ -278,7 +278,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 (Milestone 1) -> 6 -> 7 (
 | 2. Core Services | 3/3 | Complete | 2026-03-09 |
 | 3. LLM Integration | 4/4 | Complete   | 2026-03-09 |
 | 4. Frontend Integration | 3/3 | Complete   | 2026-03-09 |
-| 5. Production Deployment | 1/3 | In Progress | - |
+| 5. Production Deployment | 2/3 | In Progress | - |
 | 5.1. Azure Infrastructure | 1/1 | Complete   | 2026-03-10 |
 | 5.2. Model Migration | 2/2 | Complete   | 2026-03-10 |
 | 5.3. Auth Frontend | 3/4 | In Progress|  |
