@@ -25,8 +25,8 @@ interface Translations {
   requiresAttention: string;
   outdated: string;
   biased: string;
-  offensive: string;
-  incorrect: string;
+  potentially_offensive: string;
+  factually_incorrect: string;
   exportReport: string;
 }
 
@@ -51,8 +51,8 @@ const defaultTranslations: Translations = {
   requiresAttention: 'Requires Attention',
   outdated: 'Outdated',
   biased: 'Biased',
-  offensive: 'Offensive',
-  incorrect: 'Incorrect',
+  potentially_offensive: 'Potentially Offensive',
+  factually_incorrect: 'Factually Incorrect',
   exportReport: 'Export Report',
 };
 
@@ -100,21 +100,21 @@ export default function AnalysisSummary({
       lightColor: 'bg-amber-100 dark:bg-amber-900/30',
       textColor: 'text-amber-600 dark:text-amber-400',
     },
-    offensive: {
-      label: t.offensive,
+    potentially_offensive: {
+      label: t.potentially_offensive,
       color: 'bg-rose-500',
       lightColor: 'bg-rose-100 dark:bg-rose-900/30',
       textColor: 'text-rose-600 dark:text-rose-400',
     },
-    incorrect: {
-      label: t.incorrect,
+    factually_incorrect: {
+      label: t.factually_incorrect,
       color: 'bg-red-500',
       lightColor: 'bg-red-100 dark:bg-red-900/30',
       textColor: 'text-red-600 dark:text-red-400',
     },
   };
 
-  const totalIssues = counts.outdated + counts.biased + counts.offensive + counts.incorrect;
+  const totalIssues = counts.outdated + counts.biased + counts.potentially_offensive + counts.factually_incorrect;
   const maxCount = Math.max(...Object.values(counts), 1);
 
   return (

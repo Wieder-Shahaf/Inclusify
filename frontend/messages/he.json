@@ -193,14 +193,14 @@
       "requiresAttention": "דורש תשומת לב",
       "outdated": "מיושן",
       "biased": "מוטה",
-      "offensive": "פוגעני",
-      "incorrect": "שגוי"
+      "potentially_offensive": "פוגעני",
+      "factually_incorrect": "שגוי"
     },
     "recommendations": {
       "outdated": "עדכנו את הטרמינולוגיה לסטנדרטים מכלילים עדכניים",
       "biased": "תקנו את המסגור כדי להימנע מהטיה מרומזת",
-      "offensive": "החליפו שפה שעלולה לפגוע בחלופות מכבדות",
-      "incorrect": "תקנו טרמינולוגיה שגויה עובדתית",
+      "potentially_offensive": "החליפו שפה שעלולה לפגוע בחלופות מכבדות",
+      "factually_incorrect": "תקנו טרמינולוגיה שגויה עובדתית",
       "excellent": "מצוין! הטקסט שלך מפגין שימוש בשפה מכלילה"
     },
     "features": {

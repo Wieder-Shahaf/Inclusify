@@ -1,0 +1,88 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  ACR_NAME: inclusifyacr
+  RESOURCE_GROUP: Group07
+  BACKEND_APP: inclusify-backend
+  FRONTEND_APP: inclusify-frontend
+  BACKEND_URL: https://inclusify-backend.ashyriver-56608625.eastus.azurecontainerapps.io
+
+jobs:
+  build-and-push:
+    name: Build & Push Images
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set image tag
+        id: tag
+        run: echo "tag=${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ACR_NAME }}.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push backend
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: infra/docker/backend.Dockerfile
+          target: runtime
+          push: true
+          tags: ${{ env.ACR_NAME }}.azurecr.io/inclusify-backend:${{ steps.tag.outputs.tag }}
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: infra/docker/frontend.Dockerfile
+          target: runner
+          push: true
+          tags: ${{ env.ACR_NAME }}.azurecr.io/inclusify-frontend:${{ steps.tag.outputs.tag }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ env.BACKEND_URL }}
+            NEXT_PUBLIC_USE_DEMO_MODE=false
+
+  deploy:
+    name: Deploy to Azure
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy backend
+        run: |
+          az containerapp update \
+            --name ${{ env.BACKEND_APP }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --image ${{ env.ACR_NAME }}.azurecr.io/inclusify-backend:${{ needs.build-and-push.outputs.image_tag }}
+
+      - name: Deploy frontend
+        run: |
+          az containerapp update \
+            --name ${{ env.FRONTEND_APP }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --image ${{ env.ACR_NAME }}.azurecr.io/inclusify-frontend:${{ needs.build-and-push.outputs.image_tag }}
+
+      - name: Verify backend health
+        run: |
+          sleep 30
+          curl -sf "${{ env.BACKEND_URL }}/health" || (echo "Health check failed" && exit 1)
+          echo "Backend healthy"

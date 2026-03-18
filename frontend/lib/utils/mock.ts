@@ -51,8 +51,8 @@ export function mockAnalyze(text: string): {
   const counts: Record<Severity, number> = {
     outdated: 0,
     biased: 0,
-    offensive: 0,
-    incorrect: 0,
+    potentially_offensive: 0,
+    factually_incorrect: 0,
   };
 
   const lower = text.toLowerCase();

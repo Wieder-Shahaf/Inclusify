@@ -42,14 +42,14 @@ const severityInfo = {
     bgLight: 'bg-amber-50 dark:bg-amber-900/20',
     borderColor: 'border-amber-200 dark:border-amber-800',
   },
-  offensive: {
+  potentially_offensive: {
     icon: '⚠️',
     title: 'Potentially Offensive',
     color: 'from-rose-500 to-rose-600',
     bgLight: 'bg-rose-50 dark:bg-rose-900/20',
     borderColor: 'border-rose-200 dark:border-rose-800',
   },
-  incorrect: {
+  factually_incorrect: {
     icon: '❌',
     title: 'Factually Incorrect',
     color: 'from-red-500 to-red-600',

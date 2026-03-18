@@ -193,14 +193,14 @@
       "requiresAttention": "Requires Attention",
       "outdated": "Outdated",
       "biased": "Biased",
-      "offensive": "Offensive",
-      "incorrect": "Incorrect"
+      "potentially_offensive": "Potentially Offensive",
+      "factually_incorrect": "Factually Incorrect"
     },
     "recommendations": {
       "outdated": "Update terminology to current inclusive standards",
       "biased": "Revise framing to avoid implicit bias",
-      "offensive": "Replace potentially offensive language with respectful alternatives",
-      "incorrect": "Correct factually inaccurate terminology",
+      "potentially_offensive": "Replace potentially offensive language with respectful alternatives",
+      "factually_incorrect": "Correct factually inaccurate terminology",
       "excellent": "Excellent! Your text demonstrates inclusive language practices"
     },
     "features": {
