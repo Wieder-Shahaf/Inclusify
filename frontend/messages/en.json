@@ -9,18 +9,27 @@
     "privateMode": "Private mode",
     "settings": "Settings",
     "footerCopyright": "Achva LGBT — INCLUSIFY",
-    "footerTagline": "Built with accessibility and inclusion in mind."
+    "footerTagline": "Built with accessibility and inclusion in mind.",
+    "login": "Login",
+    "profile": "Profile",
+    "myAnalyses": "My Analyses"
   },
   "admin": {
     "title": "Analytics Dashboard",
     "subtitle": "Monitor platform usage and gather insights",
     "refresh": "Refresh",
     "lastUpdated": "Last updated",
+    "tabs": {
+      "overview": "Overview",
+      "users": "Users",
+      "organizations": "Organizations"
+    },
     "timeRanges": {
       "today": "Today",
-      "week": "This Week",
-      "month": "This Month",
-      "year": "This Year"
+      "week": "Last 7 days",
+      "month": "Last 30 days",
+      "quarter": "Last 90 days",
+      "year": "All time"
     },
     "kpi": {
       "totalAnalyses": "Total Analyses",
@@ -53,6 +62,13 @@
       "analyzed": "analyzed",
       "found": "found",
       "issues": "issues"
+    },
+    "users": {
+      "searchPlaceholder": "Search by email...",
+      "noResults": "No users found"
+    },
+    "orgs": {
+      "noResults": "No organizations found"
     },
     "health": {
       "apiLatency": "API Latency",
@@ -147,7 +163,6 @@
     "uploadTitle": "Analyze Your Paper",
     "uploadDesc": "Upload your academic document to check for inclusive language",
     "dragDrop": "Drag and drop your document here, or click to browse",
-    "trySample": "Try with sample academic paper",
     "dropHere": "Drop your file here",
     "chooseDifferent": "Choose Different File",
     "analyzePaper": "Analyze Paper",
@@ -163,7 +178,8 @@
       "generating": "Generating insights",
       "generatingDesc": "Preparing your personalized report...",
       "complete": "Analysis complete",
-      "completeDesc": "Your results are ready!"
+      "completeDesc": "Your results are ready!",
+      "takingLonger": "Analysis is taking longer than usual..."
     },
     "summaryCard": {
       "score": "Inclusivity Score",
@@ -205,13 +221,73 @@
     "hoverHint": "Click highlighted text for details",
     "viewDetails": "View full details",
     "exportReport": "Export Report",
-    "sampleFileName": "sample_academic_paper.txt"
+    "sampleFileName": "sample_academic_paper.txt",
+    "serviceUnavailable": "Analysis service temporarily unavailable. You can still browse.",
+    "basicAnalysisMode": "Basic analysis mode",
+    "basicAnalysisModeDesc": "Advanced AI analysis unavailable",
+    "errors": {
+      "generic": "Unable to analyze document. Please try again.",
+      "passwordProtected": "This PDF is password-protected. Please remove the password and try again.",
+      "corruptedFile": "The file appears to be corrupted. Please try a different file.",
+      "tooManyPages": "This document exceeds the 50 page limit. Please try a shorter document.",
+      "fileTooLarge": "This file exceeds the 50MB limit. Please try a smaller file.",
+      "uploadFailed": "Failed to upload file. Please try again."
+    },
+    "guestPrompt": {
+      "title": "Create an account to save your analysis history",
+      "cta": "Sign up free",
+      "dismiss": "Maybe later"
+    },
+    "privateMode": {
+      "label": "Private mode",
+      "tooltip": "Your document will not be stored. Analysis runs in memory only.",
+      "badge": "Private"
+    },
+    "a11y": {
+      "uploadStarted": "Uploading document",
+      "analysisComplete": "Analysis complete. {count} issues found.",
+      "issuesList": "List of detected issues"
+    }
   },
   "severity": {
     "outdated": "Outdated",
     "biased": "Biased",
-    "offensive": "Potentially offensive",
-    "incorrect": "Factually incorrect"
+    "potentially_offensive": "Potentially Offensive",
+    "factually_incorrect": "Factually Incorrect"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "profile": "Profile",
+    "myAnalyses": "My Analyses",
+    "register": "Create Account",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "rememberMe": "Remember me for 30 days",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "signUp": "Sign up",
+    "signIn": "Sign in",
+    "orContinueWith": "or",
+    "googleSignIn": "Sign in with Google",
+    "loggingIn": "Signing in...",
+    "registering": "Creating account...",
+    "loginSuccess": "Welcome back!",
+    "registerSuccess": "Account created successfully!",
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email",
+      "passwordRequired": "Password is required",
+      "passwordMin": "Password must be at least 8 characters",
+      "passwordMatch": "Passwords must match"
+    },
+    "errors": {
+      "invalidCredentials": "Invalid email or password",
+      "emailExists": "An account with this email already exists",
+      "generic": "Something went wrong. Please try again."
+    }
   },
   "glossary": {
     "title": "LGBTQ+ Glossary",

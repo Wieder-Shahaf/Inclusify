@@ -18,10 +18,15 @@ interface Translations {
   completeDesc: string;
 }
 
+type ProcessingStage = 'uploading' | 'parsing' | 'analyzing' | 'generating' | 'complete';
+
 interface ProcessingAnimationProps {
   fileName: string;
-  onComplete: () => void;
+  onComplete?: () => void;  // Optional - only for demo mode
   translations?: Translations;
+  stage?: ProcessingStage;  // External stage control
+  showExtendedWait?: boolean;  // For long wait message
+  extendedWaitMessage?: string;  // Translation
 }
 
 const defaultTranslations: Translations = {
@@ -39,6 +44,14 @@ const defaultTranslations: Translations = {
 
 const TOTAL_DURATION = 6000; // 6 seconds total
 
+const stageToIndex: Record<ProcessingStage, number> = {
+  uploading: 0,
+  parsing: 1,
+  analyzing: 2,
+  generating: 3,
+  complete: 4,
+};
+
 // Pre-compute particle positions at module level to avoid impure function during render
 const PARTICLE_POSITIONS = [
   { x: -35, y: -65 },
@@ -51,7 +64,7 @@ const PARTICLE_POSITIONS = [
   { x: 32, y: -68 },
 ];
 
-export default function ProcessingAnimation({ fileName, onComplete, translations }: ProcessingAnimationProps) {
+export default function ProcessingAnimation({ fileName, onComplete, translations, stage, showExtendedWait, extendedWaitMessage }: ProcessingAnimationProps) {
   const t = { ...defaultTranslations, ...translations };
 
   const stages = [
@@ -70,6 +83,15 @@ export default function ProcessingAnimation({ fileName, onComplete, translations
   const currentStage = stages[currentStageIndex];
 
   useEffect(() => {
+    // If external stage is provided, use it instead of timer
+    if (stage !== undefined) {
+      const index = stageToIndex[stage];
+      setCurrentStageIndex(index);
+      setProgress(stage === 'complete' ? 100 : Math.min((index + 1) * 25, 95));
+      return;
+    }
+
+    // Existing timer-based logic for demo mode
     startTimeRef.current = Date.now();
 
     const animate = () => {
@@ -95,7 +117,9 @@ export default function ProcessingAnimation({ fileName, onComplete, translations
         animationFrameRef.current = requestAnimationFrame(animate);
       } else {
         // Small delay before calling onComplete for visual polish
-        setTimeout(onComplete, 500);
+        if (onComplete) {
+          setTimeout(onComplete, 500);
+        }
       }
     };
 
@@ -106,7 +130,7 @@ export default function ProcessingAnimation({ fileName, onComplete, translations
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [onComplete]);
+  }, [stage, onComplete]);
 
   return (
     <div className="w-full max-w-lg mx-auto">
@@ -224,6 +248,17 @@ export default function ProcessingAnimation({ fileName, onComplete, translations
             {currentStage.description}
           </motion.p>
         </AnimatePresence>
+
+        {/* Extended Wait Message */}
+        {showExtendedWait && extendedWaitMessage && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center text-xs text-amber-600 dark:text-amber-400 mt-2"
+          >
+            {extendedWaitMessage}
+          </motion.p>
+        )}
 
         {/* Stage Indicators */}
         <div className="flex justify-center items-center gap-2 mt-8">

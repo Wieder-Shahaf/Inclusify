@@ -1,8 +1,50 @@
 import type { Annotation } from '@/components/AnnotatedText';
 import type { Result } from '@/components/ResultCard';
 import type { Severity } from '@/components/SeverityBadge';
+import { toast } from 'sonner';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+// Fetch wrapper that handles 401 responses with toast and redirect
+export async function fetchWithAuth(
+  url: string,
+  options: RequestInit = {}
+): Promise<Response> {
+  const token = typeof window !== 'undefined'
+    ? localStorage.getItem('auth_token')
+    : null;
+
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+
+  if (response.status === 401) {
+    // Clear auth state
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_token_expiry');
+
+      // Show toast
+      toast.error('Session expired. Please log in again.');
+
+      // Get current locale from URL
+      const pathParts = window.location.pathname.split('/');
+      const locale = pathParts[1] === 'he' ? 'he' : 'en';
+
+      // Redirect with return URL
+      const returnUrl = encodeURIComponent(window.location.pathname);
+      window.location.href = `/${locale}/login?returnUrl=${returnUrl}`;
+    }
+
+    throw new Error('Session expired');
+  }
+
+  return response;
+}
 
 // Types matching backend response
 interface BackendIssue {
@@ -21,6 +63,7 @@ interface BackendAnalysisResponse {
   issues_found: BackendIssue[];
   corrected_text?: string;
   note?: string;
+  analysis_mode?: 'llm' | 'hybrid' | 'rules_only';
 }
 
 // Frontend analysis result
@@ -30,6 +73,7 @@ export interface AnalysisResult {
   counts: Record<Severity, number>;
   originalText: string;
   correctedText?: string;
+  analysisMode?: 'llm' | 'hybrid' | 'rules_only';
 }
 
 // Map backend severity to frontend severity
@@ -37,12 +81,12 @@ function mapSeverity(backendSeverity: string): Severity {
   const severityMap: Record<string, Severity> = {
     'low': 'outdated',
     'medium': 'biased',
-    'high': 'offensive',
-    'critical': 'incorrect',
+    'high': 'potentially_offensive',
+    'critical': 'factually_incorrect',
     'outdated': 'outdated',
     'biased': 'biased',
-    'offensive': 'offensive',
-    'incorrect': 'incorrect',
+    'potentially_offensive': 'potentially_offensive',
+    'factually_incorrect': 'factually_incorrect',
     'gender bias': 'biased',
     'medicalization': 'outdated',
   };
@@ -74,13 +118,13 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
   const counts: Record<Severity, number> = {
     outdated: 0,
     biased: 0,
-    offensive: 0,
-    incorrect: 0,
+    potentially_offensive: 0,
+    factually_incorrect: 0,
   };
 
   for (const issue of response.issues_found) {
     const severity = mapSeverity(issue.severity || issue.type);
-    const phrase = issue.span || issue.type || 'Issue';
+    const phrase = issue.flagged_text || issue.type || 'Issue';
 
     // Add to results (unique per phrase)
     const existingResult = results.find(r => r.phrase.toLowerCase() === phrase.toLowerCase());
@@ -137,6 +181,7 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
     counts,
     originalText: response.original_text,
     correctedText: response.corrected_text,
+    analysisMode: response.analysis_mode,
   };
 }
 
@@ -146,9 +191,11 @@ export async function analyzeText(
   options?: {
     language?: 'en' | 'he' | 'auto';
     privateMode?: boolean;
+    useAuth?: boolean;
   }
 ): Promise<AnalysisResult> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/analysis/analyze`, {
+  const fetchFn = options?.useAuth ? fetchWithAuth : fetch;
+  const response = await fetchFn(`${API_BASE_URL}/api/v1/analysis/analyze`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -186,7 +233,7 @@ export async function uploadFile(file: File): Promise<{ text: string; filename: 
 
   const data = await response.json();
   return {
-    text: data.text_preview || '',
+    text: data.full_text || data.text_preview || '',
     filename: data.filename,
     pageCount: data.page_count,
   };

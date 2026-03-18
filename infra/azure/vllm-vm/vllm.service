@@ -1,0 +1,48 @@
+[Unit]
+Description=vLLM Inference Server (Qwen2.5-3B-GPTQ)
+Documentation=https://docs.vllm.ai
+After=network.target
+
+[Service]
+Type=simple
+User=azureuser
+Group=azureuser
+WorkingDirectory=/home/azureuser
+
+# Environment configuration
+Environment="CUDA_VISIBLE_DEVICES=0"
+Environment="PATH=/home/azureuser/vllm-venv/bin:/usr/local/cuda-12.4/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="LD_LIBRARY_PATH=/usr/local/cuda-12.4/lib64"
+
+# vLLM serve command
+# - GPTQ model (not AWQ - T4 incompatible)
+# - dtype=half (not bfloat16 - T4 incompatible)
+# - max-model-len=2048 (saves VRAM, sufficient for sentence analysis)
+# - host=127.0.0.1 (localhost only, VNet access via private IP not needed for now)
+# - gpu-memory-utilization=0.9 (leave 10% headroom)
+# - max-num-seqs=16 (batch up to 16 requests in parallel for 6-10x throughput)
+# - max-num-batched-tokens=4096 (token batching for efficiency)
+# NOTE: LoRA adapter integration added in Phase 05.4-04 via --enable-lora and --lora-modules flags
+ExecStart=/home/azureuser/vllm-venv/bin/vllm serve \
+    /home/azureuser/models/Qwen2.5-3B-Instruct-GPTQ-Int4 \
+    --dtype half \
+    --max-model-len 2048 \
+    --port 8001 \
+    --host 127.0.0.1 \
+    --gpu-memory-utilization 0.9 \
+    --max-num-seqs 16 \
+    --max-num-batched-tokens 4096
+
+# Restart configuration
+Restart=always
+RestartSec=10
+TimeoutStartSec=300
+TimeoutStopSec=30
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=vllm
+
+[Install]
+WantedBy=multi-user.target

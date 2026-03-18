@@ -1,0 +1,27 @@
+# Inclusify Inference VM Dependencies
+# Install with: pip install -r requirements.txt
+
+# PyTorch with CUDA support
+# Should be installed separately via PyTorch's install instructions
+# for proper CUDA version matching
+torch>=2.0.0
+
+# Transformers for model loading and inference
+transformers>=4.40.0
+
+# Hugging Face Hub for model downloads
+huggingface-hub>=0.20.0
+
+# Accelerate for efficient model loading and device mapping
+accelerate>=0.25.0
+
+# PEFT for LoRA adapter support
+peft>=0.8.0
+
+# bitsandbytes for 4-bit quantization (T4 GPU compatible)
+bitsandbytes>=0.41.0
+
+# FastAPI inference service
+fastapi>=0.109.0
+uvicorn>=0.27.0
+pydantic>=2.0.0

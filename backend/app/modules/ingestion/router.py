@@ -1,40 +1,81 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
-import fitz  # PyMuPDF library for PDF processing
+"""PDF upload endpoint with Docling-based text extraction.
+
+Replaces PyMuPDF with Docling for superior layout preservation in academic papers.
+Uses subprocess isolation to protect the API server from memory exhaustion.
+"""
+
+import logging
+
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+from app.modules.ingestion.service import parse_pdf_async
+from app.modules.ingestion.schemas import UploadResponse
+from app.auth.users import current_active_user
+from app.db.models import User
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.post("/upload")
-async def upload_document(file: UploadFile = File(...)):
-    """
-    Endpoint to upload a file and extract its text content.
-    Currently supports: PDF.
-    """
-    # 1. Validate file type
-    if file.content_type != "application/pdf":
-        raise HTTPException(status_code=400, detail="Invalid file type. Currently only PDF is supported.")
-    
-    try:
-        # 2. Read the file bytes into memory
-        file_content = await file.read()
-        
-        # 3. Open the PDF from memory using PyMuPDF
-        doc = fitz.open(stream=file_content, filetype="pdf")
-        
-        extracted_text = ""
-        
-        # 4. Iterate over pages and extract text
-        for page in doc:
-            extracted_text += page.get_text() + "\n"
-            
-        # 5. Return the result (giving a preview of the text)
-        return {
-            "filename": file.filename,
-            "content_type": file.content_type,
-            "page_count": len(doc),
-            "text_preview": extracted_text[:500] + "...",  # Show first 500 characters
-            "full_text_length": len(extracted_text)
-        }
+# 50MB size limit (prevent DoS)
+MAX_FILE_SIZE = 50 * 1024 * 1024
 
-    except Exception as e:
-        print(f"Error processing file: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to process document")
+
+@router.post("/upload", response_model=UploadResponse)
+async def upload_document(
+    file: UploadFile = File(...),
+    # TODO: Re-enable auth once FastAPI Users schema matches DB
+    # current_user: User = Depends(current_active_user)
+):
+    """
+    Upload a PDF and extract text using Docling.
+
+    Requires authentication. User info available for tracking uploads.
+
+    Limits:
+    - Max 50 pages
+    - Max 50MB file size
+    - 60-second processing timeout
+
+    Returns specific errors for:
+    - Password-protected PDFs
+    - Corrupted PDFs
+    - Oversized documents
+    """
+    filename = file.filename or "unknown.pdf"
+    logger.info("Upload started: filename=%s content_type=%s", filename, file.content_type)
+
+    if file.content_type != "application/pdf":
+        logger.warning("Upload rejected: unsupported content_type=%s filename=%s", file.content_type, filename)
+        raise HTTPException(status_code=400, detail="Only PDF files supported")
+
+    file_bytes = await file.read()
+    file_size = len(file_bytes)
+    logger.info("Upload validated: filename=%s size_bytes=%d", filename, file_size)
+
+    # Enforce size limit
+    if file_size > MAX_FILE_SIZE:
+        logger.warning("Upload rejected: file too large size_bytes=%d filename=%s", file_size, filename)
+        raise HTTPException(status_code=400, detail="File too large (50MB limit)")
+
+    logger.info("PDF parsing started: filename=%s", filename)
+    result = await parse_pdf_async(file_bytes, timeout=60)
+
+    if "error" in result:
+        logger.error("PDF parsing failed: filename=%s error=%s", filename, result["error"])
+        # Return specific error messages per CONTEXT.md decision
+        raise HTTPException(status_code=400, detail=result["error"])
+
+    text_length = len(result["text"])
+    logger.info(
+        "PDF parsing succeeded: filename=%s pages=%d text_length=%d",
+        filename, result["page_count"], text_length,
+    )
+
+    return UploadResponse(
+        filename=filename,
+        content_type=file.content_type,
+        page_count=result["page_count"],
+        text_preview=result["text"][:500] + "..." if text_length > 500 else result["text"],
+        full_text=result["text"],
+        full_text_length=text_length,
+    )

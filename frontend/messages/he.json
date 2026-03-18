@@ -9,18 +9,27 @@
     "privateMode": "מצב פרטי",
     "settings": "הגדרות",
     "footerCopyright": "Achva LGBT — INCLUSIFY",
-    "footerTagline": "נבנה מתוך מחויבות לנגישות והכלה."
+    "footerTagline": "נבנה מתוך מחויבות לנגישות והכלה.",
+    "login": "התחברות",
+    "profile": "פרופיל",
+    "myAnalyses": "הניתוחים שלי"
   },
   "admin": {
     "title": "לוח בקרה אנליטי",
     "subtitle": "מעקב אחר שימוש בפלטפורמה ואיסוף תובנות",
     "refresh": "רענון",
     "lastUpdated": "עודכן לאחרונה",
+    "tabs": {
+      "overview": "סקירה",
+      "users": "משתמשים",
+      "organizations": "ארגונים"
+    },
     "timeRanges": {
       "today": "היום",
-      "week": "השבוע",
-      "month": "החודש",
-      "year": "השנה"
+      "week": "7 ימים אחרונים",
+      "month": "30 ימים אחרונים",
+      "quarter": "90 ימים אחרונים",
+      "year": "כל הזמנים"
     },
     "kpi": {
       "totalAnalyses": "סה״כ ניתוחים",
@@ -53,6 +62,13 @@
       "analyzed": "נותח",
       "found": "נמצאו",
       "issues": "בעיות"
+    },
+    "users": {
+      "searchPlaceholder": "חיפוש לפי אימייל...",
+      "noResults": "לא נמצאו משתמשים"
+    },
+    "orgs": {
+      "noResults": "לא נמצאו ארגונים"
     },
     "health": {
       "apiLatency": "זמן תגובה API",
@@ -147,7 +163,6 @@
     "uploadTitle": "ניתוח המסמך שלך",
     "uploadDesc": "העלו מסמך אקדמי לבדיקת שפה מכלילה",
     "dragDrop": "גררו ושחררו את המסמך כאן, או לחצו לעיון",
-    "trySample": "נסו עם מסמך אקדמי לדוגמה",
     "dropHere": "שחררו את הקובץ כאן",
     "chooseDifferent": "בחירת קובץ אחר",
     "analyzePaper": "ניתוח המסמך",
@@ -163,7 +178,8 @@
       "generating": "מייצר תובנות",
       "generatingDesc": "מכין את הדוח המותאם אישית שלך...",
       "complete": "הניתוח הושלם",
-      "completeDesc": "התוצאות מוכנות!"
+      "completeDesc": "התוצאות מוכנות!",
+      "takingLonger": "הניתוח לוקח יותר זמן מהרגיל..."
     },
     "summaryCard": {
       "score": "ציון מכלילות",
@@ -205,13 +221,73 @@
     "hoverHint": "לחצו על טקסט מודגש לפרטים",
     "viewDetails": "הצג פרטים מלאים",
     "exportReport": "ייצוא דוח",
-    "sampleFileName": "מסמך_אקדמי_לדוגמה.txt"
+    "sampleFileName": "מסמך_אקדמי_לדוגמה.txt",
+    "serviceUnavailable": "שירות הניתוח לא זמין זמנית. ניתן להמשיך לגלוש.",
+    "basicAnalysisMode": "מצב ניתוח בסיסי",
+    "basicAnalysisModeDesc": "ניתוח AI מתקדם לא זמין",
+    "errors": {
+      "generic": "לא ניתן לנתח את המסמך. אנא נסו שנית.",
+      "passwordProtected": "קובץ ה-PDF מוגן בסיסמה. אנא הסירו את הסיסמה ונסו שוב.",
+      "corruptedFile": "הקובץ נראה פגום. אנא נסו קובץ אחר.",
+      "tooManyPages": "המסמך עולה על מגבלת 50 העמודים. אנא נסו מסמך קצר יותר.",
+      "fileTooLarge": "הקובץ עולה על מגבלת 50MB. אנא נסו קובץ קטן יותר.",
+      "uploadFailed": "העלאת הקובץ נכשלה. אנא נסו שוב."
+    },
+    "guestPrompt": {
+      "title": "צור חשבון כדי לשמור את היסטוריית הניתוחים שלך",
+      "cta": "הרשמה בחינם",
+      "dismiss": "אולי מאוחר יותר"
+    },
+    "privateMode": {
+      "label": "מצב פרטי",
+      "tooltip": "המסמך שלך לא יישמר. הניתוח מתבצע בזיכרון בלבד.",
+      "badge": "פרטי"
+    },
+    "a11y": {
+      "uploadStarted": "מעלה מסמך",
+      "analysisComplete": "הניתוח הושלם. נמצאו {count} בעיות.",
+      "issuesList": "רשימת בעיות שזוהו"
+    }
   },
   "severity": {
     "outdated": "מיושן",
     "biased": "מוטה",
-    "offensive": "עלול לפגוע",
-    "incorrect": "שגוי עובדתית"
+    "potentially_offensive": "עלול לפגוע",
+    "factually_incorrect": "שגוי עובדתית"
+  },
+  "auth": {
+    "login": "התחברות",
+    "logout": "התנתקות",
+    "profile": "פרופיל",
+    "myAnalyses": "הניתוחים שלי",
+    "register": "יצירת חשבון",
+    "email": "אימייל",
+    "password": "סיסמה",
+    "confirmPassword": "אימות סיסמה",
+    "rememberMe": "זכור אותי ל-30 יום",
+    "forgotPassword": "שכחת סיסמה?",
+    "noAccount": "אין לך חשבון?",
+    "hasAccount": "יש לך כבר חשבון?",
+    "signUp": "הרשמה",
+    "signIn": "התחברות",
+    "orContinueWith": "או",
+    "googleSignIn": "התחברות עם Google",
+    "loggingIn": "מתחבר...",
+    "registering": "יוצר חשבון...",
+    "loginSuccess": "ברוך שובך!",
+    "registerSuccess": "החשבון נוצר בהצלחה!",
+    "validation": {
+      "emailRequired": "אימייל נדרש",
+      "emailInvalid": "נא להזין אימייל תקין",
+      "passwordRequired": "סיסמה נדרשת",
+      "passwordMin": "הסיסמה חייבת להכיל לפחות 8 תווים",
+      "passwordMatch": "הסיסמאות חייבות להיות זהות"
+    },
+    "errors": {
+      "invalidCredentials": "אימייל או סיסמה שגויים",
+      "emailExists": "חשבון עם אימייל זה כבר קיים",
+      "generic": "משהו השתבש. נא לנסות שוב."
+    }
   },
   "glossary": {
     "title": "מילון מונחי להט״ב+",

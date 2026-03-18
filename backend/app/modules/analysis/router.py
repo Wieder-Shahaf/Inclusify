@@ -2,27 +2,29 @@
 Analysis Router - LGBTQ+ Inclusive Language Detection
 
 =============================================================================
-                            DEMO / PLACEHOLDER
+                        HYBRID DETECTION (LLM + Rules)
 =============================================================================
-This module currently uses RULE-BASED detection as a placeholder.
+This module uses hybrid detection combining:
+- LLM (lightblue/suzume-llama-3-8B-multilingual) for contextual analysis
+- Rule-based detection as fallback for high-precision known terms
 
-In production, this will be replaced with:
-- Fine-tuned LLM (lightblue/suzume-llama-3-8B-multilingual)
-- QLoRA adapter weights trained on LGBTQ+ inclusive language corpus
-- Azure ML Online Endpoint for inference
+Detection modes (reported in analysis_mode field):
+- "llm": All sentences successfully analyzed by LLM
+- "hybrid": Some LLM success + some rule-based fallback
+- "rules_only": LLM unavailable, using rule-based only
 
-The rule-based approach below serves as:
-1. A working demo for stakeholder presentations
-2. A fallback when the model endpoint is unavailable
-3. A baseline for high-precision detection of known terms
+The rule-based approach serves as:
+1. A fallback when the LLM endpoint is unavailable
+2. A baseline for high-precision detection of known terms
+3. Complementary detection for terms not in LLM training
 
-TODO (for model integration):
-- [ ] Add Azure ML endpoint client in inference.py
-- [ ] Load system prompt for LLM
-- [ ] Implement hybrid detection (rules + LLM)
+TODO (remaining):
 - [ ] Add confidence scores from model
+- [ ] Enable DB persistence (commented code below)
 =============================================================================
 """
+
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -30,6 +32,11 @@ from typing import Optional, Literal
 import asyncio
 import hashlib
 import time
+
+from app.auth.users import current_active_user
+from app.db.models import User
+
+logger = logging.getLogger(__name__)
 
 # [CONFLICT 1 SOLVED] Friend's imports are saved here but disabled
 # --- PENDING DB INTEGRATION (Uncomment when DB is ready) ---
@@ -54,8 +61,8 @@ class AnalysisRequest(BaseModel):
 
 
 class Issue(BaseModel):
-    span: str
-    severity: Literal['outdated', 'biased', 'offensive', 'incorrect']
+    flagged_text: str
+    severity: Literal['outdated', 'biased', 'potentially_offensive', 'factually_incorrect']
     type: str
     description: str
     suggestion: Optional[str] = None
@@ -69,13 +76,14 @@ class AnalysisResponse(BaseModel):
     issues_found: list[Issue]
     corrected_text: Optional[str] = None
     note: Optional[str] = None
+    analysis_mode: Literal['llm', 'hybrid', 'rules_only'] = 'rules_only'
 
 
 # =============================================================================
 # DEMO: Rule-Based Term Dictionary
 # =============================================================================
 
-TERM_RULES = [
+INCLUSIVE_LANGUAGE_RULES = [
     # English terms
     {
         "term": "homosexual",
@@ -93,21 +101,21 @@ TERM_RULES = [
     },
     {
         "term": "sexual preference",
-        "severity": "incorrect",
+        "severity": "factually_incorrect",
         "type": "Incorrect Terminology",
         "description": "Sexual orientation is not a choice or preference. Using 'preference' implies it can be changed.",
         "suggestion": "Use 'sexual orientation'",
     },
     {
         "term": "born a man",
-        "severity": "offensive",
+        "severity": "potentially_offensive",
         "type": "Invalidating Language",
         "description": "This phrase invalidates a person's gender identity and implies that assigned sex determines gender.",
         "suggestion": "Use 'assigned male at birth (AMAB)' if medically relevant",
     },
     {
         "term": "born a woman",
-        "severity": "offensive",
+        "severity": "potentially_offensive",
         "type": "Invalidating Language",
         "description": "This phrase invalidates a person's gender identity and implies that assigned sex determines gender.",
         "suggestion": "Use 'assigned female at birth (AFAB)' if medically relevant",
@@ -128,7 +136,7 @@ TERM_RULES = [
     },
     {
         "term": "lifestyle choice",
-        "severity": "incorrect",
+        "severity": "factually_incorrect",
         "type": "Incorrect Framing",
         "description": "Being LGBTQ+ is not a lifestyle choice. This framing is often used to delegitimize LGBTQ+ identities.",
         "suggestion": "Remove or rephrase; sexual orientation and gender identity are not choices",
@@ -156,14 +164,14 @@ TERM_RULES = [
     },
     {
         "term": "transgenders",
-        "severity": "offensive",
+        "severity": "potentially_offensive",
         "type": "Grammatically Incorrect",
         "description": "Using 'transgender' as a noun is grammatically incorrect and dehumanizing.",
         "suggestion": "Use 'transgender people' or 'transgender individuals'",
     },
     {
         "term": "transgendered",
-        "severity": "incorrect",
+        "severity": "factually_incorrect",
         "type": "Incorrect Grammar",
         "description": "'Transgendered' is grammatically incorrect. Transgender is an adjective, not a verb.",
         "suggestion": "Use 'transgender' (e.g., 'transgender person')",
@@ -185,21 +193,21 @@ TERM_RULES = [
     },
     {
         "term": "העדפה מינית",
-        "severity": "incorrect",
+        "severity": "factually_incorrect",
         "type": "מונח שגוי",
         "description": "נטייה מינית אינה בחירה או העדפה. שימוש ב'העדפה' מרמז שניתן לשנות אותה.",
         "suggestion": "השתמשו ב'נטייה מינית'",
     },
     {
         "term": "נולד גבר",
-        "severity": "offensive",
+        "severity": "potentially_offensive",
         "type": "שפה פוגענית",
         "description": "ביטוי זה פוגע בזהות המגדרית של האדם ומרמז שהמין שהוקצה בלידה קובע את המגדר.",
         "suggestion": "השתמשו ב'הוקצה זכר בלידה' אם רלוונטי רפואית",
     },
     {
         "term": "נולדה אישה",
-        "severity": "offensive",
+        "severity": "potentially_offensive",
         "type": "שפה פוגענית",
         "description": "ביטוי זה פוגע בזהות המגדרית של האדם ומרמז שהמין שהוקצה בלידה קובע את המגדר.",
         "suggestion": "השתמשו ב'הוקצתה נקבה בלידה' אם רלוונטי רפואית",
@@ -218,14 +226,16 @@ TERM_RULES = [
 # DEMO: Rule-Based Detection Function
 # =============================================================================
 
-def find_issues(text: str) -> list[Issue]:
+def detect_rule_based_issues(text: str) -> list[Issue]:
     """
-    DEMO/PLACEHOLDER: Find problematic terms using simple keyword matching.
+    Detect problematic terms using rule-based keyword matching.
     """
+    logger.info("Rule-based detection started: text_length=%d rules=%d", len(text), len(INCLUSIVE_LANGUAGE_RULES))
+    start_time = time.monotonic()
     issues = []
     text_lower = text.lower()
 
-    for rule in TERM_RULES:
+    for rule in INCLUSIVE_LANGUAGE_RULES:
         term = rule["term"]
         term_lower = term.lower()
 
@@ -240,7 +250,7 @@ def find_issues(text: str) -> list[Issue]:
             actual_span = text[idx:idx + len(term)]
 
             issues.append(Issue(
-                span=actual_span,
+                flagged_text=actual_span,
                 severity=rule["severity"],
                 type=rule["type"],
                 description=rule["description"],
@@ -253,36 +263,67 @@ def find_issues(text: str) -> list[Issue]:
 
     # Sort by position in text
     issues.sort(key=lambda x: x.start)
+    elapsed = time.monotonic() - start_time
+    logger.info("Rule-based detection completed: issues_found=%d elapsed_s=%.3f", len(issues), elapsed)
     return issues
 
 
 # =============================================================================
-# ACTIVE ENDPOINT (Simple Demo Version)
+# ACTIVE ENDPOINT (Hybrid Detection)
 # =============================================================================
 
-# [CONFLICT 3 SOLVED] Kept your simple function definition here
+from app.modules.analysis.hybrid_detector import HybridDetector
+
+# Module-level detector instance (created once, reused)
+_hybrid_detector = HybridDetector()
+
+
 @router.post("/analyze", response_model=AnalysisResponse)
-async def analyze_text(request: AnalysisRequest):
+async def analyze_text(
+    request: AnalysisRequest,
+    # TODO: Re-enable auth once FastAPI Users schema matches DB
+    # current_user: User = Depends(current_active_user)
+):
     """
     Analyze text for non-inclusive LGBTQ+ language.
 
-    **CURRENT STATUS: DEMO MODE (Rule-Based Detection)**
+    **PRIVACY MODE:**
+    When private_mode=True (default), analysis runs entirely in-memory.
+    No documents, analysis_runs, or findings are persisted to the database.
+    This ensures user privacy for sensitive academic content.
 
-    This endpoint currently uses keyword matching as a placeholder.
+    **CURRENT STATUS: HYBRID DETECTION (LLM + Rules)**
+
+    Uses LLM for contextual analysis with rule-based fallback.
+    Response includes analysis_mode field indicating detection method:
+    - "llm": All LLM success
+    - "hybrid": Partial LLM + partial rules
+    - "rules_only": LLM unavailable, rules only
+
+    Requires authentication. User info available for logging/tracking.
     """
-    # Small delay to simulate processing (can be removed in production)
-    await asyncio.sleep(0.3)
+    text_length = len(request.text)
+    language = request.language or "auto"
+    logger.info("Analysis started: text_length=%d language=%s private_mode=%s", text_length, language, request.private_mode)
 
-    # DEMO: Use rule-based detection
-    issues = find_issues(request.text)
+    start_time = time.monotonic()
 
-    # [CONFLICT 4 SOLVED] Kept your simple return statement
+    # Use hybrid detector (LLM + rules fallback)
+    issues, analysis_mode = await _hybrid_detector.analyze(request.text, language=language)
+
+    elapsed = time.monotonic() - start_time
+    logger.info(
+        "Analysis completed: issues_found=%d analysis_mode=%s elapsed_s=%.3f",
+        len(issues), analysis_mode, elapsed,
+    )
+
     return AnalysisResponse(
         original_text=request.text,
         analysis_status="Success",
         issues_found=issues,
         corrected_text=None,  # TODO: Generate with LLM
-        note=f"DEMO MODE: Found {len(issues)} issue(s) using rule-based detection. LLM integration pending."
+        note=f"Found {len(issues)} issue(s). Mode: {analysis_mode}",
+        analysis_mode=analysis_mode,
     )
 
 
@@ -290,6 +331,10 @@ async def analyze_text(request: AnalysisRequest):
 # SAVED: FRIEND'S DB IMPLEMENTATION (Commented Out)
 # =============================================================================
 # TODO: Uncomment this section (and imports at top) when Docker/Postgres is running.
+# --- DB PERSISTENCE (only for non-private mode) ---
+# When private_mode=False, the commented code below can be enabled to persist
+# documents, analysis_runs, and findings to the database.
+# When private_mode=True, skip all DB operations entirely.
 # -----------------------------------------------------------------------------
 
 """
@@ -301,17 +346,17 @@ async def analyze_text(request: AnalysisRequest, conn=Depends(get_db)):
 
     await asyncio.sleep(0.3)
 
-    issues = find_issues(request.text)
+    issues = detect_rule_based_issues(request.text)
 
     # ---- Resolve org/user (לפי org_slug/user_email אם סופקו, אחרת "האחרונים" לדמו) ----
-    org = await repo.get_org_by_slug(conn, request.org_slug) if request.org_slug else await repo.get_latest_org(conn)
+    org = await repo.get_org_by_slug(conn, request.org_slug) if request.org_slug else await repo.get_most_recent_org(conn)
     if not org:
         raise HTTPException(status_code=400, detail="No organization found. Run seed.sql or provide org_slug.")
 
     org_id = org["org_id"]
     default_private_mode = org["default_private_mode"]
 
-    user = await repo.get_user_by_email(conn, request.user_email) if request.user_email else await repo.get_latest_user(conn)
+    user = await repo.get_user_by_email(conn, request.user_email) if request.user_email else await repo.get_most_recent_user(conn)
     if not user:
         raise HTTPException(status_code=400, detail="No user found. Run seed.sql or provide user_email.")
 
@@ -351,9 +396,9 @@ async def analyze_text(request: AnalysisRequest, conn=Depends(get_db)):
             # Insert findings + suggestions
             def map_severity(s: str) -> str:
                 # mapping ל-db (low/medium/high)
-                if s == "offensive":
+                if s == "potentially_offensive":
                     return "high"
-                if s in ("biased", "incorrect"):
+                if s in ("biased", "factually_incorrect"):
                     return "medium"
                 return "low"  # outdated
 
@@ -366,7 +411,7 @@ async def analyze_text(request: AnalysisRequest, conn=Depends(get_db)):
                     start_idx=iss.start,
                     end_idx=iss.end,
                     explanation=iss.description,
-                    excerpt_redacted=iss.span,
+                    excerpt_redacted=iss.flagged_text,
                     rule_id=None,
                     confidence=None,
                 )

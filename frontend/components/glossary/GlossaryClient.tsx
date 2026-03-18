@@ -127,9 +127,10 @@ export default function GlossaryClient({ terms, translations, isHebrew = false }
         >
           {/* Search */}
           <div className="relative max-w-md mx-auto">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" aria-hidden="true" />
             <input
               type="text"
+              aria-label={translations.searchPlaceholder}
               placeholder={translations.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -138,13 +139,14 @@ export default function GlossaryClient({ terms, translations, isHebrew = false }
           </div>
 
           {/* Category Filter */}
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="flex flex-wrap justify-center gap-2" role="group" aria-label="Filter by category">
             {categories.map((cat) => (
               <button
                 key={cat.key}
                 onClick={() => setSelectedCategory(cat.key)}
+                aria-pressed={selectedCategory === cat.key}
                 className={cn(
-                  'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                  'px-4 py-2 rounded-lg text-sm font-medium transition-all focus-visible:ring-2 focus-visible:ring-pride-purple focus-visible:ring-offset-2',
                   selectedCategory === cat.key
                     ? 'bg-pride-purple text-white shadow-md'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'

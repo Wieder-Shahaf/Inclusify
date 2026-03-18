@@ -9,18 +9,15 @@ interface Translations {
   title: string;
   description: string;
   dragDrop: string;
-  trySample: string;
   dropHere: string;
   chooseDifferent: string;
   analyzePaper: string;
   fileError: string;
   fileSizeError: string;
-  or: string;
 }
 
 interface PaperUploadProps {
   onFileSelect: (file: File) => void;
-  onUseSample: () => void;
   disabled?: boolean;
   translations?: Translations;
 }
@@ -29,19 +26,17 @@ const defaultTranslations: Translations = {
   title: 'Upload Your Paper',
   description: 'Drag and drop your document here, or click to browse',
   dragDrop: 'Drag and drop your document here, or click to browse',
-  trySample: 'Try with sample academic paper',
   dropHere: 'Drop your file here',
   chooseDifferent: 'Choose Different File',
   analyzePaper: 'Analyze Paper',
   fileError: 'Please upload a PDF, DOCX, PPTX, or TXT file',
   fileSizeError: 'File size must be less than 10MB',
-  or: 'or',
 };
 
 const acceptedExtensions = '.pdf,.docx,.pptx,.txt';
 
-export default function PaperUpload({ onFileSelect, onUseSample, disabled, translations }: PaperUploadProps) {
-  const t = { ...defaultTranslations, ...translations };
+export default function PaperUpload({ onFileSelect, disabled, translations }: PaperUploadProps) {
+  const labels = { ...defaultTranslations, ...translations };
 
   const [isDragging, setIsDragging] = useState(false);
   const [, setDragCounter] = useState(0);
@@ -55,19 +50,19 @@ export default function PaperUpload({ onFileSelect, onUseSample, disabled, trans
     const validExtensions = ['pdf', 'docx', 'pptx', 'txt'];
 
     if (!validExtensions.includes(extension || '')) {
-      setError(t.fileError);
+      setError(labels.fileError);
       return false;
     }
 
     // Check file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
-      setError(t.fileSizeError);
+      setError(labels.fileSizeError);
       return false;
     }
 
     setError(null);
     return true;
-  }, [t.fileError, t.fileSizeError]);
+  }, [labels.fileError, labels.fileSizeError]);
 
   const handleFileSelect = useCallback((file: File) => {
     if (validateFile(file)) {
@@ -220,10 +215,10 @@ export default function PaperUpload({ onFileSelect, onUseSample, disabled, trans
                   </motion.div>
 
                   <h3 className="text-xl sm:text-2xl font-semibold mb-2 text-slate-800 dark:text-white">
-                    {t.title}
+                    {labels.title}
                   </h3>
                   <p className="text-slate-500 dark:text-slate-400 mb-5 max-w-sm">
-                    {t.dragDrop}
+                    {labels.dragDrop}
                   </p>
 
                   {/* File Type Badges */}
@@ -260,7 +255,7 @@ export default function PaperUpload({ onFileSelect, onUseSample, disabled, trans
                             <Upload className="w-16 h-16 text-pride-purple mx-auto mb-4" />
                           </motion.div>
                           <p className="text-lg font-semibold text-pride-purple">
-                            {t.dropHere}
+                            {labels.dropHere}
                           </p>
                         </div>
                       </motion.div>
@@ -284,32 +279,6 @@ export default function PaperUpload({ onFileSelect, onUseSample, disabled, trans
               )}
             </AnimatePresence>
 
-            {/* Divider */}
-            <div className="flex items-center gap-4 my-4">
-              <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-              <span className="text-xs text-slate-400 dark:text-slate-500">{t.or}</span>
-              <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-            </div>
-
-            {/* Sample Text Button */}
-            <motion.button
-              onClick={onUseSample}
-              disabled={disabled}
-              className={cn(
-                'w-full py-3 px-4 rounded-xl border-2 border-dashed',
-                'border-slate-200 dark:border-slate-700',
-                'hover:border-pride-purple/50 hover:bg-pride-purple/5',
-                'transition-all duration-200',
-                'flex items-center justify-center gap-2',
-                'text-slate-600 dark:text-slate-400 text-sm',
-                disabled && 'opacity-50 cursor-not-allowed'
-              )}
-              whileHover={{ scale: disabled ? 1 : 1.01 }}
-              whileTap={{ scale: disabled ? 1 : 0.99 }}
-            >
-              <FileText className="w-4 h-4" />
-              <span className="font-medium">{t.trySample}</span>
-            </motion.button>
           </motion.div>
         ) : (
           /* Selected File Preview */
@@ -347,7 +316,7 @@ export default function PaperUpload({ onFileSelect, onUseSample, disabled, trans
                 onClick={handleClearFile}
                 className="flex-1 py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-medium"
               >
-                {t.chooseDifferent}
+                {labels.chooseDifferent}
               </button>
               <motion.button
                 onClick={handleConfirmUpload}
@@ -355,7 +324,7 @@ export default function PaperUpload({ onFileSelect, onUseSample, disabled, trans
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                {t.analyzePaper}
+                {labels.analyzePaper}
               </motion.button>
             </div>
           </motion.div>

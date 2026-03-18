@@ -211,6 +211,17 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Focus indicators for keyboard navigation - WCAG 2.1 AA compliance */
+  :focus-visible {
+    outline: 2px solid var(--color-pride-purple, #7b61ff);
+    outline-offset: 2px;
+  }
+
+  /* Remove default focus for mouse users - prevents outline on click */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
 }
 
 /* Animated gradient for hero text */

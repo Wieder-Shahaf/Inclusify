@@ -1,17 +1,23 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import AnnotationSidePanel from '@/components/AnnotationSidePanel';
 import SeverityBadge from '@/components/SeverityBadge';
 import PaperUpload from '@/components/PaperUpload';
 import ProcessingAnimation from '@/components/ProcessingAnimation';
 import AnalysisSummary from '@/components/AnalysisSummary';
 import IssueTooltip from '@/components/IssueTooltip';
+import HealthWarningBanner from '@/components/HealthWarningBanner';
 import { Annotation } from '@/components/AnnotatedText';
-import { getSampleText, analyzeDemoText } from '@/lib/utils/demoData';
-import { RotateCcw, FileText, ChevronLeft, ChevronRight, Scan, BarChart3, ShieldCheck } from 'lucide-react';
+import { analyzeText, uploadFile, healthCheck } from '@/lib/api/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useLiveAnnouncer } from '@/contexts/LiveAnnouncerContext';
+import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
+import { RotateCcw, FileText, ChevronLeft, ChevronRight, Scan, BarChart3, ShieldCheck, Lock } from 'lucide-react';
+import PrivateModeToggle from '@/components/PrivateModeToggle';
 
 type ViewState = 'upload' | 'processing' | 'results';
 
@@ -20,12 +26,12 @@ interface AnalysisData {
   annotations: Annotation[];
   results: Array<{
     phrase: string;
-    severity: 'outdated' | 'biased' | 'offensive' | 'incorrect';
+    severity: 'outdated' | 'biased' | 'potentially_offensive' | 'factually_incorrect';
     explanation: string;
     suggestion?: string;
     references?: Array<{ label: string; url: string }>;
   }>;
-  counts: Record<'outdated' | 'biased' | 'offensive' | 'incorrect', number>;
+  counts: Record<'outdated' | 'biased' | 'potentially_offensive' | 'factually_incorrect', number>;
   summary: {
     totalIssues: number;
     score: number;
@@ -45,39 +51,117 @@ export default function AnalyzePage() {
   const t = useTranslations('analyzer');
   const locale = useLocale();
   const isHebrew = locale === 'he';
+  const { user } = useAuth();
+  const { announce } = useLiveAnnouncer();
+  const issuesListRef = useRef<HTMLDivElement>(null);
 
   const [viewState, setViewState] = useState<ViewState>('upload');
   const [fileName, setFileName] = useState('');
   const [analysis, setAnalysis] = useState<AnalysisData>(emptyAnalysis);
   const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
+  const [backendHealthy, setBackendHealthy] = useState<boolean | null>(null);
+  const [analysisMode, setAnalysisMode] = useState<'llm' | 'hybrid' | 'rules_only' | null>(null);
+  const [showGuestPrompt, setShowGuestPrompt] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [processingStage, setProcessingStage] = useState<'uploading' | 'parsing' | 'analyzing' | 'generating' | 'complete'>('uploading');
+  const [privateMode, setPrivateMode] = useState(false); // Default OFF per user decision
 
-  const handleFileSelect = useCallback((file: File) => {
-    setFileName(file.name);
-    setViewState('processing');
+  // Health check on mount with 30-second polling
+  useEffect(() => {
+    const checkHealth = async () => {
+      const healthy = await healthCheck();
+      setBackendHealthy(healthy);
+    };
+    checkHealth();
+    const interval = setInterval(checkHealth, 30000);
+    return () => clearInterval(interval);
   }, []);
 
-  const handleUseSample = useCallback(() => {
-    setFileName(t('sampleFileName'));
-    setViewState('processing');
-  }, [t]);
+  // Error handler that maps backend errors to user-friendly messages
+  const handleApiError = useCallback((error: unknown) => {
+    let message = t('errors.generic');
 
-  const handleProcessingComplete = useCallback(() => {
-    const sampleText = getSampleText(locale);
-    const recommendations = {
-      outdated: t('recommendations.outdated'),
-      biased: t('recommendations.biased'),
-      offensive: t('recommendations.offensive'),
-      incorrect: t('recommendations.incorrect'),
-      excellent: t('recommendations.excellent'),
-    };
-    const result = analyzeDemoText(sampleText, locale, { recommendations });
-    setAnalysis({
-      text: sampleText,
-      ...result,
-    });
-    setViewState('results');
-  }, [locale, t]);
+    if (error instanceof Error) {
+      const errorText = error.message.toLowerCase();
+      if (errorText.includes('password-protected') || errorText.includes('password')) {
+        message = t('errors.passwordProtected');
+      } else if (errorText.includes('corrupted')) {
+        message = t('errors.corruptedFile');
+      } else if (errorText.includes('50 pages') || errorText.includes('page limit')) {
+        message = t('errors.tooManyPages');
+      } else if (errorText.includes('50mb') || errorText.includes('file size')) {
+        message = t('errors.fileTooLarge');
+      } else if (errorText.includes('upload')) {
+        message = t('errors.uploadFailed');
+      }
+    }
+
+    setErrorMessage(message);
+    setViewState('upload');
+    announce(message, 'assertive');
+  }, [t, announce]);
+
+  const handleFileSelect = useCallback(async (file: File) => {
+    setErrorMessage(null);  // Clear any previous error
+    setFileName(file.name);
+    setViewState('processing');
+    announce(t('a11y.uploadStarted'));
+
+    // Real API path
+    try {
+      setProcessingStage('uploading');
+
+      // Upload and extract text
+      const uploadResult = await uploadFile(file);
+
+      setProcessingStage('analyzing');
+
+      // Analyze the extracted text
+      const result = await analyzeText(uploadResult.text, {
+        language: locale as 'en' | 'he' | 'auto',
+        privateMode: privateMode,
+      });
+
+      setProcessingStage('complete');
+
+      // Calculate score using severity weights (offensive > incorrect > biased > outdated)
+      const weights = { outdated: 1, biased: 2, incorrect: 3, offensive: 4 };
+      const wordCount = uploadResult.text.split(/\s+/).filter(Boolean).length;
+      const totalWeightedIssues =
+        result.counts.outdated * weights.outdated +
+        result.counts.biased * weights.biased +
+        result.counts.incorrect * weights.incorrect +
+        result.counts.offensive * weights.offensive;
+      const score = Math.max(0, Math.round(100 - (totalWeightedIssues / Math.max(wordCount, 1)) * 200));
+
+      // Generate recommendations based on issue counts
+      const recommendations: string[] = [];
+      if (result.counts.offensive > 0) recommendations.push(t('recommendations.offensive'));
+      if (result.counts.incorrect > 0) recommendations.push(t('recommendations.incorrect'));
+      if (result.counts.biased > 0) recommendations.push(t('recommendations.biased'));
+      if (result.counts.outdated > 0) recommendations.push(t('recommendations.outdated'));
+      if (recommendations.length === 0) recommendations.push(t('recommendations.excellent'));
+
+      setAnalysis({
+        text: uploadResult.text,
+        annotations: result.annotations,
+        results: result.results,
+        counts: result.counts,
+        summary: {
+          totalIssues: Object.values(result.counts).reduce((a, b) => a + b, 0),
+          score,
+          recommendations,
+        },
+      });
+      setAnalysisMode(result.analysisMode || null);
+      setViewState('results');
+      announce(t('a11y.analysisComplete', { count: Object.values(result.counts).reduce((a, b) => a + b, 0) }));
+    } catch (error) {
+      console.error('Analysis failed:', error);
+      handleApiError(error);
+    }
+  }, [locale, t, handleApiError, privateMode, announce]);
 
   const handleReset = useCallback(() => {
     setViewState('upload');
@@ -85,6 +169,11 @@ export default function AnalyzePage() {
     setAnalysis(emptyAnalysis);
     setSelectedAnnotation(null);
     setSidePanelOpen(false);
+    setAnalysisMode(null);
+    setErrorMessage(null);
+    setProcessingStage('uploading');
+    setShowGuestPrompt(true);
+    setPrivateMode(false);
   }, []);
 
   const handleIssueClick = useCallback((result: AnalysisData['results'][0]) => {
@@ -101,6 +190,18 @@ export default function AnalyzePage() {
     setSelectedAnnotation(annotation);
     setSidePanelOpen(true);
   }, []);
+
+  // Keyboard navigation for issues list
+  useKeyboardNavigation({
+    containerRef: issuesListRef,
+    itemSelector: 'button[role="listitem"]',
+    enabled: viewState === 'results' && analysis.results.length > 0,
+    onSelect: (_, index) => {
+      if (analysis.results[index]) {
+        handleIssueClick(analysis.results[index]);
+      }
+    },
+  });
 
   // Render highlighted text with tooltips
   const renderHighlightedText = () => {
@@ -163,13 +264,11 @@ export default function AnalyzePage() {
     title: t('uploadTitle'),
     description: t('uploadDesc'),
     dragDrop: t('dragDrop'),
-    trySample: t('trySample'),
     dropHere: t('dropHere'),
     chooseDifferent: t('chooseDifferent'),
     analyzePaper: t('analyzePaper'),
     fileError: t('fileError'),
     fileSizeError: t('fileSizeError'),
-    or: t('or'),
   };
 
   const processingTranslations = {
@@ -212,6 +311,9 @@ export default function AnalyzePage() {
 
   return (
     <>
+      {backendHealthy === false && (
+        <HealthWarningBanner message={t('serviceUnavailable')} />
+      )}
       <div className="flex flex-col flex-1">
         <AnimatePresence mode="wait">
           {/* Upload State */}
@@ -244,10 +346,17 @@ export default function AnalyzePage() {
                 </motion.p>
               </div>
 
+              {/* Private Mode Toggle */}
+              <div className="mb-4 flex justify-center">
+                <PrivateModeToggle
+                  checked={privateMode}
+                  onCheckedChange={setPrivateMode}
+                />
+              </div>
+
               {/* Upload Component */}
               <PaperUpload
                 onFileSelect={handleFileSelect}
-                onUseSample={handleUseSample}
                 translations={uploadTranslations}
               />
 
@@ -274,6 +383,18 @@ export default function AnalyzePage() {
                   );
                 })}
               </motion.div>
+
+              {/* Error Message */}
+              {errorMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  dir={isHebrew ? 'rtl' : 'ltr'}
+                  className="mt-4 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
+                >
+                  <p className="text-sm text-red-700 dark:text-red-400">{errorMessage}</p>
+                </motion.div>
+              )}
             </motion.div>
           )}
 
@@ -289,7 +410,7 @@ export default function AnalyzePage() {
             >
               <ProcessingAnimation
                 fileName={fileName}
-                onComplete={handleProcessingComplete}
+                stage={processingStage}
                 translations={processingTranslations}
               />
             </motion.div>
@@ -319,6 +440,20 @@ export default function AnalyzePage() {
                     <h2 className="font-semibold text-lg text-slate-800 dark:text-white flex items-center gap-2">
                       <FileText className="w-5 h-5 text-pride-purple" />
                       {fileName}
+                      {privateMode && (
+                        <span className="ml-2 flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-pride-purple/10 text-pride-purple">
+                          <Lock className="w-3 h-3" />
+                          {t('privateMode.badge')}
+                        </span>
+                      )}
+                      {analysisMode === 'rules_only' && (
+                        <span
+                          className="ml-2 px-2 py-0.5 text-xs rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
+                          title={t('basicAnalysisModeDesc')}
+                        >
+                          {t('basicAnalysisMode')}
+                        </span>
+                      )}
                     </h2>
                     <p className="text-sm text-slate-500">
                       {totalIssues} {totalIssues === 1 ? t('issueFound') : t('issuesFoundPlural')}
@@ -376,7 +511,12 @@ export default function AnalyzePage() {
                         </span>
                       </h3>
                     </div>
-                    <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                    <div
+                      ref={issuesListRef}
+                      className="divide-y divide-slate-100 dark:divide-slate-800"
+                      role="list"
+                      aria-label={t('a11y.issuesList')}
+                    >
                       {analysis.results.length === 0 ? (
                         <div className="p-6 text-center">
                           <div className="text-3xl mb-2">🎉</div>
@@ -388,7 +528,9 @@ export default function AnalyzePage() {
                           <motion.button
                             key={i}
                             onClick={() => handleIssueClick(result)}
-                            className="w-full px-4 py-3 text-start hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                            className="w-full px-4 py-3 text-start hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pride-purple focus-visible:ring-inset"
+                            role="listitem"
+                            tabIndex={0}
                             initial={{ opacity: 0, x: isHebrew ? -20 : 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: i * 0.05 }}
@@ -409,6 +551,34 @@ export default function AnalyzePage() {
                       )}
                     </div>
                   </div>
+
+                  {/* Guest Prompt - show after analysis for non-authenticated users */}
+                  {!user && showGuestPrompt && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="p-4 bg-gradient-to-r from-pride-purple/10 to-pride-blue/10 rounded-lg border border-pride-purple/20"
+                    >
+                      <p className="text-sm text-slate-700 dark:text-slate-300 mb-3">
+                        {t('guestPrompt.title')}
+                      </p>
+                      <div className="flex gap-3">
+                        <Link
+                          href={`/${locale}/register`}
+                          className="px-4 py-2 text-sm font-medium rounded-lg bg-pride-purple text-white hover:bg-pride-purple/90 transition-colors"
+                        >
+                          {t('guestPrompt.cta')}
+                        </Link>
+                        <button
+                          onClick={() => setShowGuestPrompt(false)}
+                          className="text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+                        >
+                          {t('guestPrompt.dismiss')}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
               </div>
             </motion.div>

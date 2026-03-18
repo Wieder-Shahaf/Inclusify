@@ -1,0 +1,37 @@
+# Dependencies (installed fresh in container)
+node_modules/
+frontend/node_modules/
+backend/.venv/
+.venv/
+
+# Build outputs
+frontend/.next/
+frontend/out/
+dist/
+build/
+
+# Dev/IDE files
+.git/
+.idea/
+.vscode/
+*.log
+
+# Environment files
+.env
+.env.local
+.env.development
+!.env.example
+!.env.production
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test/coverage
+coverage/
+.pytest_cache/
+__pycache__/
+
+# Documentation
+*.md
+!README.md

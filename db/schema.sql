@@ -14,10 +14,10 @@ CREATE TABLE organizations (
   updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- 2) Users
+-- 2) Users (org_id nullable — set after registration or via admin)
 CREATE TABLE users (
   user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  org_id UUID NOT NULL REFERENCES organizations(org_id) ON DELETE CASCADE,
+  org_id UUID REFERENCES organizations(org_id) ON DELETE CASCADE,
 
   email TEXT UNIQUE NOT NULL,
   password_hash TEXT,
@@ -25,6 +25,11 @@ CREATE TABLE users (
 
   role TEXT NOT NULL DEFAULT 'user'
     CHECK (role IN ('user','org_admin','site_admin')),
+
+  -- FastAPI Users required fields
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  is_superuser BOOLEAN NOT NULL DEFAULT FALSE,
+  is_verified BOOLEAN NOT NULL DEFAULT FALSE,
 
   locale TEXT DEFAULT 'he',
   consent_store_text BOOLEAN NOT NULL DEFAULT FALSE,
@@ -35,6 +40,20 @@ CREATE TABLE users (
 );
 
 CREATE INDEX idx_users_org ON users(org_id);
+
+-- 2b) OAuth Accounts (FastAPI Users)
+CREATE TABLE oauth_accounts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+  oauth_name TEXT NOT NULL,
+  access_token TEXT NOT NULL DEFAULT '',
+  expires_at INT,
+  refresh_token TEXT,
+  account_id TEXT NOT NULL,
+  account_email TEXT NOT NULL
+);
+
+CREATE INDEX idx_oauth_user ON oauth_accounts(user_id);
 
 -- 3) Documents
 CREATE TABLE documents (

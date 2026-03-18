@@ -28,13 +28,13 @@ const termMap: Array<{
   },
   {
     term: 'sexual preference',
-    severity: 'incorrect',
+    severity: 'factually_incorrect',
     explanation: 'Orientation is not a preference; "preference" is misleading.',
     suggestion: 'Use "sexual orientation"',
   },
   {
     term: 'born as a man',
-    severity: 'offensive',
+    severity: 'potentially_offensive',
     explanation: 'Invalidates gender identity; phrasing can be disrespectful.',
     suggestion: 'Use "assigned male at birth (AMAB)"',
   },

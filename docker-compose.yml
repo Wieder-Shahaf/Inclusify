@@ -1,0 +1,96 @@
+# Inclusify Docker Compose
+# Development and production service orchestration
+#
+# Usage:
+#   Development: docker compose --profile dev up
+#   Production:  docker compose --profile prod up
+#   Build all:   docker compose build
+
+services:
+  # ============================================
+  # PostgreSQL Database (dev only)
+  # ============================================
+  postgres:
+    image: postgres:16-alpine
+    profiles:
+      - dev
+    environment:
+      POSTGRES_DB: ${PGDATABASE:-inclusify}
+      POSTGRES_USER: ${PGUSER:-postgres}
+      POSTGRES_PASSWORD: ${PGPASSWORD:-devpassword}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PGUSER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # FastAPI Backend
+  # ============================================
+  backend:
+    profiles:
+      - dev
+      - prod
+    build:
+      context: .
+      dockerfile: infra/docker/backend.Dockerfile
+      target: ${BUILD_TARGET:-development}
+      args:
+        BUILD_TIME: ${BUILD_TIME:-}
+        GIT_COMMIT: ${GIT_COMMIT:-}
+    environment:
+      - PGHOST=${PGHOST:-postgres}
+      - PGPORT=${PGPORT:-5432}
+      - PGDATABASE=${PGDATABASE:-inclusify}
+      - PGUSER=${PGUSER:-postgres}
+      - PGPASSWORD=${PGPASSWORD:-devpassword}
+      - PGSSL=${PGSSL:-}
+      # LLM inference service (transformers-based, not vLLM)
+      - VLLM_URL=${VLLM_URL:-http://52.224.246.238:8001}
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount source for hot-reload in dev
+      - ./backend:/app:cached
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # Next.js Frontend
+  # ============================================
+  frontend:
+    profiles:
+      - dev
+      - prod
+    build:
+      context: .
+      dockerfile: infra/docker/frontend.Dockerfile
+      target: ${BUILD_TARGET:-development}
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount source for hot-reload in dev
+      - ./frontend:/app:cached
+      # Preserve container node_modules
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

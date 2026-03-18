@@ -21,8 +21,20 @@ build/
 *.ckpt
 *.pt
 *.bin
-*.safetensors
 ml/data/raw/
 ml/data/private/
 
 .claude
+CLAUDE.md
+
+Azure_env_key.txt
+admin-request-email-SHORT.txt
+# Training checkpoints (too large for git)
+ml/adapters/*/checkpoint-*/
+ml/adapters/*/runs/
+ml/logs/
+
+# Training cache
+unsloth_compiled_cache/
+
+CLAUDE.md
