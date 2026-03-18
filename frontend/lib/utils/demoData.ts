@@ -391,8 +391,8 @@ export function analyzeDemoText(
     recommendations: {
       outdated: string;
       biased: string;
-      offensive: string;
-      incorrect: string;
+      potentially_offensive: string;
+      factually_incorrect: string;
       excellent: string;
     };
   }
@@ -412,8 +412,8 @@ export function analyzeDemoText(
   const counts: Record<Severity, number> = {
     outdated: 0,
     biased: 0,
-    offensive: 0,
-    incorrect: 0,
+    potentially_offensive: 0,
+    factually_incorrect: 0,
   };
 
   const termMap = getTermMap(locale);
@@ -457,7 +457,7 @@ export function analyzeDemoText(
   }
 
   // Calculate inclusivity score (100 = perfect, lower = more issues)
-  const totalIssues = counts.outdated + counts.biased + counts.offensive + counts.incorrect;
+  const totalIssues = counts.outdated + counts.biased + counts.potentially_offensive + counts.factually_incorrect;
   const wordCount = text.split(/\s+/).length;
   const issueRatio = totalIssues / wordCount;
   const score = Math.max(0, Math.round(100 - (issueRatio * 500)));
@@ -469,8 +469,8 @@ export function analyzeDemoText(
   const defaultTranslations = {
     outdated: 'Update terminology to current inclusive standards',
     biased: 'Revise framing to avoid implicit bias',
-    offensive: 'Replace potentially offensive language with respectful alternatives',
-    incorrect: 'Correct factually inaccurate terminology',
+    potentially_offensive: 'Replace potentially offensive language with respectful alternatives',
+    factually_incorrect: 'Correct factually inaccurate terminology',
     excellent: 'Excellent! Your text demonstrates inclusive language practices',
   };
 
@@ -482,11 +482,11 @@ export function analyzeDemoText(
   if (counts.biased > 0) {
     recommendations.push(recTexts.biased);
   }
-  if (counts.offensive > 0) {
-    recommendations.push(recTexts.offensive);
+  if (counts.potentially_offensive > 0) {
+    recommendations.push(recTexts.potentially_offensive);
   }
-  if (counts.incorrect > 0) {
-    recommendations.push(recTexts.incorrect);
+  if (counts.factually_incorrect > 0) {
+    recommendations.push(recTexts.factually_incorrect);
   }
   if (recommendations.length === 0) {
     recommendations.push(recTexts.excellent);

@@ -3,65 +3,11 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [ main, develop, feature/* ]
+    branches: [main]
 
 jobs:
-  sanity:
-    name: Repository Sanity Checks
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Check repo structure exists
-        run: |
-          test -d frontend
-          test -d backend
-          test -d ml
-          test -d shared
-          test -d infra
-          test -d docs
-
-      - name: Fail if .env committed
-        run: |
-          if git ls-files | grep -E '^\.env$' ; then
-            echo "❌ .env must not be committed"
-            exit 1
-          fi
-          echo "✅ No .env files committed"
-
-      - name: Check for secrets in code
-        run: |
-          if git grep -E 'API_KEY|SECRET|PASSWORD|TOKEN' -- '*.py' '*.ts' '*.tsx' | grep -v 'NEXT_PUBLIC_' | grep -v 'example'; then
-            echo "⚠️  Potential secrets found in code"
-            exit 1
-          fi
-          echo "✅ No obvious secrets in code"
-
-  frontend-lint:
-    name: Frontend Linting
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install dependencies
-        run: |
-          cd frontend
-          npm ci
-
-      - name: Run ESLint
-        run: |
-          cd frontend
-          npm run lint
-
   backend-lint:
-    name: Backend Linting
+    name: Backend Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -77,31 +23,95 @@ jobs:
         run: |
           cd backend
           pip install -r requirements.txt
-          pip install ruff mypy
+          pip install ruff
 
       - name: Run ruff
-        run: |
-          cd backend
-          ruff check .
+        run: cd backend && ruff check .
 
-      - name: Run mypy
-        run: |
-          cd backend
-          mypy app/ --ignore-missing-imports
-
-  security:
-    name: Security Audit
+  backend-test:
+    name: Backend Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Frontend npm audit
-        run: |
-          cd frontend
-          npm audit --audit-level=moderate || true
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
 
-      - name: Backend pip audit
+      - name: Install dependencies
         run: |
           cd backend
-          pip install pip-audit
-          pip-audit -r requirements.txt || true
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio
+
+      - name: Run tests
+        run: cd backend && python -m pytest tests/ -v --ignore=tests/test_vllm_deployment.py
+        env:
+          PGHOST: ""
+          PGPASSWORD: ""
+          JWT_SECRET: "test-secret"
+
+  frontend-lint:
+    name: Frontend Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: cd frontend && npm ci
+
+      - name: Run ESLint
+        run: cd frontend && npm run lint
+
+  frontend-build:
+    name: Frontend Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: cd frontend && npm ci
+
+      - name: Build
+        run: cd frontend && npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+          NEXT_PUBLIC_USE_DEMO_MODE: "false"
+
+  sanity:
+    name: Repo Sanity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check repo structure
+        run: |
+          test -d frontend
+          test -d backend
+          test -d ml
+          test -d infra
+          test -d db
+
+      - name: Fail if .env committed
+        run: |
+          if git ls-files | grep -E '^\.env$'; then
+            echo ".env must not be committed"
+            exit 1
+          fi

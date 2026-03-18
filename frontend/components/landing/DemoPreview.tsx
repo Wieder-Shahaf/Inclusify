@@ -24,8 +24,8 @@ interface DemoPreviewProps {
 const severityColors = {
   outdated: 'bg-sky-200/80 dark:bg-sky-900/60 border-b-2 border-sky-500',
   biased: 'bg-amber-200/80 dark:bg-amber-900/60 border-b-2 border-amber-500',
-  offensive: 'bg-rose-200/80 dark:bg-rose-900/60 border-b-2 border-rose-500',
-  incorrect: 'bg-red-200/80 dark:bg-red-900/60 border-b-2 border-red-500',
+  potentially_offensive: 'bg-rose-200/80 dark:bg-rose-900/60 border-b-2 border-rose-500',
+  factually_incorrect: 'bg-red-200/80 dark:bg-red-900/60 border-b-2 border-red-500',
 };
 
 export default function DemoPreview({ isHebrew, translations }: DemoPreviewProps) {

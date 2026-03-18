@@ -43,7 +43,7 @@ const emptyAnalysis: AnalysisData = {
   text: '',
   annotations: [],
   results: [],
-  counts: { outdated: 0, biased: 0, offensive: 0, incorrect: 0 },
+  counts: { outdated: 0, biased: 0, potentially_offensive: 0, factually_incorrect: 0 },
   summary: { totalIssues: 0, score: 100, recommendations: [] },
 };
 
@@ -126,19 +126,19 @@ export default function AnalyzePage() {
       setProcessingStage('complete');
 
       // Calculate score using severity weights (offensive > incorrect > biased > outdated)
-      const weights = { outdated: 1, biased: 2, incorrect: 3, offensive: 4 };
+      const weights = { outdated: 1, biased: 2, factually_incorrect: 3, potentially_offensive: 4 };
       const wordCount = uploadResult.text.split(/\s+/).filter(Boolean).length;
       const totalWeightedIssues =
         result.counts.outdated * weights.outdated +
         result.counts.biased * weights.biased +
-        result.counts.incorrect * weights.incorrect +
-        result.counts.offensive * weights.offensive;
+        result.counts.factually_incorrect * weights.factually_incorrect +
+        result.counts.potentially_offensive * weights.potentially_offensive;
       const score = Math.max(0, Math.round(100 - (totalWeightedIssues / Math.max(wordCount, 1)) * 200));
 
       // Generate recommendations based on issue counts
       const recommendations: string[] = [];
-      if (result.counts.offensive > 0) recommendations.push(t('recommendations.offensive'));
-      if (result.counts.incorrect > 0) recommendations.push(t('recommendations.incorrect'));
+      if (result.counts.potentially_offensive > 0) recommendations.push(t('recommendations.potentially_offensive'));
+      if (result.counts.factually_incorrect > 0) recommendations.push(t('recommendations.factually_incorrect'));
       if (result.counts.biased > 0) recommendations.push(t('recommendations.biased'));
       if (result.counts.outdated > 0) recommendations.push(t('recommendations.outdated'));
       if (recommendations.length === 0) recommendations.push(t('recommendations.excellent'));
@@ -256,7 +256,7 @@ export default function AnalyzePage() {
     );
   };
 
-  const totalIssues = analysis.counts.outdated + analysis.counts.biased + analysis.counts.offensive + analysis.counts.incorrect;
+  const totalIssues = analysis.counts.outdated + analysis.counts.biased + analysis.counts.potentially_offensive + analysis.counts.factually_incorrect;
   const wordCount = analysis.text.split(/\s+/).filter(Boolean).length;
 
   // Prepare translations for child components
@@ -296,8 +296,8 @@ export default function AnalyzePage() {
     requiresAttention: t('summaryCard.requiresAttention'),
     outdated: t('summaryCard.outdated'),
     biased: t('summaryCard.biased'),
-    offensive: t('summaryCard.offensive'),
-    incorrect: t('summaryCard.incorrect'),
+    potentially_offensive: t('summaryCard.potentially_offensive'),
+    factually_incorrect: t('summaryCard.factually_incorrect'),
     exportReport: t('exportReport'),
   };
 

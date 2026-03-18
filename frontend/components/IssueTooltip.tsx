@@ -30,7 +30,7 @@ const severityConfig = {
     activeHighlight: 'bg-amber-300 dark:bg-amber-800 border-b-2 border-amber-600 ring-2 ring-amber-400/50',
     dotColor: 'bg-amber-500',
   },
-  offensive: {
+  potentially_offensive: {
     label: 'Potentially Offensive',
     bgColor: 'bg-rose-100 dark:bg-rose-900/40',
     textColor: 'text-rose-700 dark:text-rose-300',
@@ -38,7 +38,7 @@ const severityConfig = {
     activeHighlight: 'bg-rose-300 dark:bg-rose-800 border-b-2 border-rose-600 ring-2 ring-rose-400/50',
     dotColor: 'bg-rose-500',
   },
-  incorrect: {
+  factually_incorrect: {
     label: 'Factually Incorrect',
     bgColor: 'bg-red-100 dark:bg-red-900/40',
     textColor: 'text-red-700 dark:text-red-300',

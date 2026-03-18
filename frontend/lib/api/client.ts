@@ -52,7 +52,7 @@ interface BackendIssue {
   severity: string;
   description: string;
   suggestion?: string;
-  span?: string;
+  flagged_text?: string;
   start?: number;
   end?: number;
 }
