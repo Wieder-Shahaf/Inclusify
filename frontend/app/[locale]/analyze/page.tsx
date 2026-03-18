@@ -26,12 +26,12 @@ interface AnalysisData {
   annotations: Annotation[];
   results: Array<{
     phrase: string;
-    severity: 'outdated' | 'biased' | 'offensive' | 'incorrect';
+    severity: 'outdated' | 'biased' | 'potentially_offensive' | 'factually_incorrect';
     explanation: string;
     suggestion?: string;
     references?: Array<{ label: string; url: string }>;
   }>;
-  counts: Record<'outdated' | 'biased' | 'offensive' | 'incorrect', number>;
+  counts: Record<'outdated' | 'biased' | 'potentially_offensive' | 'factually_incorrect', number>;
   summary: {
     totalIssues: number;
     score: number;

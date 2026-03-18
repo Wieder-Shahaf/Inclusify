@@ -252,8 +252,8 @@
   "severity": {
     "outdated": "Outdated",
     "biased": "Biased",
-    "offensive": "Potentially offensive",
-    "incorrect": "Factually incorrect"
+    "potentially_offensive": "Potentially Offensive",
+    "factually_incorrect": "Factually Incorrect"
   },
   "auth": {
     "login": "Login",

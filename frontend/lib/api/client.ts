@@ -81,12 +81,12 @@ function mapSeverity(backendSeverity: string): Severity {
   const severityMap: Record<string, Severity> = {
     'low': 'outdated',
     'medium': 'biased',
-    'high': 'offensive',
-    'critical': 'incorrect',
+    'high': 'potentially_offensive',
+    'critical': 'factually_incorrect',
     'outdated': 'outdated',
     'biased': 'biased',
-    'offensive': 'offensive',
-    'incorrect': 'incorrect',
+    'potentially_offensive': 'potentially_offensive',
+    'factually_incorrect': 'factually_incorrect',
     'gender bias': 'biased',
     'medicalization': 'outdated',
   };
@@ -118,13 +118,13 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
   const counts: Record<Severity, number> = {
     outdated: 0,
     biased: 0,
-    offensive: 0,
-    incorrect: 0,
+    potentially_offensive: 0,
+    factually_incorrect: 0,
   };
 
   for (const issue of response.issues_found) {
     const severity = mapSeverity(issue.severity || issue.type);
-    const phrase = issue.span || issue.type || 'Issue';
+    const phrase = issue.flagged_text || issue.type || 'Issue';
 
     // Add to results (unique per phrase)
     const existingResult = results.find(r => r.phrase.toLowerCase() === phrase.toLowerCase());

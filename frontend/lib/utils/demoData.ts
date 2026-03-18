@@ -140,7 +140,7 @@ export const extendedTermMapEN: Array<{
   },
   {
     term: 'sexual preference',
-    severity: 'incorrect',
+    severity: 'factually_incorrect',
     category: 'Accuracy',
     explanation: 'The term "sexual preference" suggests that sexual orientation is a choice. Scientific consensus holds that sexual orientation is an inherent aspect of a person\'s identity, not a preference that can be changed.',
     suggestion: 'sexual orientation',
@@ -151,7 +151,7 @@ export const extendedTermMapEN: Array<{
   },
   {
     term: 'born as a man',
-    severity: 'offensive',
+    severity: 'potentially_offensive',
     category: 'Identity',
     explanation: 'This phrasing invalidates transgender identity by suggesting that gender is determined solely by birth assignment. It implies that a trans woman\'s true gender is male, which is disrespectful to her identity.',
     suggestion: 'assigned male at birth (AMAB)',
@@ -162,7 +162,7 @@ export const extendedTermMapEN: Array<{
   },
   {
     term: 'born as a woman',
-    severity: 'offensive',
+    severity: 'potentially_offensive',
     category: 'Identity',
     explanation: 'This phrasing invalidates transgender identity by conflating sex assigned at birth with gender identity. It can be hurtful to transgender men and non-binary individuals.',
     suggestion: 'assigned female at birth (AFAB)',
@@ -226,7 +226,7 @@ export const extendedTermMapHE: Array<{
   },
   {
     term: 'העדפה מינית',
-    severity: 'incorrect',
+    severity: 'factually_incorrect',
     category: 'דיוק',
     explanation: 'המונח "העדפה מינית" מרמז שנטייה מינית היא בחירה. הקונצנזוס המדעי גורס שנטייה מינית היא היבט מולד של זהות האדם, לא העדפה שניתן לשנות.',
     suggestion: 'נטייה מינית',
@@ -237,7 +237,7 @@ export const extendedTermMapHE: Array<{
   },
   {
     term: 'נולד כגבר',
-    severity: 'offensive',
+    severity: 'potentially_offensive',
     category: 'זהות',
     explanation: 'ניסוח זה פוסל זהות טרנסג׳נדרית על ידי הרמזה שמגדר נקבע אך ורק לפי ההקצאה בלידה. זה מרמז שהמגדר האמיתי של אישה טרנס הוא זכר, מה שמזלזל בזהותה.',
     suggestion: 'הוקצה זכר בלידה (AMAB)',
@@ -248,7 +248,7 @@ export const extendedTermMapHE: Array<{
   },
   {
     term: 'נולדה כאישה',
-    severity: 'offensive',
+    severity: 'potentially_offensive',
     category: 'זהות',
     explanation: 'ניסוח זה פוסל זהות טרנסג׳נדרית על ידי בלבול בין מין שהוקצה בלידה לזהות מגדרית. זה יכול לפגוע בגברים טרנסג׳נדרים ובאנשים נון-בינאריים.',
     suggestion: 'הוקצתה נקבה בלידה (AFAB)',

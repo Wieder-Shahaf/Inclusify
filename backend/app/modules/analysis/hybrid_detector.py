@@ -134,7 +134,7 @@ class HybridDetector:
             analysis_mode is 'llm', 'hybrid', or 'rules_only'.
         """
         # Import here to avoid circular import
-        from app.modules.analysis.router import Issue, find_issues
+        from app.modules.analysis.router import Issue, detect_rule_based_issues
 
         # Detect language if auto
         if language == "auto":
@@ -182,7 +182,7 @@ class HybridDetector:
                         explanation = ""
 
                     issue = Issue(
-                        span=sentence,
+                        flagged_text=sentence,
                         severity=severity,
                         type=category,
                         description=explanation,
@@ -200,7 +200,7 @@ class HybridDetector:
         )
 
         # Run rule-based detection on full text
-        rule_issues = find_issues(text)
+        rule_issues = detect_rule_based_issues(text)
         logger.info("Rule-based detection returned: rule_issues=%d", len(rule_issues))
 
         # Merge results (LLM preferred for overlapping spans)

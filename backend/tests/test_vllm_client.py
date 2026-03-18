@@ -209,8 +209,8 @@ class TestSeverityMapping:
 
         assert map_severity("Outdated") == "outdated"
         assert map_severity("Biased") == "biased"
-        assert map_severity("Potentially Offensive") == "offensive"
-        assert map_severity("Factually Incorrect") == "incorrect"
+        assert map_severity("Potentially Offensive") == "potentially_offensive"
+        assert map_severity("Factually Incorrect") == "factually_incorrect"
 
     def test_map_severity_correct_returns_none(self):
         """'Correct' severity returns None to skip."""

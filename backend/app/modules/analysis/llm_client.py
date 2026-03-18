@@ -42,27 +42,27 @@ RULES:
 SEVERITY_MAP = {
     "Outdated": "outdated",
     "Biased": "biased",
-    "Potentially Offensive": "offensive",
-    "Factually Incorrect": "incorrect",
+    "Potentially Offensive": "potentially_offensive",
+    "Factually Incorrect": "factually_incorrect",
 }
 
 
-def parse_llm_output(raw: str) -> Optional[dict]:
+def parse_llm_output(llm_response_text: str) -> Optional[dict]:
     """
     Parse LLM output, extracting JSON from markdown code blocks if present.
 
     Args:
-        raw: Raw LLM output string
+        llm_response_text: Raw LLM output string
 
     Returns:
         Parsed dict or None if parsing fails
     """
     # Extract JSON from markdown code blocks if present
-    json_match = re.search(r'```(?:json)?\s*([\s\S]*?)\s*```', raw)
+    json_match = re.search(r'```(?:json)?\s*([\s\S]*?)\s*```', llm_response_text)
     if json_match:
         json_str = json_match.group(1).strip()
     else:
-        json_str = raw.strip()
+        json_str = llm_response_text.strip()
 
     # Find JSON object boundaries
     start_idx = json_str.find('{')

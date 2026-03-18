@@ -11,7 +11,7 @@ import redis.asyncio as redis
 from app.core.config import settings
 
 
-class RedisManager:
+class RefreshTokenStore:
     """Manages Redis connections and refresh token operations."""
 
     def __init__(self, url: str, max_connections: int = 50):
@@ -67,34 +67,34 @@ class RedisManager:
 
 
 # Global Redis manager instance (initialized in lifespan)
-redis_manager: RedisManager | None = None
+redis_manager: RefreshTokenStore | None = None
 
 
-async def get_redis() -> RedisManager:
+async def get_redis() -> RefreshTokenStore:
     """Get Redis manager instance.
 
     Note: Should only be called after app startup initializes redis_manager.
 
     Returns:
-        RedisManager instance
+        RefreshTokenStore instance
 
     Raises:
         RuntimeError: If called before initialization
     """
     global redis_manager
     if redis_manager is None:
-        redis_manager = RedisManager(settings.REDIS_URL)
+        redis_manager = RefreshTokenStore(settings.REDIS_URL)
     return redis_manager
 
 
-async def init_redis() -> RedisManager:
+async def init_redis() -> RefreshTokenStore:
     """Initialize Redis manager (called during app startup).
 
     Returns:
-        Initialized RedisManager instance
+        Initialized RefreshTokenStore instance
     """
     global redis_manager
-    redis_manager = RedisManager(settings.REDIS_URL)
+    redis_manager = RefreshTokenStore(settings.REDIS_URL)
     return redis_manager
 
 

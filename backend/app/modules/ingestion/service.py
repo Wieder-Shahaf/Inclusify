@@ -18,29 +18,29 @@ logger = logging.getLogger(__name__)
 MAX_PAGES = 50
 
 # Initialize Docling converter once at module level (reuse across requests)
-_converter = None
+_docling_converter = None
 
 
-def _get_converter():
+def _get_docling_converter():
     """Lazy-init Docling converter with OCR disabled."""
-    global _converter
-    if _converter is None:
-        from docling.document_converter import DocumentConverter
+    global _docling_converter
+    if _docling_converter is None:
+        from docling.document_docling_converter import DocumentConverter
         from docling.datamodel.pipeline_options import PdfPipelineOptions
         from docling.datamodel.base_models import InputFormat
-        from docling.document_converter import PdfFormatOption
+        from docling.document_docling_converter import PdfFormatOption
 
         pipeline_opts = PdfPipelineOptions()
         pipeline_opts.do_ocr = False  # Academic PDFs have text layers
         pipeline_opts.do_table_structure = True
 
-        _converter = DocumentConverter(
+        _docling_converter = DocumentConverter(
             format_options={
                 InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_opts),
             }
         )
         logger.info("Docling converter initialized (OCR disabled)")
-    return _converter
+    return _docling_converter
 
 
 def _parse_pdf_sync(file_bytes: bytes, max_pages: int = MAX_PAGES) -> dict:
@@ -67,8 +67,8 @@ def _parse_pdf_sync(file_bytes: bytes, max_pages: int = MAX_PAGES) -> dict:
             page_count = len(reader.pages)
             logger.info("pypdf validation succeeded: pages=%d", page_count)
         except PdfReadError as e:
-            error_msg = str(e).lower()
-            if "password" in error_msg or "encrypted" in error_msg:
+            error_message = str(e).lower()
+            if "password" in error_message or "encrypted" in error_message:
                 logger.warning("pypdf validation failed: PDF is password-protected")
                 return {"error": "PDF is password-protected"}
             logger.warning("pypdf validation failed: PDF appears corrupted error=%s", str(e))
@@ -82,7 +82,7 @@ def _parse_pdf_sync(file_bytes: bytes, max_pages: int = MAX_PAGES) -> dict:
             return {"error": f"Document exceeds {max_pages} page limit ({page_count} pages)"}
 
         # Process with Docling (OCR disabled, reuses converter)
-        converter = _get_converter()
+        converter = _get_docling_converter()
         logger.info("Docling processing started: pages=%d", page_count)
         t0 = time.monotonic()
         result = converter.convert(temp_path)
@@ -94,11 +94,11 @@ def _parse_pdf_sync(file_bytes: bytes, max_pages: int = MAX_PAGES) -> dict:
         return {"text": text, "page_count": page_count}
 
     except Exception as e:
-        error_msg = str(e).lower()
-        if "password" in error_msg or "encrypted" in error_msg:
+        error_message = str(e).lower()
+        if "password" in error_message or "encrypted" in error_message:
             logger.error("PDF processing failed: password-protected", exc_info=True)
             return {"error": "PDF is password-protected"}
-        elif "corrupt" in error_msg or "invalid" in error_msg or "malformed" in error_msg:
+        elif "corrupt" in error_message or "invalid" in error_message or "malformed" in error_message:
             logger.error("PDF processing failed: corrupted", exc_info=True)
             return {"error": "PDF appears corrupted"}
         logger.error("PDF processing failed: %s", str(e), exc_info=True)
@@ -110,7 +110,7 @@ def _parse_pdf_sync(file_bytes: bytes, max_pages: int = MAX_PAGES) -> dict:
             pass
 
 
-async def parse_pdf_async(file_bytes: bytes, **kwargs) -> dict:
+async def parse_pdf_async(file_bytes: bytes) -> dict:
     """Async wrapper — runs Docling in a thread (not subprocess).
 
     No timeout enforced — analysis runs to completion.

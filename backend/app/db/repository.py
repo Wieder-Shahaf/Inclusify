@@ -14,12 +14,12 @@ async def get_user_by_email(conn: asyncpg.Connection, email: str):
         email,
     )
 
-async def get_latest_org(conn: asyncpg.Connection):
+async def get_most_recent_org(conn: asyncpg.Connection):
     return await conn.fetchrow(
         "SELECT org_id, name, default_private_mode FROM organizations ORDER BY created_at DESC LIMIT 1;"
     )
 
-async def get_latest_user(conn: asyncpg.Connection):
+async def get_most_recent_user(conn: asyncpg.Connection):
     return await conn.fetchrow(
         "SELECT user_id, org_id, role FROM users ORDER BY created_at DESC LIMIT 1;"
     )

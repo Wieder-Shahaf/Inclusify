@@ -36,7 +36,7 @@ const defaultTranslations: Translations = {
 const acceptedExtensions = '.pdf,.docx,.pptx,.txt';
 
 export default function PaperUpload({ onFileSelect, disabled, translations }: PaperUploadProps) {
-  const t = { ...defaultTranslations, ...translations };
+  const labels = { ...defaultTranslations, ...translations };
 
   const [isDragging, setIsDragging] = useState(false);
   const [, setDragCounter] = useState(0);
@@ -50,19 +50,19 @@ export default function PaperUpload({ onFileSelect, disabled, translations }: Pa
     const validExtensions = ['pdf', 'docx', 'pptx', 'txt'];
 
     if (!validExtensions.includes(extension || '')) {
-      setError(t.fileError);
+      setError(labels.fileError);
       return false;
     }
 
     // Check file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
-      setError(t.fileSizeError);
+      setError(labels.fileSizeError);
       return false;
     }
 
     setError(null);
     return true;
-  }, [t.fileError, t.fileSizeError]);
+  }, [labels.fileError, labels.fileSizeError]);
 
   const handleFileSelect = useCallback((file: File) => {
     if (validateFile(file)) {
@@ -215,10 +215,10 @@ export default function PaperUpload({ onFileSelect, disabled, translations }: Pa
                   </motion.div>
 
                   <h3 className="text-xl sm:text-2xl font-semibold mb-2 text-slate-800 dark:text-white">
-                    {t.title}
+                    {labels.title}
                   </h3>
                   <p className="text-slate-500 dark:text-slate-400 mb-5 max-w-sm">
-                    {t.dragDrop}
+                    {labels.dragDrop}
                   </p>
 
                   {/* File Type Badges */}
@@ -255,7 +255,7 @@ export default function PaperUpload({ onFileSelect, disabled, translations }: Pa
                             <Upload className="w-16 h-16 text-pride-purple mx-auto mb-4" />
                           </motion.div>
                           <p className="text-lg font-semibold text-pride-purple">
-                            {t.dropHere}
+                            {labels.dropHere}
                           </p>
                         </div>
                       </motion.div>
@@ -316,7 +316,7 @@ export default function PaperUpload({ onFileSelect, disabled, translations }: Pa
                 onClick={handleClearFile}
                 className="flex-1 py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-medium"
               >
-                {t.chooseDifferent}
+                {labels.chooseDifferent}
               </button>
               <motion.button
                 onClick={handleConfirmUpload}
@@ -324,7 +324,7 @@ export default function PaperUpload({ onFileSelect, disabled, translations }: Pa
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                {t.analyzePaper}
+                {labels.analyzePaper}
               </motion.button>
             </div>
           </motion.div>

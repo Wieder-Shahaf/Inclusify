@@ -252,8 +252,8 @@
   "severity": {
     "outdated": "מיושן",
     "biased": "מוטה",
-    "offensive": "עלול לפגוע",
-    "incorrect": "שגוי עובדתית"
+    "potentially_offensive": "עלול לפגוע",
+    "factually_incorrect": "שגוי עובדתית"
   },
   "auth": {
     "login": "התחברות",

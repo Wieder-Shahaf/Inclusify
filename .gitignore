@@ -36,3 +36,5 @@ ml/logs/
 
 # Training cache
 unsloth_compiled_cache/
+
+CLAUDE.md
