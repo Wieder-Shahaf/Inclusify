@@ -31,25 +31,37 @@ async def health_check(request: Request):
         "version": {"commit": "...", "build_time": "..."}
     }
     """
-    pool = request.app.state.db_pool
+    pool = getattr(request.app.state, "db_pool", None)
     db_status = "unhealthy"
     db_latency_ms = None
     db_error = None
+    pool_stats = None
 
-    # Check DB connectivity with 3s timeout per CONTEXT.md
-    async def _check_db():
-        async with pool.acquire() as conn:
-            await conn.fetchval("SELECT 1")
+    if pool is None:
+        db_error = "database pool not initialized"
+    else:
+        # Check DB connectivity with 3s timeout
+        async def _check_db():
+            async with pool.acquire() as conn:
+                await conn.fetchval("SELECT 1")
 
-    try:
-        start = datetime.now()
-        await asyncio.wait_for(_check_db(), timeout=3.0)
-        db_latency_ms = round((datetime.now() - start).total_seconds() * 1000, 2)
-        db_status = "healthy"
-    except asyncio.TimeoutError:
-        db_error = "timeout"
-    except Exception as e:
-        db_error = str(e)[:100]  # Truncate long errors
+        try:
+            start = datetime.now()
+            await asyncio.wait_for(_check_db(), timeout=3.0)
+            db_latency_ms = round((datetime.now() - start).total_seconds() * 1000, 2)
+            db_status = "healthy"
+        except asyncio.TimeoutError:
+            db_error = "timeout"
+        except Exception as e:
+            db_error = str(e)[:100]  # Truncate long errors
+
+        pool_stats = {
+            "size": pool.get_size(),
+            "free": pool.get_idle_size(),
+            "used": pool.get_size() - pool.get_idle_size(),
+            "min": pool.get_min_size(),
+            "max": pool.get_max_size(),
+        }
 
     # Determine overall status
     overall = "healthy" if db_status == "healthy" else "unhealthy"
@@ -64,13 +76,7 @@ async def health_check(request: Request):
                 **({"error": db_error} if db_error else {}),
             }
         },
-        "pool": {
-            "size": pool.get_size(),
-            "free": pool.get_idle_size(),
-            "used": pool.get_size() - pool.get_idle_size(),
-            "min": pool.get_min_size(),
-            "max": pool.get_max_size(),
-        },
+        "pool": pool_stats,
         "version": {
             "commit": os.environ.get("GIT_COMMIT", "unknown"),
             "build_time": os.environ.get("BUILD_TIME", "unknown"),

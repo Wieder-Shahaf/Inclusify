@@ -88,9 +88,9 @@ async def get_users_paginated(
         # Get page data with search filter
         rows = await conn.fetch("""
             SELECT u.user_id, u.email, u.role, u.last_login_at, u.created_at,
-                   o.name as org_name
+                   COALESCE(o.name, 'Unassigned') as org_name
             FROM users u
-            JOIN organizations o ON u.org_id = o.org_id
+            LEFT JOIN organizations o ON u.org_id = o.org_id
             WHERE u.email ILIKE $1
             ORDER BY u.created_at DESC
             LIMIT $2 OFFSET $3
@@ -102,9 +102,9 @@ async def get_users_paginated(
         # Get page data without filter
         rows = await conn.fetch("""
             SELECT u.user_id, u.email, u.role, u.last_login_at, u.created_at,
-                   o.name as org_name
+                   COALESCE(o.name, 'Unassigned') as org_name
             FROM users u
-            JOIN organizations o ON u.org_id = o.org_id
+            LEFT JOIN organizations o ON u.org_id = o.org_id
             ORDER BY u.created_at DESC
             LIMIT $1 OFFSET $2
         """, page_size, offset)

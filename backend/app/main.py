@@ -26,10 +26,17 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Manage application lifespan - pool creation and cleanup."""
     # Startup: create asyncpg pool
-    app.state.db_pool = await create_pool()
+    try:
+        app.state.db_pool = await create_pool()
+    except Exception as e:
+        logger.error(f"Failed to create database pool: {e}")
+        app.state.db_pool = None
 
     # Startup: create SQLAlchemy tables (for FastAPI Users)
-    await create_db_and_tables()
+    try:
+        await create_db_and_tables()
+    except Exception as e:
+        logger.error(f"Failed to create SQLAlchemy tables: {e}")
 
     # Startup: initialize Redis for refresh tokens
     try:
@@ -45,7 +52,8 @@ async def lifespan(app: FastAPI):
     await close_redis()
 
     # Shutdown: close asyncpg pool
-    await app.state.db_pool.close()
+    if app.state.db_pool:
+        await app.state.db_pool.close()
 
 
 app = FastAPI(

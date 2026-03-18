@@ -6,6 +6,8 @@ LLM results are preferred for overlapping spans; rule-based serves as fallback.
 """
 
 import asyncio
+import logging
+import time
 from typing import TYPE_CHECKING
 
 from app.modules.analysis.llm_client import VLLMClient, map_severity
@@ -13,6 +15,8 @@ from app.modules.analysis.sentence_splitter import split_with_offsets
 
 if TYPE_CHECKING:
     from app.modules.analysis.router import Issue
+
+logger = logging.getLogger(__name__)
 
 
 def calculate_overlap(issue1: "Issue", issue2: "Issue") -> float:
@@ -138,6 +142,10 @@ class HybridDetector:
 
         # Split text into sentences with offsets
         sentences = split_with_offsets(text, language)
+        logger.info(
+            "Hybrid detection started: text_length=%d language=%s sentences=%d",
+            len(text), language, len(sentences),
+        )
 
         llm_issues: list[Issue] = []
         llm_success_count = 0
@@ -186,11 +194,21 @@ class HybridDetector:
             else:
                 llm_failure_count += 1
 
+        logger.info(
+            "LLM analysis completed: sentences=%d llm_success=%d llm_failure=%d llm_issues=%d",
+            len(sentences), llm_success_count, llm_failure_count, len(llm_issues),
+        )
+
         # Run rule-based detection on full text
         rule_issues = find_issues(text)
+        logger.info("Rule-based detection returned: rule_issues=%d", len(rule_issues))
 
         # Merge results (LLM preferred for overlapping spans)
         merged_issues = merge_results(llm_issues, rule_issues)
+        logger.info(
+            "Merge completed: llm_issues=%d rule_issues=%d merged_total=%d",
+            len(llm_issues), len(rule_issues), len(merged_issues),
+        )
 
         # Determine analysis mode
         total_sentences = len(sentences)
@@ -202,6 +220,9 @@ class HybridDetector:
             mode = "rules_only"
         else:
             mode = "hybrid"
+
+        if mode == "rules_only" and total_sentences > 0:
+            logger.warning("LLM unavailable for all sentences — falling back to rules_only mode")
 
         return merged_issues, mode
 

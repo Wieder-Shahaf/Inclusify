@@ -21,7 +21,7 @@ PG_USER="${PG_USER:-inclusifyadmin}"
 PG_DATABASE="${PG_DATABASE:-inclusify}"
 
 # vLLM VM private IP (from VNet setup)
-VLLM_PRIVATE_IP="${VLLM_PRIVATE_IP:-10.0.1.4}"
+VLLM_PRIVATE_IP="${VLLM_PRIVATE_IP:-10.0.0.4}"
 VLLM_PORT="${VLLM_PORT:-8001}"
 
 # Check for required secrets
@@ -68,10 +68,21 @@ docker push "${ACR_NAME}.azurecr.io/inclusify-backend:${IMAGE_TAG}"
 
 # Step 3: Build and push frontend image
 echo "[3/7] Building and pushing frontend image..."
+# Get backend FQDN first (needed for build arg)
+BACKEND_FQDN_FOR_BUILD=""
+if app_exists "$BACKEND_APP"; then
+  BACKEND_FQDN_FOR_BUILD=$(az containerapp show \
+    --name "$BACKEND_APP" \
+    --resource-group "$RESOURCE_GROUP" \
+    --query "properties.configuration.ingress.fqdn" -o tsv 2>/dev/null || echo "")
+fi
+
 docker build \
   --platform linux/amd64 \
   -f infra/docker/frontend.Dockerfile \
   --target runner \
+  --build-arg NEXT_PUBLIC_API_URL="https://${BACKEND_FQDN_FOR_BUILD}" \
+  --build-arg NEXT_PUBLIC_USE_DEMO_MODE="false" \
   -t "${ACR_NAME}.azurecr.io/inclusify-frontend:${IMAGE_TAG}" \
   .
 docker push "${ACR_NAME}.azurecr.io/inclusify-frontend:${IMAGE_TAG}"
@@ -139,10 +150,10 @@ properties:
         probes:
           - type: Startup
             httpGet:
-              path: /health
+              path: /
               port: 8000
-            initialDelaySeconds: 10
-            periodSeconds: 5
+            initialDelaySeconds: 5
+            periodSeconds: 3
             failureThreshold: 30
           - type: Liveness
             httpGet:

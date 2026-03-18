@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     VLLM_TIMEOUT: float = 30.0
     VLLM_CIRCUIT_FAIL_MAX: int = 3
     VLLM_CIRCUIT_RESET_TIMEOUT: int = 60
-    VLLM_MODEL_NAME: str = "/home/azureuser/models/Qwen2.5-3B-Instruct-GPTQ-Int4"
+    VLLM_MODEL_NAME: str = "inclusify"
 
     # Google OAuth Configuration
     GOOGLE_CLIENT_ID: str = ""
@@ -57,11 +57,9 @@ class Settings(BaseSettings):
                 pg_db = os.environ.get("PGDATABASE", "inclusify")
                 pg_user = os.environ.get("PGUSER", "postgres")
                 pg_pass = os.environ.get("PGPASSWORD", "")
-                pg_ssl = os.environ.get("PGSSL")
 
-                ssl_suffix = "?ssl=true" if pg_ssl else ""
                 self.DATABASE_URL = (
-                    f"postgresql+asyncpg://{quote_plus(pg_user)}:{quote_plus(pg_pass)}@{pg_host}:{pg_port}/{pg_db}{ssl_suffix}"
+                    f"postgresql+asyncpg://{quote_plus(pg_user)}:{quote_plus(pg_pass)}@{pg_host}:{pg_port}/{pg_db}"
                 )
             else:
                 # Default to SQLite for local development

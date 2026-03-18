@@ -12,7 +12,6 @@ import AnalysisSummary from '@/components/AnalysisSummary';
 import IssueTooltip from '@/components/IssueTooltip';
 import HealthWarningBanner from '@/components/HealthWarningBanner';
 import { Annotation } from '@/components/AnnotatedText';
-import { getSampleText, analyzeDemoText } from '@/lib/utils/demoData';
 import { analyzeText, uploadFile, healthCheck } from '@/lib/api/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLiveAnnouncer } from '@/contexts/LiveAnnouncerContext';
@@ -48,9 +47,6 @@ const emptyAnalysis: AnalysisData = {
   summary: { totalIssues: 0, score: 100, recommendations: [] },
 };
 
-// Demo mode toggle: when true, uses local demo data instead of real API
-const USE_DEMO = process.env.NEXT_PUBLIC_USE_DEMO_MODE === 'true';
-
 export default function AnalyzePage() {
   const t = useTranslations('analyzer');
   const locale = useLocale();
@@ -67,10 +63,8 @@ export default function AnalyzePage() {
   const [backendHealthy, setBackendHealthy] = useState<boolean | null>(null);
   const [analysisMode, setAnalysisMode] = useState<'llm' | 'hybrid' | 'rules_only' | null>(null);
   const [showGuestPrompt, setShowGuestPrompt] = useState(true);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [processingStage, setProcessingStage] = useState<'uploading' | 'parsing' | 'analyzing' | 'generating' | 'complete'>('uploading');
-  const [showExtendedWait, setShowExtendedWait] = useState(false);
   const [privateMode, setPrivateMode] = useState(false); // Default OFF per user decision
 
   // Health check on mount with 30-second polling
@@ -83,18 +77,6 @@ export default function AnalyzePage() {
     const interval = setInterval(checkHealth, 30000);
     return () => clearInterval(interval);
   }, []);
-
-  // Extended wait timer - shows message after 15 seconds of processing
-  useEffect(() => {
-    if (viewState !== 'processing' || USE_DEMO) {
-      setShowExtendedWait(false);
-      return;
-    }
-    const timer = setTimeout(() => {
-      setShowExtendedWait(true);
-    }, 15000);
-    return () => clearTimeout(timer);
-  }, [viewState]);
 
   // Error handler that maps backend errors to user-friendly messages
   const handleApiError = useCallback((error: unknown) => {
@@ -125,12 +107,6 @@ export default function AnalyzePage() {
     setFileName(file.name);
     setViewState('processing');
     announce(t('a11y.uploadStarted'));
-
-    if (USE_DEMO) {
-      // Demo path: store file for demo processing animation to handle
-      setPendingFile(file);
-      return;
-    }
 
     // Real API path
     try {
@@ -187,28 +163,6 @@ export default function AnalyzePage() {
     }
   }, [locale, t, handleApiError, privateMode, announce]);
 
-  const handleUseSample = useCallback(() => {
-    setFileName(t('sampleFileName'));
-    setViewState('processing');
-  }, [t]);
-
-  const handleProcessingComplete = useCallback(() => {
-    const sampleText = getSampleText(locale);
-    const recommendations = {
-      outdated: t('recommendations.outdated'),
-      biased: t('recommendations.biased'),
-      offensive: t('recommendations.offensive'),
-      incorrect: t('recommendations.incorrect'),
-      excellent: t('recommendations.excellent'),
-    };
-    const result = analyzeDemoText(sampleText, locale, { recommendations });
-    setAnalysis({
-      text: sampleText,
-      ...result,
-    });
-    setViewState('results');
-  }, [locale, t]);
-
   const handleReset = useCallback(() => {
     setViewState('upload');
     setFileName('');
@@ -216,9 +170,7 @@ export default function AnalyzePage() {
     setSelectedAnnotation(null);
     setSidePanelOpen(false);
     setAnalysisMode(null);
-    setPendingFile(null);
     setErrorMessage(null);
-    setShowExtendedWait(false);
     setProcessingStage('uploading');
     setShowGuestPrompt(true);
     setPrivateMode(false);
@@ -312,13 +264,11 @@ export default function AnalyzePage() {
     title: t('uploadTitle'),
     description: t('uploadDesc'),
     dragDrop: t('dragDrop'),
-    trySample: t('trySample'),
     dropHere: t('dropHere'),
     chooseDifferent: t('chooseDifferent'),
     analyzePaper: t('analyzePaper'),
     fileError: t('fileError'),
     fileSizeError: t('fileSizeError'),
-    or: t('or'),
   };
 
   const processingTranslations = {
@@ -407,7 +357,6 @@ export default function AnalyzePage() {
               {/* Upload Component */}
               <PaperUpload
                 onFileSelect={handleFileSelect}
-                onUseSample={handleUseSample}
                 translations={uploadTranslations}
               />
 
@@ -461,11 +410,8 @@ export default function AnalyzePage() {
             >
               <ProcessingAnimation
                 fileName={fileName}
-                stage={USE_DEMO ? undefined : processingStage}
-                onComplete={USE_DEMO ? handleProcessingComplete : undefined}
+                stage={processingStage}
                 translations={processingTranslations}
-                showExtendedWait={showExtendedWait}
-                extendedWaitMessage={t('processing.takingLonger')}
               />
             </motion.div>
           )}

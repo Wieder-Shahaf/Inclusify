@@ -1,22 +1,50 @@
-"""Docling-based PDF parsing service with subprocess isolation.
+"""Docling-based PDF parsing service.
 
-Runs Docling in a subprocess to protect the API server from memory exhaustion
-on large documents. Enforces 50-page limit and 60-second timeout.
+Runs Docling in-process with OCR disabled (academic PDFs have text layers).
+Enforces 50-page limit. No subprocess needed — saves memory in containers.
 """
 
 import asyncio
-from concurrent.futures import ProcessPoolExecutor
-from functools import partial
+import logging
+import os
+import tempfile
+import time
+
+from pypdf import PdfReader
+from pypdf.errors import PdfReadError
+
+logger = logging.getLogger(__name__)
 
 MAX_PAGES = 50
-TIMEOUT_SECONDS = 300  # 5 minutes for large PDFs and first-run model downloads
+
+# Initialize Docling converter once at module level (reuse across requests)
+_converter = None
+
+
+def _get_converter():
+    """Lazy-init Docling converter with OCR disabled."""
+    global _converter
+    if _converter is None:
+        from docling.document_converter import DocumentConverter
+        from docling.datamodel.pipeline_options import PdfPipelineOptions
+        from docling.datamodel.base_models import InputFormat
+        from docling.document_converter import PdfFormatOption
+
+        pipeline_opts = PdfPipelineOptions()
+        pipeline_opts.do_ocr = False  # Academic PDFs have text layers
+        pipeline_opts.do_table_structure = True
+
+        _converter = DocumentConverter(
+            format_options={
+                InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_opts),
+            }
+        )
+        logger.info("Docling converter initialized (OCR disabled)")
+    return _converter
 
 
 def _parse_pdf_sync(file_bytes: bytes, max_pages: int = MAX_PAGES) -> dict:
-    """Synchronous PDF parsing function run in subprocess.
-
-    Imports Docling inside this function to isolate memory per request.
-    The subprocess terminates after processing, releasing all memory.
+    """Parse PDF synchronously using Docling.
 
     Args:
         file_bytes: Raw PDF file bytes
@@ -27,49 +55,53 @@ def _parse_pdf_sync(file_bytes: bytes, max_pages: int = MAX_PAGES) -> dict:
         - {"text": str, "page_count": int} on success
         - {"error": str} on failure
     """
-    import tempfile
-    import os
-
-    # Write bytes to temp file (Docling needs file path)
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
         f.write(file_bytes)
         temp_path = f.name
 
     try:
-        # Check page count first with pypdf (lightweight)
-        from pypdf import PdfReader
-        from pypdf.errors import PdfReadError
-
+        # Validate with pypdf first (lightweight)
+        logger.info("pypdf validation started: size_bytes=%d", len(file_bytes))
         try:
             reader = PdfReader(temp_path)
             page_count = len(reader.pages)
+            logger.info("pypdf validation succeeded: pages=%d", page_count)
         except PdfReadError as e:
             error_msg = str(e).lower()
             if "password" in error_msg or "encrypted" in error_msg:
+                logger.warning("pypdf validation failed: PDF is password-protected")
                 return {"error": "PDF is password-protected"}
+            logger.warning("pypdf validation failed: PDF appears corrupted error=%s", str(e))
             return {"error": "PDF appears corrupted"}
-        except Exception:
+        except Exception as e:
+            logger.warning("pypdf validation failed: unexpected error=%s", str(e))
             return {"error": "PDF appears corrupted"}
 
         if page_count > max_pages:
+            logger.warning("Page limit exceeded: pages=%d limit=%d", page_count, max_pages)
             return {"error": f"Document exceeds {max_pages} page limit ({page_count} pages)"}
 
-        # Process with Docling for layout preservation
-        from docling.document_converter import DocumentConverter
-
-        converter = DocumentConverter()
+        # Process with Docling (OCR disabled, reuses converter)
+        converter = _get_converter()
+        logger.info("Docling processing started: pages=%d", page_count)
+        t0 = time.monotonic()
         result = converter.convert(temp_path)
+        elapsed = time.monotonic() - t0
 
-        return {
-            "text": result.document.export_to_markdown(),
-            "page_count": page_count,
-        }
+        text = result.document.export_to_markdown()
+        logger.info("Docling completed: pages=%d text_length=%d elapsed_s=%.2f", page_count, len(text), elapsed)
+
+        return {"text": text, "page_count": page_count}
+
     except Exception as e:
         error_msg = str(e).lower()
         if "password" in error_msg or "encrypted" in error_msg:
+            logger.error("PDF processing failed: password-protected", exc_info=True)
             return {"error": "PDF is password-protected"}
         elif "corrupt" in error_msg or "invalid" in error_msg or "malformed" in error_msg:
+            logger.error("PDF processing failed: corrupted", exc_info=True)
             return {"error": "PDF appears corrupted"}
+        logger.error("PDF processing failed: %s", str(e), exc_info=True)
         return {"error": f"Failed to process PDF: {str(e)}"}
     finally:
         try:
@@ -78,25 +110,19 @@ def _parse_pdf_sync(file_bytes: bytes, max_pages: int = MAX_PAGES) -> dict:
             pass
 
 
-async def parse_pdf_async(file_bytes: bytes, timeout: int = TIMEOUT_SECONDS) -> dict:
-    """Async wrapper with timeout - runs Docling in subprocess.
+async def parse_pdf_async(file_bytes: bytes, **kwargs) -> dict:
+    """Async wrapper — runs Docling in a thread (not subprocess).
+
+    No timeout enforced — analysis runs to completion.
 
     Args:
         file_bytes: Raw PDF file bytes
-        timeout: Maximum processing time in seconds (default 60)
 
     Returns:
         dict with either:
         - {"text": str, "page_count": int} on success
-        - {"error": str} on failure or timeout
+        - {"error": str} on failure
     """
-    loop = asyncio.get_event_loop()
-    with ProcessPoolExecutor(max_workers=1) as executor:
-        try:
-            result = await asyncio.wait_for(
-                loop.run_in_executor(executor, partial(_parse_pdf_sync, file_bytes)),
-                timeout=timeout
-            )
-            return result
-        except asyncio.TimeoutError:
-            return {"error": f"Document processing timed out ({timeout}s limit)"}
+    logger.info("Async PDF parsing started: size_bytes=%d", len(file_bytes))
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(None, _parse_pdf_sync, file_bytes)

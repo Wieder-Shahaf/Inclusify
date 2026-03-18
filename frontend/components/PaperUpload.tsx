@@ -9,18 +9,15 @@ interface Translations {
   title: string;
   description: string;
   dragDrop: string;
-  trySample: string;
   dropHere: string;
   chooseDifferent: string;
   analyzePaper: string;
   fileError: string;
   fileSizeError: string;
-  or: string;
 }
 
 interface PaperUploadProps {
   onFileSelect: (file: File) => void;
-  onUseSample: () => void;
   disabled?: boolean;
   translations?: Translations;
 }
@@ -29,18 +26,16 @@ const defaultTranslations: Translations = {
   title: 'Upload Your Paper',
   description: 'Drag and drop your document here, or click to browse',
   dragDrop: 'Drag and drop your document here, or click to browse',
-  trySample: 'Try with sample academic paper',
   dropHere: 'Drop your file here',
   chooseDifferent: 'Choose Different File',
   analyzePaper: 'Analyze Paper',
   fileError: 'Please upload a PDF, DOCX, PPTX, or TXT file',
   fileSizeError: 'File size must be less than 10MB',
-  or: 'or',
 };
 
 const acceptedExtensions = '.pdf,.docx,.pptx,.txt';
 
-export default function PaperUpload({ onFileSelect, onUseSample, disabled, translations }: PaperUploadProps) {
+export default function PaperUpload({ onFileSelect, disabled, translations }: PaperUploadProps) {
   const t = { ...defaultTranslations, ...translations };
 
   const [isDragging, setIsDragging] = useState(false);
@@ -284,32 +279,6 @@ export default function PaperUpload({ onFileSelect, onUseSample, disabled, trans
               )}
             </AnimatePresence>
 
-            {/* Divider */}
-            <div className="flex items-center gap-4 my-4">
-              <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-              <span className="text-xs text-slate-400 dark:text-slate-500">{t.or}</span>
-              <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-            </div>
-
-            {/* Sample Text Button */}
-            <motion.button
-              onClick={onUseSample}
-              disabled={disabled}
-              className={cn(
-                'w-full py-3 px-4 rounded-xl border-2 border-dashed',
-                'border-slate-200 dark:border-slate-700',
-                'hover:border-pride-purple/50 hover:bg-pride-purple/5',
-                'transition-all duration-200',
-                'flex items-center justify-center gap-2',
-                'text-slate-600 dark:text-slate-400 text-sm',
-                disabled && 'opacity-50 cursor-not-allowed'
-              )}
-              whileHover={{ scale: disabled ? 1 : 1.01 }}
-              whileTap={{ scale: disabled ? 1 : 0.99 }}
-            >
-              <FileText className="w-4 h-4" />
-              <span className="font-medium">{t.trySample}</span>
-            </motion.button>
           </motion.div>
         ) : (
           /* Selected File Preview */

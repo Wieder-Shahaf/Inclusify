@@ -18,8 +18,10 @@ build/
 
 # Environment files
 .env
-.env.*
+.env.local
+.env.development
 !.env.example
+!.env.production
 
 # OS files
 .DS_Store

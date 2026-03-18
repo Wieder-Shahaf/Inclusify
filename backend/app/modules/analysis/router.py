@@ -24,6 +24,8 @@ TODO (remaining):
 =============================================================================
 """
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional, Literal
@@ -33,6 +35,8 @@ import time
 
 from app.auth.users import current_active_user
 from app.db.models import User
+
+logger = logging.getLogger(__name__)
 
 # [CONFLICT 1 SOLVED] Friend's imports are saved here but disabled
 # --- PENDING DB INTEGRATION (Uncomment when DB is ready) ---
@@ -226,6 +230,8 @@ def find_issues(text: str) -> list[Issue]:
     """
     DEMO/PLACEHOLDER: Find problematic terms using simple keyword matching.
     """
+    logger.info("Rule-based detection started: text_length=%d rules=%d", len(text), len(TERM_RULES))
+    t0 = time.monotonic()
     issues = []
     text_lower = text.lower()
 
@@ -257,6 +263,8 @@ def find_issues(text: str) -> list[Issue]:
 
     # Sort by position in text
     issues.sort(key=lambda x: x.start)
+    elapsed = time.monotonic() - t0
+    logger.info("Rule-based detection completed: issues_found=%d elapsed_s=%.3f", len(issues), elapsed)
     return issues
 
 
@@ -294,10 +302,19 @@ async def analyze_text(
 
     Requires authentication. User info available for logging/tracking.
     """
+    text_length = len(request.text)
+    language = request.language or "auto"
+    logger.info("Analysis started: text_length=%d language=%s private_mode=%s", text_length, language, request.private_mode)
+
+    t0 = time.monotonic()
+
     # Use hybrid detector (LLM + rules fallback)
-    issues, analysis_mode = await _hybrid_detector.analyze(
-        request.text,
-        language=request.language or "auto"
+    issues, analysis_mode = await _hybrid_detector.analyze(request.text, language=language)
+
+    elapsed = time.monotonic() - t0
+    logger.info(
+        "Analysis completed: issues_found=%d analysis_mode=%s elapsed_s=%.3f",
+        len(issues), analysis_mode, elapsed,
     )
 
     return AnalysisResponse(

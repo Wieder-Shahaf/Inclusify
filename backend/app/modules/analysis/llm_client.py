@@ -5,7 +5,9 @@ Provides async client with circuit breaker protection for calling vLLM inference
 """
 
 import json
+import logging
 import re
+import time
 from typing import Optional
 
 import httpx
@@ -13,6 +15,8 @@ from pybreaker import CircuitBreakerError
 
 from app.core.config import settings
 from app.modules.analysis.circuit_breaker import vllm_breaker
+
+logger = logging.getLogger(__name__)
 
 
 # System prompt for the model (from ml/inference_demo.py)
@@ -121,9 +125,17 @@ class VLLMClient:
         """
         try:
             return await self._make_request(sentence)
-        except (httpx.TimeoutException, httpx.HTTPStatusError, CircuitBreakerError):
+        except CircuitBreakerError:
+            logger.warning("vLLM circuit breaker is open — skipping LLM call")
             return None
-        except Exception:
+        except httpx.TimeoutException:
+            logger.error("vLLM request timed out: url=%s timeout_s=%.1f", self.base_url, self.timeout)
+            return None
+        except httpx.HTTPStatusError as exc:
+            logger.error("vLLM HTTP error: status=%d url=%s", exc.response.status_code, self.base_url)
+            return None
+        except Exception as exc:
+            logger.error("vLLM unexpected error: %s", str(exc), exc_info=True)
             return None
 
     @vllm_breaker
@@ -133,6 +145,9 @@ class VLLMClient:
 
         Decorated with circuit breaker - will raise CircuitBreakerError if circuit is open.
         """
+        logger.info("vLLM request started: url=%s sentence_chars=%d", self.base_url, len(sentence))
+        t0 = time.monotonic()
+
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.post(
                 f"{self.base_url}/v1/chat/completions",
@@ -148,9 +163,12 @@ class VLLMClient:
             )
             response.raise_for_status()
 
-            data = response.json()
-            raw_content = data["choices"][0]["message"]["content"]
-            return parse_llm_output(raw_content)
+        elapsed = time.monotonic() - t0
+        logger.info("vLLM response received: status=%d elapsed_s=%.3f", response.status_code, elapsed)
+
+        data = response.json()
+        raw_content = data["choices"][0]["message"]["content"]
+        return parse_llm_output(raw_content)
 
 
 __all__ = ["VLLMClient", "parse_llm_output", "map_severity", "SYSTEM_PROMPT"]

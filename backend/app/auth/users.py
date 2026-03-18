@@ -23,14 +23,25 @@ from app.core.config import settings
 from app.db.models import Base, User, OAuthAccount
 
 # SQLAlchemy async engine and session factory
-engine = create_async_engine(settings.DATABASE_URL, echo=False)
+# asyncpg requires SSL via connect_args, not URL query params
+import os
+_pg_ssl = os.environ.get("PGSSL")
+_connect_args = {"ssl": "require"} if _pg_ssl else {}
+engine = create_async_engine(settings.DATABASE_URL, echo=False, connect_args=_connect_args)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 
 async def create_db_and_tables():
-    """Create database tables on startup."""
+    """Create auth tables if they don't exist.
+
+    Only creates oauth_accounts (users table is managed by db/schema.sql).
+    Uses checkfirst=True to avoid conflicts with existing tables.
+    """
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(
+            Base.metadata.create_all,
+            checkfirst=True,
+        )
 
 
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:

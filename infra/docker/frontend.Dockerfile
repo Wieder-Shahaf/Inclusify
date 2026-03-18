@@ -54,6 +54,12 @@ COPY frontend/ .
 # Disable telemetry during build
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Accept NEXT_PUBLIC vars as build args (Next.js inlines them at build time)
+ARG NEXT_PUBLIC_API_URL=""
+ARG NEXT_PUBLIC_USE_DEMO_MODE="false"
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_USE_DEMO_MODE=${NEXT_PUBLIC_USE_DEMO_MODE}
+
 # Build the application
 RUN npm run build
 

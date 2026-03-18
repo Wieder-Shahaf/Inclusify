@@ -4,11 +4,15 @@ Replaces PyMuPDF with Docling for superior layout preservation in academic paper
 Uses subprocess isolation to protect the API server from memory exhaustion.
 """
 
+import logging
+
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from app.modules.ingestion.service import parse_pdf_async
 from app.modules.ingestion.schemas import UploadResponse
 from app.auth.users import current_active_user
 from app.db.models import User
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -37,26 +41,41 @@ async def upload_document(
     - Corrupted PDFs
     - Oversized documents
     """
+    filename = file.filename or "unknown.pdf"
+    logger.info("Upload started: filename=%s content_type=%s", filename, file.content_type)
+
     if file.content_type != "application/pdf":
+        logger.warning("Upload rejected: unsupported content_type=%s filename=%s", file.content_type, filename)
         raise HTTPException(status_code=400, detail="Only PDF files supported")
 
     file_bytes = await file.read()
+    file_size = len(file_bytes)
+    logger.info("Upload validated: filename=%s size_bytes=%d", filename, file_size)
 
     # Enforce size limit
-    if len(file_bytes) > MAX_FILE_SIZE:
+    if file_size > MAX_FILE_SIZE:
+        logger.warning("Upload rejected: file too large size_bytes=%d filename=%s", file_size, filename)
         raise HTTPException(status_code=400, detail="File too large (50MB limit)")
 
+    logger.info("PDF parsing started: filename=%s", filename)
     result = await parse_pdf_async(file_bytes, timeout=60)
 
     if "error" in result:
+        logger.error("PDF parsing failed: filename=%s error=%s", filename, result["error"])
         # Return specific error messages per CONTEXT.md decision
         raise HTTPException(status_code=400, detail=result["error"])
 
+    text_length = len(result["text"])
+    logger.info(
+        "PDF parsing succeeded: filename=%s pages=%d text_length=%d",
+        filename, result["page_count"], text_length,
+    )
+
     return UploadResponse(
-        filename=file.filename or "unknown.pdf",
+        filename=filename,
         content_type=file.content_type,
         page_count=result["page_count"],
-        text_preview=result["text"][:500] + "..." if len(result["text"]) > 500 else result["text"],
+        text_preview=result["text"][:500] + "..." if text_length > 500 else result["text"],
         full_text=result["text"],
-        full_text_length=len(result["text"])
+        full_text_length=text_length,
     )
