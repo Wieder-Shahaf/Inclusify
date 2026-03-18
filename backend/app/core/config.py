@@ -9,6 +9,7 @@ Settings hierarchy:
 import os
 from functools import lru_cache
 from typing import Optional
+from urllib.parse import quote_plus
 
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -58,9 +59,9 @@ class Settings(BaseSettings):
                 pg_pass = os.environ.get("PGPASSWORD", "")
                 pg_ssl = os.environ.get("PGSSL")
 
-                ssl_suffix = "?sslmode=require" if pg_ssl else ""
+                ssl_suffix = "?ssl=true" if pg_ssl else ""
                 self.DATABASE_URL = (
-                    f"postgresql+asyncpg://{pg_user}:{pg_pass}@{pg_host}:{pg_port}/{pg_db}{ssl_suffix}"
+                    f"postgresql+asyncpg://{quote_plus(pg_user)}:{quote_plus(pg_pass)}@{pg_host}:{pg_port}/{pg_db}{ssl_suffix}"
                 )
             else:
                 # Default to SQLite for local development

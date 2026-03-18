@@ -59,6 +59,7 @@ az acr login --name "$ACR_NAME"
 # Step 2: Build and push backend image
 echo "[2/7] Building and pushing backend image..."
 docker build \
+  --platform linux/amd64 \
   -f infra/docker/backend.Dockerfile \
   --target runtime \
   -t "${ACR_NAME}.azurecr.io/inclusify-backend:${IMAGE_TAG}" \
@@ -68,6 +69,7 @@ docker push "${ACR_NAME}.azurecr.io/inclusify-backend:${IMAGE_TAG}"
 # Step 3: Build and push frontend image
 echo "[3/7] Building and pushing frontend image..."
 docker build \
+  --platform linux/amd64 \
   -f infra/docker/frontend.Dockerfile \
   --target runner \
   -t "${ACR_NAME}.azurecr.io/inclusify-frontend:${IMAGE_TAG}" \
