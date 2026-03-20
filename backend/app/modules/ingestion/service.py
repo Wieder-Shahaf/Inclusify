@@ -25,10 +25,9 @@ def _get_docling_converter():
     """Lazy-init Docling converter with OCR disabled."""
     global _docling_converter
     if _docling_converter is None:
-        from docling.document_docling_converter import DocumentConverter
+        from docling.document_converter import DocumentConverter, PdfFormatOption
         from docling.datamodel.pipeline_options import PdfPipelineOptions
         from docling.datamodel.base_models import InputFormat
-        from docling.document_docling_converter import PdfFormatOption
 
         pipeline_opts = PdfPipelineOptions()
         pipeline_opts.do_ocr = False  # Academic PDFs have text layers

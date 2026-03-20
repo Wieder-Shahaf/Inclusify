@@ -58,7 +58,7 @@ async def upload_document(
         raise HTTPException(status_code=400, detail="File too large (50MB limit)")
 
     logger.info("PDF parsing started: filename=%s", filename)
-    result = await parse_pdf_async(file_bytes, timeout=60)
+    result = await parse_pdf_async(file_bytes)
 
     if "error" in result:
         logger.error("PDF parsing failed: filename=%s error=%s", filename, result["error"])

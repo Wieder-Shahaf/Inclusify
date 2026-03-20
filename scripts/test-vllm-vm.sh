@@ -49,7 +49,7 @@ echo "[3/4] Testing English inference..."
 ENGLISH_RESPONSE=$(ssh -o StrictHostKeyChecking=no azureuser@$VM_IP 'curl -s http://localhost:8001/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '"'"'{
-    "model": "/home/azureuser/models/Qwen2.5-3B-Instruct-GPTQ-Int4",
+    "model": "inclusify",
     "messages": [{"role": "user", "content": "Hello, how are you?"}],
     "max_tokens": 50
   }'"'"'' 2>/dev/null)
@@ -67,7 +67,7 @@ echo "[4/4] Testing Hebrew inference..."
 HEBREW_RESPONSE=$(ssh -o StrictHostKeyChecking=no azureuser@$VM_IP 'curl -s http://localhost:8001/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '"'"'{
-    "model": "/home/azureuser/models/Qwen2.5-3B-Instruct-GPTQ-Int4",
+    "model": "inclusify",
     "messages": [{"role": "user", "content": "'\u05e9\u05dc\u05d5\u05dd, \u05de\u05d4 \u05e9\u05dc\u05d5\u05de\u05da?'"}],
     "max_tokens": 50
   }'"'"'' 2>/dev/null)

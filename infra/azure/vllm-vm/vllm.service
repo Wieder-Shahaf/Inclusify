@@ -1,5 +1,5 @@
 [Unit]
-Description=vLLM Inference Server (Qwen2.5-3B-GPTQ)
+Description=vLLM Inference Server (Qwen2.5-3B + Inclusify LoRA)
 Documentation=https://docs.vllm.ai
 After=network.target
 
@@ -14,24 +14,29 @@ Environment="CUDA_VISIBLE_DEVICES=0"
 Environment="PATH=/home/azureuser/vllm-venv/bin:/usr/local/cuda-12.4/bin:/usr/local/bin:/usr/bin:/bin"
 Environment="LD_LIBRARY_PATH=/usr/local/cuda-12.4/lib64"
 
-# vLLM serve command
-# - GPTQ model (not AWQ - T4 incompatible)
+# vLLM serve command with LoRA adapter (THROUGHPUT OPTIMIZED)
+# - FP16 model (5.8GB on disk, ~6GB VRAM)
 # - dtype=half (not bfloat16 - T4 incompatible)
 # - max-model-len=2048 (saves VRAM, sufficient for sentence analysis)
-# - host=127.0.0.1 (localhost only, VNet access via private IP not needed for now)
-# - gpu-memory-utilization=0.9 (leave 10% headroom)
-# - max-num-seqs=16 (batch up to 16 requests in parallel for 6-10x throughput)
-# - max-num-batched-tokens=4096 (token batching for efficiency)
-# NOTE: LoRA adapter integration added in Phase 05.4-04 via --enable-lora and --lora-modules flags
+# - host=0.0.0.0 (allow external connections for backend integration)
+# - gpu-memory-utilization=0.88 (increased KV cache, headroom for CUDA graphs)
+# - max-num-seqs=16 (T4 CUDA graph limit, higher causes OOM during capture)
+# - max-num-batched-tokens=8192 (larger token batches for chunked prefill)
+# - enable-lora: Load LoRA adapters
+# - lora-modules: Inclusify fine-tuned adapter (79.11% accuracy)
+# - max-lora-rank=16: Support LoRA rank up to 16 (our adapter uses r=8)
 ExecStart=/home/azureuser/vllm-venv/bin/vllm serve \
-    /home/azureuser/models/Qwen2.5-3B-Instruct-GPTQ-Int4 \
+    /home/azureuser/models/Qwen2.5-3B-Instruct \
     --dtype half \
     --max-model-len 2048 \
     --port 8001 \
-    --host 127.0.0.1 \
-    --gpu-memory-utilization 0.9 \
+    --host 0.0.0.0 \
+    --gpu-memory-utilization 0.88 \
     --max-num-seqs 16 \
-    --max-num-batched-tokens 4096
+    --max-num-batched-tokens 8192 \
+    --enable-lora \
+    --lora-modules inclusify=/home/azureuser/inclusify/ml/adapters/qwen_r8_d0.2 \
+    --max-lora-rank 16
 
 # Restart configuration
 Restart=always
