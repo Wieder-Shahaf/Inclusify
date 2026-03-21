@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydrating auth state from localStorage on mount
+  /* eslint-disable react-hooks/set-state-in-effect -- Async hydration from localStorage on mount */
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
     const expiry = localStorage.getItem('auth_token_expiry');
@@ -58,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
     }
   }, [validateAndSetUser]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const login = async (email: string, password: string, rememberMe: boolean) => {
     const { access_token } = await authApi.login(email, password);

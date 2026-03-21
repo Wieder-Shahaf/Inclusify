@@ -75,49 +75,46 @@ export default function ProcessingAnimation({ fileName, onComplete, translations
     { id: 'complete', label: t.complete, description: t.completeDesc, icon: CheckCircle2 },
   ];
 
-  const [progress, setProgress] = useState(0);
-  const [currentStageIndex, setCurrentStageIndex] = useState(0);
+  // Timer-based state (only used when no external stage prop)
+  const [timerProgress, setTimerProgress] = useState(0);
+  const [timerStageIndex, setTimerStageIndex] = useState(0);
   const startTimeRef = useRef<number>(0);
   const animationFrameRef = useRef<number>(0);
 
+  // Derive values from external stage prop, or fall back to timer state
+  const currentStageIndex = stage !== undefined ? stageToIndex[stage] : timerStageIndex;
+  const progress = stage !== undefined
+    ? (stage === 'complete' ? 100 : Math.min((stageToIndex[stage] + 1) * 25, 95))
+    : timerProgress;
   const currentStage = stages[currentStageIndex];
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing external stage prop into local state on change
   useEffect(() => {
-    // If external stage is provided, use it instead of timer
-    if (stage !== undefined) {
-      const index = stageToIndex[stage];
-      setCurrentStageIndex(index);
-      setProgress(stage === 'complete' ? 100 : Math.min((index + 1) * 25, 95));
-      return;
-    }
+    // External stage is controlled by parent — no timer needed
+    if (stage !== undefined) return;
 
-    // Existing timer-based logic for demo mode
     startTimeRef.current = Date.now();
 
     const animate = () => {
       const elapsed = Date.now() - startTimeRef.current;
       const newProgress = Math.min((elapsed / TOTAL_DURATION) * 100, 100);
 
-      setProgress(Math.round(newProgress));
+      setTimerProgress(Math.round(newProgress));
 
-      // Calculate which stage we should be on based on progress
       if (newProgress < 20) {
-        setCurrentStageIndex(0);
+        setTimerStageIndex(0);
       } else if (newProgress < 40) {
-        setCurrentStageIndex(1);
+        setTimerStageIndex(1);
       } else if (newProgress < 70) {
-        setCurrentStageIndex(2);
+        setTimerStageIndex(2);
       } else if (newProgress < 95) {
-        setCurrentStageIndex(3);
+        setTimerStageIndex(3);
       } else {
-        setCurrentStageIndex(4);
+        setTimerStageIndex(4);
       }
 
       if (newProgress < 100) {
         animationFrameRef.current = requestAnimationFrame(animate);
       } else {
-        // Small delay before calling onComplete for visual polish
         if (onComplete) {
           setTimeout(onComplete, 500);
         }
