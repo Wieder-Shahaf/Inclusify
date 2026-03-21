@@ -121,6 +121,7 @@ export default function AnalyzePage() {
       const result = await analyzeText(uploadResult.text, {
         language: locale as 'en' | 'he' | 'auto',
         privateMode: privateMode,
+        useAuth: true,
       });
 
       setProcessingStage('complete');
