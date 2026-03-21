@@ -82,11 +82,12 @@ export default function ProcessingAnimation({ fileName, onComplete, translations
 
   const currentStage = stages[currentStageIndex];
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing external stage prop into local state on change
   useEffect(() => {
     // If external stage is provided, use it instead of timer
     if (stage !== undefined) {
       const index = stageToIndex[stage];
-      setCurrentStageIndex(index); // eslint-disable-line react-compiler/react-compiler
+      setCurrentStageIndex(index);
       setProgress(stage === 'complete' ? 100 : Math.min((index + 1) * 25, 95));
       return;
     }

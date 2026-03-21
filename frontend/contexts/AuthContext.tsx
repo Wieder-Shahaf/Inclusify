@@ -40,6 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydrating auth state from localStorage on mount
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
     const expiry = localStorage.getItem('auth_token_expiry');
@@ -47,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (token && expiry) {
       const expiryDate = new Date(expiry);
       if (expiryDate > new Date()) {
-        validateAndSetUser(token).finally(() => setIsLoading(false)); // eslint-disable-line react-compiler/react-compiler
+        validateAndSetUser(token).finally(() => setIsLoading(false));
       } else {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('auth_token_expiry');
