@@ -69,6 +69,8 @@ fastapi_users = FastAPIUsers[User, uuid.UUID](get_user_manager, [auth_backend])
 
 # Export current_active_user dependency for protecting routes
 current_active_user = fastapi_users.current_user(active=True)
+# Optional auth: returns User if token present, None if not
+current_user_optional = fastapi_users.current_user(active=True, optional=True)
 
 # Authentication routers
 auth_router = fastapi_users.get_auth_router(auth_backend)

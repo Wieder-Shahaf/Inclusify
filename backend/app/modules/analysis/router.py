@@ -37,7 +37,7 @@ from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
 from typing import Optional, Literal
 
-from app.auth.users import current_active_user
+from app.auth.users import current_user_optional
 from app.db.models import User
 from app.db import repository as repo
 from app.modules.analysis.hybrid_detector import HybridDetector
@@ -363,25 +363,27 @@ _hybrid_detector = HybridDetector()
 async def analyze_text(
     request: Request,
     body: AnalysisRequest,
-    current_user: User = Depends(current_active_user),
+    current_user: User | None = Depends(current_user_optional),
 ):
     """
     Analyze text for non-inclusive LGBTQ+ language.
 
     **Privacy mode** (default=True): analysis runs entirely in-memory.
-    When private_mode=False, documents, runs, and findings are persisted to DB.
+    When private_mode=False and user is authenticated, documents, runs,
+    and findings are persisted to DB.
 
     Uses hybrid detection (LLM + rule-based fallback).
     Response includes analysis_mode: "llm" | "hybrid" | "rules_only".
 
-    Requires authentication.
+    Authentication is optional. Unauthenticated requests work but skip DB persistence.
     """
     text_length = len(body.text)
     language = body.language or "auto"
     private_mode = body.private_mode if body.private_mode is not None else True
+    user_id = current_user.id if current_user else "anonymous"
     logger.info(
         "Analysis started: user=%s text_length=%d language=%s private_mode=%s",
-        current_user.id, text_length, language, private_mode,
+        user_id, text_length, language, private_mode,
     )
 
     start_time = time.monotonic()
@@ -395,8 +397,8 @@ async def analyze_text(
         len(issues), analysis_mode, elapsed,
     )
 
-    # Persist to DB only when private_mode is off
-    if not private_mode:
+    # Persist to DB only when private_mode is off and user is authenticated
+    if not private_mode and current_user is not None:
         await _persist_results(
             request=request,
             user=current_user,
