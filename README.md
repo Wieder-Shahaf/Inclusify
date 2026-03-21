@@ -1,5 +1,4 @@
 <div align="center">
-  <img src="frontend/public/Inclusify.png" alt="Inclusify Logo" width="200"/>
 
   # Inclusify
 
