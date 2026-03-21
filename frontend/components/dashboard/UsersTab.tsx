@@ -31,7 +31,7 @@ export default function UsersTab({ translations }: UsersTabProps) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
-  const { data, error } = useAdminUsers(page, 20, search || undefined);
+  const { data, isLoading, error } = useAdminUsers(page, 20, search || undefined);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

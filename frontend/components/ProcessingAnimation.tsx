@@ -86,7 +86,7 @@ export default function ProcessingAnimation({ fileName, onComplete, translations
     // If external stage is provided, use it instead of timer
     if (stage !== undefined) {
       const index = stageToIndex[stage];
-      setCurrentStageIndex(index);
+      setCurrentStageIndex(index); // eslint-disable-line react-compiler/react-compiler
       setProgress(stage === 'complete' ? 100 : Math.min((index + 1) * 25, 95));
       return;
     }

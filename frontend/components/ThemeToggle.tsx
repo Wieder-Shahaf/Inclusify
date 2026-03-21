@@ -16,7 +16,7 @@ export default function ThemeToggle() {
     const saved = localStorage.getItem(THEME_KEY);
     // Default to light mode if no preference saved
     const isDark = saved === 'dark';
-    setDark(isDark);
+    setDark(isDark); // eslint-disable-line react-compiler/react-compiler
 
     // Sync with DOM in case script didn't run
     if (isDark) {

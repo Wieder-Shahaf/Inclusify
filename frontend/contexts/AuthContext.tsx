@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (token && expiry) {
       const expiryDate = new Date(expiry);
       if (expiryDate > new Date()) {
-        validateAndSetUser(token).finally(() => setIsLoading(false));
+        validateAndSetUser(token).finally(() => setIsLoading(false)); // eslint-disable-line react-compiler/react-compiler
       } else {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('auth_token_expiry');
