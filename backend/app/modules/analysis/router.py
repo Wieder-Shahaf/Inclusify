@@ -37,10 +37,18 @@ from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
 from typing import Optional, Literal
 
-from app.auth.users import current_user_optional
+from app.auth.users import current_active_user
 from app.db.models import User
 from app.db import repository as repo
 from app.modules.analysis.hybrid_detector import HybridDetector
+
+
+async def get_current_user_or_none(request: Request) -> User | None:
+    """Try to get the authenticated user; return None if not authenticated."""
+    try:
+        return await current_active_user(request)
+    except Exception:
+        return None
 
 logger = logging.getLogger(__name__)
 
@@ -363,7 +371,7 @@ _hybrid_detector = HybridDetector()
 async def analyze_text(
     request: Request,
     body: AnalysisRequest,
-    current_user: User | None = Depends(current_user_optional),
+    current_user: User | None = Depends(get_current_user_or_none),
 ):
     """
     Analyze text for non-inclusive LGBTQ+ language.
