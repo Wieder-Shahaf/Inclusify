@@ -348,10 +348,8 @@ async def _persist_results(
                 await repo.finish_run(conn, run_id=run_id, status="succeeded", runtime_ms=runtime_ms)
 
         logger.info("DB persistence succeeded: user_id=%s issues=%d", user.id, len(issues))
-        return None
-    except Exception as e:
+    except Exception:
         logger.exception("DB persistence failed — analysis results were still returned to user")
-        return str(e)
 
 
 # =============================================================================
@@ -400,9 +398,8 @@ async def analyze_text(
     )
 
     # Persist to DB only when private_mode is off and user is authenticated
-    persist_error = None
     if not private_mode and current_user is not None:
-        persist_error = await _persist_results(
+        await _persist_results(
             request=request,
             user=current_user,
             text=body.text,
@@ -413,15 +410,11 @@ async def analyze_text(
             runtime_ms=runtime_ms,
         )
 
-    debug_info = f"user={'yes' if current_user else 'no'}, private={private_mode}, org={getattr(current_user, 'org_id', 'N/A')}"
-    if persist_error:
-        debug_info += f", db_error={persist_error}"
-
     return AnalysisResponse(
         original_text=body.text,
         analysis_status="Success",
         issues_found=issues,
         corrected_text=None,
-        note=f"Found {len(issues)} issue(s). Mode: {analysis_mode} [{debug_info}]",
+        note=f"Found {len(issues)} issue(s). Mode: {analysis_mode}",
         analysis_mode=analysis_mode,
     )
