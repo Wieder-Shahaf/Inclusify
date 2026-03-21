@@ -18,30 +18,30 @@ The rule-based approach serves as:
 2. A baseline for high-precision detection of known terms
 3. Complementary detection for terms not in LLM training
 
+DB persistence:
+- When private_mode=False and DB is available, persists documents,
+  analysis_runs, findings, and suggestions.
+- When private_mode=True (default), runs entirely in-memory.
+- DB failures never break analysis — results are always returned.
+
 TODO (remaining):
 - [ ] Add confidence scores from model
-- [ ] Enable DB persistence (commented code below)
 =============================================================================
 """
 
 import logging
-
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
-from typing import Optional, Literal
-import asyncio
 import hashlib
 import time
 
+from fastapi import APIRouter, Depends, Request
+from pydantic import BaseModel, Field
+from typing import Optional, Literal
+
 from app.auth.users import current_active_user
 from app.db.models import User
+from app.db import repository as repo
 
 logger = logging.getLogger(__name__)
-
-# [CONFLICT 1 SOLVED] Friend's imports are saved here but disabled
-# --- PENDING DB INTEGRATION (Uncomment when DB is ready) ---
-# from app.db.deps import get_db
-# from app.db import repository as repo
 
 router = APIRouter()
 
@@ -54,10 +54,6 @@ class AnalysisRequest(BaseModel):
     text: str = Field(..., min_length=1)
     language: Optional[Literal['en', 'he', 'auto']] = 'auto'
     private_mode: Optional[bool] = True
-    
-    # [CONFLICT 2 SOLVED] Friend's fields added here (as Optional) so they don't break validation
-    org_slug: Optional[str] = None
-    user_email: Optional[str] = None
 
 
 class Issue(BaseModel):
@@ -80,7 +76,24 @@ class AnalysisResponse(BaseModel):
 
 
 # =============================================================================
-# DEMO: Rule-Based Term Dictionary
+# Severity Mapping (API → DB)
+# =============================================================================
+
+_SEVERITY_TO_DB = {
+    "potentially_offensive": "high",
+    "biased": "medium",
+    "factually_incorrect": "medium",
+    "outdated": "low",
+}
+
+
+def _map_severity_to_db(api_severity: str) -> str:
+    """Map API severity (outdated/biased/...) to DB severity (low/medium/high)."""
+    return _SEVERITY_TO_DB.get(api_severity, "medium")
+
+
+# =============================================================================
+# Rule-Based Term Dictionary
 # =============================================================================
 
 INCLUSIVE_LANGUAGE_RULES = [
@@ -223,13 +236,11 @@ INCLUSIVE_LANGUAGE_RULES = [
 
 
 # =============================================================================
-# DEMO: Rule-Based Detection Function
+# Rule-Based Detection Function
 # =============================================================================
 
 def detect_rule_based_issues(text: str) -> list[Issue]:
-    """
-    Detect problematic terms using rule-based keyword matching.
-    """
+    """Detect problematic terms using rule-based keyword matching."""
     logger.info("Rule-based detection started: text_length=%d rules=%d", len(text), len(INCLUSIVE_LANGUAGE_RULES))
     start_time = time.monotonic()
     issues = []
@@ -239,14 +250,12 @@ def detect_rule_based_issues(text: str) -> list[Issue]:
         term = rule["term"]
         term_lower = term.lower()
 
-        # Find all occurrences (case-insensitive)
         start = 0
         while True:
             idx = text_lower.find(term_lower, start)
             if idx == -1:
                 break
 
-            # Get the actual text from original (preserving case)
             actual_span = text[idx:idx + len(term)]
 
             issues.append(Issue(
@@ -261,7 +270,6 @@ def detect_rule_based_issues(text: str) -> list[Issue]:
 
             start = idx + len(term)
 
-    # Sort by position in text
     issues.sort(key=lambda x: x.start)
     elapsed = time.monotonic() - start_time
     logger.info("Rule-based detection completed: issues_found=%d elapsed_s=%.3f", len(issues), elapsed)
@@ -269,172 +277,143 @@ def detect_rule_based_issues(text: str) -> list[Issue]:
 
 
 # =============================================================================
-# ACTIVE ENDPOINT (Hybrid Detection)
+# DB Persistence (non-private mode only)
+# =============================================================================
+
+async def _persist_results(
+    request: Request,
+    user: User,
+    text: str,
+    language: str,
+    private_mode: bool,
+    analysis_mode: str,
+    issues: list[Issue],
+    runtime_ms: int,
+) -> None:
+    """Persist analysis results to DB. Fails silently — never breaks the response."""
+    pool = getattr(request.app.state, "db_pool", None)
+    if pool is None:
+        logger.debug("DB pool not available — skipping persistence")
+        return
+
+    text_sha256 = hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+    try:
+        async with pool.acquire(timeout=5.0) as conn:
+            async with conn.transaction():
+                doc_id = await repo.create_document(
+                    conn=conn,
+                    org_id=user.org_id,
+                    user_id=user.id,
+                    input_type="paste",
+                    language=language,
+                    private_mode=private_mode,
+                    mime_type="text/plain",
+                    text_storage_ref=None,
+                    text_sha256=text_sha256,
+                )
+
+                run_id = await repo.create_run(
+                    conn=conn,
+                    document_id=doc_id,
+                    model_version=f"hybrid-v1-{analysis_mode}",
+                    status="running",
+                    config_snapshot={
+                        "mode": analysis_mode,
+                        "language": language,
+                        "private_mode": private_mode,
+                    },
+                )
+
+                for iss in issues:
+                    finding_id = await repo.insert_finding(
+                        conn=conn,
+                        run_id=run_id,
+                        category=iss.type,
+                        severity=_map_severity_to_db(iss.severity),
+                        start_idx=iss.start,
+                        end_idx=iss.end,
+                        explanation=iss.description,
+                        excerpt_redacted=iss.flagged_text,
+                    )
+                    if iss.suggestion:
+                        await repo.insert_suggestion(
+                            conn=conn,
+                            finding_id=finding_id,
+                            language=language if language in ("he", "en") else "he",
+                            replacement_text=iss.suggestion,
+                        )
+
+                await repo.finish_run(conn, run_id=run_id, status="succeeded", runtime_ms=runtime_ms)
+
+        logger.info("DB persistence succeeded: user_id=%s issues=%d", user.id, len(issues))
+    except Exception:
+        logger.exception("DB persistence failed — analysis results were still returned to user")
+
+
+# =============================================================================
+# Endpoint (Hybrid Detection + Optional DB Persistence)
 # =============================================================================
 
 from app.modules.analysis.hybrid_detector import HybridDetector
 
-# Module-level detector instance (created once, reused)
 _hybrid_detector = HybridDetector()
 
 
 @router.post("/analyze", response_model=AnalysisResponse)
 async def analyze_text(
-    request: AnalysisRequest,
-    # TODO: Re-enable auth once FastAPI Users schema matches DB
-    # current_user: User = Depends(current_active_user)
+    request: Request,
+    body: AnalysisRequest,
+    current_user: User = Depends(current_active_user),
 ):
     """
     Analyze text for non-inclusive LGBTQ+ language.
 
-    **PRIVACY MODE:**
-    When private_mode=True (default), analysis runs entirely in-memory.
-    No documents, analysis_runs, or findings are persisted to the database.
-    This ensures user privacy for sensitive academic content.
+    **Privacy mode** (default=True): analysis runs entirely in-memory.
+    When private_mode=False, documents, runs, and findings are persisted to DB.
 
-    **CURRENT STATUS: HYBRID DETECTION (LLM + Rules)**
+    Uses hybrid detection (LLM + rule-based fallback).
+    Response includes analysis_mode: "llm" | "hybrid" | "rules_only".
 
-    Uses LLM for contextual analysis with rule-based fallback.
-    Response includes analysis_mode field indicating detection method:
-    - "llm": All LLM success
-    - "hybrid": Partial LLM + partial rules
-    - "rules_only": LLM unavailable, rules only
-
-    Requires authentication. User info available for logging/tracking.
+    Requires authentication.
     """
-    text_length = len(request.text)
-    language = request.language or "auto"
-    logger.info("Analysis started: text_length=%d language=%s private_mode=%s", text_length, language, request.private_mode)
+    text_length = len(body.text)
+    language = body.language or "auto"
+    private_mode = body.private_mode if body.private_mode is not None else True
+    logger.info(
+        "Analysis started: user=%s text_length=%d language=%s private_mode=%s",
+        current_user.id, text_length, language, private_mode,
+    )
 
     start_time = time.monotonic()
 
-    # Use hybrid detector (LLM + rules fallback)
-    issues, analysis_mode = await _hybrid_detector.analyze(request.text, language=language)
+    issues, analysis_mode = await _hybrid_detector.analyze(body.text, language=language)
 
     elapsed = time.monotonic() - start_time
+    runtime_ms = int(elapsed * 1000)
     logger.info(
         "Analysis completed: issues_found=%d analysis_mode=%s elapsed_s=%.3f",
         len(issues), analysis_mode, elapsed,
     )
 
-    return AnalysisResponse(
-        original_text=request.text,
-        analysis_status="Success",
-        issues_found=issues,
-        corrected_text=None,  # TODO: Generate with LLM
-        note=f"Found {len(issues)} issue(s). Mode: {analysis_mode}",
-        analysis_mode=analysis_mode,
-    )
-
-
-# =============================================================================
-# SAVED: FRIEND'S DB IMPLEMENTATION (Commented Out)
-# =============================================================================
-# TODO: Uncomment this section (and imports at top) when Docker/Postgres is running.
-# --- DB PERSISTENCE (only for non-private mode) ---
-# When private_mode=False, the commented code below can be enabled to persist
-# documents, analysis_runs, and findings to the database.
-# When private_mode=True, skip all DB operations entirely.
-# -----------------------------------------------------------------------------
-
-"""
-# [CONFLICT 3 & 4 SAVED HERE] Your friend's entire logic is preserved below:
-
-@router.post("/analyze", response_model=AnalysisResponse)
-async def analyze_text(request: AnalysisRequest, conn=Depends(get_db)):
-    t0 = time.time()
-
-    await asyncio.sleep(0.3)
-
-    issues = detect_rule_based_issues(request.text)
-
-    # ---- Resolve org/user (לפי org_slug/user_email אם סופקו, אחרת "האחרונים" לדמו) ----
-    org = await repo.get_org_by_slug(conn, request.org_slug) if request.org_slug else await repo.get_most_recent_org(conn)
-    if not org:
-        raise HTTPException(status_code=400, detail="No organization found. Run seed.sql or provide org_slug.")
-
-    org_id = org["org_id"]
-    default_private_mode = org["default_private_mode"]
-
-    user = await repo.get_user_by_email(conn, request.user_email) if request.user_email else await repo.get_most_recent_user(conn)
-    if not user:
-        raise HTTPException(status_code=400, detail="No user found. Run seed.sql or provide user_email.")
-
-    user_id = user["user_id"]
-    user_org_id = user["org_id"]
-    if user_org_id != org_id:
-        raise HTTPException(status_code=403, detail="User does not belong to the selected organization.")
-
-    private_mode = bool(request.private_mode) if request.private_mode is not None else bool(default_private_mode)
-
-    # לא שומרים טקסט מלא אם private_mode=True, רק hash
-    text_sha256 = hashlib.sha256(request.text.encode("utf-8")).hexdigest()
-
-    # ---- DB transaction ----
-    try:
-        async with conn.transaction():
-            doc_id = await repo.create_document(
-                conn=conn,
-                org_id=org_id,
-                user_id=user_id,
-                input_type="paste",
-                language=request.language or "auto",
-                private_mode=private_mode,
-                mime_type="text/plain",
-                text_storage_ref=None,
-                text_sha256=text_sha256,
-            )
-
-            run_id = await repo.create_run(
-                conn=conn,
-                document_id=doc_id,
-                model_version="rules-v0",
-                status="running",
-                config_snapshot={"mode": "rule-based", "language": request.language, "private_mode": private_mode},
-            )
-
-            # Insert findings + suggestions
-            def map_severity(s: str) -> str:
-                # mapping ל-db (low/medium/high)
-                if s == "potentially_offensive":
-                    return "high"
-                if s in ("biased", "factually_incorrect"):
-                    return "medium"
-                return "low"  # outdated
-
-            for iss in issues:
-                finding_id = await repo.insert_finding(
-                    conn=conn,
-                    run_id=run_id,
-                    category=iss.type,
-                    severity=map_severity(iss.severity),
-                    start_idx=iss.start,
-                    end_idx=iss.end,
-                    explanation=iss.description,
-                    excerpt_redacted=iss.flagged_text,
-                    rule_id=None,
-                    confidence=None,
-                )
-                if iss.suggestion:
-                    await repo.insert_suggestion(
-                        conn=conn,
-                        finding_id=finding_id,
-                        language=(request.language if request.language in ("he", "en") else "he"),
-                        replacement_text=iss.suggestion,
-                        rationale="Auto-suggestion from rule-based demo",
-                        source_id=None,
-                    )
-
-            runtime_ms = int((time.time() - t0) * 1000)
-            await repo.finish_run(conn, run_id=run_id, status="succeeded", runtime_ms=runtime_ms)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"DB error: {e}")
+    # Persist to DB only when private_mode is off
+    if not private_mode:
+        await _persist_results(
+            request=request,
+            user=current_user,
+            text=body.text,
+            language=language,
+            private_mode=private_mode,
+            analysis_mode=analysis_mode,
+            issues=issues,
+            runtime_ms=runtime_ms,
+        )
 
     return AnalysisResponse(
-        original_text=request.text,
+        original_text=body.text,
         analysis_status="Success",
         issues_found=issues,
         corrected_text=None,
-        note=f"Saved to DB: document_id={doc_id}, run_id={run_id}. DEMO MODE: {len(issues)} issue(s)."
+        note=f"Found {len(issues)} issue(s). Mode: {analysis_mode}",
+        analysis_mode=analysis_mode,
     )
-"""

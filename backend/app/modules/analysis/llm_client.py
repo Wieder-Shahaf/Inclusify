@@ -19,7 +19,7 @@ from app.modules.analysis.circuit_breaker import vllm_breaker
 logger = logging.getLogger(__name__)
 
 
-# System prompt for the model (from ml/inference_demo.py)
+# System prompt for the model
 SYSTEM_PROMPT = """You are an expert academic editor for the Inclusify project. Analyze sentences for LGBTQ+ inclusive language compliance.
 
 OUTPUT REQUIREMENTS:

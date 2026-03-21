@@ -2,11 +2,13 @@ import asyncpg
 import json
 from typing import Optional
 
+
 async def get_org_by_slug(conn: asyncpg.Connection, slug: str):
     return await conn.fetchrow(
         "SELECT org_id, name, default_private_mode FROM organizations WHERE slug=$1 LIMIT 1;",
         slug,
     )
+
 
 async def get_user_by_email(conn: asyncpg.Connection, email: str):
     return await conn.fetchrow(
@@ -14,15 +16,6 @@ async def get_user_by_email(conn: asyncpg.Connection, email: str):
         email,
     )
 
-async def get_most_recent_org(conn: asyncpg.Connection):
-    return await conn.fetchrow(
-        "SELECT org_id, name, default_private_mode FROM organizations ORDER BY created_at DESC LIMIT 1;"
-    )
-
-async def get_most_recent_user(conn: asyncpg.Connection):
-    return await conn.fetchrow(
-        "SELECT user_id, org_id, role FROM users ORDER BY created_at DESC LIMIT 1;"
-    )
 
 async def create_document(
     conn: asyncpg.Connection,
@@ -55,6 +48,7 @@ async def create_document(
     )
     return row["document_id"]
 
+
 async def create_run(conn: asyncpg.Connection, document_id, model_version: str, status: str, config_snapshot: dict):
     row = await conn.fetchrow(
         """
@@ -70,6 +64,7 @@ async def create_run(conn: asyncpg.Connection, document_id, model_version: str, 
     )
     return row["run_id"]
 
+
 async def finish_run(conn: asyncpg.Connection, run_id, status: str, runtime_ms: int):
     await conn.execute(
         """
@@ -81,6 +76,7 @@ async def finish_run(conn: asyncpg.Connection, run_id, status: str, runtime_ms: 
         runtime_ms,
         run_id,
     )
+
 
 async def insert_finding(
     conn: asyncpg.Connection,
@@ -112,6 +108,7 @@ async def insert_finding(
         excerpt_redacted,
     )
     return row["finding_id"]
+
 
 async def insert_suggestion(
     conn: asyncpg.Connection,
