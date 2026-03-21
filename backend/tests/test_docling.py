@@ -1,9 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
 
-# Test PDF bytes (minimal valid PDF structure)
-MINIMAL_PDF = b"%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj 3 0 obj<</Type/Page/MediaBox[0 0 612 792]/Parent 2 0 R>>endobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000052 00000 n \n0000000101 00000 n \ntrailer<</Size 4/Root 1 0 R>>\nstartxref\n178\n%%EOF"
-
 
 class TestParsePdfSync:
     """Tests for the synchronous PDF parsing function."""
@@ -12,12 +9,12 @@ class TestParsePdfSync:
         """Test that >50 page PDFs are rejected with specific message."""
         from app.modules.ingestion.service import _parse_pdf_sync
 
-        with patch('pypdf.PdfReader') as mock_reader:
+        with patch('app.modules.ingestion.service.PdfReader') as mock_reader:
             mock_instance = MagicMock()
             mock_instance.pages = [MagicMock()] * 55  # 55 pages
             mock_reader.return_value = mock_instance
 
-            result = _parse_pdf_sync(MINIMAL_PDF)
+            result = _parse_pdf_sync(b"%PDF-1.4 fake")
             assert "error" in result
             assert "exceeds 50 page limit" in result["error"]
             assert "55 pages" in result["error"]
@@ -27,10 +24,10 @@ class TestParsePdfSync:
         from app.modules.ingestion.service import _parse_pdf_sync
         from pypdf.errors import PdfReadError
 
-        with patch('pypdf.PdfReader') as mock_reader:
+        with patch('app.modules.ingestion.service.PdfReader') as mock_reader:
             mock_reader.side_effect = PdfReadError("File is encrypted")
 
-            result = _parse_pdf_sync(MINIMAL_PDF)
+            result = _parse_pdf_sync(b"%PDF-1.4 fake")
             assert result == {"error": "PDF is password-protected"}
 
     def test_corrupted_pdf_error(self):
@@ -38,7 +35,7 @@ class TestParsePdfSync:
         from app.modules.ingestion.service import _parse_pdf_sync
         from pypdf.errors import PdfReadError
 
-        with patch('pypdf.PdfReader') as mock_reader:
+        with patch('app.modules.ingestion.service.PdfReader') as mock_reader:
             mock_reader.side_effect = PdfReadError("Invalid PDF structure")
 
             result = _parse_pdf_sync(b"not a pdf")
@@ -56,9 +53,9 @@ class TestParsePdfSync:
         mock_result.document.export_to_markdown.return_value = "# Document Title\n\nSample text content."
         mock_converter_instance.convert.return_value = mock_result
 
-        with patch('pypdf.PdfReader', return_value=mock_reader_instance):
+        with patch('app.modules.ingestion.service.PdfReader', return_value=mock_reader_instance):
             with patch('app.modules.ingestion.service._get_docling_converter', return_value=mock_converter_instance):
-                result = _parse_pdf_sync(MINIMAL_PDF)
+                result = _parse_pdf_sync(b"%PDF-1.4 fake")
                 assert "text" in result
                 assert "page_count" in result
                 assert result["page_count"] == 5
@@ -76,7 +73,7 @@ class TestParsePdfAsync:
         mock_result = {"text": "test content", "page_count": 1}
 
         with patch('app.modules.ingestion.service._parse_pdf_sync', return_value=mock_result):
-            result = await parse_pdf_async(MINIMAL_PDF)
+            result = await parse_pdf_async(b"%PDF-1.4 fake")
             assert result == mock_result
 
 
@@ -100,8 +97,7 @@ class TestUploadEndpoint:
         """Test files over 50MB are rejected."""
         from io import BytesIO
 
-        # Create a "large" file header (we mock the actual size check)
-        large_content = b"x" * (50 * 1024 * 1024 + 1)  # Just over 50MB
+        large_content = b"x" * (50 * 1024 * 1024 + 1)
 
         response = await test_client.post(
             "/api/v1/ingestion/upload",
@@ -120,7 +116,7 @@ class TestUploadEndpoint:
         with patch('app.modules.ingestion.router.parse_pdf_async', return_value=mock_result):
             response = await test_client.post(
                 "/api/v1/ingestion/upload",
-                files={"file": ("test.pdf", BytesIO(MINIMAL_PDF), "application/pdf")}
+                files={"file": ("test.pdf", BytesIO(b"%PDF-1.4 fake"), "application/pdf")}
             )
             assert response.status_code == 200
             data = response.json()
@@ -139,7 +135,7 @@ class TestUploadEndpoint:
         with patch('app.modules.ingestion.router.parse_pdf_async', return_value=mock_result):
             response = await test_client.post(
                 "/api/v1/ingestion/upload",
-                files={"file": ("large.pdf", BytesIO(MINIMAL_PDF), "application/pdf")}
+                files={"file": ("large.pdf", BytesIO(b"%PDF-1.4 fake"), "application/pdf")}
             )
             assert response.status_code == 400
             assert "50 page limit" in response.json()["detail"]
@@ -154,7 +150,7 @@ class TestUploadEndpoint:
         with patch('app.modules.ingestion.router.parse_pdf_async', return_value=mock_result):
             response = await test_client.post(
                 "/api/v1/ingestion/upload",
-                files={"file": ("secret.pdf", BytesIO(MINIMAL_PDF), "application/pdf")}
+                files={"file": ("secret.pdf", BytesIO(b"%PDF-1.4 fake"), "application/pdf")}
             )
             assert response.status_code == 400
             assert "password-protected" in response.json()["detail"]
