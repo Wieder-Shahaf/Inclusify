@@ -6,11 +6,9 @@ Uses subprocess isolation to protect the API server from memory exhaustion.
 
 import logging
 
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException
 from app.modules.ingestion.service import parse_pdf_async
 from app.modules.ingestion.schemas import UploadResponse
-from app.auth.users import current_active_user
-from app.db.models import User
 
 logger = logging.getLogger(__name__)
 

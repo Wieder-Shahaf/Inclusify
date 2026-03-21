@@ -7,7 +7,7 @@ import logging
 import uuid
 from typing import Optional
 
-from fastapi import Depends, Request
+from fastapi import Request
 from fastapi_users import BaseUserManager, UUIDIDMixin
 
 from app.db.models import User
@@ -56,9 +56,6 @@ async def get_user_manager(user_db=None):
     Note: user_db is injected by FastAPI Users dependency chain.
     """
     if user_db is None:
-        # Import here to avoid circular import
-        from app.auth.users import get_user_db
-        # This should be called through the dependency chain
         raise RuntimeError("get_user_manager should be called via Depends()")
 
     yield UserManager(user_db)

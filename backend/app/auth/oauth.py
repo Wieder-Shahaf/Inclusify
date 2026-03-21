@@ -66,8 +66,6 @@ async def google_callback(
     On success: Exchange code for tokens, create/link user, redirect with JWT.
     On error: Redirect to frontend with error param.
     """
-    from sqlalchemy import select
-
     from app.auth.users import async_session_maker
 
     frontend_url = settings.FRONTEND_URL.rstrip("/")

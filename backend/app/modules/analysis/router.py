@@ -40,6 +40,7 @@ from typing import Optional, Literal
 from app.auth.users import current_active_user
 from app.db.models import User
 from app.db import repository as repo
+from app.modules.analysis.hybrid_detector import HybridDetector
 
 logger = logging.getLogger(__name__)
 
@@ -354,8 +355,6 @@ async def _persist_results(
 # =============================================================================
 # Endpoint (Hybrid Detection + Optional DB Persistence)
 # =============================================================================
-
-from app.modules.analysis.hybrid_detector import HybridDetector
 
 _hybrid_detector = HybridDetector()
 

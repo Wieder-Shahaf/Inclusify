@@ -7,7 +7,6 @@ LLM results are preferred for overlapping spans; rule-based serves as fallback.
 
 import asyncio
 import logging
-import time
 from typing import TYPE_CHECKING
 
 from app.modules.analysis.llm_client import VLLMClient, map_severity

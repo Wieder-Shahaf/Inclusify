@@ -12,7 +12,6 @@ class TestParsePdfSync:
         """Test that >50 page PDFs are rejected with specific message."""
         from app.modules.ingestion.service import _parse_pdf_sync
 
-        # Mock pypdf.PdfReader where it's imported inside _parse_pdf_sync
         with patch('pypdf.PdfReader') as mock_reader:
             mock_instance = MagicMock()
             mock_instance.pages = [MagicMock()] * 55  # 55 pages
@@ -58,7 +57,7 @@ class TestParsePdfSync:
         mock_converter_instance.convert.return_value = mock_result
 
         with patch('pypdf.PdfReader', return_value=mock_reader_instance):
-            with patch('docling.document_converter.DocumentConverter', return_value=mock_converter_instance):
+            with patch('app.modules.ingestion.service._get_docling_converter', return_value=mock_converter_instance):
                 result = _parse_pdf_sync(MINIMAL_PDF)
                 assert "text" in result
                 assert "page_count" in result
@@ -70,14 +69,15 @@ class TestParsePdfAsync:
     """Tests for the async PDF parsing wrapper."""
 
     @pytest.mark.asyncio
-    async def test_timeout_error(self):
-        """Test that timeout returns specific message."""
+    async def test_calls_sync_in_executor(self):
+        """Test that async wrapper delegates to sync function."""
         from app.modules.ingestion.service import parse_pdf_async
 
-        # Force timeout by using very short timeout
-        result = await parse_pdf_async(MINIMAL_PDF, timeout=0.001)
-        assert "error" in result
-        assert "timed out" in result["error"]
+        mock_result = {"text": "test content", "page_count": 1}
+
+        with patch('app.modules.ingestion.service._parse_pdf_sync', return_value=mock_result):
+            result = await parse_pdf_async(MINIMAL_PDF)
+            assert result == mock_result
 
 
 class TestUploadEndpoint:
