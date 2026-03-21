@@ -97,8 +97,6 @@ export default function OverviewTab({ days, translations }: OverviewTabProps) {
   const { kpis, isLoading: kpisLoading, error: kpisError } = useAdminKPIs(days);
   const { data: activityData, isLoading: activityLoading, error: activityError } = useAdminActivity(activityPage, 20, days);
 
-  const isLoading = kpisLoading || activityLoading;
-
   return (
     <div className="space-y-6">
       {/* KPI Cards */}
