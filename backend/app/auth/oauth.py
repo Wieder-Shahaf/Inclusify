@@ -69,7 +69,7 @@ async def google_callback(
     from app.auth.users import async_session_maker
 
     frontend_url = settings.FRONTEND_URL.rstrip("/")
-    callback_path = "/en/oauth/callback"  # Default to English locale
+    callback_path = "/oauth/callback"
 
     # Handle OAuth errors from Google
     if error:
