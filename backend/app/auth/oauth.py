@@ -33,9 +33,20 @@ google_oauth_router = APIRouter()
 
 
 def get_oauth_callback_url(request: Request) -> str:
-    """Build callback URL from current request."""
-    # Use request URL to determine scheme and host
-    return str(request.url_for("google_callback"))
+    """Build callback URL from current request.
+
+    Behind reverse proxies (Azure Container Apps), the internal request
+    arrives as http:// even though the external URL is https://.
+    We respect X-Forwarded-Proto if present, otherwise force https in
+    production (when host is not localhost).
+    """
+    url = str(request.url_for("google_callback"))
+    forwarded_proto = request.headers.get("x-forwarded-proto")
+    if forwarded_proto == "https" and url.startswith("http://"):
+        url = "https://" + url[len("http://"):]
+    elif "localhost" not in url and url.startswith("http://"):
+        url = "https://" + url[len("http://"):]
+    return url
 
 
 @google_oauth_router.get("/authorize")
