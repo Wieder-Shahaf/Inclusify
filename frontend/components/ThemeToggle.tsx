@@ -6,24 +6,25 @@ import { Sun, Moon } from 'lucide-react';
 
 const THEME_KEY = 'inclusify-theme';
 
-function getInitialTheme(): boolean | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem(THEME_KEY) === 'dark';
-}
-
 export default function ThemeToggle() {
-  const [dark, setDark] = useState<boolean | null>(getInitialTheme);
+  const [dark, setDark] = useState<boolean | null>(null);
   const mountedRef = useRef(false);
 
+  // Hydrate theme from localStorage after mount (avoids SSR mismatch)
+  /* eslint-disable react-hooks/set-state-in-effect -- Must hydrate from localStorage post-mount to avoid SSR mismatch */
   useEffect(() => {
     mountedRef.current = true;
-    // Sync with DOM on mount in case inline script didn't run
-    if (dark === true) {
+    const saved = localStorage.getItem(THEME_KEY);
+    const isDark = saved === 'dark';
+    setDark(isDark);
+
+    if (isDark) {
       document.documentElement.classList.add('dark');
-    } else if (dark === false) {
+    } else {
       document.documentElement.classList.remove('dark');
     }
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Update DOM and localStorage when theme changes
   useEffect(() => {
