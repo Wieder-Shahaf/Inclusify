@@ -418,6 +418,7 @@ NEXT_PUBLIC_MAX_FILE_SIZE_MB=10
 
 ## 📖 Documentation
 
+- **[Developer Onboarding Guide](ONBOARDING.md)** - Setup instructions for new team members
 - **[Product Requirements](docs/requirements/)** - Feature specs and user stories
 - **[System Architecture](docs/architecture/)** - Technical design and data flow
 - **[Threat Model](docs/threat_model/)** - Security analysis and mitigations
