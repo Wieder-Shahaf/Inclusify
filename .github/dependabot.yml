@@ -1,34 +1,4 @@
 version: 2
-updates:
-  # Frontend dependencies
-  - package-ecosystem: "npm"
-    directory: "/frontend"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
-    labels:
-      - "dependencies"
-      - "frontend"
-    reviewers:
-      - "shahafwieder"
-
-  # Backend dependencies
-  - package-ecosystem: "pip"
-    directory: "/backend"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
-    labels:
-      - "dependencies"
-      - "backend"
-    reviewers:
-      - "shahafwieder"
-
-  # GitHub Actions
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    labels:
-      - "dependencies"
-      - "ci"
+updates: []
+# Dependency updates disabled until after final presentation (August 2026).
+# To re-enable, restore the npm/pip/github-actions ecosystems from git history.
