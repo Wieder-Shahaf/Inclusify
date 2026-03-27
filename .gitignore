@@ -6,9 +6,11 @@
 # Python
 __pycache__/
 *.pyc
+*.db
 .venv/
 venv/
 .env
+.env.team
 
 # Node
 node_modules/

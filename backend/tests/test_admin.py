@@ -8,7 +8,7 @@ TDD RED phase: Tests written before implementation.
 import pytest
 from datetime import datetime, timezone
 from uuid import uuid4
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 
 # ============================================================================

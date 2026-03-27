@@ -3,7 +3,7 @@ Tests for hybrid detection logic.
 Tests cover overlap calculation, result merging, and HybridDetector orchestration.
 """
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 from app.modules.analysis.router import Issue
 
@@ -17,7 +17,7 @@ class TestOverlapCalculation:
 
         # Two issues at exact same span
         issue1 = Issue(
-            span="homosexual",
+            flagged_text="homosexual",
             severity="outdated",
             type="Outdated Terminology",
             description="Test",
@@ -25,7 +25,7 @@ class TestOverlapCalculation:
             end=20
         )
         issue2 = Issue(
-            span="homosexual",
+            flagged_text="homosexual",
             severity="biased",
             type="Different Type",
             description="Test",
@@ -41,7 +41,7 @@ class TestOverlapCalculation:
 
         # 50% overlap: issue1 spans 10-20, issue2 spans 15-25
         issue1 = Issue(
-            span="first",
+            flagged_text="first",
             severity="outdated",
             type="Type",
             description="Test",
@@ -49,7 +49,7 @@ class TestOverlapCalculation:
             end=20
         )
         issue2 = Issue(
-            span="second",
+            flagged_text="second",
             severity="biased",
             type="Type",
             description="Test",
@@ -68,7 +68,7 @@ class TestOverlapCalculation:
         from app.modules.analysis.hybrid_detector import calculate_overlap
 
         issue1 = Issue(
-            span="first",
+            flagged_text="first",
             severity="outdated",
             type="Type",
             description="Test",
@@ -76,7 +76,7 @@ class TestOverlapCalculation:
             end=10
         )
         issue2 = Issue(
-            span="second",
+            flagged_text="second",
             severity="biased",
             type="Type",
             description="Test",
@@ -95,7 +95,7 @@ class TestMergeResults:
         from app.modules.analysis.hybrid_detector import merge_results
 
         llm_issue = Issue(
-            span="homosexual",
+            flagged_text="homosexual",
             severity="biased",
             type="LLM Detected",
             description="LLM analysis",
@@ -103,7 +103,7 @@ class TestMergeResults:
             end=20
         )
         rule_issue = Issue(
-            span="homosexual",
+            flagged_text="homosexual",
             severity="outdated",
             type="Rule Detected",
             description="Rule analysis",
@@ -121,7 +121,7 @@ class TestMergeResults:
         from app.modules.analysis.hybrid_detector import merge_results
 
         llm_issue = Issue(
-            span="homosexual",
+            flagged_text="homosexual",
             severity="biased",
             type="LLM Detected",
             description="LLM analysis",
@@ -129,7 +129,7 @@ class TestMergeResults:
             end=10
         )
         rule_issue = Issue(
-            span="transsexual",
+            flagged_text="transsexual",
             severity="outdated",
             type="Rule Detected",
             description="Rule analysis",
@@ -147,7 +147,7 @@ class TestMergeResults:
 
         # LLM issue at position 50
         llm_issue = Issue(
-            span="homosexual",
+            flagged_text="homosexual",
             severity="biased",
             type="LLM",
             description="Test",
@@ -156,7 +156,7 @@ class TestMergeResults:
         )
         # Rule issue at position 10 (earlier)
         rule_issue = Issue(
-            span="transsexual",
+            flagged_text="transsexual",
             severity="outdated",
             type="Rule",
             description="Test",

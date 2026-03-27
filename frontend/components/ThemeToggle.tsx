@@ -10,21 +10,21 @@ export default function ThemeToggle() {
   const [dark, setDark] = useState<boolean | null>(null);
   const mountedRef = useRef(false);
 
-  // Initialize theme from localStorage on mount
+  // Hydrate theme from localStorage after mount (avoids SSR mismatch)
+  /* eslint-disable react-hooks/set-state-in-effect -- Must hydrate from localStorage post-mount to avoid SSR mismatch */
   useEffect(() => {
     mountedRef.current = true;
     const saved = localStorage.getItem(THEME_KEY);
-    // Default to light mode if no preference saved
     const isDark = saved === 'dark';
     setDark(isDark);
 
-    // Sync with DOM in case script didn't run
     if (isDark) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Update DOM and localStorage when theme changes
   useEffect(() => {

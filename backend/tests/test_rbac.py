@@ -9,12 +9,11 @@ Per CONTEXT.md decisions:
 - 401 Unauthorized for missing/invalid tokens
 - Roles embedded in JWT claims (no DB lookup required)
 """
-import pytest
 from fastapi import FastAPI, Depends
 from fastapi.testclient import TestClient
 from jose import jwt
 
-from app.auth.deps import require_role, get_current_user_from_token, ROLE_HIERARCHY
+from app.auth.deps import require_role, ROLE_HIERARCHY
 from app.core.config import settings
 
 

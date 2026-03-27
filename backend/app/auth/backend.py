@@ -6,8 +6,6 @@ Features:
 - Bearer token transport
 - Configurable token expiration
 """
-from typing import Optional
-
 from fastapi_users.authentication import (
     AuthenticationBackend,
     BearerTransport,

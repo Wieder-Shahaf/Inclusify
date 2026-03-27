@@ -73,7 +73,7 @@ const sources = [
   { name: 'GLAAD', url: 'https://www.glaad.org/reference' },
 ];
 
-export default function GlossaryClient({ terms, translations, isHebrew = false }: GlossaryClientProps) {
+export default function GlossaryClient({ terms, translations }: GlossaryClientProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [expandedTerm, setExpandedTerm] = useState<string | null>(null);
