@@ -6,9 +6,15 @@ export function GoogleSignInButton() {
   const t = useTranslations('auth');
 
   const handleGoogleLogin = () => {
-    // Store current URL for redirect after OAuth
+    // Store current URL for redirect after OAuth, but skip auth pages
     if (typeof window !== 'undefined') {
-      localStorage.setItem('auth_return_url', window.location.href);
+      const authPages = ['/login', '/register', '/forgot-password', '/reset-password'];
+      const isAuthPage = authPages.some((page) => window.location.pathname.endsWith(page));
+      if (!isAuthPage) {
+        localStorage.setItem('auth_return_url', window.location.href);
+      } else {
+        localStorage.removeItem('auth_return_url');
+      }
     }
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
     window.location.href = `${backendUrl}/auth/google/authorize`;

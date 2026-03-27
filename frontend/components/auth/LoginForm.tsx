@@ -14,7 +14,6 @@ import { GoogleSignInButton } from './GoogleSignInButton';
 const loginSchema = z.object({
   email: z.string().min(1, 'emailRequired').email('emailInvalid'),
   password: z.string().min(1, 'passwordRequired'),
-  rememberMe: z.boolean().default(false),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -29,16 +28,14 @@ export function LoginForm({ locale }: { locale: string }) {
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { rememberMe: false },
   });
 
   const onSubmit = async (data: LoginFormData) => {
     setIsSubmitting(true);
     try {
-      await login(data.email, data.password, data.rememberMe);
+      await login(data.email, data.password);
       toast.success(t('loginSuccess'));
 
-      // Redirect to return URL or home
       const returnUrl = searchParams.get('returnUrl') || `/${locale}`;
       router.push(returnUrl);
     } catch (error) {
@@ -55,10 +52,8 @@ export function LoginForm({ locale }: { locale: string }) {
           {t('login')}
         </h1>
 
-        {/* Google button above form per CONTEXT.md */}
         <GoogleSignInButton />
 
-        {/* "or" divider */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-slate-200 dark:border-slate-700" />
@@ -92,9 +87,14 @@ export function LoginForm({ locale }: { locale: string }) {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              {t('password')}
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                {t('password')}
+              </label>
+              <Link href={`/${locale}/forgot-password`} className="text-sm text-pride-purple hover:underline">
+                {t('forgotPassword')}
+              </Link>
+            </div>
             <input
               {...register('password')}
               type="password"
@@ -107,18 +107,6 @@ export function LoginForm({ locale }: { locale: string }) {
             {errors.password && (
               <p className="mt-1 text-sm text-red-500">{tv(errors.password.message as string)}</p>
             )}
-          </div>
-
-          <div className="flex items-center">
-            <input
-              {...register('rememberMe')}
-              type="checkbox"
-              id="rememberMe"
-              className="h-4 w-4 text-pride-purple border-slate-300 rounded focus:ring-pride-purple"
-            />
-            <label htmlFor="rememberMe" className="ms-2 text-sm text-slate-600 dark:text-slate-400">
-              {t('rememberMe')}
-            </label>
           </div>
 
           <button

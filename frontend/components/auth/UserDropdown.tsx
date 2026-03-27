@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations, useLocale } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { LogOut, User, History } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,6 +19,7 @@ export function UserDropdown() {
   const t = useTranslations('auth');
   const tNav = useTranslations('app');
   const locale = useLocale();
+  const router = useRouter();
   const { user, logout } = useAuth();
 
   if (!user) return null;
@@ -54,7 +56,7 @@ export function UserDropdown() {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onClick={() => logout()}
+          onClick={() => { logout(); router.push(`/${locale}`); }}
           className="flex items-center gap-2 cursor-pointer text-red-600 dark:text-red-400 focus:text-red-700 dark:focus:text-red-300"
         >
           <LogOut className="w-4 h-4" />

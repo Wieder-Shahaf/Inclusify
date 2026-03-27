@@ -7,6 +7,7 @@ import logging
 import uuid
 from typing import Optional
 
+import resend
 from fastapi import Request
 from fastapi_users import BaseUserManager, UUIDIDMixin
 
@@ -40,8 +41,39 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     async def on_after_forgot_password(
         self, user: User, token: str, request: Optional[Request] = None
     ) -> None:
-        """Called after password reset request."""
-        logger.info(f"Password reset requested for user {user.id}")
+        """Called after password reset request. Sends reset email via Resend."""
+        reset_url = f"{settings.FRONTEND_URL}/en/reset-password?token={token}"
+        logger.info(f"Password reset requested for user {user.id} — RESET URL: {reset_url}")
+
+        if not settings.RESEND_API_KEY:
+            logger.warning("RESEND_API_KEY not set — skipping email send")
+            return
+
+        resend.api_key = settings.RESEND_API_KEY
+        try:
+            resend.Emails.send({
+                "from": settings.EMAIL_FROM,
+                "to": [user.email],
+                "subject": "Reset your Inclusify password",
+                "html": f"""
+                    <div style="font-family:sans-serif;max-width:480px;margin:0 auto">
+                        <h2 style="color:#7c3aed">Reset your password</h2>
+                        <p>We received a request to reset your Inclusify password.</p>
+                        <p style="margin:24px 0">
+                            <a href="{reset_url}"
+                               style="background:#7c3aed;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">
+                                Reset Password
+                            </a>
+                        </p>
+                        <p style="color:#64748b;font-size:14px">
+                            This link expires in 1 hour. If you didn't request a reset, ignore this email.
+                        </p>
+                    </div>
+                """,
+            })
+            logger.info(f"Reset email sent to {user.email}")
+        except Exception as e:
+            logger.error(f"Failed to send reset email to {user.email}: {e}")
 
     async def on_after_reset_password(
         self, user: User, request: Optional[Request] = None
