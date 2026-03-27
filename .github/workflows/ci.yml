@@ -63,10 +63,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: cd frontend && npm install --include=optional
+        run: npm ci
 
       - name: Run ESLint
         run: cd frontend && npm run lint
@@ -80,10 +81,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: cd frontend && npm install --include=optional
+        run: npm ci
+
+      - name: Type check
+        run: cd frontend && npx tsc --noEmit
 
       - name: Build
         run: cd frontend && npm run build
