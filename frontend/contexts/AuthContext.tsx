@@ -13,7 +13,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string, rememberMe: boolean) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
   logout: () => void;
   getToken: () => string | null;
@@ -60,14 +60,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [validateAndSetUser]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  const login = async (email: string, password: string, rememberMe: boolean) => {
+  const login = async (email: string, password: string) => {
     const { access_token } = await authApi.login(email, password);
     localStorage.setItem('auth_token', access_token);
 
-    // Per CONTEXT.md: rememberMe = 30 days, else session only (1 day)
-    const expiryDays = rememberMe ? 30 : 1;
     const expiry = new Date();
-    expiry.setDate(expiry.getDate() + expiryDays);
+    expiry.setDate(expiry.getDate() + 30);
     localStorage.setItem('auth_token_expiry', expiry.toISOString());
 
     await validateAndSetUser(access_token);
@@ -75,8 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (email: string, password: string) => {
     await authApi.register(email, password);
-    // After registration, log in automatically
-    await login(email, password, false);
+    await login(email, password);
   };
 
   const logout = () => {

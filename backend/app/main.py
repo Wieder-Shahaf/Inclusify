@@ -17,6 +17,7 @@ from app.auth.users import (
     users_router,
     create_db_and_tables,
 )
+from app.auth.password_reset import router as password_reset_router
 from app.auth.oauth import google_oauth_router
 
 logger = logging.getLogger(__name__)
@@ -87,6 +88,7 @@ app.include_router(health_router)
 # Auth routers (FastAPI Users)
 app.include_router(auth_router, prefix="/auth/jwt", tags=["Auth"])
 app.include_router(register_router, prefix="/auth/jwt", tags=["Auth"])
+app.include_router(password_reset_router, prefix="/auth/jwt", tags=["Auth"])
 app.include_router(users_router, prefix="/users", tags=["Users"])
 
 # Google OAuth router
