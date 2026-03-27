@@ -182,7 +182,6 @@ class TestResetPassword:
         captured_token = {}
 
         from app.auth.manager import UserManager
-        original_forgot = UserManager.on_after_forgot_password
 
         async def capture_token(self, user, token, request=None):
             captured_token["token"] = token
