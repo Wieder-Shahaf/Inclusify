@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "adapter_name": "qwen_r8_d0.2",
+  "base_model": "Qwen2.5-3B-Instruct",
+  "training_date": "2026-03",
+  "lora_rank": 8,
+  "lora_dropout": 0.2,
+  "lora_alpha": 16,
+  "accuracy": 0.7911,
+  "dataset": "combined_multilingual_16k",
+  "languages": ["en", "he"],
+  "notes": "First production adapter. Grid-search best result (r=8, dropout=0.2)."
+}
