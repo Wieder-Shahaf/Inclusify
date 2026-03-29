@@ -1,0 +1,7 @@
+{
+  "active_adapter": "qwen_r8_d0.2",
+  "version": "1.0.0",
+  "promoted_date": "2026-03",
+  "promoted_by": "team",
+  "notes": "Initial production adapter"
+}
