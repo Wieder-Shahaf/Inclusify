@@ -11,19 +11,32 @@ Or via GitHub Actions workflow: .github/workflows/vllm-integration.yml
 """
 
 import os
+import httpx
 import pytest
 import pytest_asyncio
 
 # ---------------------------------------------------------------------------
-# Skip entire module when no live vLLM is configured
+# Skip entire module when no live vLLM is configured or reachable
 # ---------------------------------------------------------------------------
 
 VLLM_URL = os.environ.get("VLLM_URL", "")
-_no_live_vllm = not VLLM_URL or "localhost" in VLLM_URL
+
+
+def _vllm_is_reachable() -> bool:
+    if not VLLM_URL or "localhost" in VLLM_URL:
+        return False
+    try:
+        response = httpx.get(f"{VLLM_URL}/v1/models", timeout=5.0)
+        return response.status_code == 200
+    except Exception:
+        return False
+
+
+_vllm_available = _vllm_is_reachable()
 
 pytestmark = pytest.mark.skipif(
-    _no_live_vllm,
-    reason="VLLM_URL not set to a live instance — skipping integration tests",
+    not _vllm_available,
+    reason="vLLM server is not reachable — skipping integration tests",
 )
 
 # ---------------------------------------------------------------------------
