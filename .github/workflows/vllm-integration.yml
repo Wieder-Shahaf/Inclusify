@@ -1,0 +1,51 @@
+name: vLLM Integration Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      vllm_url:
+        description: 'vLLM endpoint URL (e.g. http://52.224.246.238:8001)'
+        required: false
+        default: ''
+  schedule:
+    # Nightly at 02:00 UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  vllm-integration:
+    name: vLLM Integration Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio
+
+      - name: Resolve vLLM URL
+        id: resolve_url
+        run: |
+          # Manual trigger can override; otherwise fall back to repo secret
+          URL="${{ github.event.inputs.vllm_url }}"
+          if [ -z "$URL" ]; then
+            URL="${{ secrets.VLLM_URL }}"
+          fi
+          echo "vllm_url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Run vLLM integration tests
+        run: cd backend && python -m pytest tests/test_vllm_integration.py -v --tb=short
+        env:
+          VLLM_URL: ${{ steps.resolve_url.outputs.vllm_url }}
+          JWT_SECRET: "test-secret"
+          PGHOST: ""
+          PGPASSWORD: ""
