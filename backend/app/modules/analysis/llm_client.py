@@ -29,13 +29,15 @@ STRICT JSON SCHEMA:
 {
   "category": "<rule category: e.g., 'N/A', 'Historical Pathologization', 'Identity Invalidation', 'Tone Policing', 'Medical Misinformation', 'False Causality', etc.>",
   "severity": "<EXACTLY one of: 'Correct', 'Outdated', 'Biased', 'Potentially Offensive', 'Factually Incorrect'>",
-  "explanation": "<detailed reasoning for the classification>"
+  "explanation": "<detailed reasoning for the classification>",
+  "confidence": "<float between 0.0 and 1.0 — your certainty in this classification>"
 }
 
 RULES:
 - If the sentence is inclusive and appropriate, classify as "Correct" with category "N/A"
 - Only classify as harmful if there is clear evidence of problematic language
-- Provide specific, academic explanations"""
+- Provide specific, academic explanations
+- confidence should reflect how certain you are: 1.0 = certain, 0.5 = borderline, 0.0 = very uncertain"""
 
 
 # Severity mapping from LLM output to API severity levels

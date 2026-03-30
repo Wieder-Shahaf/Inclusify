@@ -180,6 +180,13 @@ class HybridDetector:
                     if not isinstance(explanation, str) or explanation != explanation:
                         explanation = ""
 
+                    # Extract and clamp confidence to [0.0, 1.0]
+                    confidence_raw = result.get("confidence")
+                    if isinstance(confidence_raw, (int, float)) and confidence_raw == confidence_raw:
+                        confidence = max(0.0, min(1.0, float(confidence_raw)))
+                    else:
+                        confidence = None
+
                     issue = Issue(
                         flagged_text=sentence,
                         severity=severity,
@@ -188,6 +195,7 @@ class HybridDetector:
                         suggestion=None,
                         start=start_offset,
                         end=end_offset,
+                        confidence=confidence,
                     )
                     llm_issues.append(issue)
             else:

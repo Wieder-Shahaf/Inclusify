@@ -10,6 +10,7 @@ export type Annotation = {
   label: string;
   suggestion?: string;
   explanation?: string;
+  confidence?: number;
   references?: Array<{ label: string; url: string }>;
 };
 

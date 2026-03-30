@@ -55,6 +55,7 @@ interface BackendIssue {
   flagged_text?: string;
   start?: number;
   end?: number;
+  confidence?: number;
 }
 
 interface BackendAnalysisResponse {
@@ -150,6 +151,7 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
         label: phrase,
         explanation: issue.description,
         suggestion: issue.suggestion,
+        confidence: issue.confidence,
         references: [
           { label: 'LGBTQ+ Language Guide', url: 'https://www.glaad.org/reference' },
         ],
@@ -166,6 +168,7 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
           label: phrase,
           explanation: issue.description,
           suggestion: issue.suggestion,
+          confidence: issue.confidence,
           references: [
             { label: 'LGBTQ+ Language Guide', url: 'https://www.glaad.org/reference' },
           ],
