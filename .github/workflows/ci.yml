@@ -85,7 +85,9 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          npm install
+          npm install --cpu=x64 --os=linux --libc=glibc @parcel/watcher
 
       - name: Type check
         run: cd frontend && npx tsc --noEmit
