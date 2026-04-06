@@ -36,15 +36,13 @@ class UserItem(BaseModel):
     Fields:
         user_id: User UUID
         email: User email address
-        role: User role (user, org_admin, site_admin)
-        org_name: Name of user's organization
+        role: User role (user, site_admin)
         last_login_at: Last login timestamp (nullable)
         created_at: Account creation timestamp
     """
     user_id: UUID
     email: str
     role: str
-    org_name: str
     last_login_at: Optional[datetime]
     created_at: datetime
 
@@ -60,40 +58,6 @@ class UsersListResponse(BaseModel):
         total_pages: Total number of pages
     """
     users: list[UserItem]
-    total: int
-    page: int
-    page_size: int
-    total_pages: int
-
-
-class OrgItem(BaseModel):
-    """Single organization item for orgs list.
-
-    Fields:
-        org_id: Organization UUID
-        name: Organization name
-        slug: URL-friendly slug (nullable)
-        user_count: Number of users in this organization
-        created_at: Organization creation timestamp
-    """
-    org_id: UUID
-    name: str
-    slug: Optional[str]
-    user_count: int
-    created_at: datetime
-
-
-class OrgsListResponse(BaseModel):
-    """Paginated list of organizations response.
-
-    Fields:
-        organizations: List of organization items
-        total: Total number of organizations (for pagination)
-        page: Current page number (1-indexed)
-        page_size: Items per page
-        total_pages: Total number of pages
-    """
-    organizations: list[OrgItem]
     total: int
     page: int
     page_size: int

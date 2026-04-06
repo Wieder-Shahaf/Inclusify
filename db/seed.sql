@@ -11,20 +11,9 @@ VALUES (
   NOW()
 );
 
--- 2) Organization
-INSERT INTO organizations (name, slug, default_private_mode, settings_json)
-VALUES (
-  'Demo Organization',
-  'demo-org',
-  TRUE,
-  '{"default_language":"he","store_text_default":false}'::jsonb
-);
-
--- 3) Admin user (demo)
-INSERT INTO users (org_id, email, role, locale, consent_store_text)
-SELECT org_id, 'admin@demo.org', 'org_admin', 'he', FALSE
-FROM organizations
-WHERE slug='demo-org';
+-- 2) Admin user (demo)
+INSERT INTO users (email, role, locale, consent_store_text)
+VALUES ('admin@demo.org', 'site_admin', 'he', FALSE);
 
 -- 4) Demo rules (a few examples)
 INSERT INTO rules (

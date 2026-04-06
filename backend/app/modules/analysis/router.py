@@ -305,7 +305,6 @@ async def _persist_results(
             async with conn.transaction():
                 doc_id = await repo.create_document(
                     conn=conn,
-                    org_id=user.org_id,
                     user_id=user.id,
                     input_type="paste",
                     language=language,

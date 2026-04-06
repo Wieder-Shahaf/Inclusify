@@ -15,29 +15,12 @@ export interface UserItem {
   user_id: string;
   email: string;
   role: string;
-  org_name: string;
   last_login_at: string | null;
   created_at: string;
 }
 
 export interface UsersListResponse {
   users: UserItem[];
-  total: number;
-  page: number;
-  page_size: number;
-  total_pages: number;
-}
-
-export interface OrgItem {
-  org_id: string;
-  name: string;
-  slug: string | null;
-  user_count: number;
-  created_at: string;
-}
-
-export interface OrgsListResponse {
-  organizations: OrgItem[];
   total: number;
   page: number;
   page_size: number;
@@ -84,15 +67,6 @@ export function useAdminUsers(page: number, pageSize: number = 20, search?: stri
   const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
   const { data, error, isLoading, mutate } = useSWR<UsersListResponse>(
     `${API_BASE_URL}/api/v1/admin/users?page=${page}&page_size=${pageSize}${searchParam}`,
-    fetcher,
-    { revalidateOnFocus: false }
-  );
-  return { data, isLoading, error, refresh: mutate };
-}
-
-export function useAdminOrgs(page: number, pageSize: number = 20) {
-  const { data, error, isLoading, mutate } = useSWR<OrgsListResponse>(
-    `${API_BASE_URL}/api/v1/admin/organizations?page=${page}&page_size=${pageSize}`,
     fetcher,
     { revalidateOnFocus: false }
   );
