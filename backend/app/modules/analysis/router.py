@@ -25,7 +25,7 @@ DB persistence:
 - DB failures never break analysis — results are always returned.
 
 TODO (remaining):
-- [ ] Add confidence scores from model
+- [x] Add confidence scores from model
 =============================================================================
 """
 
@@ -65,6 +65,7 @@ class Issue(BaseModel):
     suggestion: Optional[str] = None
     start: int
     end: int
+    confidence: Optional[float] = None
 
 
 class AnalysisResponse(BaseModel):
@@ -304,7 +305,6 @@ async def _persist_results(
             async with conn.transaction():
                 doc_id = await repo.create_document(
                     conn=conn,
-                    org_id=user.org_id,
                     user_id=user.id,
                     input_type="paste",
                     language=language,
@@ -336,6 +336,7 @@ async def _persist_results(
                         end_idx=iss.end,
                         explanation=iss.description,
                         excerpt_redacted=iss.flagged_text,
+                        confidence=iss.confidence,
                     )
                     if iss.suggestion:
                         await repo.insert_suggestion(

@@ -21,8 +21,7 @@
     "lastUpdated": "עודכן לאחרונה",
     "tabs": {
       "overview": "סקירה",
-      "users": "משתמשים",
-      "organizations": "ארגונים"
+      "users": "משתמשים"
     },
     "timeRanges": {
       "today": "היום",
@@ -66,9 +65,6 @@
     "users": {
       "searchPlaceholder": "חיפוש לפי אימייל...",
       "noResults": "לא נמצאו משתמשים"
-    },
-    "orgs": {
-      "noResults": "לא נמצאו ארגונים"
     },
     "health": {
       "apiLatency": "זמן תגובה API",
@@ -223,6 +219,7 @@
     "exportReport": "ייצוא דוח",
     "sampleFileName": "מסמך_אקדמי_לדוגמה.txt",
     "serviceUnavailable": "שירות הניתוח לא זמין זמנית. ניתן להמשיך לגלוש.",
+    "modelUnavailable": "מודל ה-AI לא זמין — הניתוח יתבצע על בסיס חוקים בלבד.",
     "basicAnalysisMode": "מצב ניתוח בסיסי",
     "basicAnalysisModeDesc": "ניתוח AI מתקדם לא זמין",
     "errors": {

@@ -155,6 +155,30 @@ export default function AnnotationSidePanel({
               </motion.div>
             )}
 
+            {/* Confidence */}
+            {annotation.confidence != null && (
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.28 }}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Model confidence
+                  </span>
+                  <span className="text-sm font-semibold text-slate-800 dark:text-white">
+                    {Math.round(annotation.confidence * 100)}%
+                  </span>
+                </div>
+                <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
+                  <div
+                    className="h-1.5 rounded-full bg-pride-purple"
+                    style={{ width: `${annotation.confidence * 100}%` }}
+                  />
+                </div>
+              </motion.div>
+            )}
+
             {/* Suggestion */}
             {annotation.suggestion && (
               <motion.div

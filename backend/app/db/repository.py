@@ -3,23 +3,15 @@ import json
 from typing import Optional
 
 
-async def get_org_by_slug(conn: asyncpg.Connection, slug: str):
-    return await conn.fetchrow(
-        "SELECT org_id, name, default_private_mode FROM organizations WHERE slug=$1 LIMIT 1;",
-        slug,
-    )
-
-
 async def get_user_by_email(conn: asyncpg.Connection, email: str):
     return await conn.fetchrow(
-        "SELECT user_id, org_id, role FROM users WHERE email=$1 LIMIT 1;",
+        "SELECT user_id, role FROM users WHERE email=$1 LIMIT 1;",
         email,
     )
 
 
 async def create_document(
     conn: asyncpg.Connection,
-    org_id,
     user_id,
     input_type: str,
     language: str,
@@ -32,11 +24,10 @@ async def create_document(
     row = await conn.fetchrow(
         """
         INSERT INTO documents
-          (org_id, user_id, input_type, language, private_mode, original_filename, mime_type, text_storage_ref, text_sha256)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+          (user_id, input_type, language, private_mode, original_filename, mime_type, text_storage_ref, text_sha256)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
         RETURNING document_id;
         """,
-        org_id,
         user_id,
         input_type,
         language,

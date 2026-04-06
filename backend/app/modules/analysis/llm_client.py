@@ -4,8 +4,10 @@ vLLM HTTP client for LGBTQ+ inclusive language analysis.
 Provides async client with circuit breaker protection for calling vLLM inference endpoint.
 """
 
+import asyncio
 import json
 import logging
+import math
 import re
 import time
 from typing import Optional
@@ -45,6 +47,64 @@ SEVERITY_MAP = {
     "Potentially Offensive": "potentially_offensive",
     "Factually Incorrect": "factually_incorrect",
 }
+
+
+def extract_severity_confidence(logprobs_content: list, severity_value: str) -> Optional[float]:
+    """
+    Compute confidence from vLLM logprobs by locating the severity value tokens.
+
+    Finds which tokens in the generated output correspond to the severity value
+    (e.g. "Biased"), averages their log-probabilities, and converts to a
+    probability via exp(mean_logprob).
+
+    Args:
+        logprobs_content: List of {token, logprob} dicts from vLLM response.
+        severity_value: The severity string the model produced (e.g. "Biased").
+
+    Returns:
+        float in [0.0, 1.0] or None if logprobs unavailable / token not found.
+    """
+    if not logprobs_content or not severity_value:
+        return None
+
+    # Reconstruct generated text and per-token character positions
+    tokens = [item["token"] for item in logprobs_content]
+    lps = [item["logprob"] for item in logprobs_content]
+
+    char_positions: list[int] = []
+    reconstructed = ""
+    for token in tokens:
+        char_positions.append(len(reconstructed))
+        reconstructed += token
+
+    # Locate the severity value inside the JSON output.
+    # Try with and without space after the colon.
+    value_start: int = -1
+    for marker in (f'"severity": "{severity_value}"', f'"severity":"{severity_value}"'):
+        idx = reconstructed.find(marker)
+        if idx != -1:
+            # The value starts after: "severity": "
+            value_start = reconstructed.find(severity_value, idx)
+            break
+
+    if value_start == -1:
+        return None
+
+    value_end = value_start + len(severity_value)
+
+    # Collect logprobs for tokens that overlap with the severity value span
+    severity_lps: list[float] = []
+    for i, pos in enumerate(char_positions):
+        token_end = pos + len(tokens[i])
+        if pos < value_end and token_end > value_start:
+            severity_lps.append(lps[i])
+
+    if not severity_lps:
+        return None
+
+    mean_lp = sum(severity_lps) / len(severity_lps)
+    # Clamp to [0.0, 1.0] — exp(0) = 1.0 is the maximum possible logprob
+    return max(0.0, min(1.0, math.exp(mean_lp)))
 
 
 def parse_llm_output(llm_response_text: str) -> Optional[dict]:
@@ -99,16 +159,21 @@ class VLLMClient:
 
     Uses circuit breaker to protect against cascade failures.
     Returns None on any error (timeout, HTTP error, circuit open).
+
+    A class-level semaphore caps concurrent GPU calls across ALL users.
+    Raise VLLM_MAX_CONCURRENT in config when adding GPU capacity.
     """
 
-    def __init__(self, base_url: str = None, timeout: float = None):
-        """
-        Initialize vLLM client.
+    # Shared across all instances — limits total concurrent GPU calls globally.
+    _semaphore: asyncio.Semaphore | None = None
 
-        Args:
-            base_url: vLLM server URL (default: from settings)
-            timeout: Request timeout in seconds (default: from settings)
-        """
+    @classmethod
+    def _get_semaphore(cls) -> asyncio.Semaphore:
+        if cls._semaphore is None:
+            cls._semaphore = asyncio.Semaphore(settings.VLLM_MAX_CONCURRENT)
+        return cls._semaphore
+
+    def __init__(self, base_url: str = None, timeout: float = None):
         self.base_url = base_url or settings.VLLM_URL
         self.timeout = timeout or settings.VLLM_TIMEOUT
 
@@ -116,27 +181,28 @@ class VLLMClient:
         """
         Analyze a sentence for LGBTQ+ inclusive language compliance.
 
-        Args:
-            sentence: Text to analyze
+        Acquires the global semaphore before sending to GPU — excess requests
+        queue here instead of hammering vLLM concurrently.
 
         Returns:
             Parsed response dict with category, severity, explanation.
             Returns None on any error (timeout, HTTP error, circuit open, parse error).
         """
-        try:
-            return await self._make_request(sentence)
-        except CircuitBreakerError:
-            logger.warning("vLLM circuit breaker is open — skipping LLM call")
-            return None
-        except httpx.TimeoutException:
-            logger.error("vLLM request timed out: url=%s timeout_s=%.1f", self.base_url, self.timeout)
-            return None
-        except httpx.HTTPStatusError as exc:
-            logger.error("vLLM HTTP error: status=%d url=%s", exc.response.status_code, self.base_url)
-            return None
-        except Exception as exc:
-            logger.error("vLLM unexpected error: %s", str(exc), exc_info=True)
-            return None
+        async with self._get_semaphore():
+            try:
+                return await self._make_request(sentence)
+            except CircuitBreakerError:
+                logger.warning("vLLM circuit breaker is open — skipping LLM call")
+                return None
+            except httpx.TimeoutException:
+                logger.error("vLLM request timed out: url=%s timeout_s=%.1f", self.base_url, self.timeout)
+                return None
+            except httpx.HTTPStatusError as exc:
+                logger.error("vLLM HTTP error: status=%d url=%s", exc.response.status_code, self.base_url)
+                return None
+            except Exception as exc:
+                logger.error("vLLM unexpected error: %s", str(exc), exc_info=True)
+                return None
 
     @vllm_breaker
     async def _make_request(self, sentence: str) -> Optional[dict]:
@@ -158,7 +224,8 @@ class VLLMClient:
                         {"role": "user", "content": f'Analyze this sentence for LGBTQ+ inclusive language compliance:\n"{sentence}"'}
                     ],
                     "max_tokens": 256,
-                    "temperature": 0.1
+                    "temperature": 0.1,
+                    "logprobs": True,
                 }
             )
             response.raise_for_status()
@@ -167,8 +234,20 @@ class VLLMClient:
         logger.info("vLLM response received: status=%d elapsed_s=%.3f", response.status_code, elapsed)
 
         data = response.json()
-        raw_content = data["choices"][0]["message"]["content"]
-        return parse_llm_output(raw_content)
+        choice = data["choices"][0]
+        raw_content = choice["message"]["content"]
+
+        parsed = parse_llm_output(raw_content)
+        if parsed is None:
+            return None
+
+        # Compute confidence from logprobs (overrides any self-reported value)
+        logprobs_data = choice.get("logprobs") or {}
+        logprobs_content = logprobs_data.get("content") or []
+        severity_value = parsed.get("severity", "")
+        parsed["confidence"] = extract_severity_confidence(logprobs_content, severity_value)
+
+        return parsed
 
 
-__all__ = ["VLLMClient", "parse_llm_output", "map_severity", "SYSTEM_PROMPT"]
+__all__ = ["VLLMClient", "parse_llm_output", "map_severity", "extract_severity_confidence", "SYSTEM_PROMPT"]

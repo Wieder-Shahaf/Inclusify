@@ -3,28 +3,16 @@ BEGIN;
 -- UUID בלי uuid-ossp (יותר יציב לרוב)
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- 1) Organizations
-CREATE TABLE organizations (
-  org_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  slug TEXT UNIQUE,
-  default_private_mode BOOLEAN NOT NULL DEFAULT TRUE,
-  settings_json JSONB NOT NULL DEFAULT '{}'::jsonb,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
--- 2) Users (org_id nullable — set after registration or via admin)
+-- 1) Users
 CREATE TABLE users (
   user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  org_id UUID REFERENCES organizations(org_id) ON DELETE CASCADE,
 
   email TEXT UNIQUE NOT NULL,
   password_hash TEXT,
   sso_provider TEXT,
 
   role TEXT NOT NULL DEFAULT 'user'
-    CHECK (role IN ('user','org_admin','site_admin')),
+    CHECK (role IN ('user','site_admin')),
 
   -- FastAPI Users required fields
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -38,8 +26,6 @@ CREATE TABLE users (
   updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
   last_login_at TIMESTAMP
 );
-
-CREATE INDEX idx_users_org ON users(org_id);
 
 -- 2b) OAuth Accounts (FastAPI Users)
 CREATE TABLE oauth_accounts (
@@ -58,7 +44,6 @@ CREATE INDEX idx_oauth_user ON oauth_accounts(user_id);
 -- 3) Documents
 CREATE TABLE documents (
   document_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  org_id UUID NOT NULL REFERENCES organizations(org_id) ON DELETE CASCADE,
   user_id UUID REFERENCES users(user_id) ON DELETE SET NULL,
 
   input_type TEXT NOT NULL CHECK (input_type IN ('paste','upload')),
@@ -77,27 +62,12 @@ CREATE TABLE documents (
   expires_at TIMESTAMP
 );
 
-CREATE INDEX idx_documents_org_created ON documents(org_id, created_at);
 CREATE INDEX idx_documents_user_created ON documents(user_id, created_at);
 
--- 4) Configurations
-CREATE TABLE configs (
-  config_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  org_id UUID NOT NULL REFERENCES organizations(org_id) ON DELETE CASCADE,
-
-  name TEXT NOT NULL,
-  config_json JSONB NOT NULL DEFAULT '{}'::jsonb,
-
-  created_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX idx_configs_org ON configs(org_id);
-
--- 5) Analysis Runs
+-- 4) Analysis Runs
 CREATE TABLE analysis_runs (
   run_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   document_id UUID NOT NULL REFERENCES documents(document_id) ON DELETE CASCADE,
-  config_id UUID REFERENCES configs(config_id) ON DELETE SET NULL,
 
   status TEXT NOT NULL CHECK (status IN ('queued','running','succeeded','failed')),
 
@@ -254,7 +224,6 @@ CREATE INDEX idx_feedback_type ON feedback(feedback_type);
 CREATE TABLE usage_events (
   event_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-  org_id UUID NOT NULL REFERENCES organizations(org_id) ON DELETE CASCADE,
   user_id UUID REFERENCES users(user_id) ON DELETE SET NULL,
 
   event_type TEXT NOT NULL,
@@ -263,14 +232,12 @@ CREATE TABLE usage_events (
   metadata_json JSONB NOT NULL DEFAULT '{}'::jsonb
 );
 
-CREATE INDEX idx_events_org_time ON usage_events(org_id, event_at);
 CREATE INDEX idx_events_type_time ON usage_events(event_type, event_at);
 
 -- 14) Audit Log
 CREATE TABLE audit_log (
   audit_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-  org_id UUID REFERENCES organizations(org_id) ON DELETE SET NULL,
   actor_user_id UUID REFERENCES users(user_id) ON DELETE SET NULL,
 
   action TEXT NOT NULL,
@@ -282,7 +249,6 @@ CREATE TABLE audit_log (
   details_json JSONB NOT NULL DEFAULT '{}'::jsonb
 );
 
-CREATE INDEX idx_audit_org_time ON audit_log(org_id, at);
 CREATE INDEX idx_audit_actor_time ON audit_log(actor_user_id, at);
 
 -- Privacy constraint
@@ -305,10 +271,6 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_users_updated
 BEFORE UPDATE ON users
-FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-
-CREATE TRIGGER trg_orgs_updated
-BEFORE UPDATE ON organizations
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TRIGGER trg_rules_updated

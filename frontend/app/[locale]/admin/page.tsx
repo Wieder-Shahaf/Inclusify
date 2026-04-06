@@ -18,7 +18,6 @@ export default async function AdminPage({ params }: Props) {
     tabs: {
       overview: t('admin.tabs.overview'),
       users: t('admin.tabs.users'),
-      organizations: t('admin.tabs.organizations'),
     },
     timeRanges: {
       week: t('admin.timeRanges.week'),
@@ -42,9 +41,6 @@ export default async function AdminPage({ params }: Props) {
     users: {
       searchPlaceholder: t('admin.users.searchPlaceholder'),
       noResults: t('admin.users.noResults'),
-    },
-    orgs: {
-      noResults: t('admin.orgs.noResults'),
     },
   };
 

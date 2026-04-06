@@ -98,7 +98,6 @@ export default function UsersTab({ translations }: UsersTabProps) {
               <thead>
                 <tr className="text-left text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">
                   <th className="py-2 pr-4 font-medium">Email</th>
-                  <th className="py-2 pr-4 font-medium">Organization</th>
                   <th className="py-2 pr-4 font-medium">Role</th>
                   <th className="py-2 pr-4 font-medium">Last Login</th>
                   <th className="py-2 font-medium">Created</th>
@@ -114,14 +113,11 @@ export default function UsersTab({ translations }: UsersTabProps) {
                     className="border-b border-slate-50 dark:border-slate-800/50 last:border-0"
                   >
                     <td className="py-3 pr-4 font-medium text-slate-800 dark:text-white">{user.email}</td>
-                    <td className="py-3 pr-4 text-slate-600 dark:text-slate-400">{user.org_name || '-'}</td>
                     <td className="py-3 pr-4">
                       <span className={cn(
                         'px-2 py-0.5 rounded-full text-xs font-medium',
                         user.role === 'site_admin'
                           ? 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400'
-                          : user.role === 'org_admin'
-                          ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
                           : 'bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                       )}>
                         {user.role}

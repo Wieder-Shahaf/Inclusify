@@ -6,10 +6,10 @@ to the actual DB column names (user_id, password_hash) using mapped_column.
 This lets FastAPI Users work without changing the canonical schema.
 """
 import uuid
-from typing import List, Optional
+from typing import List
 
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseOAuthAccountTableUUID
-from sqlalchemy import Boolean, ForeignKey, String, Uuid
+from sqlalchemy import Boolean, ForeignKey, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from fastapi_users_db_sqlalchemy.generics import GUID
@@ -66,9 +66,6 @@ class User(Base):
     # Custom fields from schema.sql
     role: Mapped[str] = mapped_column(
         String(20), default="user", nullable=False
-    )
-    org_id: Mapped[Optional[uuid.UUID]] = mapped_column(
-        Uuid(as_uuid=True), nullable=True
     )
 
     # OAuth accounts relationship

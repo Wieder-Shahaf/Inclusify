@@ -46,7 +46,6 @@ class TestUsersListSchema:
             user_id=uuid4(),
             email="test@example.com",
             role="user",
-            org_name="Test Org",
             last_login_at=datetime.now(timezone.utc),
             created_at=datetime.now(timezone.utc)
         )
@@ -74,55 +73,11 @@ class TestUsersListSchema:
             user_id=uuid4(),
             email="test@example.com",
             role="user",
-            org_name="Test Org",
             last_login_at=None,
             created_at=datetime.now(timezone.utc)
         )
 
         assert user.last_login_at is None
-
-
-class TestOrgsListSchema:
-    """Test OrgsListResponse schema validation."""
-
-    def test_orgs_list_response_validates_with_user_count(self):
-        """Test 3: OrgsListResponse validates with organizations containing user_count."""
-        from app.modules.admin.schemas import OrgsListResponse, OrgItem
-
-        org = OrgItem(
-            org_id=uuid4(),
-            name="Test Organization",
-            slug="test-org",
-            user_count=25,
-            created_at=datetime.now(timezone.utc)
-        )
-
-        response = OrgsListResponse(
-            organizations=[org],
-            total=10,
-            page=1,
-            page_size=20,
-            total_pages=1
-        )
-
-        assert response.total == 10
-        assert len(response.organizations) == 1
-        assert response.organizations[0].user_count == 25
-        assert response.organizations[0].name == "Test Organization"
-
-    def test_org_item_allows_null_slug(self):
-        """OrgItem allows slug to be None."""
-        from app.modules.admin.schemas import OrgItem
-
-        org = OrgItem(
-            org_id=uuid4(),
-            name="Test Org",
-            slug=None,
-            user_count=10,
-            created_at=datetime.now(timezone.utc)
-        )
-
-        assert org.slug is None
 
 
 class TestActivitySchema:
@@ -228,7 +183,6 @@ class TestUsersPaginated:
                 "user_id": uuid4(),
                 "email": "test@example.com",
                 "role": "user",
-                "org_name": "Test Org",
                 "last_login_at": datetime.now(timezone.utc),
                 "created_at": datetime.now(timezone.utc)
             }
@@ -257,34 +211,6 @@ class TestUsersPaginated:
         # The query should contain ILIKE for email search
         query = fetch_call[0][0] if fetch_call[0] else ""
         assert "ILIKE" in query or "ilike" in query.lower()
-
-
-class TestOrgsPaginated:
-    """Test organizations paginated query functions."""
-
-    @pytest.mark.asyncio
-    async def test_get_orgs_paginated_returns_orgs_with_user_count(self):
-        """Test 5: get_orgs_paginated returns orgs with user_count aggregated."""
-        from app.modules.admin.queries import get_orgs_paginated
-
-        mock_conn = AsyncMock()
-        mock_conn.fetchval = AsyncMock(return_value=10)
-        mock_conn.fetch = AsyncMock(return_value=[
-            {
-                "org_id": uuid4(),
-                "name": "Test Org",
-                "slug": "test-org",
-                "user_count": 25,
-                "created_at": datetime.now(timezone.utc)
-            }
-        ])
-
-        orgs, total = await get_orgs_paginated(mock_conn, page=1, page_size=20)
-
-        assert isinstance(orgs, list)
-        assert len(orgs) == 1
-        assert "user_count" in orgs[0]
-        assert orgs[0]["user_count"] == 25
 
 
 class TestRecentActivity:
@@ -352,18 +278,6 @@ class TestAdminEndpointAuth:
         assert response.json()["detail"] == "Insufficient permissions"
 
     @pytest.mark.asyncio
-    async def test_org_admin_gets_403_forbidden(self, test_client):
-        """org_admin users also receive 403 Forbidden (site_admin only in v1)."""
-        token = create_test_token("org_admin")
-
-        response = await test_client.get(
-            "/api/v1/admin/analytics",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 403
-
-    @pytest.mark.asyncio
     async def test_no_token_returns_401(self, test_client):
         """Missing token returns 401 Unauthorized."""
         response = await test_client.get("/api/v1/admin/analytics")
@@ -389,18 +303,6 @@ class TestAdminEndpointAuth:
 
         response = await test_client.get(
             "/api/v1/admin/users",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 200
-
-    @pytest.mark.asyncio
-    async def test_admin_can_access_organizations_endpoint(self, test_client):
-        """Admin can access organizations list endpoint."""
-        token = create_test_token("site_admin")
-
-        response = await test_client.get(
-            "/api/v1/admin/organizations",
             headers={"Authorization": f"Bearer {token}"}
         )
 
@@ -466,24 +368,6 @@ class TestAdminEndpointResponses:
         assert isinstance(data["total"], int)
         assert data["page"] == 1
         assert data["page_size"] == 20
-
-    @pytest.mark.asyncio
-    async def test_organizations_response_matches_schema(self, test_client):
-        """Organizations endpoint returns response matching OrgsListResponse schema."""
-        token = create_test_token("site_admin")
-
-        response = await test_client.get(
-            "/api/v1/admin/organizations",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 200
-        data = response.json()
-        assert "organizations" in data
-        assert "total" in data
-        assert "page" in data
-        assert "page_size" in data
-        assert "total_pages" in data
 
     @pytest.mark.asyncio
     async def test_activity_response_matches_schema(self, test_client):

@@ -11,7 +11,6 @@ from app.auth.deps import require_admin
 from .schemas import (
     AnalyticsResponse,
     UsersListResponse,
-    OrgsListResponse,
     ActivityResponse
 )
 from . import queries
@@ -54,7 +53,7 @@ async def list_users(
 ):
     """Get paginated list of users with optional email search.
 
-    Returns users with: email, role, org_name, last_login_at, created_at.
+    Returns users with: email, role, last_login_at, created_at.
     View-only endpoint (no create/edit in v1).
 
     Requires: site_admin role
@@ -65,33 +64,6 @@ async def list_users(
         total_pages = (total + page_size - 1) // page_size if total > 0 else 0
         return {
             "users": users,
-            "total": total,
-            "page": page,
-            "page_size": page_size,
-            "total_pages": total_pages
-        }
-
-
-@router.get("/organizations", response_model=OrgsListResponse)
-async def list_organizations(
-    request: Request,
-    user: dict = Depends(require_admin),
-    page: int = Query(default=1, ge=1, description="Page number"),
-    page_size: int = Query(default=20, ge=1, le=100, description="Items per page")
-):
-    """Get paginated list of organizations with user counts.
-
-    Returns organizations with: name, slug, user_count, created_at.
-    View-only endpoint (no create/edit in v1).
-
-    Requires: site_admin role
-    """
-    pool = request.app.state.db_pool
-    async with pool.acquire() as conn:
-        orgs, total = await queries.get_orgs_paginated(conn, page, page_size)
-        total_pages = (total + page_size - 1) // page_size if total > 0 else 0
-        return {
-            "organizations": orgs,
             "total": total,
             "page": page,
             "page_size": page_size,
