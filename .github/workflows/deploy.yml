@@ -55,7 +55,6 @@ jobs:
           tags: ${{ env.ACR_NAME }}.azurecr.io/inclusify-frontend:${{ steps.tag.outputs.tag }}
           build-args: |
             NEXT_PUBLIC_API_URL=${{ env.BACKEND_URL }}
-            NEXT_PUBLIC_USE_DEMO_MODE=false
 
   # TODO: Add automatic deploy once AZURE_CREDENTIALS secret is configured
   # with a service principal from the Azure AD admin.
