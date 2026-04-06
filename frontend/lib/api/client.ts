@@ -244,7 +244,6 @@ export async function uploadFile(file: File): Promise<{ text: string; filename: 
 
 // Health check
 export async function healthCheck(): Promise<boolean> {
-  if (process.env.NEXT_PUBLIC_USE_DEMO_MODE === 'true') return true;
   try {
     const response = await fetch(`${API_BASE_URL}/`);
     const data = await response.json();
@@ -264,9 +263,6 @@ export interface ModelHealthResult {
 
 // Check vLLM model availability and circuit breaker state
 export async function modelHealthCheck(): Promise<ModelHealthResult> {
-  if (process.env.NEXT_PUBLIC_USE_DEMO_MODE === 'true') {
-    return { available: true, model: 'demo', responseTimeMs: 0, circuitBreaker: 'closed' };
-  }
   try {
     const response = await fetch(`${API_BASE_URL}/api/v1/health/model`);
     const data = await response.json();
