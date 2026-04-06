@@ -53,7 +53,7 @@ async def list_users(
 ):
     """Get paginated list of users with optional email search.
 
-    Returns users with: email, role, org_name, last_login_at, created_at.
+    Returns users with: email, role, last_login_at, created_at.
     View-only endpoint (no create/edit in v1).
 
     Requires: site_admin role
