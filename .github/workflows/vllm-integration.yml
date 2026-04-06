@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       vllm_url:
-        description: 'vLLM endpoint URL (e.g. http://52.224.246.238:8001)'
+        description: 'vLLM endpoint URL (leave blank to use VLLM_URL secret)'
         required: false
         default: ''
   schedule:
@@ -26,8 +26,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install httpx pybreaker pysbd pydantic-settings python-dotenv \
-                      fastapi pytest pytest-asyncio
+          cd backend && pip install -r requirements.txt
+          pip install pytest pytest-asyncio
 
       - name: Resolve vLLM URL
         id: resolve_url
@@ -36,6 +36,10 @@ jobs:
           URL="${{ github.event.inputs.vllm_url }}"
           if [ -z "$URL" ]; then
             URL="${{ secrets.VLLM_URL }}"
+          fi
+          if [ -z "$URL" ] && [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "ERROR: VLLM_URL secret is not set; scheduled run has no target."
+            exit 1
           fi
           echo "vllm_url=$URL" >> "$GITHUB_OUTPUT"
 
