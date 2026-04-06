@@ -6,7 +6,6 @@ import { BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import OverviewTab from './OverviewTab';
 import UsersTab from './UsersTab';
-import OrganizationsTab from './OrganizationsTab';
 
 interface AdminDashboardProps {
   translations: {
@@ -15,7 +14,6 @@ interface AdminDashboardProps {
     tabs: {
       overview: string;
       users: string;
-      organizations: string;
     };
     timeRanges: {
       week: string;
@@ -40,13 +38,10 @@ interface AdminDashboardProps {
       searchPlaceholder: string;
       noResults: string;
     };
-    orgs: {
-      noResults: string;
-    };
   };
 }
 
-type TabKey = 'overview' | 'users' | 'organizations';
+type TabKey = 'overview' | 'users';
 
 // Skeleton loader for suspense fallback
 function DashboardSkeleton() {
@@ -85,7 +80,6 @@ function AdminDashboardContent({ translations }: AdminDashboardProps) {
   const tabs: { key: TabKey; label: string }[] = [
     { key: 'overview', label: translations.tabs.overview },
     { key: 'users', label: translations.tabs.users },
-    { key: 'organizations', label: translations.tabs.organizations },
   ];
 
   const timeRangeOptions = [
@@ -152,9 +146,6 @@ function AdminDashboardContent({ translations }: AdminDashboardProps) {
       )}
       {activeTab === 'users' && (
         <UsersTab translations={{ users: translations.users }} />
-      )}
-      {activeTab === 'organizations' && (
-        <OrganizationsTab translations={{ orgs: translations.orgs }} />
       )}
     </div>
   );

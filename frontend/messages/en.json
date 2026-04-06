@@ -21,8 +21,7 @@
     "lastUpdated": "Last updated",
     "tabs": {
       "overview": "Overview",
-      "users": "Users",
-      "organizations": "Organizations"
+      "users": "Users"
     },
     "timeRanges": {
       "today": "Today",
@@ -66,9 +65,6 @@
     "users": {
       "searchPlaceholder": "Search by email...",
       "noResults": "No users found"
-    },
-    "orgs": {
-      "noResults": "No organizations found"
     },
     "health": {
       "apiLatency": "API Latency",

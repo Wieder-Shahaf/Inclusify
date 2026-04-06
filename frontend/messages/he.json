@@ -21,8 +21,7 @@
     "lastUpdated": "עודכן לאחרונה",
     "tabs": {
       "overview": "סקירה",
-      "users": "משתמשים",
-      "organizations": "ארגונים"
+      "users": "משתמשים"
     },
     "timeRanges": {
       "today": "היום",
@@ -66,9 +65,6 @@
     "users": {
       "searchPlaceholder": "חיפוש לפי אימייל...",
       "noResults": "לא נמצאו משתמשים"
-    },
-    "orgs": {
-      "noResults": "לא נמצאו ארגונים"
     },
     "health": {
       "apiLatency": "זמן תגובה API",

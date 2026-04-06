@@ -87,12 +87,10 @@ async def get_users_paginated(
 
         # Get page data with search filter
         rows = await conn.fetch("""
-            SELECT u.user_id, u.email, u.role, u.last_login_at, u.created_at,
-                   COALESCE(o.name, 'Unassigned') as org_name
-            FROM users u
-            LEFT JOIN organizations o ON u.org_id = o.org_id
-            WHERE u.email ILIKE $1
-            ORDER BY u.created_at DESC
+            SELECT user_id, email, role, last_login_at, created_at
+            FROM users
+            WHERE email ILIKE $1
+            ORDER BY created_at DESC
             LIMIT $2 OFFSET $3
         """, f"%{email_search}%", page_size, offset)
     else:
@@ -101,49 +99,11 @@ async def get_users_paginated(
 
         # Get page data without filter
         rows = await conn.fetch("""
-            SELECT u.user_id, u.email, u.role, u.last_login_at, u.created_at,
-                   COALESCE(o.name, 'Unassigned') as org_name
-            FROM users u
-            LEFT JOIN organizations o ON u.org_id = o.org_id
-            ORDER BY u.created_at DESC
+            SELECT user_id, email, role, last_login_at, created_at
+            FROM users
+            ORDER BY created_at DESC
             LIMIT $1 OFFSET $2
         """, page_size, offset)
-
-    return [dict(r) for r in rows], total or 0
-
-
-async def get_orgs_paginated(
-    conn: asyncpg.Connection,
-    page: int = 1,
-    page_size: int = 20
-) -> tuple[list[dict], int]:
-    """Get paginated organization list with user counts.
-
-    Args:
-        conn: asyncpg database connection
-        page: Page number (1-indexed)
-        page_size: Number of items per page
-
-    Returns:
-        Tuple of (list of org dicts with user_count, total count)
-    """
-    offset = (page - 1) * page_size
-
-    # Get total count
-    total = await conn.fetchval("SELECT COUNT(*) FROM organizations")
-
-    # Get page data with user counts via subquery
-    rows = await conn.fetch("""
-        SELECT
-            o.org_id,
-            o.name,
-            o.slug,
-            o.created_at,
-            (SELECT COUNT(*) FROM users u WHERE u.org_id = o.org_id) as user_count
-        FROM organizations o
-        ORDER BY o.created_at DESC
-        LIMIT $1 OFFSET $2
-    """, page_size, offset)
 
     return [dict(r) for r in rows], total or 0
 

@@ -26,7 +26,7 @@ class TestVLLMSettings:
         """Settings should have VLLM_TIMEOUT field."""
         from app.core.config import settings
         assert hasattr(settings, 'VLLM_TIMEOUT')
-        assert settings.VLLM_TIMEOUT == 30.0
+        assert settings.VLLM_TIMEOUT == 120.0
 
     def test_settings_has_circuit_fail_max(self):
         """Settings should have VLLM_CIRCUIT_FAIL_MAX field."""
