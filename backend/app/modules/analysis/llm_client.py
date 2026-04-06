@@ -4,6 +4,7 @@ vLLM HTTP client for LGBTQ+ inclusive language analysis.
 Provides async client with circuit breaker protection for calling vLLM inference endpoint.
 """
 
+import asyncio
 import json
 import logging
 import math
