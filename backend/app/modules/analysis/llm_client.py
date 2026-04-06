@@ -158,16 +158,21 @@ class VLLMClient:
 
     Uses circuit breaker to protect against cascade failures.
     Returns None on any error (timeout, HTTP error, circuit open).
+
+    A class-level semaphore caps concurrent GPU calls across ALL users.
+    Raise VLLM_MAX_CONCURRENT in config when adding GPU capacity.
     """
 
-    def __init__(self, base_url: str = None, timeout: float = None):
-        """
-        Initialize vLLM client.
+    # Shared across all instances — limits total concurrent GPU calls globally.
+    _semaphore: asyncio.Semaphore | None = None
 
-        Args:
-            base_url: vLLM server URL (default: from settings)
-            timeout: Request timeout in seconds (default: from settings)
-        """
+    @classmethod
+    def _get_semaphore(cls) -> asyncio.Semaphore:
+        if cls._semaphore is None:
+            cls._semaphore = asyncio.Semaphore(settings.VLLM_MAX_CONCURRENT)
+        return cls._semaphore
+
+    def __init__(self, base_url: str = None, timeout: float = None):
         self.base_url = base_url or settings.VLLM_URL
         self.timeout = timeout or settings.VLLM_TIMEOUT
 
@@ -175,27 +180,28 @@ class VLLMClient:
         """
         Analyze a sentence for LGBTQ+ inclusive language compliance.
 
-        Args:
-            sentence: Text to analyze
+        Acquires the global semaphore before sending to GPU — excess requests
+        queue here instead of hammering vLLM concurrently.
 
         Returns:
             Parsed response dict with category, severity, explanation.
             Returns None on any error (timeout, HTTP error, circuit open, parse error).
         """
-        try:
-            return await self._make_request(sentence)
-        except CircuitBreakerError:
-            logger.warning("vLLM circuit breaker is open — skipping LLM call")
-            return None
-        except httpx.TimeoutException:
-            logger.error("vLLM request timed out: url=%s timeout_s=%.1f", self.base_url, self.timeout)
-            return None
-        except httpx.HTTPStatusError as exc:
-            logger.error("vLLM HTTP error: status=%d url=%s", exc.response.status_code, self.base_url)
-            return None
-        except Exception as exc:
-            logger.error("vLLM unexpected error: %s", str(exc), exc_info=True)
-            return None
+        async with self._get_semaphore():
+            try:
+                return await self._make_request(sentence)
+            except CircuitBreakerError:
+                logger.warning("vLLM circuit breaker is open — skipping LLM call")
+                return None
+            except httpx.TimeoutException:
+                logger.error("vLLM request timed out: url=%s timeout_s=%.1f", self.base_url, self.timeout)
+                return None
+            except httpx.HTTPStatusError as exc:
+                logger.error("vLLM HTTP error: status=%d url=%s", exc.response.status_code, self.base_url)
+                return None
+            except Exception as exc:
+                logger.error("vLLM unexpected error: %s", str(exc), exc_info=True)
+                return None
 
     @vllm_breaker
     async def _make_request(self, sentence: str) -> Optional[dict]:
