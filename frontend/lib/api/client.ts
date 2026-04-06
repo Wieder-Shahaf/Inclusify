@@ -252,3 +252,34 @@ export async function healthCheck(): Promise<boolean> {
     return false;
   }
 }
+
+export interface ModelHealthResult {
+  available: boolean;
+  model: string;
+  responseTimeMs: number | null;
+  circuitBreaker: 'closed' | 'open' | 'half_open';
+  error?: string;
+}
+
+// Check vLLM model availability and circuit breaker state
+export async function modelHealthCheck(): Promise<ModelHealthResult> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/health/model`);
+    const data = await response.json();
+    return {
+      available: data.status === 'available',
+      model: data.model,
+      responseTimeMs: data.response_time_ms ?? null,
+      circuitBreaker: data.circuit_breaker,
+      error: data.error,
+    };
+  } catch {
+    return {
+      available: false,
+      model: 'unknown',
+      responseTimeMs: null,
+      circuitBreaker: 'open',
+      error: 'Could not reach backend',
+    };
+  }
+}

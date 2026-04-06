@@ -223,6 +223,7 @@
     "exportReport": "Export Report",
     "sampleFileName": "sample_academic_paper.txt",
     "serviceUnavailable": "Analysis service temporarily unavailable. You can still browse.",
+    "modelUnavailable": "AI model offline — analysis will use rule-based detection only.",
     "basicAnalysisMode": "Basic analysis mode",
     "basicAnalysisModeDesc": "Advanced AI analysis unavailable",
     "errors": {
