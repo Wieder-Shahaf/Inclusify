@@ -184,7 +184,6 @@ if app_exists "$FRONTEND_APP"; then
     --image "${ACR_NAME}.azurecr.io/inclusify-frontend:${IMAGE_TAG}" \
     --set-env-vars \
       "NEXT_PUBLIC_API_URL=https://${BACKEND_FQDN}" \
-      "NEXT_PUBLIC_USE_DEMO_MODE=false" \
     --output none
 else
   echo "  Creating new frontend app..."
