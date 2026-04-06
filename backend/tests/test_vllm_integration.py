@@ -13,7 +13,6 @@ Or via GitHub Actions workflow: .github/workflows/vllm-integration.yml
 import os
 import httpx
 import pytest
-import pytest_asyncio
 
 # ---------------------------------------------------------------------------
 # Skip entire module when no live vLLM is configured or reachable
@@ -65,7 +64,7 @@ def assert_valid_llm_response(result: dict, sentence: str):
 # Fixtures
 # ---------------------------------------------------------------------------
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def vllm_client():
     """VLLMClient pointed at the live VLLM_URL from env."""
     from app.modules.analysis.llm_client import VLLMClient

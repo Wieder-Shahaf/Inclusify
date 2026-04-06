@@ -71,7 +71,7 @@ def set_active(adapter_name: str, dry_run: bool = False):
         "active_adapter": adapter_name,
         "version": meta["version"],
         "promoted_date": meta.get("training_date", "unknown"),
-        "promoted_by": os.environ.get("USER", "unknown"),
+        "promoted_by": os.environ.get("SUDO_USER") or os.environ.get("USER", "unknown"),
         "notes": f"Switched via switch_adapter.py"
     }
 
@@ -104,8 +104,10 @@ def patch_vllm_service(adapter_name: str, dry_run: bool = False):
     )
 
     if new_content == content:
-        print("WARNING: Could not find --lora-modules line in vllm.service")
-        return
+        raise RuntimeError(
+            f"Could not find '--lora-modules inclusify=...' in {VLLM_SERVICE_PATH} — "
+            "service file format may have changed. Adapter switch aborted."
+        )
 
     if dry_run:
         print(f"[DRY RUN] Would patch {VLLM_SERVICE_PATH}:")
