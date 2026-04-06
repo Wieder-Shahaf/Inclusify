@@ -101,7 +101,8 @@ async def model_health_check():
     from app.modules.analysis.circuit_breaker import vllm_breaker
     from app.core.config import settings
 
-    cb_state: str = vllm_breaker.current_state.name  # "closed" | "open" | "half_open"
+    raw_state = vllm_breaker.current_state
+    cb_state: str = raw_state.name if hasattr(raw_state, 'name') else str(raw_state)
 
     # Skip the network call entirely when the circuit is open
     if cb_state == "open":
