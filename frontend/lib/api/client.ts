@@ -55,6 +55,7 @@ interface BackendIssue {
   flagged_text?: string;
   start?: number;
   end?: number;
+  confidence?: number;
 }
 
 interface BackendAnalysisResponse {
@@ -150,6 +151,7 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
         label: phrase,
         explanation: issue.description,
         suggestion: issue.suggestion,
+        confidence: issue.confidence,
         references: [
           { label: 'LGBTQ+ Language Guide', url: 'https://www.glaad.org/reference' },
         ],
@@ -166,6 +168,7 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
           label: phrase,
           explanation: issue.description,
           suggestion: issue.suggestion,
+          confidence: issue.confidence,
           references: [
             { label: 'LGBTQ+ Language Guide', url: 'https://www.glaad.org/reference' },
           ],
@@ -241,11 +244,46 @@ export async function uploadFile(file: File): Promise<{ text: string; filename: 
 
 // Health check
 export async function healthCheck(): Promise<boolean> {
+  if (process.env.NEXT_PUBLIC_USE_DEMO_MODE === 'true') return true;
   try {
     const response = await fetch(`${API_BASE_URL}/`);
     const data = await response.json();
     return data.status === 'OK';
   } catch {
     return false;
+  }
+}
+
+export interface ModelHealthResult {
+  available: boolean;
+  model: string;
+  responseTimeMs: number | null;
+  circuitBreaker: 'closed' | 'open' | 'half_open';
+  error?: string;
+}
+
+// Check vLLM model availability and circuit breaker state
+export async function modelHealthCheck(): Promise<ModelHealthResult> {
+  if (process.env.NEXT_PUBLIC_USE_DEMO_MODE === 'true') {
+    return { available: true, model: 'demo', responseTimeMs: 0, circuitBreaker: 'closed' };
+  }
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/health/model`);
+    const data = await response.json();
+    return {
+      available: data.status === 'available',
+      model: data.model,
+      responseTimeMs: data.response_time_ms ?? null,
+      circuitBreaker: data.circuit_breaker,
+      error: data.error,
+    };
+  } catch {
+    return {
+      available: false,
+      model: 'unknown',
+      responseTimeMs: null,
+      circuitBreaker: 'open',
+      error: 'Could not reach backend',
+    };
   }
 }

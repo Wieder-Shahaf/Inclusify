@@ -12,7 +12,7 @@ import AnalysisSummary from '@/components/AnalysisSummary';
 import IssueTooltip from '@/components/IssueTooltip';
 import HealthWarningBanner from '@/components/HealthWarningBanner';
 import { Annotation } from '@/components/AnnotatedText';
-import { analyzeText, uploadFile, healthCheck } from '@/lib/api/client';
+import { analyzeText, uploadFile, healthCheck, modelHealthCheck } from '@/lib/api/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLiveAnnouncer } from '@/contexts/LiveAnnouncerContext';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
@@ -61,6 +61,7 @@ export default function AnalyzePage() {
   const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [backendHealthy, setBackendHealthy] = useState<boolean | null>(null);
+  const [modelAvailable, setModelAvailable] = useState<boolean | null>(null);
   const [analysisMode, setAnalysisMode] = useState<'llm' | 'hybrid' | 'rules_only' | null>(null);
   const [showGuestPrompt, setShowGuestPrompt] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -72,6 +73,12 @@ export default function AnalyzePage() {
     const checkHealth = async () => {
       const healthy = await healthCheck();
       setBackendHealthy(healthy);
+      if (healthy) {
+        const model = await modelHealthCheck();
+        setModelAvailable(model.available);
+      } else {
+        setModelAvailable(false);
+      }
     };
     checkHealth();
     const interval = setInterval(checkHealth, 30000);
@@ -314,6 +321,12 @@ export default function AnalyzePage() {
     <>
       {backendHealthy === false && (
         <HealthWarningBanner message={t('serviceUnavailable')} />
+      )}
+      {backendHealthy !== false && modelAvailable === false && (
+        <HealthWarningBanner
+          message={t('modelUnavailable')}
+          variant="info"
+        />
       )}
       <div className="flex flex-col flex-1">
         <AnimatePresence mode="wait">

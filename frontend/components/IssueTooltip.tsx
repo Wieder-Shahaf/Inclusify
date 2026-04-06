@@ -242,6 +242,18 @@ export default function IssueTooltip({ annotation, children, onOpenSidePanel }: 
               </div>
             )}
 
+            {/* Confidence */}
+            {annotation.confidence != null && (
+              <div className="mb-3 flex items-center gap-2">
+                <span className="text-xs text-slate-500 dark:text-slate-400">
+                  Confidence:
+                </span>
+                <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
+                  {Math.round(annotation.confidence * 100)}%
+                </span>
+              </div>
+            )}
+
             {/* Suggestion */}
             {annotation.suggestion && (
               <div className="mb-4 p-3 rounded-lg bg-gradient-to-r from-pride-purple/5 to-pride-pink/5 dark:from-pride-purple/10 dark:to-pride-pink/10 border border-pride-purple/20">
