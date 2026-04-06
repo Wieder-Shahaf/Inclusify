@@ -82,7 +82,6 @@ docker build \
   -f infra/docker/frontend.Dockerfile \
   --target runner \
   --build-arg NEXT_PUBLIC_API_URL="https://${BACKEND_FQDN_FOR_BUILD}" \
-  --build-arg NEXT_PUBLIC_USE_DEMO_MODE="false" \
   -t "${ACR_NAME}.azurecr.io/inclusify-frontend:${IMAGE_TAG}" \
   .
 docker push "${ACR_NAME}.azurecr.io/inclusify-frontend:${IMAGE_TAG}"
@@ -201,7 +200,6 @@ else
     --max-replicas 3 \
     --env-vars \
       "NEXT_PUBLIC_API_URL=https://${BACKEND_FQDN}" \
-      "NEXT_PUBLIC_USE_DEMO_MODE=false" \
     --output none
 fi
 
