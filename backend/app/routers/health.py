@@ -123,8 +123,6 @@ async def model_health_check():
     model_name: str = settings.VLLM_MODEL_NAME
     error: str | None = None
 
-    import logging
-    logging.getLogger(__name__).warning(f"[health] Pinging vLLM at: {settings.VLLM_URL}/v1/models")
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
             resp = await client.get(f"{settings.VLLM_URL}/v1/models")
