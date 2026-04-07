@@ -160,6 +160,12 @@ None yet.
 
 - vLLM currently localhost only - may need VNet binding for Container Apps access
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260407-kps | Fix vLLM response parsing crash in llm_client.py | 2026-04-07 | aa049b7 | [260407-kps-fix-vllm-response-parsing-crash-in-llm-c](.planning/quick/260407-kps-fix-vllm-response-parsing-crash-in-llm-c/) |
+
 ### Roadmap Evolution
 
 - Phase 05.1 inserted after Phase 05: Azure Infrastructure - Create PostgreSQL, ACR, Container Apps in Group07 (URGENT)

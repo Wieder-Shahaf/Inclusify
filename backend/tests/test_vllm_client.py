@@ -283,6 +283,37 @@ class TestVLLMClient:
         assert result is None
 
     @pytest.mark.asyncio
+    @pytest.mark.parametrize("bad_body,label", [
+        ({}, "missing choices key"),
+        ({"choices": []}, "empty choices list"),
+        ({"choices": ["not-a-dict"]}, "choice not a dict"),
+        ({"choices": [{"no_message": True}]}, "missing message key"),
+        ({"choices": [{"message": {"no_content": True}}]}, "missing content key"),
+    ])
+    async def test_vllm_client_malformed_response_returns_none(self, bad_body, label):
+        """Client returns None on any malformed vLLM response shape without raising."""
+        from unittest.mock import AsyncMock, patch, MagicMock
+        from app.modules.analysis.llm_client import VLLMClient
+
+        mock_response = MagicMock()
+        mock_response.json.return_value = bad_body
+        mock_response.raise_for_status = MagicMock()
+        mock_response.status_code = 200
+
+        mock_client_instance = AsyncMock()
+        mock_client_instance.post.return_value = mock_response
+
+        mock_client_class = MagicMock()
+        mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_client_instance)
+        mock_client_class.return_value.__aexit__ = AsyncMock(return_value=None)
+
+        with patch('app.modules.analysis.llm_client.httpx.AsyncClient', mock_client_class):
+            client = VLLMClient()
+            result = await client.analyze_sentence("Test sentence.")
+
+        assert result is None, f"Expected None for: {label}"
+
+    @pytest.mark.asyncio
     async def test_vllm_client_circuit_open(self):
         """Client returns None when circuit is open."""
         from unittest.mock import AsyncMock, patch, MagicMock

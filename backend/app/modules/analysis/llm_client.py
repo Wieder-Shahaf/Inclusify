@@ -234,8 +234,22 @@ class VLLMClient:
         logger.info("vLLM response received: status=%d elapsed_s=%.3f", response.status_code, elapsed)
 
         data = response.json()
-        choice = data["choices"][0]
-        raw_content = choice["message"]["content"]
+        choices = data.get("choices")
+        if not choices or not isinstance(choices, list):
+            logger.warning("vLLM malformed response: missing or empty 'choices' field")
+            return None
+        choice = choices[0]
+        if not isinstance(choice, dict):
+            logger.warning("vLLM malformed response: choice is not a dict")
+            return None
+        message = choice.get("message")
+        if not isinstance(message, dict):
+            logger.warning("vLLM malformed response: missing or invalid 'message' in choice")
+            return None
+        raw_content = message.get("content")
+        if raw_content is None:
+            logger.warning("vLLM malformed response: missing 'content' in message")
+            return None
 
         parsed = parse_llm_output(raw_content)
         if parsed is None:
