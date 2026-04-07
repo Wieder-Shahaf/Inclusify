@@ -21,7 +21,24 @@
     "lastUpdated": "עודכן לאחרונה",
     "tabs": {
       "overview": "סקירה",
-      "users": "משתמשים"
+      "users": "משתמשים",
+      "modelPerformance": "ביצועי מודל"
+    },
+    "modelMetrics": {
+      "kpis": {
+        "avgLatency": "זמן הסקה ממוצע",
+        "errorRate": "שיעור שגיאות LLM",
+        "fallbackRate": "שיעור נסיגה לחוקים",
+        "totalLlmCalls": "סה״כ קריאות LLM"
+      },
+      "modeBreakdown": {
+        "title": "פירוט מצב זיהוי",
+        "llm": "LLM בלבד",
+        "hybrid": "היברידי (LLM + חוקים)",
+        "rulesOnly": "חוקים בלבד",
+        "analyses": "ניתוחים בסך הכל"
+      },
+      "noData": "לא נרשמו ניתוחים בתקופה זו."
     },
     "timeRanges": {
       "today": "היום",

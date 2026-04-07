@@ -21,7 +21,24 @@
     "lastUpdated": "Last updated",
     "tabs": {
       "overview": "Overview",
-      "users": "Users"
+      "users": "Users",
+      "modelPerformance": "Model Performance"
+    },
+    "modelMetrics": {
+      "kpis": {
+        "avgLatency": "Avg Inference Latency (s)",
+        "errorRate": "LLM Error Rate",
+        "fallbackRate": "Fallback Rate",
+        "totalLlmCalls": "Total LLM Calls"
+      },
+      "modeBreakdown": {
+        "title": "Detection Mode Breakdown",
+        "llm": "LLM Only",
+        "hybrid": "Hybrid (LLM + Rules)",
+        "rulesOnly": "Rules Only",
+        "analyses": "total analyses"
+      },
+      "noData": "No analyses recorded in this period."
     },
     "timeRanges": {
       "today": "Today",

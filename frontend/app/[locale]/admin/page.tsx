@@ -18,6 +18,23 @@ export default async function AdminPage({ params }: Props) {
     tabs: {
       overview: t('admin.tabs.overview'),
       users: t('admin.tabs.users'),
+      modelPerformance: t('admin.tabs.modelPerformance'),
+    },
+    modelMetrics: {
+      kpis: {
+        avgLatency: t('admin.modelMetrics.kpis.avgLatency'),
+        errorRate: t('admin.modelMetrics.kpis.errorRate'),
+        fallbackRate: t('admin.modelMetrics.kpis.fallbackRate'),
+        totalLlmCalls: t('admin.modelMetrics.kpis.totalLlmCalls'),
+      },
+      modeBreakdown: {
+        title: t('admin.modelMetrics.modeBreakdown.title'),
+        llm: t('admin.modelMetrics.modeBreakdown.llm'),
+        hybrid: t('admin.modelMetrics.modeBreakdown.hybrid'),
+        rulesOnly: t('admin.modelMetrics.modeBreakdown.rulesOnly'),
+        analyses: t('admin.modelMetrics.modeBreakdown.analyses'),
+      },
+      noData: t('admin.modelMetrics.noData'),
     },
     timeRanges: {
       week: t('admin.timeRanges.week'),

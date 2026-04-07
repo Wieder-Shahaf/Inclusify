@@ -187,7 +187,7 @@ class TestHybridDetector:
         })
 
         detector = HybridDetector(vllm_client=mock_client)
-        issues, mode = await detector.analyze("This is a test sentence. Another sentence.")
+        issues, mode, _ = await detector.analyze("This is a test sentence. Another sentence.")
 
         assert mode == "llm"
 
@@ -201,7 +201,7 @@ class TestHybridDetector:
         mock_client.analyze_sentence = AsyncMock(return_value=None)
 
         detector = HybridDetector(vllm_client=mock_client)
-        issues, mode = await detector.analyze("The homosexual lifestyle is outdated terminology.")
+        issues, mode, _ = await detector.analyze("The homosexual lifestyle is outdated terminology.")
 
         assert mode == "rules_only"
 
@@ -212,16 +212,20 @@ class TestHybridDetector:
 
         call_count = 0
 
-        async def mock_analyze(sentence):
+        async def mock_analyze(sentence, metrics=None):
             nonlocal call_count
             call_count += 1
             # First call succeeds, second fails
             if call_count == 1:
+                if metrics is not None:
+                    metrics.record_call(50.0, success=True)
                 return {
                     "category": "Pathologizing",
                     "severity": "Biased",
                     "explanation": "Test"
                 }
+            if metrics is not None:
+                metrics.record_call(0.0, success=False, error_type="timeout")
             return None
 
         mock_client = MagicMock()
@@ -229,7 +233,7 @@ class TestHybridDetector:
 
         detector = HybridDetector(vllm_client=mock_client)
         # Two sentences: one succeeds with LLM, one fails
-        issues, mode = await detector.analyze("First sentence. Second sentence with homosexual.")
+        issues, mode, _ = await detector.analyze("First sentence. Second sentence with homosexual.")
 
         assert mode == "hybrid"
 
@@ -244,12 +248,12 @@ class TestHybridDetector:
         detector = HybridDetector(vllm_client=mock_client)
 
         # Hebrew text
-        _, mode = await detector.analyze("זה משפט בעברית.", language="auto")
+        _, mode, _ = await detector.analyze("זה משפט בעברית.", language="auto")
         # Should detect Hebrew and process accordingly
         assert mode == "rules_only"  # Because LLM returns None
 
         # English text
-        _, mode = await detector.analyze("This is English.", language="auto")
+        _, mode, _ = await detector.analyze("This is English.", language="auto")
         assert mode == "rules_only"
 
 

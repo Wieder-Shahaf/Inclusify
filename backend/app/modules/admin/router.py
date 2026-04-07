@@ -11,7 +11,8 @@ from app.auth.deps import require_admin
 from .schemas import (
     AnalyticsResponse,
     UsersListResponse,
-    ActivityResponse
+    ActivityResponse,
+    ModelMetricsResponse,
 )
 from . import queries
 
@@ -69,6 +70,28 @@ async def list_users(
             "page_size": page_size,
             "total_pages": total_pages
         }
+
+
+@router.get("/model-metrics", response_model=ModelMetricsResponse)
+async def get_model_metrics(
+    request: Request,
+    user: dict = Depends(require_admin),
+    days: int = Query(default=30, ge=1, le=365, description="Time range in days")
+):
+    """Get vLLM model performance KPIs for admin dashboard.
+
+    Returns aggregated inference metrics for the specified time period:
+    - total_analyses: Total analysis requests recorded
+    - total_llm_calls / total_errors: Raw vLLM call counts
+    - error_rate / fallback_rate: Percentages (0.0–100.0)
+    - avg/min/max_latency_ms: Inference latency statistics
+    - mode_llm / mode_hybrid / mode_rules_only: Breakdown by detection mode
+
+    Requires: site_admin role
+    """
+    pool = request.app.state.db_pool
+    async with pool.acquire() as conn:
+        return await queries.get_model_metrics_kpis(conn, days)
 
 
 @router.get("/activity", response_model=ActivityResponse)

@@ -121,3 +121,40 @@ async def insert_suggestion(
         rationale,
         source_id,
     )
+
+
+async def insert_model_metric(conn: asyncpg.Connection, data: dict) -> None:
+    """Insert one row of per-request vLLM inference metrics.
+
+    Args:
+        conn: asyncpg connection (caller manages transaction if needed).
+        data: Dict produced by CallMetrics.to_insert_dict().
+    """
+    await conn.execute(
+        """
+        INSERT INTO model_metrics (
+            analysis_mode,
+            total_sentences,
+            llm_calls,
+            llm_successes,
+            llm_errors,
+            llm_timeouts,
+            circuit_breaker_trips,
+            avg_latency_ms,
+            min_latency_ms,
+            max_latency_ms,
+            total_runtime_ms
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);
+        """,
+        data["analysis_mode"],
+        data["total_sentences"],
+        data["llm_calls"],
+        data["llm_successes"],
+        data["llm_errors"],
+        data["llm_timeouts"],
+        data["circuit_breaker_trips"],
+        data["avg_latency_ms"],
+        data["min_latency_ms"],
+        data["max_latency_ms"],
+        data["total_runtime_ms"],
+    )
