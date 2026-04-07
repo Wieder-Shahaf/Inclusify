@@ -1,7 +1,8 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Cpu, AlertTriangle, GitBranch, Timer } from 'lucide-react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Cpu, AlertTriangle, GitBranch, Timer, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useModelMetrics } from '@/lib/api/admin';
 
@@ -31,12 +32,46 @@ function SkeletonLoader({ className }: { className?: string }) {
   );
 }
 
+function Tooltip({ text }: { text: string }) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <span className="relative inline-flex items-center">
+      <button
+        type="button"
+        onMouseEnter={() => setVisible(true)}
+        onMouseLeave={() => setVisible(false)}
+        onFocus={() => setVisible(true)}
+        onBlur={() => setVisible(false)}
+        className="text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400 transition-colors"
+        aria-label="More information"
+      >
+        <Info className="w-3.5 h-3.5" />
+      </button>
+      <AnimatePresence>
+        {visible && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.15 }}
+            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-52 rounded-lg bg-slate-800 dark:bg-slate-700 text-white text-xs px-3 py-2 shadow-lg pointer-events-none"
+          >
+            {text}
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800 dark:border-t-slate-700" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </span>
+  );
+}
+
 function KpiCard({
   label,
   value,
   sub,
   icon,
   color,
+  tooltip,
   isLoading,
 }: {
   label: string;
@@ -44,6 +79,7 @@ function KpiCard({
   sub?: string;
   icon: React.ReactNode;
   color: 'sky' | 'green' | 'purple' | 'pink' | 'amber' | 'red';
+  tooltip: string;
   isLoading: boolean;
 }) {
   const colorConfig: Record<string, string> = {
@@ -72,8 +108,11 @@ function KpiCard({
         </div>
       ) : (
         <>
-          <div className={cn('w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white', colorConfig[color])}>
-            {icon}
+          <div className="flex items-start justify-between">
+            <div className={cn('w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white', colorConfig[color])}>
+              {icon}
+            </div>
+            <Tooltip text={tooltip} />
           </div>
           <div className="mt-3">
             <p className="text-2xl font-bold text-slate-800 dark:text-white">{value}</p>
@@ -120,12 +159,13 @@ export default function ModelPerformanceTab({ days, translations }: ModelPerform
       <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
         <KpiCard
           label={translations.kpis.avgLatency}
-          value={data?.avg_latency_ms != null ? `${Math.round(data.avg_latency_ms)} ms` : '—'}
+          value={data?.avg_latency_ms != null ? `${(data.avg_latency_ms / 1000).toFixed(2)} s` : '—'}
           sub={data?.min_latency_ms != null && data?.max_latency_ms != null
-            ? `${Math.round(data.min_latency_ms)}–${Math.round(data.max_latency_ms)} ms`
+            ? `${(data.min_latency_ms / 1000).toFixed(2)}–${(data.max_latency_ms / 1000).toFixed(2)} s`
             : undefined}
           icon={<Timer className="w-5 h-5" />}
           color="sky"
+          tooltip="Average time the AI model takes to analyze a single sentence. Sub-label shows the min–max range across all requests."
           isLoading={isLoading}
         />
         <KpiCard
@@ -133,6 +173,7 @@ export default function ModelPerformanceTab({ days, translations }: ModelPerform
           value={fmt(data?.error_rate, '%')}
           icon={<AlertTriangle className="w-5 h-5" />}
           color={data && data.error_rate > 10 ? 'red' : 'amber'}
+          tooltip="Percentage of AI model calls that failed (timeouts, HTTP errors, or circuit-breaker trips). Lower is better."
           isLoading={isLoading}
         />
         <KpiCard
@@ -140,6 +181,7 @@ export default function ModelPerformanceTab({ days, translations }: ModelPerform
           value={fmt(data?.fallback_rate, '%')}
           icon={<GitBranch className="w-5 h-5" />}
           color="purple"
+          tooltip="Percentage of analyses that fell back to rule-based detection (hybrid or rules-only mode) because the AI model was unavailable."
           isLoading={isLoading}
         />
         <KpiCard
@@ -148,6 +190,7 @@ export default function ModelPerformanceTab({ days, translations }: ModelPerform
           sub={data ? `${data.total_errors} errors` : undefined}
           icon={<Cpu className="w-5 h-5" />}
           color="green"
+          tooltip="Total number of individual sentence-level AI model calls made in the selected time period."
           isLoading={isLoading}
         />
       </div>

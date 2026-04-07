@@ -26,7 +26,7 @@
     },
     "modelMetrics": {
       "kpis": {
-        "avgLatency": "Avg Inference Latency",
+        "avgLatency": "Avg Inference Latency (s)",
         "errorRate": "LLM Error Rate",
         "fallbackRate": "Fallback Rate",
         "totalLlmCalls": "Total LLM Calls"
