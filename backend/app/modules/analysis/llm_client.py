@@ -17,6 +17,7 @@ from pybreaker import CircuitBreakerError
 
 from app.core.config import settings
 from app.modules.analysis.circuit_breaker import vllm_breaker
+from app.modules.analysis.call_metrics import CallMetrics
 
 logger = logging.getLogger(__name__)
 
@@ -177,30 +178,54 @@ class VLLMClient:
         self.base_url = base_url or settings.VLLM_URL
         self.timeout = timeout or settings.VLLM_TIMEOUT
 
-    async def analyze_sentence(self, sentence: str) -> Optional[dict]:
+    async def analyze_sentence(
+        self,
+        sentence: str,
+        metrics: Optional[CallMetrics] = None,
+    ) -> Optional[dict]:
         """
         Analyze a sentence for LGBTQ+ inclusive language compliance.
 
         Acquires the global semaphore before sending to GPU — excess requests
         queue here instead of hammering vLLM concurrently.
 
+        Args:
+            sentence: The sentence text to analyze.
+            metrics: Optional CallMetrics accumulator. When provided, each call
+                     outcome (latency, success/error type) is recorded on it.
+
         Returns:
             Parsed response dict with category, severity, explanation.
             Returns None on any error (timeout, HTTP error, circuit open, parse error).
         """
         async with self._get_semaphore():
+            t0 = time.monotonic()
             try:
-                return await self._make_request(sentence)
+                result = await self._make_request(sentence)
+                latency_ms = (time.monotonic() - t0) * 1000
+                if metrics is not None:
+                    metrics.record_call(latency_ms, success=result is not None)
+                return result
             except CircuitBreakerError:
+                if metrics is not None:
+                    metrics.record_call(0.0, success=False, error_type="circuit_breaker")
                 logger.warning("vLLM circuit breaker is open — skipping LLM call")
                 return None
             except httpx.TimeoutException:
+                latency_ms = (time.monotonic() - t0) * 1000
+                if metrics is not None:
+                    metrics.record_call(latency_ms, success=False, error_type="timeout")
                 logger.error("vLLM request timed out: url=%s timeout_s=%.1f", self.base_url, self.timeout)
                 return None
             except httpx.HTTPStatusError as exc:
+                latency_ms = (time.monotonic() - t0) * 1000
+                if metrics is not None:
+                    metrics.record_call(latency_ms, success=False, error_type="http_error")
                 logger.error("vLLM HTTP error: status=%d url=%s", exc.response.status_code, self.base_url)
                 return None
             except Exception as exc:
+                if metrics is not None:
+                    metrics.record_call(0.0, success=False)
                 logger.error("vLLM unexpected error: %s", str(exc), exc_info=True)
                 return None
 
@@ -264,4 +289,4 @@ class VLLMClient:
         return parsed
 
 
-__all__ = ["VLLMClient", "parse_llm_output", "map_severity", "extract_severity_confidence", "SYSTEM_PROMPT"]
+__all__ = ["VLLMClient", "parse_llm_output", "map_severity", "extract_severity_confidence", "SYSTEM_PROMPT", "CallMetrics"]

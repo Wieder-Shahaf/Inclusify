@@ -40,6 +40,7 @@ from typing import Optional, Literal
 from app.auth.users import current_user_optional
 from app.db.models import User
 from app.db import repository as repo
+from app.modules.analysis.call_metrics import CallMetrics
 from app.modules.analysis.hybrid_detector import HybridDetector
 
 logger = logging.getLogger(__name__)
@@ -354,6 +355,41 @@ async def _persist_results(
 
 
 # =============================================================================
+# Metrics Persistence (always fires, privacy-safe — no text stored)
+# =============================================================================
+
+async def _persist_metrics(
+    request: Request,
+    call_metrics: CallMetrics,
+    analysis_mode: str,
+    runtime_ms: int,
+) -> None:
+    """Persist per-request vLLM performance metrics. Fails silently."""
+    pool = getattr(request.app.state, "db_pool", None)
+    if pool is None:
+        logger.debug("DB pool not available — skipping metrics persistence")
+        return
+    try:
+        async with pool.acquire(timeout=5.0) as conn:
+            await repo.insert_model_metric(
+                conn,
+                call_metrics.to_insert_dict(
+                    analysis_mode=analysis_mode,
+                    total_runtime_ms=runtime_ms,
+                ),
+            )
+        logger.debug(
+            "Metrics persisted: mode=%s llm_calls=%d errors=%d avg_latency_ms=%s",
+            analysis_mode,
+            call_metrics.llm_calls,
+            call_metrics.llm_errors,
+            f"{call_metrics.avg_latency_ms():.1f}" if call_metrics.avg_latency_ms() else "n/a",
+        )
+    except Exception:
+        logger.exception("Metrics persistence failed — analysis results were still returned to user")
+
+
+# =============================================================================
 # Endpoint (Hybrid Detection + Optional DB Persistence)
 # =============================================================================
 
@@ -389,7 +425,7 @@ async def analyze_text(
 
     start_time = time.monotonic()
 
-    issues, analysis_mode = await _hybrid_detector.analyze(body.text, language=language)
+    issues, analysis_mode, call_metrics = await _hybrid_detector.analyze(body.text, language=language)
 
     elapsed = time.monotonic() - start_time
     runtime_ms = int(elapsed * 1000)
@@ -398,7 +434,7 @@ async def analyze_text(
         len(issues), analysis_mode, elapsed,
     )
 
-    # Persist to DB only when private_mode is off and user is authenticated
+    # Persist full results to DB only when private_mode is off and user is authenticated
     if not private_mode and current_user is not None:
         await _persist_results(
             request=request,
@@ -410,6 +446,14 @@ async def analyze_text(
             issues=issues,
             runtime_ms=runtime_ms,
         )
+
+    # Always persist model performance metrics (no text stored — privacy-safe)
+    await _persist_metrics(
+        request=request,
+        call_metrics=call_metrics,
+        analysis_mode=analysis_mode,
+        runtime_ms=runtime_ms,
+    )
 
     return AnalysisResponse(
         original_text=body.text,

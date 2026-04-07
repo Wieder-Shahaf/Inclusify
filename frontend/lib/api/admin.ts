@@ -81,3 +81,26 @@ export function useAdminActivity(page: number, pageSize: number = 20, days: numb
   );
   return { data, isLoading, error, refresh: mutate };
 }
+
+export interface ModelMetricsResponse {
+  total_analyses: number;
+  total_llm_calls: number;
+  total_errors: number;
+  error_rate: number;
+  fallback_rate: number;
+  avg_latency_ms: number | null;
+  min_latency_ms: number | null;
+  max_latency_ms: number | null;
+  mode_llm: number;
+  mode_hybrid: number;
+  mode_rules_only: number;
+}
+
+export function useModelMetrics(days: number) {
+  const { data, error, isLoading, mutate } = useSWR<ModelMetricsResponse>(
+    `${API_BASE_URL}/api/v1/admin/model-metrics?days=${days}`,
+    fetcher,
+    { revalidateOnFocus: false, dedupingInterval: 60000 }
+  );
+  return { data, isLoading, error, refresh: mutate };
+}

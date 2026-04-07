@@ -108,6 +108,67 @@ async def get_users_paginated(
     return [dict(r) for r in rows], total or 0
 
 
+async def get_model_metrics_kpis(conn: asyncpg.Connection, days: int) -> dict:
+    """Fetch aggregated vLLM model performance KPIs for admin dashboard.
+
+    Args:
+        conn: asyncpg database connection
+        days: Time range in days
+
+    Returns:
+        dict with keys:
+            - total_analyses: rows in model_metrics in period
+            - total_llm_calls: sum of all vLLM calls made
+            - total_errors: sum of all vLLM errors
+            - error_rate: llm errors / llm calls (0.0 if no calls)
+            - fallback_rate: analyses NOT in pure-llm mode / total (0.0 if none)
+            - avg_latency_ms: mean of per-request avg latency (None if no LLM calls)
+            - min_latency_ms: global minimum latency across all requests
+            - max_latency_ms: global maximum latency across all requests
+            - mode_llm: count of fully-LLM analyses
+            - mode_hybrid: count of hybrid analyses
+            - mode_rules_only: count of rules-only analyses
+    """
+    from datetime import datetime, timedelta
+    cutoff = datetime.utcnow() - timedelta(days=days)
+
+    row = await conn.fetchrow("""
+        SELECT
+            COUNT(*)                                         AS total_analyses,
+            COALESCE(SUM(llm_calls), 0)                      AS total_llm_calls,
+            COALESCE(SUM(llm_errors), 0)                     AS total_errors,
+            CASE WHEN SUM(llm_calls) > 0
+                 THEN ROUND((SUM(llm_errors)::FLOAT / SUM(llm_calls) * 100)::NUMERIC, 1)
+                 ELSE 0 END                                  AS error_rate,
+            CASE WHEN COUNT(*) > 0
+                 THEN ROUND((SUM(CASE WHEN analysis_mode != 'llm' THEN 1 ELSE 0 END)::FLOAT
+                             / COUNT(*) * 100)::NUMERIC, 1)
+                 ELSE 0 END                                  AS fallback_rate,
+            ROUND(AVG(avg_latency_ms)::NUMERIC, 1)           AS avg_latency_ms,
+            ROUND(MIN(min_latency_ms)::NUMERIC, 1)           AS min_latency_ms,
+            ROUND(MAX(max_latency_ms)::NUMERIC, 1)           AS max_latency_ms,
+            SUM(CASE WHEN analysis_mode = 'llm'        THEN 1 ELSE 0 END) AS mode_llm,
+            SUM(CASE WHEN analysis_mode = 'hybrid'     THEN 1 ELSE 0 END) AS mode_hybrid,
+            SUM(CASE WHEN analysis_mode = 'rules_only' THEN 1 ELSE 0 END) AS mode_rules_only
+        FROM model_metrics
+        WHERE created_at >= $1
+    """, cutoff)
+
+    return {
+        "total_analyses":  int(row["total_analyses"] or 0),
+        "total_llm_calls": int(row["total_llm_calls"] or 0),
+        "total_errors":    int(row["total_errors"] or 0),
+        "error_rate":      float(row["error_rate"] or 0.0),
+        "fallback_rate":   float(row["fallback_rate"] or 0.0),
+        "avg_latency_ms":  float(row["avg_latency_ms"]) if row["avg_latency_ms"] is not None else None,
+        "min_latency_ms":  float(row["min_latency_ms"]) if row["min_latency_ms"] is not None else None,
+        "max_latency_ms":  float(row["max_latency_ms"]) if row["max_latency_ms"] is not None else None,
+        "mode_llm":        int(row["mode_llm"] or 0),
+        "mode_hybrid":     int(row["mode_hybrid"] or 0),
+        "mode_rules_only": int(row["mode_rules_only"] or 0),
+    }
+
+
 async def get_recent_activity(
     conn: asyncpg.Connection,
     page: int,

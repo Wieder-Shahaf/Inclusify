@@ -9,6 +9,7 @@ import asyncio
 import logging
 from typing import TYPE_CHECKING
 
+from app.modules.analysis.call_metrics import CallMetrics
 from app.modules.analysis.llm_client import VLLMClient, map_severity
 from app.modules.analysis.sentence_splitter import split_with_offsets
 
@@ -120,7 +121,7 @@ class HybridDetector:
         self,
         text: str,
         language: str = "auto"
-    ) -> tuple[list["Issue"], str]:
+    ) -> tuple[list["Issue"], str, CallMetrics]:
         """
         Analyze text for LGBTQ+ inclusive language issues.
 
@@ -129,8 +130,9 @@ class HybridDetector:
             language: Language code ('en', 'he', 'auto'). Auto-detects if 'auto'.
 
         Returns:
-            Tuple of (issues_list, analysis_mode).
+            Tuple of (issues_list, analysis_mode, call_metrics).
             analysis_mode is 'llm', 'hybrid', or 'rules_only'.
+            call_metrics holds aggregated vLLM call stats for this request.
         """
         # Import here to avoid circular import
         from app.modules.analysis.router import Issue, detect_rule_based_issues
@@ -149,10 +151,11 @@ class HybridDetector:
         llm_issues: list[Issue] = []
         llm_success_count = 0
         llm_failure_count = 0
+        call_metrics = CallMetrics(total_sentences=len(sentences))
 
         # Process sentences in PARALLEL with asyncio.gather
         async def analyze_one(sentence: str, start_offset: int, end_offset: int):
-            result = await self.client.analyze_sentence(sentence)
+            result = await self.client.analyze_sentence(sentence, metrics=call_metrics)
             return (result, sentence, start_offset, end_offset)
 
         # Run all analyses concurrently
@@ -231,7 +234,7 @@ class HybridDetector:
         if mode == "rules_only" and total_sentences > 0:
             logger.warning("LLM unavailable for all sentences — falling back to rules_only mode")
 
-        return merged_issues, mode
+        return merged_issues, mode, call_metrics
 
 
-__all__ = ["HybridDetector", "calculate_overlap", "merge_results", "detect_language"]
+__all__ = ["HybridDetector", "calculate_overlap", "merge_results", "detect_language", "CallMetrics"]

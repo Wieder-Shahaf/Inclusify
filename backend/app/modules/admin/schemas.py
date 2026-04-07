@@ -98,3 +98,22 @@ class ActivityResponse(BaseModel):
     page: int
     page_size: int
     total_pages: int
+
+
+class ModelMetricsResponse(BaseModel):
+    """Aggregated vLLM model performance KPIs for admin dashboard.
+
+    All rates are percentages (0.0–100.0). Latency values are in milliseconds.
+    Fields are None when no LLM calls have occurred in the requested period.
+    """
+    total_analyses: int
+    total_llm_calls: int
+    total_errors: int
+    error_rate: float
+    fallback_rate: float
+    avg_latency_ms: Optional[float]
+    min_latency_ms: Optional[float]
+    max_latency_ms: Optional[float]
+    mode_llm: int
+    mode_hybrid: int
+    mode_rules_only: int

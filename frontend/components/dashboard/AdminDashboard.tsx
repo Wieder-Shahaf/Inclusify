@@ -4,6 +4,7 @@ import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ModelPerformanceTab from './ModelPerformanceTab';
 import OverviewTab from './OverviewTab';
 import UsersTab from './UsersTab';
 
@@ -14,6 +15,23 @@ interface AdminDashboardProps {
     tabs: {
       overview: string;
       users: string;
+      modelPerformance: string;
+    };
+    modelMetrics: {
+      kpis: {
+        avgLatency: string;
+        errorRate: string;
+        fallbackRate: string;
+        totalLlmCalls: string;
+      };
+      modeBreakdown: {
+        title: string;
+        llm: string;
+        hybrid: string;
+        rulesOnly: string;
+        analyses: string;
+      };
+      noData: string;
     };
     timeRanges: {
       week: string;
@@ -41,7 +59,7 @@ interface AdminDashboardProps {
   };
 }
 
-type TabKey = 'overview' | 'users';
+type TabKey = 'overview' | 'users' | 'model-performance';
 
 // Skeleton loader for suspense fallback
 function DashboardSkeleton() {
@@ -80,6 +98,7 @@ function AdminDashboardContent({ translations }: AdminDashboardProps) {
   const tabs: { key: TabKey; label: string }[] = [
     { key: 'overview', label: translations.tabs.overview },
     { key: 'users', label: translations.tabs.users },
+    { key: 'model-performance', label: translations.tabs.modelPerformance },
   ];
 
   const timeRangeOptions = [
@@ -146,6 +165,12 @@ function AdminDashboardContent({ translations }: AdminDashboardProps) {
       )}
       {activeTab === 'users' && (
         <UsersTab translations={{ users: translations.users }} />
+      )}
+      {activeTab === 'model-performance' && (
+        <ModelPerformanceTab
+          days={days}
+          translations={translations.modelMetrics}
+        />
       )}
     </div>
   );
