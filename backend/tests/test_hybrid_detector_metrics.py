@@ -9,7 +9,7 @@ Verifies that:
 """
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
 from app.modules.analysis.call_metrics import CallMetrics
 

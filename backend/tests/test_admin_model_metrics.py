@@ -5,6 +5,17 @@ No real DB needed — asyncpg connection is mocked.
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock
+from uuid import uuid4
+
+
+def _admin_token() -> str:
+    from jose import jwt
+    from app.core.config import settings
+    return jwt.encode(
+        {"sub": str(uuid4()), "role": "site_admin", "aud": ["fastapi-users:auth"]},
+        settings.JWT_SECRET,
+        algorithm="HS256",
+    )
 
 
 class TestGetModelMetricsKpis:
@@ -140,8 +151,6 @@ class TestAdminModelMetricsEndpoint:
     @pytest.mark.asyncio
     async def test_endpoint_returns_schema(self, test_client, mock_pool):
         """Admin token returns valid ModelMetricsResponse shape."""
-        from unittest.mock import patch
-
         mock_conn = MagicMock()
         mock_conn.fetchrow = AsyncMock(return_value={
             "total_analyses": 5,
@@ -161,11 +170,10 @@ class TestAdminModelMetricsEndpoint:
         ctx.__aexit__ = AsyncMock(return_value=None)
         mock_pool.acquire.return_value = ctx
 
-        with patch("app.auth.deps.require_admin", return_value={"user_id": "admin-1", "role": "site_admin"}):
-            response = await test_client.get(
-                "/api/v1/admin/model-metrics",
-                headers={"Authorization": "Bearer test-token"},
-            )
+        response = await test_client.get(
+            "/api/v1/admin/model-metrics",
+            headers={"Authorization": f"Bearer {_admin_token()}"},
+        )
 
         assert response.status_code == 200
         body = response.json()

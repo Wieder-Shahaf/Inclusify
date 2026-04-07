@@ -171,9 +171,12 @@ class TestAnalyzeSentenceMetricsErrors:
 
         async def mock_make_request(sentence):
             nonlocal idx
-            val = responses[idx]; idx += 1
-            if val == "timeout": raise httpx.TimeoutException("t/o")
-            if val == "cbe": raise CBE()
+            val = responses[idx]
+            idx += 1
+            if val == "timeout":
+                raise httpx.TimeoutException("t/o")
+            if val == "cbe":
+                raise CBE()
             return {"category": "N/A", "severity": "Correct", "explanation": "OK", "confidence": None}
 
         metrics = CallMetrics()
