@@ -1,14 +1,31 @@
-# Inclusify
+<div align="center">
+
+<img src="frontend/public/Inclusify.png" alt="Inclusify" width="220" />
 
 **LGBTQ+ Inclusive Language Analyzer for Academic Texts**
 
-AI-powered platform developed for the Achva LGBT organization. Detects LGBTQphobic, outdated, biased, or pathologizing language in Hebrew and English academic texts — with severity-graded alerts, explanations, inclusive alternatives, and downloadable reports.
+Inclusify is an NLP-powered web platform developed in partnership with the **Achva LGBT Organization**. It helps researchers, editors, and authors identify LGBTQphobic, outdated, biased, or pathologizing language in academic texts — in both Hebrew and English — and suggests inclusive alternatives.
+
+Built as a final academic project at the Technion by a team of five, and delivered as a working product to Achva.
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue?logo=typescript&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
 ![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?logo=fastapi&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-316192?logo=postgresql&logoColor=white)
+
+</div>
+
+---
+
+## What It Does
+
+- Detects problematic language with **severity grading** (High / Medium / Low)
+- Provides **educational explanations** and **inclusive alternatives** per finding
+- Supports **Hebrew and English** academic texts with full RTL layout
+- Generates **downloadable reports** for authors and editors
+- **Private mode**: analysis without storing any text to the database
+- **Admin dashboard**: usage analytics, glossary management, model performance monitoring
 
 ---
 
@@ -24,119 +41,19 @@ AI-powered platform developed for the Achva LGBT organization. Detects LGBTQphob
 
 ---
 
-## Quick Start
+## Screenshots
 
-### Prerequisites
+### Landing Page
+![Landing Page](docs/screenshots/landing.png)
 
-- Node.js >= 18, Python >= 3.11, PostgreSQL >= 14
+### Analysis Results
+![Analysis Results](docs/screenshots/analysis.png)
 
-### Database
+### Glossary
+![Glossary](docs/screenshots/glossary.png)
 
-```bash
-createdb inclusify
-psql inclusify -f db/schema.sql
-psql inclusify -f db/seed.sql
-```
-
-### Backend
-
-```bash
-cd backend
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env   # fill in DB + Azure credentials
-uvicorn app.main:app --reload --port 8000
-```
-
-API runs at **http://localhost:8000** — docs at `/docs`
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-App runs at **http://localhost:3000**
-
----
-
-## API Endpoints
-
-| Method | Endpoint | Description | Status |
-|--------|----------|-------------|--------|
-| `GET` | `/` | Health check | Live |
-| `POST` | `/api/v1/ingestion/upload` | Upload PDF/DOCX for text extraction | Live |
-| `POST` | `/api/v1/analysis/analyze` | Analyze text for inclusive language | Live (rule-based) |
-| `GET` | `/api/v1/admin/analytics` | Usage analytics | Live |
-| `GET` | `/api/v1/admin/users` | User management | Live |
-| `GET` | `/api/v1/admin/model-metrics` | Model performance metrics | Live |
-
----
-
-## Project Structure
-
-```
-inclusify/
-├── frontend/              # Next.js 16 App Router
-│   ├── app/[locale]/     # Locale routing (en, he)
-│   ├── components/       # UI components
-│   ├── lib/              # API client, utilities
-│   └── messages/         # i18n translations
-│
-├── backend/              # FastAPI application
-│   ├── app/
-│   │   ├── main.py
-│   │   ├── core/         # Config, security, middleware
-│   │   ├── db/           # Database connection & repositories
-│   │   └── modules/      # analysis, ingestion, admin
-│   └── tests/
-│
-├── ml/                   # ML pipelines
-│   ├── LoRA_Adapters/   # Fine-tuned model adapters
-│   ├── notebooks/
-│   └── inference_demo.py
-│
-├── db/                   # schema.sql + seed.sql (canonical)
-├── data/                 # Training datasets
-├── docs/                 # Requirements, architecture, threat model
-└── scripts/              # Dev utilities
-```
-
----
-
-## Configuration
-
-**`backend/.env`**
-```env
-DATABASE_URL=postgresql://user:password@localhost:5432/inclusify
-AZURE_ML_ENDPOINT=https://your-endpoint.azure.com
-AZURE_ML_API_KEY=your_api_key
-SECRET_KEY=your-secret-key
-CORS_ORIGINS=http://localhost:3000
-```
-
-**`frontend/.env.local`**
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_ENABLE_PRIVATE_MODE=true
-```
-
----
-
-## Development
-
-```bash
-# Backend tests
-cd backend && pytest
-
-# Backend linting
-ruff check . && mypy app/
-
-# Frontend linting
-cd frontend && npm run lint
-```
+### Admin Dashboard
+![Admin Dashboard](docs/screenshots/admin.png)
 
 ---
 
@@ -156,5 +73,13 @@ cd frontend && npm run lint
 
 ## Team
 
-Developed by **Shahaf Wieder, Barak Sharon, Rasha Daher, Lama Zarka, Adan Daxa**  
-in partnership with [Achva LGBT Organization](https://achva-lgbt.org.il/) as a final academic project.
+**Shahaf Wieder, Barak Sharon, Rasha Daher, Lama Zarka, Adan Daxa**  
+Technion — Israel Institute of Technology, 2025–2026
+
+---
+
+## Acknowledgments
+
+- [Achva LGBT Organization](https://achva-lgbt.org.il/) — partner organization and domain expertise
+- [Qwen](https://huggingface.co/Qwen) — base model
+- [Docling](https://github.com/DS4SD/docling) — document parsing
