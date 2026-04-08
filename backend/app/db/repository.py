@@ -10,9 +10,10 @@ async def get_user_by_email(conn: asyncpg.Connection, email: str):
     )
 
 
+# Added Optional[str] to explicitly handle guest users (NULL)
 async def create_document(
     conn: asyncpg.Connection,
-    user_id,
+    user_id: Optional[str],
     input_type: str,
     language: str,
     private_mode: bool,
@@ -56,15 +57,23 @@ async def create_run(conn: asyncpg.Connection, document_id, model_version: str, 
     return row["run_id"]
 
 
-async def finish_run(conn: asyncpg.Connection, run_id, status: str, runtime_ms: int):
+#  Added error_message parameter to handle 'failed' runs
+async def finish_run(
+    conn: asyncpg.Connection, 
+    run_id, 
+    status: str, 
+    runtime_ms: int, 
+    error_message: Optional[str] = None
+):
     await conn.execute(
         """
         UPDATE analysis_runs
-        SET status=$1, finished_at=NOW(), runtime_ms=$2
-        WHERE run_id=$3;
+        SET status=$1, finished_at=NOW(), runtime_ms=$2, error_message=$3
+        WHERE run_id=$4;
         """,
         status,
         runtime_ms,
+        error_message,
         run_id,
     )
 

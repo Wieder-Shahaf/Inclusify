@@ -55,7 +55,7 @@ router = APIRouter()
 class AnalysisRequest(BaseModel):
     text: str = Field(..., min_length=1)
     language: Optional[Literal['en', 'he', 'auto']] = 'auto'
-    private_mode: Optional[bool] = True
+    private_mode: Optional[bool] = False
 
 
 class Issue(BaseModel):
@@ -283,9 +283,10 @@ def detect_rule_based_issues(text: str) -> list[Issue]:
 # DB Persistence (non-private mode only)
 # =============================================================================
 
+# Allow user to be None for guest runs
 async def _persist_results(
     request: Request,
-    user: User,
+    user: User | None,  # Changed this line to allow None
     text: str,
     language: str,
     private_mode: bool,
@@ -303,56 +304,64 @@ async def _persist_results(
 
     try:
         async with pool.acquire(timeout=5.0) as conn:
-            async with conn.transaction():
-                doc_id = await repo.create_document(
-                    conn=conn,
-                    user_id=user.id,
-                    input_type="paste",
-                    language=language,
-                    private_mode=private_mode,
-                    mime_type="text/plain",
-                    text_storage_ref=None,
-                    text_sha256=text_sha256,
-                )
+            # 1. Create document and run FIRST (so they exist even if findings fail)
+            doc_id = await repo.create_document(
+                conn=conn,
+                user_id=user.id if user else None,
+                input_type="paste",
+                language=language,
+                private_mode=private_mode,
+                mime_type="text/plain",
+                text_storage_ref=None,
+                text_sha256=text_sha256,
+            )
 
-                run_id = await repo.create_run(
-                    conn=conn,
-                    document_id=doc_id,
-                    model_version=f"hybrid-v1-{analysis_mode}",
-                    status="running",
-                    config_snapshot={
-                        "mode": analysis_mode,
-                        "language": language,
-                        "private_mode": private_mode,
-                    },
-                )
+            run_id = await repo.create_run(
+                conn=conn,
+                document_id=doc_id,
+                model_version=f"hybrid-v1-{analysis_mode}",
+                status="running",
+                config_snapshot={
+                    "mode": analysis_mode,
+                    "language": language,
+                    "private_mode": private_mode,
+                },
+            )
 
-                for iss in issues:
-                    finding_id = await repo.insert_finding(
-                        conn=conn,
-                        run_id=run_id,
-                        category=iss.type,
-                        severity=_map_severity_to_db(iss.severity),
-                        start_idx=iss.start,
-                        end_idx=iss.end,
-                        explanation=iss.description,
-                        excerpt_redacted=iss.flagged_text,
-                        confidence=iss.confidence,
-                    )
-                    if iss.suggestion:
-                        await repo.insert_suggestion(
+            # 2. Wrap ONLY the findings inserts in a transaction
+            try:
+                async with conn.transaction():
+                    for iss in issues:
+                        finding_id = await repo.insert_finding(
                             conn=conn,
-                            finding_id=finding_id,
-                            language=language if language in ("he", "en") else "he",
-                            replacement_text=iss.suggestion,
+                            run_id=run_id,
+                            category=iss.type,
+                            severity=_map_severity_to_db(iss.severity),
+                            start_idx=iss.start,
+                            end_idx=iss.end,
+                            explanation=iss.description,
+                            excerpt_redacted=iss.flagged_text,
+                            confidence=iss.confidence,
                         )
+                        if iss.suggestion:
+                            await repo.insert_suggestion(
+                                conn=conn,
+                                finding_id=finding_id,
+                                language=language if language in ("he", "en") else "he",
+                                replacement_text=iss.suggestion,
+                            )
 
+                # 3. If everything is good, mark as succeeded
                 await repo.finish_run(conn, run_id=run_id, status="succeeded", runtime_ms=runtime_ms)
+                logger.info("DB persistence succeeded: user_id=%s issues=%d", user.id if user else "guest", len(issues))
 
-        logger.info("DB persistence succeeded: user_id=%s issues=%d", user.id, len(issues))
+            except Exception as inner_e:
+                # 4. If findings fail, rollback happens, BUT we can mark the run as failed!
+                await repo.finish_run(conn, run_id=run_id, status="failed", runtime_ms=runtime_ms, error_message=str(inner_e))
+                logger.error("Findings insert failed. Run marked as failed.")
+
     except Exception:
-        logger.exception("DB persistence failed — analysis results were still returned to user")
-
+        logger.exception("Complete DB persistence failure — analysis results were still returned to user")
 
 # =============================================================================
 # Metrics Persistence (always fires, privacy-safe — no text stored)
@@ -434,8 +443,8 @@ async def analyze_text(
         len(issues), analysis_mode, elapsed,
     )
 
-    # Persist full results to DB only when private_mode is off and user is authenticated
-    if not private_mode and current_user is not None:
+    # Persist full results to DB only when private_mode is off 
+    if not private_mode :
         await _persist_results(
             request=request,
             user=current_user,
