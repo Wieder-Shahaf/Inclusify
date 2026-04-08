@@ -19,7 +19,7 @@ AI-powered platform developed for the Achva LGBT organization. Detects LGBTQphob
 | **Frontend** | Next.js 16 (App Router), TypeScript, Tailwind v4, Framer Motion, next-intl |
 | **Backend** | FastAPI, Python 3.11, Pydantic v2, asyncpg |
 | **Database** | PostgreSQL 16 |
-| **ML/AI** | QLoRA fine-tuned Llama 3 8B (lightblue/suzume-llama-3-8B-multilingual), vLLM, Docling |
+| **ML/AI** | QLoRA fine-tuned Qwen2.5-3B-Instruct, vLLM, Docling |
 | **Infrastructure** | Microsoft Azure, Docker, GitHub Actions |
 
 ---
