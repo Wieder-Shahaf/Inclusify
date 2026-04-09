@@ -21,12 +21,15 @@ async def create_document(
     original_filename: Optional[str] = None,
     text_storage_ref: Optional[str] = None,
     text_sha256: Optional[str] = None,
+    title: Optional[str] = None,
+    author: Optional[str] = None,
+    page_count: Optional[int] = None,
 ):
     row = await conn.fetchrow(
         """
         INSERT INTO documents
-          (user_id, input_type, language, private_mode, original_filename, mime_type, text_storage_ref, text_sha256)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+          (user_id, input_type, language, private_mode, original_filename, mime_type, text_storage_ref, text_sha256, title, author, page_count)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
         RETURNING document_id;
         """,
         user_id,
@@ -37,6 +40,9 @@ async def create_document(
         mime_type,
         text_storage_ref,
         text_sha256,
+        title,
+        author,
+        page_count,
     )
     return row["document_id"]
 
