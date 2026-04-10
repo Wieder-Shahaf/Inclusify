@@ -195,6 +195,7 @@ export async function analyzeText(
     language?: 'en' | 'he' | 'auto';
     privateMode?: boolean;
     useAuth?: boolean;
+    filename?: string;
   }
 ): Promise<AnalysisResult> {
   const fetchFn = options?.useAuth ? fetchWithAuth : fetch;
@@ -207,6 +208,7 @@ export async function analyzeText(
       text,
       language: options?.language || 'auto',
       private_mode: options?.privateMode ?? true,
+      filename: options?.filename ?? null,
     }),
   });
 
@@ -231,7 +233,12 @@ export async function uploadFile(file: File): Promise<{ text: string; filename: 
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+    let detail = errorText;
+    try {
+      const parsed = JSON.parse(errorText);
+      if (parsed.detail) detail = parsed.detail;
+    } catch { /* not JSON, use raw text */ }
+    throw new Error(`Upload failed: ${response.status} - ${detail}`);
   }
 
   const data = await response.json();
@@ -259,6 +266,49 @@ export interface ModelHealthResult {
   responseTimeMs: number | null;
   circuitBreaker: 'closed' | 'open' | 'half_open';
   error?: string;
+}
+
+// History types
+export interface HistoryItem {
+  document_id: string;
+  run_id: string;
+  original_filename: string | null;
+  language: string;
+  created_at: string;
+  input_type: 'paste' | 'upload';
+  runtime_ms: number | null;
+  total_findings: number;
+  high_count: number;
+  medium_count: number;
+  low_count: number;
+  score: number | null;
+  word_count: number | null;
+  analysis_mode: 'llm' | 'hybrid' | 'rules_only' | null;
+}
+
+export interface HistoryResponse {
+  items: HistoryItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export async function getHistory(limit = 20, offset = 0): Promise<HistoryResponse> {
+  const response = await fetchWithAuth(
+    `${API_BASE_URL}/api/v1/history/?limit=${limit}&offset=${offset}`,
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    let detail = errorText;
+    try {
+      const parsed = JSON.parse(errorText);
+      if (parsed.detail) detail = parsed.detail;
+    } catch { /* not JSON */ }
+    throw new Error(`Failed to load history: ${response.status} - ${detail}`);
+  }
+
+  return response.json() as Promise<HistoryResponse>;
 }
 
 // Check vLLM model availability and circuit breaker state

@@ -9,6 +9,7 @@ from app.modules.ingestion import router as ingestion_router
 from app.modules.analysis import router as analysis_router
 from app.modules.admin import router as admin_router
 from app.routers.health import router as health_router
+from app.routers.history import router as history_router
 from app.db.connection import create_pool
 from app.core.redis import init_redis, close_redis
 from app.auth.users import (
@@ -98,6 +99,7 @@ app.include_router(google_oauth_router, prefix="/auth/google", tags=["Auth"])
 app.include_router(ingestion_router.router, prefix="/api/v1/ingestion", tags=["Ingestion"])
 app.include_router(analysis_router.router, prefix="/api/v1/analysis", tags=["Analysis"])
 app.include_router(admin_router.router, prefix="/api/v1/admin", tags=["Admin"])
+app.include_router(history_router, prefix="/api/v1/history", tags=["History"])
 
 
 @app.get("/")

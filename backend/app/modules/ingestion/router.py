@@ -42,7 +42,9 @@ async def upload_document(
     filename = file.filename or "unknown.pdf"
     logger.info("Upload started: filename=%s content_type=%s", filename, file.content_type)
 
-    if file.content_type != "application/pdf":
+    is_pdf_content_type = file.content_type in ("application/pdf", "application/octet-stream")
+    is_pdf_filename = filename.lower().endswith(".pdf")
+    if not (is_pdf_content_type and is_pdf_filename):
         logger.warning("Upload rejected: unsupported content_type=%s filename=%s", file.content_type, filename)
         raise HTTPException(status_code=400, detail="Only PDF files supported")
 

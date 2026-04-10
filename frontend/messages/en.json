@@ -230,6 +230,8 @@
     "issuesFoundPlural": "issues found",
     "noIssuesFound": "No issues found!",
     "noIssuesMessage": "Your text demonstrates inclusive language practices.",
+    "noIssuesInCategory": "No issues in this category.",
+    "filterAll": "All",
     "documentContent": "Document Content",
     "hoverHint": "Click highlighted text for details",
     "viewDetails": "View full details",
@@ -320,6 +322,42 @@
       "emailExists": "An account with this email already exists",
       "generic": "Something went wrong. Please try again."
     }
+  },
+  "history": {
+    "title": "My Analysis History",
+    "subtitle": "All your past document analyses in one place",
+    "loginRequired": "Sign in to view your analysis history",
+    "loginCta": "Log in",
+    "empty": "No analyses yet",
+    "emptyDesc": "Analyze a document with private mode OFF to see your history here",
+    "analyzeNow": "Analyze a document",
+    "date": "Date",
+    "document": "Document",
+    "score": "Score",
+    "issues": "Issues",
+    "language": "Language",
+    "mode": "Mode",
+    "pastedText": "Pasted text",
+    "loading": "Loading history...",
+    "errorLoading": "Failed to load history",
+    "retry": "Retry",
+    "previous": "Previous",
+    "next": "Next",
+    "showingOf": "Showing {from}–{to} of {total}",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "modes": {
+      "llm": "AI",
+      "hybrid": "Hybrid",
+      "rules_only": "Rules"
+    },
+    "languages": {
+      "en": "English",
+      "he": "Hebrew",
+      "auto": "Auto"
+    },
+    "noDb": "History requires a database connection. Running in local mode."
   },
   "glossary": {
     "title": "LGBTQ+ Glossary",

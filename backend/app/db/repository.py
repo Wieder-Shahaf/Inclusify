@@ -123,6 +123,67 @@ async def insert_suggestion(
     )
 
 
+async def get_user_history(
+    conn: asyncpg.Connection,
+    user_id,
+    limit: int = 20,
+    offset: int = 0,
+) -> list[dict]:
+    """Return paginated analysis history for a user, most recent first."""
+    rows = await conn.fetch(
+        """
+        SELECT
+            d.document_id,
+            d.original_filename,
+            d.language,
+            d.created_at,
+            d.private_mode,
+            d.input_type,
+            r.run_id,
+            r.status,
+            r.model_version,
+            r.finished_at,
+            r.runtime_ms,
+            r.config_snapshot,
+            COUNT(f.finding_id)::int                                AS total_findings,
+            COUNT(CASE WHEN f.severity = 'high'   THEN 1 END)::int AS high_count,
+            COUNT(CASE WHEN f.severity = 'medium' THEN 1 END)::int AS medium_count,
+            COUNT(CASE WHEN f.severity = 'low'    THEN 1 END)::int AS low_count
+        FROM documents d
+        JOIN  analysis_runs r ON r.document_id = d.document_id
+        LEFT JOIN findings  f ON f.run_id = r.run_id
+        WHERE
+            d.user_id   = $1::uuid
+            AND d.deleted_at IS NULL
+            AND r.status = 'succeeded'
+        GROUP BY d.document_id, r.run_id
+        ORDER BY d.created_at DESC
+        LIMIT $2 OFFSET $3
+        """,
+        str(user_id),
+        limit,
+        offset,
+    )
+    return [dict(r) for r in rows]
+
+
+async def count_user_history(conn: asyncpg.Connection, user_id) -> int:
+    """Return total number of succeeded analysis runs for a user."""
+    row = await conn.fetchrow(
+        """
+        SELECT COUNT(*)::int AS total
+        FROM documents d
+        JOIN analysis_runs r ON r.document_id = d.document_id
+        WHERE
+            d.user_id   = $1::uuid
+            AND d.deleted_at IS NULL
+            AND r.status = 'succeeded'
+        """,
+        str(user_id),
+    )
+    return row["total"] if row else 0
+
+
 async def insert_model_metric(conn: asyncpg.Connection, data: dict) -> None:
     """Insert one row of per-request vLLM inference metrics.
 

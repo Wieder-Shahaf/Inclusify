@@ -1,7 +1,9 @@
-"""Docling-based PDF parsing service.
+"""Docling-based PDF parsing service with pypdf fallback.
 
 Runs Docling in-process with OCR disabled (academic PDFs have text layers).
 Enforces 50-page limit. No subprocess needed — saves memory in containers.
+Falls back to pypdf extraction when Docling is unavailable (e.g. missing
+or incompatible PyTorch in local dev; production Azure VM has PyTorch >= 2.4).
 """
 
 import asyncio
@@ -19,27 +21,48 @@ MAX_PAGES = 50
 
 # Initialize Docling converter once at module level (reuse across requests)
 _docling_converter = None
+_docling_unavailable = False  # Set to True after first failed init (avoid retrying)
 
 
 def _get_docling_converter():
-    """Lazy-init Docling converter with OCR disabled."""
-    global _docling_converter
+    """Lazy-init Docling converter with OCR disabled. Returns None if unavailable."""
+    global _docling_converter, _docling_unavailable
+    if _docling_unavailable:
+        return None
     if _docling_converter is None:
-        from docling.document_converter import DocumentConverter, PdfFormatOption
-        from docling.datamodel.pipeline_options import PdfPipelineOptions
-        from docling.datamodel.base_models import InputFormat
+        try:
+            from docling.document_converter import DocumentConverter, PdfFormatOption
+            from docling.datamodel.pipeline_options import PdfPipelineOptions
+            from docling.datamodel.base_models import InputFormat
 
-        pipeline_opts = PdfPipelineOptions()
-        pipeline_opts.do_ocr = False  # Academic PDFs have text layers
-        pipeline_opts.do_table_structure = True
+            pipeline_opts = PdfPipelineOptions()
+            pipeline_opts.do_ocr = False  # Academic PDFs have text layers
+            pipeline_opts.do_table_structure = True
 
-        _docling_converter = DocumentConverter(
-            format_options={
-                InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_opts),
-            }
-        )
-        logger.info("Docling converter initialized (OCR disabled)")
+            _docling_converter = DocumentConverter(
+                format_options={
+                    InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_opts),
+                }
+            )
+            logger.info("Docling converter initialized (OCR disabled)")
+        except Exception as e:
+            _docling_unavailable = True
+            logger.warning(
+                "Docling unavailable (PyTorch missing or incompatible — install torch>=2.4 for full layout parsing): %s",
+                e,
+            )
     return _docling_converter
+
+
+def _extract_text_pypdf(file_path: str) -> str:
+    """Extract plain text from a PDF using pypdf (fallback when Docling is unavailable)."""
+    reader = PdfReader(file_path)
+    pages_text = []
+    for page in reader.pages:
+        text = page.extract_text()
+        if text:
+            pages_text.append(text.strip())
+    return "\n\n".join(pages_text)
 
 
 def _parse_pdf_sync(file_bytes: bytes, max_pages: int = MAX_PAGES) -> dict:
@@ -80,15 +103,22 @@ def _parse_pdf_sync(file_bytes: bytes, max_pages: int = MAX_PAGES) -> dict:
             logger.warning("Page limit exceeded: pages=%d limit=%d", page_count, max_pages)
             return {"error": f"Document exceeds {max_pages} page limit ({page_count} pages)"}
 
-        # Process with Docling (OCR disabled, reuses converter)
+        # Process with Docling (OCR disabled, reuses converter); fall back to pypdf
         converter = _get_docling_converter()
-        logger.info("Docling processing started: pages=%d", page_count)
         t0 = time.monotonic()
-        result = converter.convert(temp_path)
+        if converter is not None:
+            logger.info("Docling processing started: pages=%d", page_count)
+            try:
+                result = converter.convert(temp_path)
+                text = result.document.export_to_markdown()
+            except Exception as docling_err:
+                logger.warning("Docling conversion failed, falling back to pypdf: %s", docling_err)
+                text = _extract_text_pypdf(temp_path)
+        else:
+            logger.info("pypdf fallback extraction started: pages=%d", page_count)
+            text = _extract_text_pypdf(temp_path)
         elapsed = time.monotonic() - t0
-
-        text = result.document.export_to_markdown()
-        logger.info("Docling completed: pages=%d text_length=%d elapsed_s=%.2f", page_count, len(text), elapsed)
+        logger.info("PDF extraction completed: pages=%d text_length=%d elapsed_s=%.2f", page_count, len(text), elapsed)
 
         return {"text": text, "page_count": page_count}
 

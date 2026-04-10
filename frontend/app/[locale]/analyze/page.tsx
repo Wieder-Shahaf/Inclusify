@@ -4,7 +4,6 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import AnnotationSidePanel from '@/components/AnnotationSidePanel';
 import SeverityBadge from '@/components/SeverityBadge';
 import PaperUpload from '@/components/PaperUpload';
 import ProcessingAnimation from '@/components/ProcessingAnimation';
@@ -16,7 +15,8 @@ import { analyzeText, uploadFile, healthCheck, modelHealthCheck } from '@/lib/ap
 import { useAuth } from '@/contexts/AuthContext';
 import { useLiveAnnouncer } from '@/contexts/LiveAnnouncerContext';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
-import { RotateCcw, FileText, ChevronLeft, ChevronRight, Scan, BarChart3, ShieldCheck, Lock } from 'lucide-react';
+import { RotateCcw, FileText, ChevronLeft, ChevronRight, Scan, BarChart3, ShieldCheck, Lock, ArrowRight, Download } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import PrivateModeToggle from '@/components/PrivateModeToggle';
 
 type ViewState = 'upload' | 'processing' | 'results';
@@ -58,8 +58,6 @@ export default function AnalyzePage() {
   const [viewState, setViewState] = useState<ViewState>('upload');
   const [fileName, setFileName] = useState('');
   const [analysis, setAnalysis] = useState<AnalysisData>(emptyAnalysis);
-  const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | null>(null);
-  const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [backendHealthy, setBackendHealthy] = useState<boolean | null>(null);
   const [modelAvailable, setModelAvailable] = useState<boolean | null>(null);
   const [analysisMode, setAnalysisMode] = useState<'llm' | 'hybrid' | 'rules_only' | null>(null);
@@ -67,6 +65,7 @@ export default function AnalyzePage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [processingStage, setProcessingStage] = useState<'uploading' | 'parsing' | 'analyzing' | 'generating' | 'complete'>('uploading');
   const [privateMode, setPrivateMode] = useState(false); // Default OFF per user decision
+  const [filterSeverity, setFilterSeverity] = useState<'all' | 'outdated' | 'biased' | 'potentially_offensive' | 'factually_incorrect'>('all');
 
   // Health check on mount with 30-second polling
   useEffect(() => {
@@ -175,13 +174,12 @@ export default function AnalyzePage() {
     setViewState('upload');
     setFileName('');
     setAnalysis(emptyAnalysis);
-    setSelectedAnnotation(null);
-    setSidePanelOpen(false);
     setAnalysisMode(null);
     setErrorMessage(null);
     setProcessingStage('uploading');
     setShowGuestPrompt(true);
     setPrivateMode(false);
+    setFilterSeverity('all');
   }, []);
 
   const handleIssueClick = useCallback((result: AnalysisData['results'][0]) => {
@@ -189,15 +187,86 @@ export default function AnalyzePage() {
       (a) => a.label.toLowerCase() === result.phrase.toLowerCase()
     );
     if (annotation) {
-      setSelectedAnnotation(annotation);
-      setSidePanelOpen(true);
+      // Scroll the text panel to the highlighted span
+      setTimeout(() => {
+        document.getElementById(`ann-${annotation.start}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
     }
   }, [analysis.annotations]);
 
-  const handleAnnotationClick = useCallback((annotation: Annotation) => {
-    setSelectedAnnotation(annotation);
-    setSidePanelOpen(true);
-  }, []);
+  const exportCSV = useCallback(() => {
+    const esc = (s: string) => `"${s.replace(/"/g, '""')}"`;
+    const headers = ['Flagged Term', 'Severity', 'Explanation', 'Suggestion'];
+    const rows = analysis.results.map(r => [
+      esc(r.phrase), esc(r.severity), esc(r.explanation), esc(r.suggestion || ''),
+    ]);
+    const csv = '\ufeff' + [headers, ...rows].map(r => r.join(',')).join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${fileName.replace(/\.[^/.]+$/, '')}_inclusify.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [analysis.results, fileName]);
+
+  const exportPDF = useCallback(() => {
+    const win = window.open('', '_blank');
+    if (!win) return;
+    const severityColor: Record<string, string> = {
+      outdated: '#0ea5e9', biased: '#f59e0b',
+      potentially_offensive: '#f43f5e', factually_incorrect: '#ef4444',
+    };
+    const severityLabel: Record<string, string> = {
+      outdated: 'Outdated', biased: 'Biased',
+      potentially_offensive: 'Potentially Offensive', factually_incorrect: 'Factually Incorrect',
+    };
+    const scoreColor = analysis.summary.score >= 90 ? '#22c55e'
+      : analysis.summary.score >= 70 ? '#f59e0b'
+      : analysis.summary.score >= 50 ? '#f97316' : '#ef4444';
+    const issuesHTML = analysis.results.length === 0
+      ? '<tr><td colspan="4" style="text-align:center;color:#6b7280">No issues found</td></tr>'
+      : analysis.results.map(r => `
+          <tr>
+            <td><strong>${r.phrase}</strong></td>
+            <td><span style="background:${severityColor[r.severity]}22;color:${severityColor[r.severity]};padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600">${severityLabel[r.severity]}</span></td>
+            <td>${r.explanation}</td>
+            <td style="color:#7b61ff">${r.suggestion || '—'}</td>
+          </tr>`).join('');
+    const wc = analysis.text.split(/\s+/).filter(Boolean).length;
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
+      <title>Inclusify — ${fileName}</title>
+      <style>
+        body{font-family:Arial,sans-serif;padding:40px;color:#1e293b;max-width:900px;margin:0 auto}
+        h1{font-size:24px;color:#7b61ff;margin-bottom:4px}
+        .meta{color:#64748b;font-size:13px;margin-bottom:24px}
+        .score-row{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+        .score{font-size:52px;font-weight:800;color:${scoreColor};line-height:1}
+        .score-label{font-size:14px;color:${scoreColor};font-weight:600}
+        .stats{display:flex;gap:24px;margin-bottom:28px;padding:16px;background:#f8fafc;border-radius:8px}
+        .stat-val{font-size:24px;font-weight:700;color:#1e293b}
+        .stat-key{font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em}
+        table{width:100%;border-collapse:collapse;font-size:13px}
+        th{background:#f1f5f9;padding:10px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#64748b;border-bottom:2px solid #e2e8f0}
+        td{padding:10px 12px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+        tr:last-child td{border-bottom:none}
+        @media print{body{padding:20px}}
+      </style></head><body>
+      <h1>INCLUSIFY — Analysis Report</h1>
+      <div class="meta"><strong>File:</strong> ${fileName} &nbsp;|&nbsp; <strong>Date:</strong> ${new Date().toLocaleDateString()} &nbsp;|&nbsp; <strong>Mode:</strong> ${analysisMode || 'rules_only'}</div>
+      <div class="score-row"><span class="score">${analysis.summary.score}</span><span style="font-size:20px;color:#94a3b8">/100</span><span class="score-label">${analysis.summary.score >= 90 ? 'Excellent' : analysis.summary.score >= 70 ? 'Good' : analysis.summary.score >= 50 ? 'Needs Improvement' : 'Requires Attention'}</span></div>
+      <div class="stats">
+        <div><div class="stat-val">${analysis.results.length}</div><div class="stat-key">Issues Found</div></div>
+        <div><div class="stat-val">${wc.toLocaleString()}</div><div class="stat-key">Words</div></div>
+        <div><div class="stat-val">${analysis.counts.potentially_offensive + analysis.counts.factually_incorrect}</div><div class="stat-key">High Severity</div></div>
+        <div><div class="stat-val">${analysis.counts.outdated + analysis.counts.biased}</div><div class="stat-key">Low Severity</div></div>
+      </div>
+      <table><thead><tr><th>Flagged Term</th><th>Severity</th><th>Explanation</th><th>Suggestion</th></tr></thead>
+      <tbody>${issuesHTML}</tbody></table>
+      <script>window.onload=()=>window.print()<\/script>
+    </body></html>`);
+    win.document.close();
+  }, [analysis, fileName, analysisMode]);
 
   // Keyboard navigation for issues list
   useKeyboardNavigation({
@@ -211,61 +280,69 @@ export default function AnalyzePage() {
     },
   });
 
-  // Render highlighted text with tooltips
+  // Render highlighted text with paragraph-aware layout and tooltips
   const renderHighlightedText = () => {
     const { text, annotations } = analysis;
     if (!text) return null;
-    if (annotations.length === 0) {
-      return <span className="whitespace-pre-wrap">{text}</span>;
-    }
 
     const parts: Array<{ content: string; annotation?: Annotation }> = [];
     let cursor = 0;
 
-    // Sort and filter overlapping annotations
     const sorted = [...annotations].sort((a, b) => a.start - b.start);
     const nonOverlapping: Annotation[] = [];
     let lastEnd = -1;
-
     for (const ann of sorted) {
-      if (ann.start >= lastEnd) {
-        nonOverlapping.push(ann);
-        lastEnd = ann.end;
-      }
+      if (ann.start >= lastEnd) { nonOverlapping.push(ann); lastEnd = ann.end; }
     }
-
     for (const ann of nonOverlapping) {
-      if (ann.start > cursor) {
-        parts.push({ content: text.slice(cursor, ann.start) });
-      }
+      if (ann.start > cursor) parts.push({ content: text.slice(cursor, ann.start) });
       parts.push({ content: text.slice(ann.start, ann.end), annotation: ann });
       cursor = ann.end;
     }
-    if (cursor < text.length) {
-      parts.push({ content: text.slice(cursor) });
+    if (cursor < text.length) parts.push({ content: text.slice(cursor) });
+
+    // Split into paragraphs on \n\n; handle \n as <br> within paragraphs
+    let key = 0;
+    const paragraphs: React.ReactNode[][] = [[]];
+
+    for (const part of parts) {
+      if (part.annotation) {
+        paragraphs[paragraphs.length - 1].push(
+          <span key={key++} id={`ann-${part.annotation.start}`}>
+            <IssueTooltip annotation={part.annotation}>
+              {part.content}
+            </IssueTooltip>
+          </span>
+        );
+      } else {
+        const blocks = part.content.split('\n\n');
+        blocks.forEach((block, bi) => {
+          if (bi > 0) paragraphs.push([]);
+          const lines = block.split('\n');
+          lines.forEach((line, li) => {
+            if (li > 0) paragraphs[paragraphs.length - 1].push(<br key={key++} />);
+            if (line) paragraphs[paragraphs.length - 1].push(<span key={key++}>{line}</span>);
+          });
+        });
+      }
     }
 
     return (
-      <span className="whitespace-pre-wrap leading-relaxed">
-        {parts.map((part, idx) =>
-          part.annotation ? (
-            <IssueTooltip
-              key={idx}
-              annotation={part.annotation}
-              onOpenSidePanel={() => handleAnnotationClick(part.annotation!)}
-            >
-              {part.content}
-            </IssueTooltip>
-          ) : (
-            <span key={idx}>{part.content}</span>
-          )
-        )}
-      </span>
+      <div className="space-y-4">
+        {paragraphs.filter(p => p.length > 0).map((para, i) => (
+          <p key={i} className="leading-7 text-slate-700 dark:text-slate-200">
+            {para}
+          </p>
+        ))}
+      </div>
     );
   };
 
   const totalIssues = analysis.counts.outdated + analysis.counts.biased + analysis.counts.potentially_offensive + analysis.counts.factually_incorrect;
   const wordCount = analysis.text.split(/\s+/).filter(Boolean).length;
+  const filteredResults = filterSeverity === 'all'
+    ? analysis.results
+    : analysis.results.filter(r => r.severity === filterSeverity);
 
   // Prepare translations for child components
   const uploadTranslations = {
@@ -438,9 +515,9 @@ export default function AnalyzePage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="h-[calc(100vh-140px)] flex flex-col px-4 py-4"
+              className="h-[calc(100vh-130px)] flex flex-col py-3"
             >
-              {/* Results Header - Fixed */}
+              {/* Results Header */}
               <div className="flex flex-wrap items-center justify-between gap-4 mb-4 flex-shrink-0">
                 <div className="flex items-center gap-3">
                   <button
@@ -451,42 +528,78 @@ export default function AnalyzePage() {
                     <BackIcon className="w-5 h-5" />
                   </button>
                   <div>
-                    <h2 className="font-semibold text-lg text-slate-800 dark:text-white flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-pride-purple" />
-                      {fileName}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 className="font-semibold text-lg text-slate-800 dark:text-white flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-pride-purple" />
+                        {fileName}
+                      </h2>
+                      {/* Inline score badge */}
+                      <span className={cn(
+                        'px-2 py-0.5 text-xs font-bold rounded-full border',
+                        analysis.summary.score >= 90
+                          ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
+                          : analysis.summary.score >= 70
+                          ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800'
+                          : analysis.summary.score >= 50
+                          ? 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800'
+                          : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800'
+                      )}>
+                        {analysis.summary.score}/100
+                      </span>
                       {privateMode && (
-                        <span className="ml-2 flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-pride-purple/10 text-pride-purple">
+                        <span className="flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-pride-purple/10 text-pride-purple border border-pride-purple/20">
                           <Lock className="w-3 h-3" />
                           {t('privateMode.badge')}
                         </span>
                       )}
                       {analysisMode === 'rules_only' && (
                         <span
-                          className="ml-2 px-2 py-0.5 text-xs rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
+                          className="px-2 py-0.5 text-xs rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
                           title={t('basicAnalysisModeDesc')}
                         >
                           {t('basicAnalysisMode')}
                         </span>
                       )}
-                    </h2>
-                    <p className="text-sm text-slate-500">
+                    </div>
+                    <p className="text-sm text-slate-500 mt-0.5">
                       {totalIssues} {totalIssues === 1 ? t('issueFound') : t('issuesFoundPlural')}
+                      {' · '}
+                      {wordCount.toLocaleString()} {t('summaryCard.wordCount').toLowerCase()}
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={handleReset}
-                  className="btn-ghost px-4 py-2 rounded-lg text-sm flex items-center gap-2"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  {t('analyzeAnother')}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={exportCSV}
+                    className="btn-ghost px-3 py-2 rounded-lg text-sm flex items-center gap-1.5"
+                    title="Export as CSV"
+                  >
+                    <Download className="w-4 h-4" />
+                    CSV
+                  </button>
+                  <button
+                    onClick={exportPDF}
+                    className="btn-ghost px-3 py-2 rounded-lg text-sm flex items-center gap-1.5"
+                    title="Export as PDF"
+                  >
+                    <FileText className="w-4 h-4" />
+                    PDF
+                  </button>
+                  <div className="w-px h-5 bg-slate-200 dark:bg-slate-700" />
+                  <button
+                    onClick={handleReset}
+                    className="btn-ghost px-4 py-2 rounded-lg text-sm flex items-center gap-2"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    {t('analyzeAnother')}
+                  </button>
+                </div>
               </div>
 
-              {/* Main Content Grid - Flexible */}
-              <div className={`flex-1 min-h-0 grid gap-4 ${isHebrew ? 'lg:grid-cols-[380px,1fr]' : 'lg:grid-cols-[1fr,380px]'}`}>
-                {/* Text Panel with Highlights */}
-                <div className={`glass rounded-xl border overflow-hidden flex flex-col min-h-0 max-h-full ${isHebrew ? 'lg:order-2' : ''}`}>
+              {/* Main Content — always side-by-side: text LEFT, analysis RIGHT (RTL reverses naturally) */}
+              <div className="flex-1 min-h-0 flex flex-row gap-4">
+                {/* Text Panel — flexible width */}
+                <div className="flex-1 min-w-0 min-h-0 glass rounded-xl border overflow-hidden flex flex-col">
                   <div className="px-4 py-3 border-b bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between flex-shrink-0">
                     <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
                       {t('documentContent')}
@@ -496,16 +609,38 @@ export default function AnalyzePage() {
                     </span>
                   </div>
                   <div
-                    className="flex-1 p-6 overflow-y-auto text-sm text-slate-700 dark:text-slate-200 scroll-smooth min-h-0"
-                    style={{ scrollBehavior: 'smooth' }}
+                    className="flex-1 p-6 overflow-y-auto scroll-smooth min-h-0 text-[14.5px]"
                     dir={isHebrew ? 'rtl' : 'ltr'}
                   >
                     {renderHighlightedText()}
                   </div>
+                  {/* Color legend — only when there are annotations */}
+                  {analysis.annotations.length > 0 && (
+                    <div className="px-4 py-2 border-t bg-slate-50/50 dark:bg-slate-800/50 flex flex-wrap gap-x-4 gap-y-1 flex-shrink-0">
+                      {(['outdated', 'biased', 'potentially_offensive', 'factually_incorrect'] as const)
+                        .filter(k => analysis.counts[k] > 0)
+                        .map(k => {
+                          const dotColor = k === 'outdated' ? 'bg-sky-400' : k === 'biased' ? 'bg-amber-400' : k === 'potentially_offensive' ? 'bg-rose-500' : 'bg-red-500';
+                          const label = { outdated: t('summaryCard.outdated'), biased: t('summaryCard.biased'), potentially_offensive: t('summaryCard.potentially_offensive'), factually_incorrect: t('summaryCard.factually_incorrect') }[k];
+                          const dimmed = filterSeverity !== 'all' && filterSeverity !== k;
+                          return (
+                            <button
+                              key={k}
+                              onClick={() => setFilterSeverity(filterSeverity === k ? 'all' : k)}
+                              className="flex items-center gap-1.5"
+                              title={label}
+                            >
+                              <div className={cn('w-2.5 h-2.5 rounded-sm flex-shrink-0 transition-opacity', dotColor, dimmed && 'opacity-30')} />
+                              <span className={cn('text-xs transition-colors', dimmed ? 'text-slate-300 dark:text-slate-600' : 'text-slate-500 dark:text-slate-400')}>{label}</span>
+                            </button>
+                          );
+                        })}
+                    </div>
+                  )}
                 </div>
 
-                {/* Right Panel: Summary + Issues - Scrollable */}
-                <div className={`flex flex-col gap-4 min-h-0 max-h-full overflow-y-auto scroll-smooth pb-4 ${isHebrew ? 'lg:order-1' : ''}`} style={{ scrollBehavior: 'smooth' }}>
+                {/* Analysis Panel — fixed width */}
+                <div className="w-[520px] flex-shrink-0 min-h-0 flex flex-col gap-4 overflow-y-auto scroll-smooth pb-4">
                   {/* Summary Card */}
                   <AnalysisSummary
                     counts={analysis.counts}
@@ -517,14 +652,59 @@ export default function AnalyzePage() {
 
                   {/* Issues List */}
                   <div className="glass rounded-xl border overflow-hidden flex flex-col">
-                    <div className="px-4 py-3 border-b bg-slate-50/50 dark:bg-slate-800/50 flex-shrink-0">
-                      <h3 className="text-sm font-semibold flex items-center gap-2">
+                    <div className="px-4 pt-3 pb-2 border-b bg-slate-50/50 dark:bg-slate-800/50 flex-shrink-0">
+                      <h3 className="text-sm font-semibold flex items-center gap-2 mb-2">
                         {t('issuesFound')}
                         <span className="px-2 py-0.5 text-xs rounded-full bg-pride-purple/20 text-pride-purple">
-                          {analysis.results.length}
+                          {filteredResults.length !== analysis.results.length
+                            ? `${filteredResults.length}/${analysis.results.length}`
+                            : analysis.results.length}
                         </span>
                       </h3>
+                      {/* Severity filter tabs — always visible when there are results */}
+                      {analysis.results.length > 0 && (
+                        <div className="flex gap-1.5 flex-wrap mt-1">
+                          <button
+                            onClick={() => setFilterSeverity('all')}
+                            className={cn(
+                              'px-2.5 py-1 text-xs rounded-full border font-medium transition-colors',
+                              filterSeverity === 'all'
+                                ? 'bg-pride-purple text-white border-transparent'
+                                : 'text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-pride-purple/40'
+                            )}
+                          >
+                            {t('filterAll')} ({totalIssues})
+                          </button>
+                          {(['potentially_offensive', 'factually_incorrect', 'biased', 'outdated'] as const)
+                            .filter(k => analysis.counts[k] > 0)
+                            .map(k => {
+                              const label = {
+                                outdated: t('summaryCard.outdated'),
+                                biased: t('summaryCard.biased'),
+                                potentially_offensive: t('summaryCard.potentially_offensive'),
+                                factually_incorrect: t('summaryCard.factually_incorrect'),
+                              }[k];
+                              const dot = k === 'outdated' ? 'bg-sky-400' : k === 'biased' ? 'bg-amber-400' : k === 'potentially_offensive' ? 'bg-rose-500' : 'bg-red-500';
+                              return (
+                                <button
+                                  key={k}
+                                  onClick={() => setFilterSeverity(k)}
+                                  className={cn(
+                                    'px-2.5 py-1 text-xs rounded-full border font-medium transition-colors flex items-center gap-1.5',
+                                    filterSeverity === k
+                                      ? 'bg-pride-purple text-white border-transparent'
+                                      : 'text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-pride-purple/40'
+                                  )}
+                                >
+                                  <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', filterSeverity === k ? 'bg-white' : dot)} />
+                                  {label} ({analysis.counts[k]})
+                                </button>
+                              );
+                            })}
+                        </div>
+                      )}
                     </div>
+
                     <div
                       ref={issuesListRef}
                       className="divide-y divide-slate-100 dark:divide-slate-800"
@@ -532,33 +712,58 @@ export default function AnalyzePage() {
                       aria-label={t('a11y.issuesList')}
                     >
                       {analysis.results.length === 0 ? (
+                        <div className="p-8 text-center">
+                          <div className="text-4xl mb-3">🎉</div>
+                          <p className="font-semibold text-green-600 dark:text-green-400 mb-1">{t('noIssuesFound')}</p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">{t('noIssuesMessage')}</p>
+                        </div>
+                      ) : filteredResults.length === 0 ? (
                         <div className="p-6 text-center">
-                          <div className="text-3xl mb-2">🎉</div>
-                          <p className="text-green-600 dark:text-green-400 font-medium">{t('noIssuesFound')}</p>
-                          <p className="text-sm text-slate-500 mt-1">{t('noIssuesMessage')}</p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">{t('noIssuesInCategory')}</p>
                         </div>
                       ) : (
-                        analysis.results.map((result, i) => (
+                        filteredResults.map((result, i) => (
                           <motion.button
-                            key={i}
+                            key={result.phrase + i}
                             onClick={() => handleIssueClick(result)}
-                            className="w-full px-4 py-3 text-start hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pride-purple focus-visible:ring-inset"
+                            className="w-full text-start hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pride-purple focus-visible:ring-inset relative group"
                             role="listitem"
                             tabIndex={0}
                             initial={{ opacity: 0, x: isHebrew ? -20 : 20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: i * 0.05 }}
+                            transition={{ delay: i * 0.04 }}
                           >
-                            <div className="flex items-start justify-between gap-3">
+                            {/* Severity color strip */}
+                            <div className={cn(
+                              'absolute inset-y-0 w-1',
+                              isHebrew ? 'right-0' : 'left-0',
+                              result.severity === 'outdated' ? 'bg-sky-400'
+                              : result.severity === 'biased' ? 'bg-amber-400'
+                              : result.severity === 'potentially_offensive' ? 'bg-rose-500'
+                              : 'bg-red-500'
+                            )} />
+                            <div className={cn('py-3 flex items-start gap-3', isHebrew ? 'pr-4 pl-3' : 'pl-4 pr-3')}>
                               <div className="flex-1 min-w-0">
-                                <p className="font-medium text-sm text-slate-800 dark:text-white truncate">
+                                <p className="font-semibold text-sm text-slate-800 dark:text-white mb-0.5 truncate">
                                   &ldquo;{result.phrase}&rdquo;
                                 </p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                                  {result.explanation}
+                                </p>
                                 {result.suggestion && (
-                                  <p className="text-xs text-pride-purple mt-1 truncate">{isHebrew ? '←' : '→'} {result.suggestion}</p>
+                                  <p className="text-xs text-pride-purple mt-1.5 flex items-center gap-1">
+                                    <ArrowRight className="w-3 h-3 flex-shrink-0" />
+                                    <span className="truncate">{result.suggestion}</span>
+                                  </p>
                                 )}
                               </div>
-                              <SeverityBadge level={result.severity} />
+                              <div className="flex flex-col items-end gap-1.5 flex-shrink-0 mt-0.5">
+                                <SeverityBadge level={result.severity} />
+                                <ChevronRight className={cn(
+                                  'w-3.5 h-3.5 text-slate-300 dark:text-slate-600 transition-transform group-hover:translate-x-0.5',
+                                  isHebrew && 'rotate-180 group-hover:-translate-x-0.5 group-hover:translate-x-0'
+                                )} />
+                              </div>
                             </div>
                           </motion.button>
                         ))
@@ -566,7 +771,7 @@ export default function AnalyzePage() {
                     </div>
                   </div>
 
-                  {/* Guest Prompt - show after analysis for non-authenticated users */}
+                  {/* Guest Prompt */}
                   {!user && showGuestPrompt && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
@@ -600,12 +805,6 @@ export default function AnalyzePage() {
         </AnimatePresence>
       </div>
 
-      {/* Side Panel for Issue Details */}
-      <AnnotationSidePanel
-        annotation={selectedAnnotation}
-        open={sidePanelOpen}
-        onOpenChange={setSidePanelOpen}
-      />
     </>
   );
 }

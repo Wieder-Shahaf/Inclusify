@@ -42,6 +42,7 @@ from app.db.models import User
 from app.db import repository as repo
 from app.modules.analysis.call_metrics import CallMetrics
 from app.modules.analysis.hybrid_detector import HybridDetector
+from app.modules.analysis.rules import INCLUSIVE_LANGUAGE_RULES
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +57,7 @@ class AnalysisRequest(BaseModel):
     text: str = Field(..., min_length=1)
     language: Optional[Literal['en', 'he', 'auto']] = 'auto'
     private_mode: Optional[bool] = True
+    filename: Optional[str] = None
 
 
 class Issue(BaseModel):
@@ -93,149 +95,6 @@ _SEVERITY_TO_DB = {
 def _map_severity_to_db(api_severity: str) -> str:
     """Map API severity (outdated/biased/...) to DB severity (low/medium/high)."""
     return _SEVERITY_TO_DB.get(api_severity, "medium")
-
-
-# =============================================================================
-# Rule-Based Term Dictionary
-# =============================================================================
-
-INCLUSIVE_LANGUAGE_RULES = [
-    # English terms
-    {
-        "term": "homosexual",
-        "severity": "outdated",
-        "type": "Outdated Terminology",
-        "description": "The term 'homosexual' is considered clinical and outdated. It has historically been used in pathologizing contexts.",
-        "suggestion": "Use 'gay' or 'lesbian' depending on context, or 'LGBTQ+ person'",
-    },
-    {
-        "term": "transsexual",
-        "severity": "outdated",
-        "type": "Outdated Terminology",
-        "description": "The term 'transsexual' is outdated and often perceived as medicalizing. It focuses on medical transition rather than identity.",
-        "suggestion": "Use 'transgender person' or 'trans person'",
-    },
-    {
-        "term": "sexual preference",
-        "severity": "factually_incorrect",
-        "type": "Incorrect Terminology",
-        "description": "Sexual orientation is not a choice or preference. Using 'preference' implies it can be changed.",
-        "suggestion": "Use 'sexual orientation'",
-    },
-    {
-        "term": "born a man",
-        "severity": "potentially_offensive",
-        "type": "Invalidating Language",
-        "description": "This phrase invalidates a person's gender identity and implies that assigned sex determines gender.",
-        "suggestion": "Use 'assigned male at birth (AMAB)' if medically relevant",
-    },
-    {
-        "term": "born a woman",
-        "severity": "potentially_offensive",
-        "type": "Invalidating Language",
-        "description": "This phrase invalidates a person's gender identity and implies that assigned sex determines gender.",
-        "suggestion": "Use 'assigned female at birth (AFAB)' if medically relevant",
-    },
-    {
-        "term": "normal people",
-        "severity": "biased",
-        "type": "Biased Language",
-        "description": "Using 'normal' to describe non-LGBTQ+ people implies that LGBTQ+ people are abnormal.",
-        "suggestion": "Use 'cisgender' or 'heterosexual' if referring to those specific groups, or be more specific",
-    },
-    {
-        "term": "the gays",
-        "severity": "biased",
-        "type": "Dehumanizing Language",
-        "description": "Using 'the gays' as a noun can be dehumanizing and othering.",
-        "suggestion": "Use 'gay people' or 'gay individuals'",
-    },
-    {
-        "term": "lifestyle choice",
-        "severity": "factually_incorrect",
-        "type": "Incorrect Framing",
-        "description": "Being LGBTQ+ is not a lifestyle choice. This framing is often used to delegitimize LGBTQ+ identities.",
-        "suggestion": "Remove or rephrase; sexual orientation and gender identity are not choices",
-    },
-    {
-        "term": "gay lifestyle",
-        "severity": "biased",
-        "type": "Stereotyping",
-        "description": "There is no single 'gay lifestyle.' This term promotes stereotypes and reduces diverse experiences to a monolith.",
-        "suggestion": "Be specific about what you mean, or remove the phrase entirely",
-    },
-    {
-        "term": "admitted to being gay",
-        "severity": "biased",
-        "type": "Stigmatizing Language",
-        "description": "Using 'admitted' implies that being gay is something shameful to confess.",
-        "suggestion": "Use 'came out as gay' or 'shared that they are gay'",
-    },
-    {
-        "term": "sex change",
-        "severity": "outdated",
-        "type": "Outdated Terminology",
-        "description": "The term 'sex change' is outdated and focuses narrowly on surgery.",
-        "suggestion": "Use 'gender-affirming surgery' or 'transition' depending on context",
-    },
-    {
-        "term": "transgenders",
-        "severity": "potentially_offensive",
-        "type": "Grammatically Incorrect",
-        "description": "Using 'transgender' as a noun is grammatically incorrect and dehumanizing.",
-        "suggestion": "Use 'transgender people' or 'transgender individuals'",
-    },
-    {
-        "term": "transgendered",
-        "severity": "factually_incorrect",
-        "type": "Incorrect Grammar",
-        "description": "'Transgendered' is grammatically incorrect. Transgender is an adjective, not a verb.",
-        "suggestion": "Use 'transgender' (e.g., 'transgender person')",
-    },
-    # Hebrew terms
-    {
-        "term": "הומוסקסואל",
-        "severity": "outdated",
-        "type": "מונח מיושן",
-        "description": "המונח 'הומוסקסואל' נחשב קליני ומיושן. היסטורית שימש בהקשרים פתולוגיים.",
-        "suggestion": "השתמשו ב'גיי', 'לסבית', או 'אדם מקהילת הלהט\"ב'",
-    },
-    {
-        "term": "טרנסקסואל",
-        "severity": "outdated",
-        "type": "מונח מיושן",
-        "description": "המונח 'טרנסקסואל' מיושן ונתפס כממדיקל. הוא מתמקד במעבר רפואי ולא בזהות.",
-        "suggestion": "השתמשו ב'אדם טרנסג'נדר' או 'אדם טרנס'",
-    },
-    {
-        "term": "העדפה מינית",
-        "severity": "factually_incorrect",
-        "type": "מונח שגוי",
-        "description": "נטייה מינית אינה בחירה או העדפה. שימוש ב'העדפה' מרמז שניתן לשנות אותה.",
-        "suggestion": "השתמשו ב'נטייה מינית'",
-    },
-    {
-        "term": "נולד גבר",
-        "severity": "potentially_offensive",
-        "type": "שפה פוגענית",
-        "description": "ביטוי זה פוגע בזהות המגדרית של האדם ומרמז שהמין שהוקצה בלידה קובע את המגדר.",
-        "suggestion": "השתמשו ב'הוקצה זכר בלידה' אם רלוונטי רפואית",
-    },
-    {
-        "term": "נולדה אישה",
-        "severity": "potentially_offensive",
-        "type": "שפה פוגענית",
-        "description": "ביטוי זה פוגע בזהות המגדרית של האדם ומרמז שהמין שהוקצה בלידה קובע את המגדר.",
-        "suggestion": "השתמשו ב'הוקצתה נקבה בלידה' אם רלוונטי רפואית",
-    },
-    {
-        "term": "אנשים נורמליים",
-        "severity": "biased",
-        "type": "שפה מוטה",
-        "description": "שימוש ב'נורמלי' לתיאור אנשים שאינם מקהילת הלהט\"ב מרמז שאנשים מהקהילה אינם נורמליים.",
-        "suggestion": "השתמשו ב'סיסג'נדר' או 'הטרוסקסואל' אם מתכוונים לקבוצות אלו",
-    },
-]
 
 
 # =============================================================================
@@ -283,6 +142,17 @@ def detect_rule_based_issues(text: str) -> list[Issue]:
 # DB Persistence (non-private mode only)
 # =============================================================================
 
+def _compute_score(issues: list[Issue]) -> int:
+    """Compute inclusivity score 0-100 from detected issues."""
+    deductions = sum(
+        10 if i.severity == "potentially_offensive" else
+        5 if i.severity in ("biased", "factually_incorrect") else
+        2  # outdated
+        for i in issues
+    )
+    return max(0, 100 - deductions)
+
+
 async def _persist_results(
     request: Request,
     user: User,
@@ -292,6 +162,7 @@ async def _persist_results(
     analysis_mode: str,
     issues: list[Issue],
     runtime_ms: int,
+    filename: Optional[str] = None,
 ) -> None:
     """Persist analysis results to DB. Fails silently — never breaks the response."""
     pool = getattr(request.app.state, "db_pool", None)
@@ -300,6 +171,9 @@ async def _persist_results(
         return
 
     text_sha256 = hashlib.sha256(text.encode("utf-8")).hexdigest()
+    word_count = len(text.split())
+    score = _compute_score(issues)
+    input_type = "upload" if filename else "paste"
 
     try:
         async with pool.acquire(timeout=5.0) as conn:
@@ -307,10 +181,11 @@ async def _persist_results(
                 doc_id = await repo.create_document(
                     conn=conn,
                     user_id=user.id,
-                    input_type="paste",
+                    input_type=input_type,
                     language=language,
                     private_mode=private_mode,
                     mime_type="text/plain",
+                    original_filename=filename,
                     text_storage_ref=None,
                     text_sha256=text_sha256,
                 )
@@ -324,6 +199,8 @@ async def _persist_results(
                         "mode": analysis_mode,
                         "language": language,
                         "private_mode": private_mode,
+                        "score": score,
+                        "word_count": word_count,
                     },
                 )
 
@@ -445,6 +322,7 @@ async def analyze_text(
             analysis_mode=analysis_mode,
             issues=issues,
             runtime_ms=runtime_ms,
+            filename=body.filename,
         )
 
     # Always persist model performance metrics (no text stored — privacy-safe)

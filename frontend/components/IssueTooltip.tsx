@@ -10,7 +10,7 @@ import { createPortal } from 'react-dom';
 interface IssueTooltipProps {
   annotation: Annotation;
   children: React.ReactNode;
-  onOpenSidePanel: () => void;
+  onOpenSidePanel?: () => void;
 }
 
 const severityConfig = {
@@ -165,7 +165,7 @@ export default function IssueTooltip({ annotation, children, onOpenSidePanel }: 
     e.stopPropagation();
     setIsPinned(false);
     setIsHovered(false);
-    onOpenSidePanel();
+    onOpenSidePanel?.();
   };
 
   useEffect(() => {
@@ -271,14 +271,16 @@ export default function IssueTooltip({ annotation, children, onOpenSidePanel }: 
               </div>
             )}
 
-            {/* View Details Button */}
-            <button
-              onClick={handleViewDetails}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-pride-purple/10 hover:bg-pride-purple/20 text-pride-purple font-medium text-sm transition-colors"
-            >
-              <Info className="w-4 h-4" />
-              View full details & references
-            </button>
+            {/* View Details Button — only when a side panel handler is provided */}
+            {onOpenSidePanel && (
+              <button
+                onClick={handleViewDetails}
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-pride-purple/10 hover:bg-pride-purple/20 text-pride-purple font-medium text-sm transition-colors"
+              >
+                <Info className="w-4 h-4" />
+                View full details & references
+              </button>
+            )}
 
             {/* Arrow pointing to the phrase */}
             <div
