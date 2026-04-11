@@ -18,9 +18,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Application settings with env var support."""
 
+    # Added extra="ignore" to prevent Pydantic from crashing on unknown variables
     model_config = SettingsConfigDict(
         env_file=".env",
         case_sensitive=True,
+        extra="ignore",
     )
 
     # JWT Configuration
@@ -50,8 +52,7 @@ class Settings(BaseSettings):
     RESEND_API_KEY: str = ""
     EMAIL_FROM: str = "Inclusify <onboarding@resend.dev>"
 
-    # Database Configuration (SQLAlchemy URL)
-    # Constructed from PG* env vars for PostgreSQL, or SQLite for dev
+    # Database Configuration
     DATABASE_URL: Optional[str] = None
 
     @model_validator(mode="after")
@@ -69,7 +70,6 @@ class Settings(BaseSettings):
                     f"postgresql+asyncpg://{quote_plus(pg_user)}:{quote_plus(pg_pass)}@{pg_host}:{pg_port}/{pg_db}"
                 )
             else:
-                # Default to SQLite for local development
                 self.DATABASE_URL = "sqlite+aiosqlite:///./inclusify.db"
         return self
 
@@ -80,5 +80,4 @@ def get_settings() -> Settings:
     return Settings()
 
 
-# Convenience export
 settings = get_settings()
