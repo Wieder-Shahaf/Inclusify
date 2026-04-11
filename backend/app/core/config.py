@@ -39,6 +39,8 @@ class Settings(BaseSettings):
     VLLM_CIRCUIT_FAIL_MAX: int = 3
     VLLM_CIRCUIT_RESET_TIMEOUT: int = 60
     VLLM_MODEL_NAME: str = "inclusify"
+    # Max concurrent GPU calls across ALL users. Must match --max-num-seqs in vllm.service.
+    # Current VM: T4 + Qwen2.5-3B, max-num-seqs=16. Raise when adding GPU capacity.
     VLLM_MAX_CONCURRENT: int = 16
 
     # Google OAuth Configuration

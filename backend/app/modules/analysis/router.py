@@ -55,7 +55,7 @@ router = APIRouter()
 class AnalysisRequest(BaseModel):
     text: str = Field(..., min_length=1)
     language: Optional[Literal['en', 'he', 'auto']] = 'auto'
-    private_mode: Optional[bool] = False
+    private_mode: Optional[bool] = False 
 
 
 class Issue(BaseModel):
@@ -351,8 +351,8 @@ async def _persist_results(
                                 replacement_text=iss.suggestion,
                             )
 
-                # 3. If everything is good, mark as succeeded
-                await repo.finish_run(conn, run_id=run_id, status="succeeded", runtime_ms=runtime_ms)
+                     # 3. If everything is good, mark as succeeded
+                    await repo.finish_run(conn, run_id=run_id, status="succeeded", runtime_ms=runtime_ms)
                 logger.info("DB persistence succeeded: user_id=%s issues=%d", user.id if user else "guest", len(issues))
 
             except Exception as inner_e:
@@ -414,14 +414,17 @@ async def analyze_text(
     """
     Analyze text for non-inclusive LGBTQ+ language.
 
-    **Privacy mode** (default=True): analysis runs entirely in-memory.
+    **Privacy mode** (default=False): Analysis runs in memory unless persistence is needed.
     When private_mode=False and user is authenticated, documents, runs,
     and findings are persisted to DB.
+
+    Supports both authenticated users and guests (unauthenticated).
+    - Authenticated: run is linked to user_id.
+    - Guest: run is saved with user_id=NULL
 
     Uses hybrid detection (LLM + rule-based fallback).
     Response includes analysis_mode: "llm" | "hybrid" | "rules_only".
 
-    Authentication is optional. Unauthenticated requests work but skip DB persistence.
     """
     text_length = len(body.text)
     language = body.language or "auto"
