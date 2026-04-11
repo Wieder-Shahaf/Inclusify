@@ -13,7 +13,7 @@ Tests cover:
 """
 import pytest
 import uuid
-from unittest.mock import AsyncMock, MagicMock, patch, call
+from unittest.mock import AsyncMock, MagicMock, patch
 
 
 # ─── Helpers ────────────────────────────────────────────────────────────────
