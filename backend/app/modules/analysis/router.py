@@ -23,9 +23,6 @@ DB persistence:
   analysis_runs, findings, and suggestions.
 - When private_mode=True (default), runs entirely in-memory.
 - DB failures never break analysis — results are always returned.
-
-TODO (remaining):
-- [x] Add confidence scores from model
 =============================================================================
 """
 
@@ -351,7 +348,7 @@ async def _persist_results(
                                 replacement_text=iss.suggestion,
                             )
 
-                     # 3. If everything is good, mark as succeeded
+                    # 3. If everything is good, mark as succeeded
                     await repo.finish_run(conn, run_id=run_id, status="succeeded", runtime_ms=runtime_ms)
                 logger.info("DB persistence succeeded: user_id=%s issues=%d", user.id if user else "guest", len(issues))
 

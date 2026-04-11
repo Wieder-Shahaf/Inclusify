@@ -31,6 +31,21 @@ services:
       retries: 5
 
   # ============================================
+  # Redis (dev only — refresh token storage)
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    profiles:
+      - dev
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ============================================
   # FastAPI Backend
   # ============================================
   backend:
@@ -51,6 +66,8 @@ services:
       - PGUSER=${PGUSER:-postgres}
       - PGPASSWORD=${PGPASSWORD:-devpassword}
       - PGSSL=${PGSSL:-}
+      # Redis
+      - REDIS_URL=redis://redis:6379
       # Authentication
       - JWT_SECRET=${JWT_SECRET:-}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
@@ -72,6 +89,9 @@ services:
       postgres:
         condition: service_healthy
         required: false
+      redis:
+        condition: service_healthy
+        required: false
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/"]
       interval: 10s
@@ -91,6 +111,9 @@ services:
       target: ${BUILD_TARGET:-development}
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      # Hot-reload file watching — required on Mac/WSL inside Docker
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
     ports:
       - "3000:3000"
     volumes:
