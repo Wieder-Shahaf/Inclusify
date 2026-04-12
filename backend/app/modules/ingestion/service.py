@@ -3,12 +3,12 @@ import logging
 import os
 import tempfile
 import time
-import re
 from typing import Dict, Any
 from pypdf import PdfReader
 
 logger = logging.getLogger(__name__)
 
+# Raised to 100 — T4 handles up to ~100 pages within the 60s timeout at current load
 MAX_PAGES = 100
 _docling_converter = None
 
@@ -147,7 +147,7 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
         }
     except Exception as e:
         logger.error("Processing failed: %s", str(e), exc_info=True)
-        return {"error": str(e)}
+        return {"error": "Failed to process document. Please check the file and try again."}
     finally:
         if os.path.exists(temp_path):
             try:
@@ -157,4 +157,4 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
 
 async def parse_document_async(file_bytes: bytes, filename: str) -> dict:
     loop = asyncio.get_running_loop()
-    return await loop.run_in_executor(None, _parse_document_sync, file_bytes, filename)
+    return await loop.run_in_executor(None, _parse_document_sync, file_bytes, filename)

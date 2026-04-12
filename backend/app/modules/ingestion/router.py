@@ -73,4 +73,4 @@ async def upload_document(
         title=result.get("title"),
         author=result.get("author"),
         detected_language=result.get("detected_language")
-    )
+    )
