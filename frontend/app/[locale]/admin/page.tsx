@@ -1,6 +1,8 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import AdminDashboard from '@/components/dashboard/AdminDashboard';
 import { AdminGuard } from '@/components/auth/AuthGuard';
+import dynamic from 'next/dynamic';
+
+const AdminDashboard = dynamic(() => import('@/components/dashboard/AdminDashboard'));
 
 type Props = {
   params: Promise<{ locale: string }>;
