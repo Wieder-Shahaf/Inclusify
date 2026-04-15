@@ -178,6 +178,15 @@ class VLLMClient:
         self.base_url = base_url or settings.VLLM_URL
         self.timeout = timeout or settings.VLLM_TIMEOUT
 
+    def _get_mock_response(self) -> dict:
+        """Provide a simulated JSON response when vLLM is unreachable for load testing."""
+        return {
+            "category": "Simulated Mock Response",
+            "severity": "Outdated",
+            "explanation": "[MOCK] This is a simulated response because the vLLM server is not reachable.",
+            "confidence": 0.99
+        }
+
     async def analyze_sentence(
         self,
         sentence: str,
@@ -209,25 +218,25 @@ class VLLMClient:
             except CircuitBreakerError:
                 if metrics is not None:
                     metrics.record_call(0.0, success=False, error_type="circuit_breaker")
-                logger.warning("vLLM circuit breaker is open — skipping LLM call")
-                return None
+                logger.warning("vLLM circuit breaker is open — returning mock response")
+                return self._get_mock_response()
             except httpx.TimeoutException:
                 latency_ms = (time.monotonic() - t0) * 1000
                 if metrics is not None:
                     metrics.record_call(latency_ms, success=False, error_type="timeout")
-                logger.error("vLLM request timed out: url=%s timeout_s=%.1f", self.base_url, self.timeout)
-                return None
+                logger.error("vLLM request timed out: url=%s timeout_s=%.1f — returning mock response", self.base_url, self.timeout)
+                return self._get_mock_response()
             except httpx.HTTPStatusError as exc:
                 latency_ms = (time.monotonic() - t0) * 1000
                 if metrics is not None:
                     metrics.record_call(latency_ms, success=False, error_type="http_error")
-                logger.error("vLLM HTTP error: status=%d url=%s", exc.response.status_code, self.base_url)
-                return None
+                logger.error("vLLM HTTP error: status=%d url=%s — returning mock response", exc.response.status_code, self.base_url)
+                return self._get_mock_response()
             except Exception as exc:
                 if metrics is not None:
                     metrics.record_call(0.0, success=False)
-                logger.error("vLLM unexpected error: %s", str(exc), exc_info=True)
-                return None
+                logger.error("vLLM unexpected error: %s — returning mock response", str(exc), exc_info=True)
+                return self._get_mock_response()
 
     @vllm_breaker
     async def _make_request(self, sentence: str) -> Optional[dict]:

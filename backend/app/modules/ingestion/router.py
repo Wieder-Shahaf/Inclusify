@@ -4,6 +4,7 @@ Supports PDF, DOCX, PPTX, and TXT formats.
 Uses subprocess isolation to protect the API server from memory exhaustion.
 """
 
+import asyncio
 import logging
 
 from fastapi import APIRouter, UploadFile, File, HTTPException
@@ -16,6 +17,10 @@ router = APIRouter()
 
 # 50MB size limit (prevent DoS)
 MAX_FILE_SIZE = 50 * 1024 * 1024
+
+# Limit concurrent Docling parses to prevent OOM and CPU starvation under load.
+MAX_CONCURRENT_PARSES = 2
+parse_semaphore = asyncio.Semaphore(MAX_CONCURRENT_PARSES)
 
 ALLOWED_CONTENT_TYPES = {
     "application/pdf",
@@ -50,8 +55,9 @@ async def upload_document(
         raise HTTPException(status_code=400, detail="File too large (50MB limit)")
 
     logger.info("Document parsing started: filename=%s", filename)
-    
-    result = await parse_document_async(file_bytes, filename)
+
+    async with parse_semaphore:
+        result = await parse_document_async(file_bytes, filename)
 
     if "error" in result:
         logger.error("Document parsing failed: filename=%s error=%s", filename, result["error"])
@@ -73,4 +79,4 @@ async def upload_document(
         title=result.get("title"),
         author=result.get("author"),
         detected_language=result.get("detected_language")
-    )
+    )
