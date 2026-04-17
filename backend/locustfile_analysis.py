@@ -1,4 +1,3 @@
-import sys
 from locust import HttpUser, task, between
 
 # We use a static sample text to simulate typical anaylsis payloads

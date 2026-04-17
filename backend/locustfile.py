@@ -1,4 +1,3 @@
-import os
 from locust import HttpUser, task, between
 
 class VLLMAnalysisTester(HttpUser):
