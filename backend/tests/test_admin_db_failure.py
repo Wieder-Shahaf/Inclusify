@@ -1,24 +1,21 @@
-"""Test admin endpoint returns 503 when DB pool is missing."""
-import os
+"""Test admin endpoint returns 503 when DB pool is missing.
 
-# Match env vars used by test_oauth.py so settings are consistent regardless of test import order.
-os.environ.setdefault("JWT_SECRET", "test-secret-key-for-testing-only")
-os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///test_oauth.db")
-os.environ.setdefault("GOOGLE_CLIENT_ID", "test-client-id")
-os.environ.setdefault("GOOGLE_CLIENT_SECRET", "test-client-secret")
-os.environ.setdefault("FRONTEND_URL", "http://localhost:3000")
-
-from fastapi.testclient import TestClient  # noqa: E402
-from app.main import app  # noqa: E402
-from app.auth.deps import require_admin  # noqa: E402
-
-
-async def _mock_require_admin():
-    return {"email": "admin@test.com", "role": "site_admin"}
+Imports are done lazily inside the test to avoid triggering the Settings()
+cache during module collection — that would freeze JWT_SECRET to whatever
+env was set at collection time, breaking other tests (e.g. test_oauth) that
+rely on their own env overrides.
+"""
 
 
 def test_admin_analytics_no_db():
     """Admin endpoint returns 503 when DB pool is missing."""
+    from fastapi.testclient import TestClient
+    from app.main import app
+    from app.auth.deps import require_admin
+
+    async def _mock_require_admin():
+        return {"email": "admin@test.com", "role": "site_admin"}
+
     client = TestClient(app)
     original_pool = getattr(app.state, "db_pool", None)
     app.dependency_overrides[require_admin] = _mock_require_admin
