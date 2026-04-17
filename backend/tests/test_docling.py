@@ -6,7 +6,7 @@ class TestParseDocumentSync:
     """Tests for the synchronous document parsing function."""
 
     def test_page_limit_exceeded(self):
-        """>50 page PDFs are rejected with a specific message."""
+        """PDFs exceeding max_pages are rejected with a specific message."""
         from app.modules.ingestion.service import _parse_document_sync
 
         with patch('app.modules.ingestion.service.PdfReader') as mock_reader:
@@ -15,7 +15,7 @@ class TestParseDocumentSync:
             mock_instance.metadata = None
             mock_reader.return_value = mock_instance
 
-            result = _parse_document_sync(b"%PDF-1.4 fake", "test.pdf")
+            result = _parse_document_sync(b"%PDF-1.4 fake", "test.pdf", max_pages=50)
             assert "error" in result
             assert "50 page limit" in result["error"]
             assert "55 pages" in result["error"]
