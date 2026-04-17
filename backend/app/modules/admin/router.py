@@ -95,4 +95,3 @@ async def get_recent_activity(
             "page_size": page_size,
             "total_pages": total_pages
         }
-    
