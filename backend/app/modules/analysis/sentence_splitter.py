@@ -42,24 +42,25 @@ def split_with_offsets(text: str, language: str = "en") -> list[tuple[str, int, 
     search_start = 0
 
     for sentence in sentences:
-        # Find the sentence in the remaining text
-        # pysbd may strip leading/trailing whitespace, so we need to find the actual position
         stripped = sentence.strip()
         if not stripped:
             continue
 
-        # Find where this sentence starts in the original text
-        start_idx = text.find(stripped, search_start)
-        if start_idx == -1:
+        # Find where the exact unstripped sentence starts in the original text
+        raw_start_idx = text.find(sentence, search_start)
+        if raw_start_idx == -1:
             # Fallback: use the current search position
-            start_idx = search_start
+            raw_start_idx = search_start
 
+        # Calculate exact offsets for the stripped portion
+        leading_spaces = sentence.find(stripped)
+        start_idx = raw_start_idx + leading_spaces
         end_idx = start_idx + len(stripped)
 
         results.append((stripped, start_idx, end_idx))
 
-        # Move search position past this sentence
-        search_start = end_idx
+        # Move search position past the entire raw sentence
+        search_start = raw_start_idx + len(sentence)
 
     return results
 
