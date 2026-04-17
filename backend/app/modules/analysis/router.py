@@ -52,7 +52,13 @@ router = APIRouter()
 class AnalysisRequest(BaseModel):
     text: str = Field(..., min_length=1)
     language: Optional[Literal['en', 'he', 'auto']] = 'auto'
-    private_mode: Optional[bool] = False 
+    private_mode: Optional[bool] = False
+    input_type: Optional[str] = "paste"
+    original_filename: Optional[str] = None
+    mime_type: Optional[str] = None
+    title: Optional[str] = None
+    author: Optional[str] = None
+    page_count: Optional[int] = None
 
 
 class Issue(BaseModel):
@@ -290,6 +296,12 @@ async def _persist_results(
     analysis_mode: str,
     issues: list[Issue],
     runtime_ms: int,
+    input_type: str = "paste",
+    original_filename: Optional[str] = None,
+    mime_type: Optional[str] = None,
+    title: Optional[str] = None,
+    author: Optional[str] = None,
+    page_count: Optional[int] = None,
 ) -> None:
     """Persist analysis results to DB. Fails silently — never breaks the response."""
     pool = getattr(request.app.state, "db_pool", None)
@@ -305,12 +317,16 @@ async def _persist_results(
             doc_id = await repo.create_document(
                 conn=conn,
                 user_id=user.id if user else None,
-                input_type="paste",
+                input_type=input_type,
                 language=language,
                 private_mode=private_mode,
-                mime_type="text/plain",
+                mime_type=mime_type or "text/plain",
+                original_filename=original_filename,
                 text_storage_ref=None,
                 text_sha256=text_sha256,
+                title=title,
+                author=author,
+                page_count=page_count,
             )
 
             run_id = await repo.create_run(
@@ -454,6 +470,12 @@ async def analyze_text(
             analysis_mode=analysis_mode,
             issues=issues,
             runtime_ms=runtime_ms,
+            input_type=body.input_type or "paste",
+            original_filename=body.original_filename,
+            mime_type=body.mime_type,
+            title=body.title,
+            author=body.author,
+            page_count=body.page_count
         )
 
     # Always persist model performance metrics (no text stored — privacy-safe)

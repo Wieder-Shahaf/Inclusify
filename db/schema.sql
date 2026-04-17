@@ -53,6 +53,9 @@ CREATE TABLE documents (
 
   original_filename TEXT,
   mime_type TEXT,
+  title TEXT,
+  author TEXT,
+  page_count INT CHECK (page_count IS NULL OR page_count >= 0),
 
   text_storage_ref TEXT,
   text_sha256 TEXT,
