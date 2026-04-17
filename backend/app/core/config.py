@@ -42,6 +42,8 @@ class Settings(BaseSettings):
     # Max concurrent GPU calls across ALL users. Must match --max-num-seqs in vllm.service.
     # Current VM: T4 + Qwen2.5-3B, max-num-seqs=16. Raise when adding GPU capacity.
     VLLM_MAX_CONCURRENT: int = 16
+    # When True, vLLM errors return a simulated response instead of None (for load testing only).
+    VLLM_LOAD_TEST_MODE: bool = False
 
     # Google OAuth Configuration
     GOOGLE_CLIENT_ID: str = ""
