@@ -46,6 +46,24 @@ services:
       retries: 5
 
   # ============================================
+  # Azurite — local Azure Blob Storage emulator
+  # ============================================
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    profiles:
+      - dev
+    command: azurite-blob --blobHost 0.0.0.0 --blobPort 10000
+    ports:
+      - "10000:10000"
+    volumes:
+      - azurite_data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:10000/devstoreaccount1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ============================================
   # FastAPI Backend
   # ============================================
   backend:
@@ -80,6 +98,9 @@ services:
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000}
       # LLM inference service (transformers-based, not vLLM)
       - VLLM_URL=${VLLM_URL:-http://52.224.246.238:8001}
+      # Blob storage (Azurite locally, Azure Blob in prod)
+      - AZURE_STORAGE_CONNECTION_STRING=${AZURE_STORAGE_CONNECTION_STRING:-DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OWEJMq/gT4=;BlobEndpoint=http://azurite:10000/devstoreaccount1;}
+      - AZURE_STORAGE_CONTAINER=${AZURE_STORAGE_CONTAINER:-texts}
     ports:
       - "8000:8000"
     volumes:
@@ -92,6 +113,9 @@ services:
         condition: service_healthy
         required: false
       redis:
+        condition: service_healthy
+        required: false
+      azurite:
         condition: service_healthy
         required: false
     healthcheck:
@@ -129,3 +153,4 @@ services:
 
 volumes:
   postgres_data:
+  azurite_data:

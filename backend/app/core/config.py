@@ -45,6 +45,10 @@ class Settings(BaseSettings):
     # When True, vLLM errors return a simulated response instead of None (for load testing only).
     VLLM_LOAD_TEST_MODE: bool = False
 
+    # Azure Blob Storage
+    AZURE_STORAGE_CONNECTION_STRING: str = ""
+    AZURE_STORAGE_CONTAINER: str = "texts"
+
     # Google OAuth Configuration
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""

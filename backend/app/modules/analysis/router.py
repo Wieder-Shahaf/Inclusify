@@ -28,7 +28,6 @@ DB persistence:
 
 import logging
 import hashlib
-import os
 import time
 
 from fastapi import APIRouter, Depends, Request
@@ -420,18 +419,7 @@ async def _persist_metrics(
 # Text Storage (non-private mode only)
 # =============================================================================
 
-TEXT_STORE_DIR = "/app/text_store"
-
-
-def _store_text(text: str, sha256: str) -> str:
-    """Write text to local store, return reference path. Idempotent — skip if exists."""
-    os.makedirs(TEXT_STORE_DIR, exist_ok=True)
-    path = os.path.join(TEXT_STORE_DIR, f"{sha256}.txt")
-    if not os.path.exists(path):
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(text)
-        logger.info("Text stored: ref=%s.txt chars=%d", sha256, len(text))
-    return f"local://{sha256}.txt"
+from app.core.blob_storage import upload_text as _blob_upload_text
 
 
 # =============================================================================
@@ -495,11 +483,7 @@ async def analyze_text(
     # Persist full results to DB only when private_mode is off
     if not private_mode:
         text_sha256 = hashlib.sha256(body.text.encode("utf-8")).hexdigest()
-        try:
-            text_storage_ref = _store_text(body.text, text_sha256)
-        except Exception as e:
-            logger.warning("Text storage failed, continuing without ref: %s", e)
-            text_storage_ref = None
+        text_storage_ref = await _blob_upload_text(text_sha256, body.text)
 
         await _persist_results(
             request=request,
