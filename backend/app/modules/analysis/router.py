@@ -59,6 +59,7 @@ class AnalysisRequest(BaseModel):
     title: Optional[str] = None
     author: Optional[str] = None
     page_count: Optional[int] = None
+    detected_language: Optional[Literal['he', 'en']] = None
 
 
 class Issue(BaseModel):
@@ -302,6 +303,7 @@ async def _persist_results(
     title: Optional[str] = None,
     author: Optional[str] = None,
     page_count: Optional[int] = None,
+    detected_language: Optional[str] = None,
 ) -> None:
     """Persist analysis results to DB. Fails silently — never breaks the response."""
     pool = getattr(request.app.state, "db_pool", None)
@@ -327,6 +329,7 @@ async def _persist_results(
                 title=title,
                 author=author,
                 page_count=page_count,
+                detected_language=detected_language,
             )
 
             run_id = await repo.create_run(
@@ -475,7 +478,8 @@ async def analyze_text(
             mime_type=body.mime_type,
             title=body.title,
             author=body.author,
-            page_count=body.page_count
+            page_count=body.page_count,
+            detected_language=body.detected_language,
         )
 
     # Always persist model performance metrics (no text stored — privacy-safe)
