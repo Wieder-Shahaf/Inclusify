@@ -239,6 +239,8 @@
     "serviceUnavailable": "שירות הניתוח לא זמין זמנית. ניתן להמשיך לגלוש.",
     "modelUnavailable": "מודל ה-AI לא זמין — כרגע לא ניתן לבצע ניתוח. עיינו במילון המונחים שלנו.",
     "modelUnavailableLinkText": "עיינו במילון",
+    "llmDownResults": "שירות הניתוח אינו זמין כרגע. עיינו במילון לקבלת הכוונה.",
+    "llmDownResultsLink": "לפתיחת המילון",
     "basicAnalysisMode": "מצב ניתוח בסיסי",
     "basicAnalysisModeDesc": "ניתוח AI מתקדם לא זמין",
     "errors": {

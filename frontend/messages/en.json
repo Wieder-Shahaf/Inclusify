@@ -186,8 +186,8 @@
       "uploadingDesc": "Securely transferring your file...",
       "parsing": "Parsing content",
       "parsingDesc": "Extracting text from document...",
-      "analyzing": "Analyzing language",
-      "analyzingDesc": "Scanning for inclusive language patterns...",
+      "analyzing": "Checking for non-inclusive writing...",
+      "analyzingDesc": "Scanning for LGBTQ+ inclusive language...",
       "generating": "Generating insights",
       "generatingDesc": "Preparing your personalized report...",
       "complete": "Analysis complete",
@@ -195,7 +195,7 @@
       "takingLonger": "Analysis is taking longer than usual..."
     },
     "summaryCard": {
-      "score": "Inclusivity Score",
+      "score": "LGBTQ+ inclusivity score.",
       "totalIssues": "Total Issues",
       "wordCount": "Word Count",
       "categories": "Issues by Category",
@@ -225,6 +225,7 @@
       "privacyFirstDesc": "Data stays secure"
     },
     "analyzeAnother": "Analyze Another",
+    "contactUs": "Contact Us",
     "issuesFound": "Issues Found",
     "issueFound": "issue found",
     "issuesFoundPlural": "issues found",
@@ -236,7 +237,10 @@
     "exportReport": "Export Report",
     "sampleFileName": "sample_academic_paper.txt",
     "serviceUnavailable": "Analysis service temporarily unavailable. You can still browse.",
-    "modelUnavailable": "AI model offline — analysis will use rule-based detection only.",
+    "modelUnavailable": "AI model offline — no analysis available right now. Browse our glossary for guidance.",
+    "modelUnavailableLinkText": "Browse glossary",
+    "llmDownResults": "Analysis service is temporarily unavailable. Browse the glossary for guidance.",
+    "llmDownResultsLink": "Browse glossary",
     "basicAnalysisMode": "Basic analysis mode",
     "basicAnalysisModeDesc": "Advanced AI analysis unavailable",
     "errors": {
@@ -319,6 +323,35 @@
       "invalidCredentials": "Invalid email or password",
       "emailExists": "An account with this email already exists",
       "generic": "Something went wrong. Please try again."
+    }
+  },
+  "profile": {
+    "title": "My Profile",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "saveSuccess": "Profile updated successfully!",
+    "saveError": "Failed to save profile. Please try again.",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "e.g. Dr. Jane Smith",
+    "profession": "Profession / Role",
+    "professionPlaceholder": "e.g. Researcher, Lecturer",
+    "institution": "Institution",
+    "institutionPlaceholder": "e.g. Tel Aviv University",
+    "setup": {
+      "title": "Complete your profile",
+      "subtitle": "Help us personalize your experience.",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "e.g. Dr. Jane Smith",
+      "profession": "Profession / Role",
+      "professionPlaceholder": "e.g. Researcher, Lecturer",
+      "institution": "Institution",
+      "institutionPlaceholder": "e.g. Tel Aviv University",
+      "save": "Save Profile",
+      "saving": "Saving...",
+      "skip": "Skip for now",
+      "success": "Profile saved!",
+      "error": "Failed to save. Try again.",
+      "required": "This field is required"
     }
   },
   "glossary": {
