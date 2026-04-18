@@ -63,10 +63,19 @@ export function useAdminKPIs(days: number) {
   return { kpis: data, isLoading, error, refresh: mutate };
 }
 
-export function useAdminUsers(page: number, pageSize: number = 20, search?: string) {
-  const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
+export function useAdminUsers(
+  page: number,
+  pageSize: number = 20,
+  search?: string,
+  institution?: string,
+  minAnalyses?: number,
+) {
+  const params = new URLSearchParams({ page: String(page), page_size: String(pageSize) });
+  if (search) params.set('search', search);
+  if (institution) params.set('institution', institution);
+  if (minAnalyses !== undefined && minAnalyses > 0) params.set('min_analyses', String(minAnalyses));
   const { data, error, isLoading, mutate } = useSWR<UsersListResponse>(
-    `${API_BASE_URL}/api/v1/admin/users?page=${page}&page_size=${pageSize}${searchParam}`,
+    `${API_BASE_URL}/api/v1/admin/users?${params.toString()}`,
     fetcher,
     { revalidateOnFocus: false }
   );
@@ -99,6 +108,26 @@ export interface ModelMetricsResponse {
 export function useModelMetrics(days: number) {
   const { data, error, isLoading, mutate } = useSWR<ModelMetricsResponse>(
     `${API_BASE_URL}/api/v1/admin/model-metrics?days=${days}`,
+    fetcher,
+    { revalidateOnFocus: false, dedupingInterval: 60000 }
+  );
+  return { data, isLoading, error, refresh: mutate };
+}
+
+export interface TopPhrase { phrase: string; count: number; }
+export interface FrequencyTrendItem {
+  category: string;
+  count: number;
+  top_phrases: TopPhrase[];
+}
+export interface FrequencyTrendsResponse {
+  trends: FrequencyTrendItem[];
+  days: number;
+}
+
+export function useAdminFrequencyTrends(days: number) {
+  const { data, error, isLoading, mutate } = useSWR<FrequencyTrendsResponse>(
+    `${API_BASE_URL}/api/v1/admin/frequency-trends?days=${days}`,
     fetcher,
     { revalidateOnFocus: false, dedupingInterval: 60000 }
   );

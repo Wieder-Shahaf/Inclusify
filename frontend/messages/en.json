@@ -94,6 +94,12 @@
     "languages": {
       "en": "English",
       "he": "Hebrew"
+    },
+    "frequencyTrends": {
+      "title": "Label Frequency Trends",
+      "subtitle": "Most flagged categories in the selected period",
+      "topPhrases": "Top phrases",
+      "noData": "No findings recorded in this period."
     }
   },
   "home": {

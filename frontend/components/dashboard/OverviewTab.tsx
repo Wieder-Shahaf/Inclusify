@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAdminKPIs, useAdminActivity } from '@/lib/api/admin';
+import FrequencyTrendsCard from './FrequencyTrendsCard';
 
 interface OverviewTabProps {
   days: number;
@@ -246,6 +247,9 @@ export default function OverviewTab({ days, translations }: OverviewTabProps) {
           </div>
         )}
       </div>
+
+      {/* Label Frequency Trends */}
+      <FrequencyTrendsCard days={days} />
     </div>
   );
 }
