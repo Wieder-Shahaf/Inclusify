@@ -14,7 +14,6 @@ generated on the fly so the script still runs.
 """
 from __future__ import annotations
 
-import os
 import random
 from pathlib import Path
 
