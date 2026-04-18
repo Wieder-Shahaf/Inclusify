@@ -89,7 +89,8 @@ async def get_users_paginated(
 
     having_clause = ""
     if min_analyses is not None and min_analyses > 0:
-        having_clause = f"HAVING COUNT(ar.run_id) >= {int(min_analyses)}"
+        params.append(min_analyses)
+        having_clause = f"HAVING COUNT(ar.run_id) >= ${len(params)}"
 
     base_query = f"""
         SELECT
@@ -112,8 +113,10 @@ async def get_users_paginated(
     total = await conn.fetchval(count_query, *params)
 
     params_with_pagination = params + [page_size, offset]
+    limit_idx = len(params_with_pagination) - 1
+    offset_idx = len(params_with_pagination)
     rows = await conn.fetch(
-        f"{base_query} ORDER BY u.created_at DESC LIMIT ${len(params_with_pagination) - 1} OFFSET ${len(params_with_pagination)}",
+        f"{base_query} ORDER BY u.created_at DESC LIMIT ${limit_idx} OFFSET ${offset_idx}",
         *params_with_pagination,
     )
 
