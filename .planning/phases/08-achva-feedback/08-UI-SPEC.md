@@ -46,11 +46,10 @@ Declared values (must be multiples of 4). All values match the Tailwind 4-point 
 
 Exceptions:
 - Modal inner padding: 32px (`p-8`) — matches `ProfileSetupModal` pattern
-- Admin card inner padding: 20px (`p-5`) — matches `OverviewTab` existing card pattern
-- Touch targets (navbar Contact button): minimum 44px height — WCAG 2.5.5 AA compliance
+- Admin card inner padding: 24px (`p-6`) — standard card padding for `FrequencyTrendsCard` and admin dashboard cards
 - PDF footer watermark: positioned at `pageHeight - 8` (jsPDF points, not CSS px)
 
-Source: existing codebase patterns in `ProfileSetupModal.tsx`, `OverviewTab.tsx`, `globals.css`
+Source: existing codebase patterns in `ProfileSetupModal.tsx`, `globals.css`
 
 ---
 
@@ -61,13 +60,13 @@ All sizes reference CSS px equivalents. The project uses Tailwind utility classe
 | Role | Size | Tailwind class | Weight | Weight class | Line Height |
 |------|------|----------------|--------|--------------|-------------|
 | Body | 14px | `text-sm` | 400 (regular) | `font-normal` | 1.5 |
-| Label | 14px | `text-sm` | 500 (medium) | `font-medium` | 1.25 |
+| Label | 14px | `text-sm` | 400 (regular) | `font-normal` | 1.25 |
 | Heading | 20px | `text-xl` | 700 (bold) | `font-bold` | 1.2 |
 | Display | 24px | `text-2xl` | 700 (bold) | `font-bold` | 1.2 |
 
-Exact weights in use: **regular (400)** and **bold (700)**. Semibold (600) is allowed for nav-active states and CTA button labels only — matches `font-semibold` in `Navbar.tsx` active link.
+Exact weights in use: **regular (400)** and **bold (700)**. No other weights are part of this design contract. Label differentiation from body is achieved via color contrast (muted vs. default text color), not weight.
 
-Source: observed from `ProfileSetupModal.tsx` (sm/medium labels, xl bold title), `OverviewTab.tsx` (2xl bold KPI values, xs muted descriptions).
+Source: observed from `ProfileSetupModal.tsx` (sm labels, xl bold title), `OverviewTab.tsx` (2xl bold KPI values, xs muted descriptions).
 
 ---
 
@@ -87,7 +86,7 @@ Project uses a custom token system defined in `globals.css` on top of shadcn CSS
 
 Accent (`--color-pride-purple`, `#7b61ff`) is reserved for:
 1. Primary CTA button gradient fill (paired with `#ff53a1`)
-2. Active navigation link text (`text-pride-purple font-semibold`)
+2. Active navigation link text (`text-pride-purple`)
 3. Form input focus ring (`focus:ring-pride-purple`)
 4. Bar chart bars in `SimpleBarChart` (D-05) — use `color='#7b61ff'` matching `SimpleLineChart` default
 5. Section header icons in admin dashboard cards
@@ -97,6 +96,18 @@ Accent is NOT to be used for: body text, card borders, background fills, badge b
 Glass surface pattern (modals): `bg-white/60 dark:bg-slate-900/50 backdrop-blur-md border border-white/40 dark:border-slate-800/50` — the `.glass` utility class.
 
 Source: `globals.css` custom tokens, `ProfileSetupModal.tsx`, `OverviewTab.tsx`, `HealthWarningBanner.tsx`
+
+---
+
+## Focal Points
+
+Per-screen focal point declarations for primary screens touched in Phase 8.
+
+| Screen | Focal Point |
+|--------|-------------|
+| `ContactModal` | Modal title ("Contact Us") + "Send Message" button cluster at the bottom of the form |
+| `analyze/page.tsx` results view (LLM-down banner) | Results summary card — the banner is a secondary alert above it; the card remains the visual anchor |
+| Admin dashboard `OverviewTab` (FrequencyTrendsCard) | KPI metrics row — `FrequencyTrendsCard` is a secondary analytics section below the primary KPIs |
 
 ---
 
@@ -117,7 +128,7 @@ Source: `globals.css` custom tokens, `ProfileSetupModal.tsx`, `OverviewTab.tsx`,
 |-----------|-----------|----------|
 | `ContactModal` | `components/ContactModal.tsx` | `ProfileSetupModal.tsx` pattern (Radix Dialog + react-hook-form + zod + sonner) |
 | `SimpleBarChart` | `components/dashboard/SimpleBarChart.tsx` | `SimpleLineChart.tsx` — custom SVG, no library |
-| `FrequencyTrendsCard` | `components/dashboard/FrequencyTrendsCard.tsx` | `OverviewTab` card pattern (`rounded-2xl border bg-white dark:bg-slate-900 p-5 shadow-sm`) |
+| `FrequencyTrendsCard` | `components/dashboard/FrequencyTrendsCard.tsx` | `OverviewTab` card pattern (`rounded-2xl border bg-white dark:bg-slate-900 p-6 shadow-sm`) |
 
 ---
 
@@ -166,14 +177,14 @@ Source: `globals.css` custom tokens, `ProfileSetupModal.tsx`, `OverviewTab.tsx`,
 - **Guest behavior:** Modal works without login — prefilled fields are empty strings, no attachment offered.
 
 ### D-05: Admin Frequency Trends
-- **Card placement:** New card below the activity table in `OverviewTab`. Same card style: `rounded-2xl border bg-white dark:bg-slate-900 p-5 shadow-sm`.
-- **Card header:** `<h3 className="font-semibold text-slate-800 dark:text-white flex items-center gap-2">` with `BarChart3` lucide icon (`w-4 h-4 text-pride-purple`). Label: `{t('admin.frequencyTrends.title')}`.
+- **Card placement:** New card below the activity table in `OverviewTab`. Same card style: `rounded-2xl border bg-white dark:bg-slate-900 p-6 shadow-sm`.
+- **Card header:** `<h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">` with `BarChart3` lucide icon (`w-4 h-4 text-pride-purple`). Label: `{t('admin.frequencyTrends.title')}`.
 - **Time window selector:** Reuse the existing days filter from the parent `AdminDashboard` — pass as prop. No new time filter UI needed.
 - **Bar chart (`SimpleBarChart`):**
   - Custom SVG, same viewBox pattern as `SimpleLineChart` (`viewBox="0 0 800 {height}"`).
   - Each bar: color `#7b61ff` (`--color-pride-purple`), `opacity-80`, `rx="4"` (4px rounded corners on bars).
   - Bar labels: category name below x-axis, `text-xs text-slate-500 dark:text-slate-400`, truncated at 14 chars.
-  - Bar value: displayed above each bar, `text-xs font-semibold text-slate-800 dark:text-white`.
+  - Bar value: displayed above each bar, `text-xs font-bold text-slate-800 dark:text-white`.
   - Props: `data: {category: string, count: number}[]`, `height?: number` (default 200), `color?: string` (default `#7b61ff`).
 - **Top-5 phrases per label:** Expandable disclosure per category bar. Trigger: clicking the bar or a chevron button below the bar label.
   - Collapsed state: shows category name + count badge only.
@@ -201,7 +212,7 @@ All new keys go into `frontend/messages/en.json` and `frontend/messages/he.json`
 | Contact modal subtitle | `contact.subtitle` | `"Send a message or feedback to the Inclusify team."` | `"שלחו הודעה או משוב לצוות Inclusify."` |
 | Subject field label | `contact.subject` | `"Subject"` | `"נושא"` |
 | Message field label | `contact.message` | `"Message"` | `"הודעה"` |
-| Send button | `contact.send` | `"Send"` | `"שלח"` |
+| Send button | `contact.send` | `"Send Message"` | `"שלח הודעה"` |
 | Send button loading | `contact.sending` | `"Sending..."` | `"שולח..."` |
 | Success toast | `contact.success` | `"Message sent!"` | `"ההודעה נשלחה!"` |
 | Error toast | `contact.error` | `"Failed to send. Please try again."` | `"שליחה נכשלה. נסו שוב."` |
@@ -224,7 +235,7 @@ All new keys go into `frontend/messages/en.json` and `frontend/messages/he.json`
 | `profile.setup.institution` | Institution label — add `*` in JSX markup only, key unchanged |
 
 ### Primary CTA for this phase
-The primary user-facing CTA is: **"Send"** (contact modal submit).
+The primary user-facing CTA is: **"Send Message"** (contact modal submit).
 
 ### Destructive actions in this phase
 None. No deletion, irreversible data loss, or confirmation dialogs required in Phase 8.
@@ -239,7 +250,7 @@ None. No deletion, irreversible data loss, or confirmation dialogs required in P
 - Focus ring: `focus-visible:outline-2 focus-visible:outline-pride-purple outline-offset-2` — enforced globally in `globals.css`.
 - WebSocket connection-status dot includes `aria-label="Live updates connected"` / `"Live updates disconnected"` on the containing element.
 - `HealthWarningBanner` uses `role="alert"` implicitly via `motion.div` (add `role="alert"` explicitly in the D-02 conditional render if not already present on the component).
-- Navbar Contact Us button: minimum height 44px, `aria-haspopup="dialog"`.
+- Navbar Contact Us button: minimum height 44px (WCAG 2.5.5 AA touch target compliance), `aria-haspopup="dialog"`.
 
 ---
 
