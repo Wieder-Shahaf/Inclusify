@@ -197,10 +197,12 @@ export interface FileMetadata {
   author?: string | null;
   detectedLanguage?: string | null;
   fileStorageRef?: string | null;
+  chunks?: string[] | null;
 }
 
 export interface UploadResult extends FileMetadata {
   text: string;
+  chunks?: string[] | null;
 }
 
 // Main API function
@@ -232,6 +234,7 @@ export async function analyzeText(
       author: meta?.author ?? null,
       detected_language: meta?.detectedLanguage ?? null,
       file_storage_ref: meta?.fileStorageRef ?? null,
+      chunks: meta?.chunks ?? null,
     }),
   });
 
@@ -278,6 +281,7 @@ export async function uploadFile(file: File): Promise<UploadResult> {
     author: data.author ?? null,
     detectedLanguage: data.detected_language ?? null,
     fileStorageRef: data.file_storage_ref ?? null,
+    chunks: data.chunks ?? null,
   };
 }
 

@@ -7,6 +7,7 @@ Provides:
 - Token validation and invalidation
 """
 import redis.asyncio as redis
+from typing import Optional
 
 from app.core.config import settings
 
@@ -67,7 +68,7 @@ class RefreshTokenStore:
 
 
 # Global Redis manager instance (initialized in lifespan)
-redis_manager: RefreshTokenStore | None = None
+redis_manager: Optional["RefreshTokenStore"] = None
 
 
 async def get_redis() -> RefreshTokenStore:

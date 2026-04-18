@@ -7,7 +7,8 @@ LLM results are preferred for overlapping spans; rule-based serves as fallback.
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING
+import re as _re
+from typing import TYPE_CHECKING, Optional
 
 from app.modules.analysis.call_metrics import CallMetrics
 from app.modules.analysis.llm_client import VLLMClient, map_severity
@@ -17,6 +18,63 @@ if TYPE_CHECKING:
     from app.modules.analysis.router import Issue
 
 logger = logging.getLogger(__name__)
+
+def _locate_chunks(full_text: str, chunks: list[str]) -> list[tuple[str, int, int]]:
+    """
+    Find character offsets of HybridChunker chunks within the analysis text.
+    Falls back progressively: exact → skip heading line → whitespace-normalized.
+    Chunks that still fail (e.g. table cells, bibliography) are silently skipped;
+    they are unlikely to contain LGBTQ+ language and are summarized at INFO level.
+    """
+    result = []
+    skipped = 0
+    search_start = 0
+
+    _ws_norm = _re.compile(r'\s+')
+    full_text_normalized = _ws_norm.sub(' ', full_text)
+
+    for raw in chunks:
+        stripped = raw.strip()
+        if not stripped:
+            continue
+
+        # 1. Exact match
+        idx = full_text.find(stripped, search_start)
+
+        # 2. Skip first line (heading context prepended by chunker)
+        if idx == -1:
+            lines = [ln for ln in stripped.split('\n') if ln.strip()]
+            if len(lines) > 1:
+                content = '\n'.join(lines[1:]).strip()
+                idx = full_text.find(content, search_start)
+                if idx != -1:
+                    stripped = content
+
+        # 3. Whitespace-normalized match (recovers double-space / tab differences)
+        if idx == -1:
+            norm_chunk = _ws_norm.sub(' ', stripped)
+            norm_idx = full_text_normalized.find(norm_chunk, search_start)
+            if norm_idx != -1:
+                # Find the corresponding position in the original text.
+                # Walk forward from search_start counting non-ws chars.
+                orig_idx = full_text.find(norm_chunk[0], search_start)
+                if orig_idx != -1:
+                    idx = orig_idx
+                    stripped = full_text[orig_idx: orig_idx + len(norm_chunk)]
+
+        if idx != -1:
+            result.append((stripped, idx, idx + len(stripped)))
+            search_start = idx + len(stripped)
+        else:
+            skipped += 1
+            logger.debug("HybridChunker chunk not located, skipping: %.60r", stripped)
+
+    if skipped:
+        logger.info(
+            "HybridChunker: %d/%d chunks located; %d skipped (likely tables/bibliography)",
+            len(result), len(result) + skipped, skipped,
+        )
+    return result
 
 
 def calculate_overlap(issue1: "Issue", issue2: "Issue") -> float:
@@ -120,7 +178,8 @@ class HybridDetector:
     async def analyze(
         self,
         text: str,
-        language: str = "auto"
+        language: str = "auto",
+        chunks: Optional[list[str]] = None,
     ) -> tuple[list["Issue"], str, CallMetrics]:
         """
         Analyze text for LGBTQ+ inclusive language issues.
@@ -141,10 +200,17 @@ class HybridDetector:
         if language == "auto":
             language = detect_language(text)
 
-        # Split text into sentences with offsets
-        sentences = split_with_offsets(text, language)
+        # Split text into chunks/sentences with offsets
+        if chunks:
+            sentences = _locate_chunks(text, chunks)
+            if not sentences:
+                # All chunks failed to locate — fall back to sentence splitter
+                logger.warning("HybridChunker offset location failed for all chunks, falling back to sentence splitter")
+                sentences = split_with_offsets(text, language)
+        else:
+            sentences = split_with_offsets(text, language)
         logger.info(
-            "Hybrid detection started: text_length=%d language=%s sentences=%d",
+            "Hybrid detection started: text_length=%d language=%s chunks=%d",
             len(text), language, len(sentences),
         )
 
@@ -190,12 +256,18 @@ class HybridDetector:
                     else:
                         confidence = None
 
+                    suggestion = result.get("suggestion")
+                    if not isinstance(suggestion, str) or not suggestion.strip() or suggestion.strip().lower() == "null":
+                        suggestion = await self.client.get_suggestion(
+                            sentence, severity, category, metrics=call_metrics
+                        )
+
                     issue = Issue(
                         flagged_text=sentence,
                         severity=severity,
                         type=category,
                         description=explanation,
-                        suggestion=None,
+                        suggestion=suggestion,
                         start=start_offset,
                         end=end_offset,
                         confidence=confidence,

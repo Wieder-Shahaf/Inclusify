@@ -183,8 +183,10 @@ class TestHybridDetector:
         mock_client.analyze_sentence = AsyncMock(return_value={
             "category": "Pathologizing",
             "severity": "Biased",
-            "explanation": "Test explanation"
+            "explanation": "Test explanation",
+            "suggestion": "Use affirming language instead.",
         })
+        mock_client.get_suggestion = AsyncMock(return_value="Use affirming language instead.")
 
         detector = HybridDetector(vllm_client=mock_client)
         issues, mode, _ = await detector.analyze("This is a test sentence. Another sentence.")
@@ -230,6 +232,7 @@ class TestHybridDetector:
 
         mock_client = MagicMock()
         mock_client.analyze_sentence = mock_analyze
+        mock_client.get_suggestion = AsyncMock(return_value="Use affirming language instead.")
 
         detector = HybridDetector(vllm_client=mock_client)
         # Two sentences: one succeeds with LLM, one fails

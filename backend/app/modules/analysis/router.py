@@ -61,6 +61,7 @@ class AnalysisRequest(BaseModel):
     page_count: Optional[int] = None
     detected_language: Optional[Literal['he', 'en']] = None
     file_storage_ref: Optional[str] = None
+    chunks: Optional[list[str]] = None
 
 
 class Issue(BaseModel):
@@ -291,7 +292,7 @@ def detect_rule_based_issues(text: str) -> list[Issue]:
 # Allow user to be None for guest runs
 async def _persist_results(
     request: Request,
-    user: User | None,
+    user: Optional[User],
     text: str,
     language: str,
     private_mode: bool,
@@ -436,7 +437,7 @@ _hybrid_detector = HybridDetector()
 async def analyze_text(
     request: Request,
     body: AnalysisRequest,
-    current_user: User | None = Depends(current_user_optional),
+    current_user: Optional[User] = Depends(current_user_optional),
 ):
     """
     Analyze text for non-inclusive LGBTQ+ language.
@@ -474,7 +475,7 @@ async def analyze_text(
 
     start_time = time.monotonic()
 
-    issues, analysis_mode, call_metrics = await _hybrid_detector.analyze(body.text, language=language)
+    issues, analysis_mode, call_metrics = await _hybrid_detector.analyze(body.text, language=language, chunks=body.chunks)
 
     elapsed = time.monotonic() - start_time
     runtime_ms = int(elapsed * 1000)

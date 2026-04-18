@@ -2,13 +2,24 @@ import asyncio
 import logging
 import os
 import tempfile
+import time
+
 from pypdf import PdfReader
+from pypdf.errors import PdfReadError
 
 logger = logging.getLogger(__name__)
 
-# Raised to 100 — T4 handles up to ~100 pages within the 60s timeout at current load
-MAX_PAGES = 100
+MAX_PAGES = 50
 _docling_converter = None
+_hybrid_chunker = None
+
+def _get_hybrid_chunker():
+    global _hybrid_chunker
+    if _hybrid_chunker is None:
+        from docling.chunking import HybridChunker
+        _hybrid_chunker = HybridChunker()
+        logger.info("Docling HybridChunker initialized")
+    return _hybrid_chunker
 
 def _get_docling_converter():
     global _docling_converter
@@ -78,17 +89,23 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
                         pdf_title = reader.metadata.title
                     if reader.metadata.author:
                         pdf_author = reader.metadata.author
+            except PdfReadError as e:
+                msg = str(e).lower()
+                if "password" in msg or "encrypted" in msg:
+                    logger.warning("PDF rejected: password-protected filename=%s", filename)
+                    return {"error": "PDF is password-protected"}
+                logger.error("PDF corrupted: filename=%s", filename)
+                return {"error": "PDF appears corrupted"}
             except Exception:
                 logger.error("PDF corrupted: filename=%s", filename)
                 return {"error": "PDF appears corrupted"}
 
 
-        import time as _time
-        _t0 = _time.monotonic()
+        _t0 = time.monotonic()
         logger.info("Docling conversion started: filename=%s ext=%s", filename, ext)
         converter = _get_docling_converter()
         result = converter.convert(temp_path)
-        logger.info("Docling conversion completed: filename=%s elapsed_s=%.3f", filename, _time.monotonic() - _t0)
+        logger.info("Docling conversion completed: filename=%s elapsed_s=%.3f", filename, time.monotonic() - _t0)
         doc_dict = result.document.export_to_dict()
         items = doc_dict.get("texts", [])
 
@@ -134,7 +151,7 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
             for item in first_few_items:
                 text_val = item.get('text', '').strip()
                 lower_text = text_val.lower()
-                prefixes = {"by ": 3, "מאת ": 4, "מאת:": 4, "על ידי ": 7, "נכתב עי ": 9, "נכתב על ידי ": 12}
+                prefixes = {"by ": 3, "מאת ": 4, "מאת:": 4, "על ידי ": 7, 'נכתב ע"י ': 9, "נכתב על ידי ": 12}
                 found_author = False
                 for prefix, length in prefixes.items():
                     if lower_text.startswith(prefix):
@@ -161,23 +178,30 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
                         break
 
 
-        full_markdown = result.document.export_to_markdown()
-        has_hebrew = any('\u0590' <= c <= '\u05FF' for c in full_markdown[:500])
+        # Use plain text for analysis — HybridChunker chunks are plain text substrings
+        # of export_to_text(), not markdown, so this eliminates chunk-location failures.
+        full_text = result.document.export_to_text()
+        has_hebrew = any('\u0590' <= c <= '\u05FF' for c in full_text[:500])
         detected_lang = "he" if has_hebrew else "en"
         final_pages = len(result.document.pages) if hasattr(result.document, 'pages') else page_count
+
+        chunker = _get_hybrid_chunker()
+        chunks_data = [c.text for c in chunker.chunk(result.document) if c.text.strip()]
+
         logger.info(
-            "Extraction completed: filename=%s pages=%d text_length=%d detected_language=%s title=%s author=%s",
-            filename, final_pages, len(full_markdown), detected_lang,
+            "Extraction completed: filename=%s pages=%d text_length=%d chunks=%d detected_language=%s title=%s author=%s",
+            filename, final_pages, len(full_text), len(chunks_data), detected_lang,
             repr(title[:50]) if title else None,
             repr(author[:50]) if author else None,
         )
 
         return {
-            "text": full_markdown,
+            "text": full_text,
             "page_count": final_pages,
             "title": title,
             "author": author,
-            "detected_language": detected_lang
+            "detected_language": detected_lang,
+            "chunks": chunks_data,
         }
     except Exception as e:
         logger.error("Processing failed: %s", str(e), exc_info=True)
@@ -199,4 +223,5 @@ async def warm_up_docling() -> None:
     loop = asyncio.get_running_loop()
     logger.info("Docling warm-up started — loading model weights")
     await loop.run_in_executor(None, _get_docling_converter)
+    await loop.run_in_executor(None, _get_hybrid_chunker)
     logger.info("Docling warm-up complete")

@@ -3,7 +3,7 @@ import asyncio
 import logging
 from typing import Optional
 
-from azure.core.exceptions import ResourceExistsError
+from azure.core.exceptions import ResourceExistsError, ResourceNotFoundError
 
 from app.core.config import settings
 
@@ -45,6 +45,11 @@ def _upload_text_sync(sha256: str, text: str) -> str:
         logger.info("Text uploaded to blob: %s chars=%d", blob_name, len(text))
     except ResourceExistsError:
         logger.debug("Text blob already exists, skipping upload: %s", blob_name)
+    except ResourceNotFoundError:
+        logger.warning("Container missing — recreating and retrying: %s", settings.AZURE_STORAGE_CONTAINER)
+        _ensure_container_sync()
+        blob.upload_blob(text.encode("utf-8"), overwrite=False)
+        logger.info("Text uploaded to blob (after container recreate): %s", blob_name)
     return f"blob://{settings.AZURE_STORAGE_CONTAINER}/{blob_name}"
 
 
@@ -69,6 +74,11 @@ def _upload_file_sync(sha256: str, filename: str, data: bytes) -> str:
         logger.info("File uploaded to blob: %s size_bytes=%d", blob_name, len(data))
     except ResourceExistsError:
         logger.debug("File blob already exists, skipping upload: %s", blob_name)
+    except ResourceNotFoundError:
+        logger.warning("Container missing — recreating and retrying: %s", settings.AZURE_STORAGE_CONTAINER)
+        _ensure_container_sync()
+        blob.upload_blob(data, overwrite=False)
+        logger.info("File uploaded to blob (after container recreate): %s size_bytes=%d", blob_name, len(data))
     return f"blob://{settings.AZURE_STORAGE_CONTAINER}/{blob_name}"
 
 

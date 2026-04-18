@@ -20,6 +20,17 @@ class TestParseDocumentSync:
             assert "50 page limit" in result["error"]
             assert "55 pages" in result["error"]
 
+    def test_password_protected_error(self):
+        """Password-protected PDF returns a specific message."""
+        from app.modules.ingestion.service import _parse_document_sync
+        from pypdf.errors import PdfReadError
+
+        with patch('app.modules.ingestion.service.PdfReader') as mock_reader:
+            mock_reader.side_effect = PdfReadError("File is encrypted")
+
+            result = _parse_document_sync(b"%PDF-1.4 fake", "test.pdf")
+            assert result == {"error": "PDF is password-protected"}
+
     def test_corrupted_pdf_error(self):
         """Corrupted PDF returns a specific message."""
         from app.modules.ingestion.service import _parse_document_sync
@@ -41,18 +52,25 @@ class TestParseDocumentSync:
 
         mock_converter_instance = MagicMock()
         mock_result = MagicMock()
-        mock_result.document.export_to_markdown.return_value = "# Document Title\n\nSample text content."
+        mock_result.document.export_to_text.return_value = "Document Title\n\nSample text content."
         mock_result.document.export_to_dict.return_value = {"texts": []}
         mock_result.document.pages = [MagicMock()] * 5
         mock_converter_instance.convert.return_value = mock_result
 
+        mock_chunker_instance = MagicMock()
+        mock_chunk = MagicMock()
+        mock_chunk.text = "Sample text content."
+        mock_chunker_instance.chunk.return_value = [mock_chunk]
+
         with patch('app.modules.ingestion.service.PdfReader', return_value=mock_reader_instance), \
-             patch('app.modules.ingestion.service._get_docling_converter', return_value=mock_converter_instance):
+             patch('app.modules.ingestion.service._get_docling_converter', return_value=mock_converter_instance), \
+             patch('app.modules.ingestion.service._get_hybrid_chunker', return_value=mock_chunker_instance):
             result = _parse_document_sync(b"%PDF-1.4 fake", "test.pdf")
             assert "text" in result
             assert "page_count" in result
             assert result["page_count"] == 5
             assert "Sample text content" in result["text"]
+            assert result["chunks"] == ["Sample text content."]
 
 
 class TestTxtPassthrough:
@@ -163,6 +181,21 @@ class TestUploadEndpoint:
             )
             assert response.status_code == 400
             assert "50 page limit" in response.json()["detail"]
+
+    @pytest.mark.asyncio
+    async def test_upload_password_protected_error(self, test_client):
+        """Password-protected PDF returns 400."""
+        from io import BytesIO
+
+        mock_result = {"error": "PDF is password-protected"}
+
+        with patch('app.modules.ingestion.router.parse_document_async', return_value=mock_result):
+            response = await test_client.post(
+                "/api/v1/ingestion/upload",
+                files={"file": ("secret.pdf", BytesIO(b"%PDF-1.4 fake"), "application/pdf")}
+            )
+            assert response.status_code == 400
+            assert "password-protected" in response.json()["detail"]
 
     @pytest.mark.asyncio
     async def test_upload_corrupted_pdf_error(self, test_client):

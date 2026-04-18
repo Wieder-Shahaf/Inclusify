@@ -32,13 +32,18 @@ STRICT JSON SCHEMA:
 {
   "category": "<rule category: e.g., 'N/A', 'Historical Pathologization', 'Identity Invalidation', 'Tone Policing', 'Medical Misinformation', 'False Causality', etc.>",
   "severity": "<EXACTLY one of: 'Correct', 'Outdated', 'Biased', 'Potentially Offensive', 'Factually Incorrect'>",
-  "explanation": "<detailed reasoning for the classification>"
+  "explanation": "<detailed reasoning for the classification>",
+  "suggestion": "<inclusive replacement phrasing, or null if severity is 'Correct'>"
 }
 
 RULES:
 - If the sentence is inclusive and appropriate, classify as "Correct" with category "N/A"
 - Only classify as harmful if there is clear evidence of problematic language
-- Provide specific, academic explanations"""
+- Provide specific, academic explanations
+- "suggestion" MUST be null ONLY when severity is "Correct"
+- For "Outdated", "Biased", "Potentially Offensive": provide a concrete inclusive rephrasing of the problematic sentence
+- For "Factually Incorrect": provide the corrected, factually accurate version of the statement
+- Never leave "suggestion" null when severity is not "Correct\""""
 
 
 # Severity mapping from LLM output to API severity levels
@@ -166,7 +171,7 @@ class VLLMClient:
     """
 
     # Shared across all instances — limits total concurrent GPU calls globally.
-    _semaphore: asyncio.Semaphore | None = None
+    _semaphore: Optional[asyncio.Semaphore] = None
 
     @classmethod
     def _get_semaphore(cls) -> asyncio.Semaphore:
@@ -184,6 +189,7 @@ class VLLMClient:
             "category": "Simulated Mock Response",
             "severity": "Outdated",
             "explanation": "[MOCK] This is a simulated response because the vLLM server is not reachable.",
+            "suggestion": "[MOCK] Please use inclusive and affirming language.",
             "confidence": 0.99
         }
 
@@ -238,6 +244,53 @@ class VLLMClient:
                 logger.error("vLLM unexpected error: %s", str(exc), exc_info=True)
                 return self._get_mock_response() if settings.VLLM_LOAD_TEST_MODE else None
 
+    async def get_suggestion(
+        self,
+        sentence: str,
+        severity: str,
+        category: str,
+        metrics: Optional[CallMetrics] = None,
+    ) -> Optional[str]:
+        """
+        Focused retry: ask the model only for an inclusive rephrasing of a sentence
+        that was already classified as problematic. Returns the suggestion string or None.
+        """
+        async with self._get_semaphore():
+            t0 = time.monotonic()
+            try:
+                prompt = (
+                    f'The following sentence was classified as [{severity}] ({category}):\n'
+                    f'"{sentence}"\n\n'
+                    f'Provide ONLY an inclusive, corrected rephrasing of this sentence. '
+                    f'No explanation. No JSON. Just the rephrased sentence.'
+                )
+                async with httpx.AsyncClient(timeout=self.timeout) as client:
+                    response = await client.post(
+                        f"{self.base_url}/v1/chat/completions",
+                        json={
+                            "model": settings.VLLM_MODEL_NAME,
+                            "messages": [
+                                {"role": "system", "content": "You are an expert academic editor specializing in LGBTQ+ inclusive language."},
+                                {"role": "user", "content": prompt},
+                            ],
+                            "max_tokens": 200,
+                            "temperature": 0.2,
+                        },
+                    )
+                    response.raise_for_status()
+                latency_ms = (time.monotonic() - t0) * 1000
+                if metrics is not None:
+                    metrics.record_call(latency_ms, success=True)
+                data = response.json()
+                suggestion = data["choices"][0]["message"]["content"].strip()
+                return suggestion if suggestion else None
+            except Exception as exc:
+                latency_ms = (time.monotonic() - t0) * 1000
+                if metrics is not None:
+                    metrics.record_call(latency_ms, success=False)
+                logger.warning("Suggestion retry failed: %s", exc)
+                return None
+
     @vllm_breaker
     async def _make_request(self, sentence: str) -> Optional[dict]:
         """
@@ -257,7 +310,7 @@ class VLLMClient:
                         {"role": "system", "content": SYSTEM_PROMPT},
                         {"role": "user", "content": f'Analyze this sentence for LGBTQ+ inclusive language compliance:\n"{sentence}"'}
                     ],
-                    "max_tokens": 256,
+                    "max_tokens": 400,
                     "temperature": 0.1,
                     "logprobs": True,
                 }

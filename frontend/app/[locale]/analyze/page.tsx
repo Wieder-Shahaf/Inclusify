@@ -138,6 +138,7 @@ export default function AnalyzePage() {
           author: uploadResult.author,
           detectedLanguage: uploadResult.detectedLanguage,
           fileStorageRef: uploadResult.fileStorageRef,
+          chunks: uploadResult.chunks,
         },
       });
 

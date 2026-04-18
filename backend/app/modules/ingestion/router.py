@@ -85,4 +85,5 @@ async def upload_document(
         author=result.get("author"),
         detected_language=result.get("detected_language"),
         file_storage_ref=file_storage_ref,
+        chunks=result.get("chunks"),
     )

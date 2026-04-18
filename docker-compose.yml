@@ -58,7 +58,7 @@ services:
     volumes:
       - azurite_data:/data
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:10000/devstoreaccount1 2>/dev/null; ret=$$?; [ $$ret -eq 0 ] || [ $$ret -eq 8 ]"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:10000/devstoreaccount1 2>/dev/null; ret=$$?; [ $$ret -eq 0 ] || [ $$ret -eq 1 ] || [ $$ret -eq 8 ]"]
       interval: 5s
       timeout: 3s
       retries: 5
