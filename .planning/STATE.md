@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Full Platform
-status: completed
-stopped_at: v1.0 milestone archived
-last_updated: "2026-04-12T00:00:00.000Z"
-last_activity: 2026-04-12 - v1.0 milestone complete, all 37 plans archived
+status: active
+stopped_at: Phase 8 plan 08-01 complete — ready for 08-02
+last_updated: "2026-04-18T00:20:00.000Z"
+last_activity: 2026-04-18 - Executed 08-01 (D-01 profile completion popup fix, 3 tasks, 8 tests GREEN)
 progress:
-  total_phases: 13
+  total_phases: 14
   completed_phases: 13
-  total_plans: 37
-  completed_plans: 37
-  percent: 100
+  total_plans: 42
+  completed_plans: 38
+  percent: 90
 ---
 
 # Project State
@@ -36,9 +36,17 @@ Archive: `.planning/milestones/v1.0-ROADMAP.md`
 
 ## Accumulated Context
 
+### Roadmap Evolution
+
+- Phase 8 added: Achva Feedback (12/04) — 11 stakeholder-requested improvements from 2026-04-12 meeting
+
 ### Decisions
 
 All decisions logged in PROJECT.md Key Decisions table.
+
+- 08-01: ProfileSetupModal completion check requires all 3 fields (full_name AND institution AND profession)
+- 08-01: dismiss() used in onSubmit success to prevent race condition on refreshProfile() re-render
+- 08-01: he.json profile.setup.skip corrected to "דלג בינתיים" per UI-SPEC copywriting contract
 
 ### Pending Todos
 
