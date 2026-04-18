@@ -45,7 +45,7 @@
 | 5.5. Backend OAuth | v1.0 | 2/2 | Complete | 2026-03-18 |
 | 6. Admin & Analytics | v1.0 | 2/2 | Complete | 2026-03-11 |
 | 7. Production Hardening | v1.0 | 2/2 | Complete | 2026-03-11 |
-| 8. Achva Feedback (12/04) | v1.1 | 1/5 | In Progress | — |
+| 8. Achva Feedback (12/04) | v1.1 | 2/5 | In Progress | — |
 
 ---
 

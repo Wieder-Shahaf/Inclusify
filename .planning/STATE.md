@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Full Platform
 status: active
-stopped_at: Phase 8 plan 08-01 complete — ready for 08-02
-last_updated: "2026-04-18T00:20:00.000Z"
-last_activity: 2026-04-18 - Executed 08-01 (D-01 profile completion popup fix, 3 tasks, 8 tests GREEN)
+stopped_at: Phase 8 plan 08-02 complete — ready for 08-03
+last_updated: "2026-04-18T01:00:00.000Z"
+last_activity: 2026-04-18 - Executed 08-02 (D-02 LLM-down banner in results view, 3 tasks, 4 tests GREEN)
 progress:
   total_phases: 14
   completed_phases: 13
   total_plans: 42
-  completed_plans: 38
-  percent: 90
+  completed_plans: 39
+  percent: 93
 ---
 
 # Project State
@@ -47,6 +47,8 @@ All decisions logged in PROJECT.md Key Decisions table.
 - 08-01: ProfileSetupModal completion check requires all 3 fields (full_name AND institution AND profession)
 - 08-01: dismiss() used in onSubmit success to prevent race condition on refreshProfile() re-render
 - 08-01: he.json profile.setup.skip corrected to "דלג בינתיים" per UI-SPEC copywriting contract
+- 08-02: Option B thin harness used for TDD test — PaperUpload two-step flow made full-page integration test impractical
+- 08-02: HealthWarningBanner variant="error" for rules_only results banner per UI-SPEC
 
 ### Pending Todos
 
