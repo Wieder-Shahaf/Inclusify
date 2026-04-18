@@ -5,6 +5,7 @@ SMTP config via env vars: SMTP_HOST (default smtp.gmail.com),
 SMTP_PORT (default 587, STARTTLS), SMTP_USER, SMTP_PASSWORD.
 Gmail requires 2FA + App Password (not the account password).
 """
+import logging
 import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -15,6 +16,7 @@ from email import encoders
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile, status
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 MAX_PDF_BYTES = 5 * 1024 * 1024  # 5 MB DoS mitigation
 
@@ -96,9 +98,10 @@ async def send_contact(
             server.login(smtp_user, smtp_password)
             server.sendmail(smtp_user, admin_emails, msg.as_string())
     except Exception as exc:
+        logger.error("SMTP send failed: %s", exc)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"SMTP send failed: {exc}",
+            detail="Message could not be sent. Please try again later.",
         )
 
     return {"status": "sent"}
