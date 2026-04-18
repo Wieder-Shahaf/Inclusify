@@ -370,5 +370,21 @@
     "sourcesDesc": "Definitions are sourced from leading LGBTQ+ advocacy organizations and are regularly updated to reflect current terminology and understanding.",
     "noResults": "No terms found matching your search.",
     "relatedTerms": "Related"
+  },
+  "contact": {
+    "button": "Contact Us",
+    "title": "Contact Us",
+    "subtitle": "Send a message or feedback to the Inclusify team.",
+    "subject": "Subject",
+    "message": "Message",
+    "send": "Send Message",
+    "sending": "Sending...",
+    "success": "Message sent!",
+    "error": "Failed to send. Please try again.",
+    "attachReport": "Analysis report attached",
+    "nameLabel": "Name",
+    "emailLabel": "Email",
+    "institutionLabel": "Institution",
+    "cancel": "Cancel"
   }
 }
