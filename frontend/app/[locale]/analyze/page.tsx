@@ -19,6 +19,7 @@ import { useLiveAnnouncer } from '@/contexts/LiveAnnouncerContext';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import { RotateCcw, FileText, ChevronLeft, ChevronRight, Scan, BarChart3, ShieldCheck, Lock, Mail } from 'lucide-react';
 import PrivateModeToggle from '@/components/PrivateModeToggle';
+import ContactModal from '@/components/ContactModal';
 
 type ViewState = 'upload' | 'processing' | 'results';
 
@@ -68,6 +69,7 @@ export default function AnalyzePage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [processingStage, setProcessingStage] = useState<'uploading' | 'parsing' | 'analyzing' | 'generating' | 'complete'>('uploading');
   const [privateMode, setPrivateMode] = useState(false); // Default OFF per user decision
+  const [contactOpen, setContactOpen] = useState(false);
 
   // Health check on mount with 30-second polling
   useEffect(() => {
@@ -214,22 +216,6 @@ export default function AnalyzePage() {
   const handleExport = useCallback(() => {
     exportReport(analysis, { fileName, locale });
   }, [analysis, fileName, locale]);
-
-  const handleContactUs = useCallback(() => {
-    const score = analysis.summary.score;
-    const issues = analysis.annotations.slice(0, 10).map(
-      (a) => `- [${a.severity}] "${a.label}": ${a.explanation || ''}`
-    ).join('\n');
-    const body = encodeURIComponent(
-      `Inclusify Analysis Report\n` +
-      `File: ${fileName}\n` +
-      `LGBTQ+ Inclusivity Score: ${score}/100\n` +
-      `Total Issues: ${analysis.summary.totalIssues}\n\n` +
-      `Top Issues:\n${issues}\n\n` +
-      `---\nSent from Inclusify`
-    );
-    window.location.href = `mailto:wieder.shahaf@gmail.com,shahaf200019@gmail.com?subject=Inclusify Analysis Feedback&body=${body}`;
-  }, [analysis, fileName]);
 
   // Keyboard navigation for issues list
   useKeyboardNavigation({
@@ -510,7 +496,7 @@ export default function AnalyzePage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={handleContactUs}
+                    onClick={() => setContactOpen(true)}
                     className="btn-ghost px-4 py-2 rounded-lg text-sm flex items-center gap-2"
                     title="Send analysis results to the Inclusify team"
                   >
@@ -660,6 +646,13 @@ export default function AnalyzePage() {
         annotation={selectedAnnotation}
         open={sidePanelOpen}
         onOpenChange={setSidePanelOpen}
+      />
+      <ContactModal
+        open={contactOpen}
+        onClose={() => setContactOpen(false)}
+        analysis={viewState === 'results' ? analysis : null}
+        fileName={fileName}
+        locale={locale}
       />
     </>
   );
