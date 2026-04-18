@@ -31,20 +31,14 @@ class AnalyticsResponse(BaseModel):
 
 
 class UserItem(BaseModel):
-    """Single user item for users list.
-
-    Fields:
-        user_id: User UUID
-        email: User email address
-        role: User role (user, site_admin)
-        last_login_at: Last login timestamp (nullable)
-        created_at: Account creation timestamp
-    """
+    """Single user item for users list."""
     user_id: UUID
     email: str
     role: str
     last_login_at: Optional[datetime]
     created_at: datetime
+    analysis_count: int = 0
+    institution: Optional[str] = None
 
 
 class UsersListResponse(BaseModel):
@@ -117,3 +111,19 @@ class ModelMetricsResponse(BaseModel):
     mode_llm: int
     mode_hybrid: int
     mode_rules_only: int
+
+
+class TopPhrase(BaseModel):
+    phrase: str
+    count: int
+
+
+class FrequencyTrendItem(BaseModel):
+    category: str
+    count: int
+    top_phrases: list[TopPhrase]
+
+
+class FrequencyTrendsResponse(BaseModel):
+    trends: list[FrequencyTrendItem]
+    days: int

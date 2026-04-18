@@ -62,48 +62,60 @@ async def get_users_paginated(
     conn: asyncpg.Connection,
     page: int = 1,
     page_size: int = 20,
-    email_search: Optional[str] = None
+    email_search: Optional[str] = None,
+    institution: Optional[str] = None,
+    min_analyses: Optional[int] = None,
 ) -> tuple[list[dict], int]:
-    """Get paginated user list with optional email search.
+    """Get paginated user list with optional filters.
 
-    Args:
-        conn: asyncpg database connection
-        page: Page number (1-indexed)
-        page_size: Number of items per page
-        email_search: Optional email substring to filter by (ILIKE)
-
-    Returns:
-        Tuple of (list of user dicts, total count)
+    Filters: email_search (ILIKE), institution (ILIKE, requires institution column),
+    min_analyses (users with >= N analysis_runs via their documents).
     """
     offset = (page - 1) * page_size
 
-    # Build WHERE clause for search
+    # Build dynamic WHERE conditions and parameter list
+    conditions = []
+    params: list = []
+
     if email_search:
-        # Get total count with search filter
-        total = await conn.fetchval(
-            "SELECT COUNT(*) FROM users WHERE email ILIKE $1",
-            f"%{email_search}%"
-        )
+        params.append(f"%{email_search}%")
+        conditions.append(f"u.email ILIKE ${len(params)}")
 
-        # Get page data with search filter
-        rows = await conn.fetch("""
-            SELECT user_id, email, role, last_login_at, created_at
-            FROM users
-            WHERE email ILIKE $1
-            ORDER BY created_at DESC
-            LIMIT $2 OFFSET $3
-        """, f"%{email_search}%", page_size, offset)
-    else:
-        # Get total count without filter
-        total = await conn.fetchval("SELECT COUNT(*) FROM users")
+    if institution:
+        params.append(f"%{institution}%")
+        conditions.append(f"u.institution ILIKE ${len(params)}")
 
-        # Get page data without filter
-        rows = await conn.fetch("""
-            SELECT user_id, email, role, last_login_at, created_at
-            FROM users
-            ORDER BY created_at DESC
-            LIMIT $1 OFFSET $2
-        """, page_size, offset)
+    where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
+    having_clause = ""
+    if min_analyses is not None and min_analyses > 0:
+        having_clause = f"HAVING COUNT(ar.run_id) >= {int(min_analyses)}"
+
+    base_query = f"""
+        SELECT
+            u.user_id,
+            u.email,
+            u.role,
+            u.last_login_at,
+            u.created_at,
+            u.institution,
+            COUNT(ar.run_id) AS analysis_count
+        FROM users u
+        LEFT JOIN documents d ON d.user_id = u.user_id
+        LEFT JOIN analysis_runs ar ON ar.document_id = d.document_id
+        {where_clause}
+        GROUP BY u.user_id, u.email, u.role, u.last_login_at, u.created_at, u.institution
+        {having_clause}
+    """
+
+    count_query = f"SELECT COUNT(*) FROM ({base_query}) AS sub"
+    total = await conn.fetchval(count_query, *params)
+
+    params_with_pagination = params + [page_size, offset]
+    rows = await conn.fetch(
+        f"{base_query} ORDER BY u.created_at DESC LIMIT ${len(params_with_pagination) - 1} OFFSET ${len(params_with_pagination)}",
+        *params_with_pagination,
+    )
 
     return [dict(r) for r in rows], total or 0
 
@@ -213,3 +225,44 @@ async def get_recent_activity(
     """, cutoff, page_size, offset)
 
     return [dict(r) for r in rows], total or 0
+
+
+async def get_label_frequency_trends(conn: asyncpg.Connection, days: int) -> list[dict]:
+    """Fetch label frequency trends for admin dashboard.
+
+    Groups findings by category over the last `days` window, returning
+    count per category and the top-5 most frequent excerpt_redacted values.
+
+    Args:
+        conn: asyncpg database connection
+        days: Time range in days
+
+    Returns:
+        list of dicts: [{category, count, top_phrases: [{phrase, count}, ...]}]
+    """
+    from datetime import datetime, timedelta
+    from collections import Counter
+
+    cutoff = datetime.utcnow() - timedelta(days=days)
+    rows = await conn.fetch("""
+        SELECT f.category,
+               COUNT(*) AS total_count,
+               ARRAY_AGG(f.excerpt_redacted) AS all_excerpts
+        FROM findings f
+        JOIN analysis_runs ar ON f.run_id = ar.run_id
+        WHERE ar.started_at >= $1
+          AND f.excerpt_redacted IS NOT NULL
+        GROUP BY f.category
+        ORDER BY total_count DESC
+    """, cutoff)
+
+    result = []
+    for row in rows:
+        phrase_counts = Counter(row['all_excerpts'])
+        top5 = [{'phrase': p, 'count': c} for p, c in phrase_counts.most_common(5)]
+        result.append({
+            'category': row['category'],
+            'count': int(row['total_count']),
+            'top_phrases': top5,
+        })
+    return result

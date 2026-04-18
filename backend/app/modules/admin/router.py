@@ -13,6 +13,7 @@ from .schemas import (
     UsersListResponse,
     ActivityResponse,
     ModelMetricsResponse,
+    FrequencyTrendsResponse,
 )
 from . import queries
 
@@ -47,12 +48,16 @@ async def list_users(
     user: dict = Depends(require_admin),
     page: int = Query(default=1, ge=1, description="Page number"),
     page_size: int = Query(default=20, ge=1, le=100, description="Items per page"),
-    search: str = Query(default=None, max_length=100, description="Email search filter")
+    search: str = Query(default=None, max_length=100, description="Email search filter"),
+    institution: str = Query(default=None, max_length=200, description="Filter by institution (partial match)"),
+    min_analyses: int = Query(default=None, ge=0, description="Filter users with at least N analyses"),
 ):
-    """Get paginated list of users with optional email search."""
+    """Get paginated list of users with optional filters."""
     pool = _verify_db_pool(request)
     async with pool.acquire() as conn:
-        users, total = await queries.get_users_paginated(conn, page, page_size, search)
+        users, total = await queries.get_users_paginated(
+            conn, page, page_size, search, institution, min_analyses
+        )
         total_pages = (total + page_size - 1) // page_size if total > 0 else 0
         return {
             "users": users,
@@ -73,6 +78,19 @@ async def get_model_metrics(
     pool = _verify_db_pool(request)
     async with pool.acquire() as conn:
         return await queries.get_model_metrics_kpis(conn, days)
+
+
+@router.get("/frequency-trends", response_model=FrequencyTrendsResponse)
+async def get_frequency_trends(
+    request: Request,
+    user: dict = Depends(require_admin),
+    days: int = Query(default=30, ge=1, le=365, description="Time range in days"),
+):
+    """Get label frequency trends for admin dashboard."""
+    pool = _verify_db_pool(request)
+    async with pool.acquire() as conn:
+        trends = await queries.get_label_frequency_trends(conn, days)
+    return {"trends": trends, "days": days}
 
 
 @router.get("/activity", response_model=ActivityResponse)
