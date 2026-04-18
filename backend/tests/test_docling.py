@@ -55,6 +55,37 @@ class TestParseDocumentSync:
             assert "Sample text content" in result["text"]
 
 
+class TestTxtPassthrough:
+    """TXT files decode directly without going through Docling."""
+
+    def test_utf8_english_passthrough(self):
+        from app.modules.ingestion.service import _parse_document_sync
+        result = _parse_document_sync(b"Hello world, this is plain text.", "note.txt")
+        assert result["text"] == "Hello world, this is plain text."
+        assert result["page_count"] == 1
+        assert result["detected_language"] == "en"
+        assert result["title"] is None
+        assert result["author"] is None
+
+    def test_utf8_hebrew_detected(self):
+        from app.modules.ingestion.service import _parse_document_sync
+        result = _parse_document_sync("שלום עולם".encode("utf-8"), "note.txt")
+        assert result["detected_language"] == "he"
+        assert "שלום" in result["text"]
+
+    def test_bom_utf8_decodes(self):
+        from app.modules.ingestion.service import _parse_document_sync
+        payload = "\ufeffplain text".encode("utf-8")
+        result = _parse_document_sync(payload, "note.txt")
+        assert "plain text" in result["text"]
+
+    def test_docling_not_invoked_for_txt(self):
+        from app.modules.ingestion.service import _parse_document_sync
+        with patch('app.modules.ingestion.service._get_docling_converter') as mock_conv:
+            _parse_document_sync(b"hi", "note.txt")
+            mock_conv.assert_not_called()
+
+
 class TestParseDocumentAsync:
     """Tests for the async document parsing wrapper."""
 

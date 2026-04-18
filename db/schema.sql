@@ -56,6 +56,7 @@ CREATE TABLE documents (
   title TEXT,
   author TEXT,
   page_count INT CHECK (page_count IS NULL OR page_count >= 0),
+  detected_language TEXT CHECK (detected_language IS NULL OR detected_language IN ('he','en')),
 
   text_storage_ref TEXT,
   text_sha256 TEXT,

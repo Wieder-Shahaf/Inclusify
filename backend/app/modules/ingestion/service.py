@@ -41,14 +41,33 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
         page_count = 0
         pdf_title = None
         pdf_author = None
-        
+
+        # TXT passthrough — Docling adds no value for plain text and often
+        # introduces spurious layout artifacts, so decode the bytes directly.
+        if ext == ".txt":
+            try:
+                text = file_bytes.decode("utf-8")
+            except UnicodeDecodeError:
+                try:
+                    text = file_bytes.decode("utf-8-sig")
+                except UnicodeDecodeError:
+                    text = file_bytes.decode("latin-1", errors="replace")
+            has_hebrew = any('\u0590' <= c <= '\u05FF' for c in text[:500])
+            return {
+                "text": text,
+                "page_count": 1,
+                "title": None,
+                "author": None,
+                "detected_language": "he" if has_hebrew else "en",
+            }
+
         if ext == ".pdf":
             try:
                 reader = PdfReader(temp_path)
                 page_count = len(reader.pages)
                 if page_count > max_pages:
                     return {"error": f"Document exceeds {max_pages} page limit ({page_count} pages)"}
-                
+
                 if reader.metadata:
                     if reader.metadata.title:
                         pdf_title = reader.metadata.title
