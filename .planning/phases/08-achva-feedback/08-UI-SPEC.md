@@ -136,9 +136,9 @@ Per-screen focal point declarations for primary screens touched in Phase 8.
 
 ### D-01: Profile Completion Popup
 - **Trigger:** `useEffect` on `user` object change. Opens when `!dismissed && (!user.full_name || !user.institution || !user.profession)`.
-- **Dismissal:** Clicking X, "Skip", or submitting successfully all call `dismiss()` (sets `sessionStorage['profile_setup_dismissed']`).
+- **Dismissal:** Clicking X, `t('profile.setup.skip')` ("Skip for now"), or submitting successfully all call `dismiss()` (sets `sessionStorage['profile_setup_dismissed']`).
 - **Form fields:** All three (`full_name`, `institution`, `profession`) show required asterisk `<span className="text-red-500">*</span>`.
-- **Submit state:** Button label changes from `t('save')` → `t('saving')` during async submit. Button disabled while submitting.
+- **Submit state:** Button label changes from `t('profile.setup.save')` → `t('profile.setup.saving')` during async submit. Button disabled while submitting.
 - **Success:** `toast.success(t('success'))` fires. `dismiss()` called (not `setOpen(false)`) to prevent re-open on `refreshProfile()`.
 - **Error:** `toast.error(t('error'))` fires. Modal stays open.
 - **Focus management:** `autoFocus` on `full_name` field. Radix Dialog provides focus trap.
@@ -224,6 +224,9 @@ All new keys go into `frontend/messages/en.json` and `frontend/messages/he.json`
 | Trends card subtitle | `admin.frequencyTrends.subtitle` | `"Most flagged categories in the selected period"` | `"הקטגוריות המסומנות ביותר בתקופה הנבחרת"` |
 | Top phrases label | `admin.frequencyTrends.topPhrases` | `"Top phrases"` | `"ביטויים מובילים"` |
 | No data state | `admin.frequencyTrends.noData` | `"No findings recorded in this period."` | `"לא נמצאו ממצאים בתקופה זו."` |
+| Profile modal submit button | `profile.setup.save` | `"Save Profile"` | `"שמור פרופיל"` |
+| Profile modal submit button loading | `profile.setup.saving` | `"Saving..."` | `"שומר..."` |
+| Profile modal skip button | `profile.setup.skip` | `"Skip for now"` | `"דלג בינתיים"` |
 
 ### Existing keys to verify (no change needed)
 | Key | Expected EN value |
