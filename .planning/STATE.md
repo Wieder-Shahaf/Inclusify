@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Full Platform
 status: active
-stopped_at: Phase 8 plan 08-03 complete — ready for 08-04
-last_updated: "2026-04-18T15:38:00.000Z"
-last_activity: 2026-04-18 - Executed 08-03 (D-03 PDF footer watermark + returnBase64 mode, 2 tasks, 8 tests GREEN)
+stopped_at: Phase 8 plan 08-04 complete — ready for 08-05
+last_updated: "2026-04-18T16:10:00.000Z"
+last_activity: 2026-04-18 - Executed 08-04 (D-04 Contact Us modal + smtplib backend, 3 tasks, 7 tests GREEN)
 progress:
   total_phases: 14
   completed_phases: 13
   total_plans: 42
-  completed_plans: 40
-  percent: 95
+  completed_plans: 41
+  percent: 98
 ---
 
 # Project State
@@ -51,6 +51,9 @@ All decisions logged in PROJECT.md Key Decisions table.
 - 08-02: HealthWarningBanner variant="error" for rules_only results banner per UI-SPEC
 - 08-03: Footer watermark at pageHeight-8mm centered, gray 8pt; locale switch he → Hebrew string
 - 08-03: returnBase64 uses doc.output('datauristring'); no doc.save() call when true
+- 08-04: Recipients always queried from DB WHERE role='site_admin'; POST body sender_email never used for routing
+- 08-04: AnalysisData defined locally in ContactModal.tsx (not re-exported from exportReport.ts)
+- 08-04: models.py str | None → Optional[str] for Python 3.9 SQLAlchemy compatibility
 
 ### Pending Todos
 
