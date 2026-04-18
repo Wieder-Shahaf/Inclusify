@@ -188,6 +188,20 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
   };
 }
 
+export interface FileMetadata {
+  filename: string;
+  mimeType: string;
+  inputType: 'pdf' | 'docx' | 'pptx' | 'txt';
+  pageCount: number;
+  title?: string | null;
+  author?: string | null;
+  detectedLanguage?: string | null;
+}
+
+export interface UploadResult extends FileMetadata {
+  text: string;
+}
+
 // Main API function
 export async function analyzeText(
   text: string,
@@ -195,9 +209,11 @@ export async function analyzeText(
     language?: 'en' | 'he' | 'auto';
     privateMode?: boolean;
     useAuth?: boolean;
+    fileMeta?: FileMetadata;
   }
 ): Promise<AnalysisResult> {
   const fetchFn = options?.useAuth ? fetchWithAuth : fetch;
+  const meta = options?.fileMeta;
   const response = await fetchFn(`${API_BASE_URL}/api/v1/analysis/analyze`, {
     method: 'POST',
     headers: {
@@ -207,6 +223,13 @@ export async function analyzeText(
       text,
       language: options?.language || 'auto',
       private_mode: options?.privateMode ?? true,
+      input_type: meta?.inputType ?? 'paste',
+      original_filename: meta?.filename ?? null,
+      mime_type: meta?.mimeType ?? null,
+      page_count: meta?.pageCount ?? null,
+      title: meta?.title ?? null,
+      author: meta?.author ?? null,
+      detected_language: meta?.detectedLanguage ?? null,
     }),
   });
 
@@ -219,12 +242,20 @@ export async function analyzeText(
   return transformResponse(data, text);
 }
 
-// Upload file and get extracted text
-export async function uploadFile(file: File): Promise<{ text: string; filename: string; pageCount: number }> {
+function _extToInputType(filename: string): FileMetadata['inputType'] {
+  const ext = filename.split('.').pop()?.toLowerCase();
+  if (ext === 'pdf') return 'pdf';
+  if (ext === 'docx') return 'docx';
+  if (ext === 'pptx') return 'pptx';
+  return 'txt';
+}
+
+// Upload file and get extracted text + all Docling metadata
+export async function uploadFile(file: File): Promise<UploadResult> {
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/ingestion/upload`, {
+  const response = await fetchWithAuth(`${API_BASE_URL}/api/v1/ingestion/upload`, {
     method: 'POST',
     body: formData,
   });
@@ -238,7 +269,12 @@ export async function uploadFile(file: File): Promise<{ text: string; filename: 
   return {
     text: data.full_text || data.text_preview || '',
     filename: data.filename,
+    mimeType: file.type,
+    inputType: _extToInputType(data.filename),
     pageCount: data.page_count,
+    title: data.title ?? null,
+    author: data.author ?? null,
+    detectedLanguage: data.detected_language ?? null,
   };
 }
 

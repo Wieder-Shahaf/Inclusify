@@ -53,7 +53,7 @@ class AnalysisRequest(BaseModel):
     text: str = Field(..., min_length=1)
     language: Optional[Literal['en', 'he', 'auto']] = 'auto'
     private_mode: Optional[bool] = False
-    input_type: Optional[str] = "paste"
+    input_type: Optional[Literal['paste', 'pdf', 'docx', 'pptx', 'txt']] = "paste"
     original_filename: Optional[str] = None
     mime_type: Optional[str] = None
     title: Optional[str] = None

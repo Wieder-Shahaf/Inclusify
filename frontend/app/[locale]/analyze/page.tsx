@@ -124,11 +124,20 @@ export default function AnalyzePage() {
 
       setProcessingStage('analyzing');
 
-      // Analyze the extracted text
+      // Analyze the extracted text, passing all file metadata for DB persistence
       const result = await analyzeText(uploadResult.text, {
         language: locale as 'en' | 'he' | 'auto',
         privateMode: privateMode,
         useAuth: true,
+        fileMeta: {
+          filename: uploadResult.filename,
+          mimeType: uploadResult.mimeType,
+          inputType: uploadResult.inputType,
+          pageCount: uploadResult.pageCount,
+          title: uploadResult.title,
+          author: uploadResult.author,
+          detectedLanguage: uploadResult.detectedLanguage,
+        },
       });
 
       setProcessingStage('complete');
