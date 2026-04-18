@@ -13,10 +13,11 @@ import IssueTooltip from '@/components/IssueTooltip';
 import HealthWarningBanner from '@/components/HealthWarningBanner';
 import { Annotation } from '@/components/AnnotatedText';
 import { analyzeText, uploadFile, healthCheck, modelHealthCheck } from '@/lib/api/client';
+import { exportReport } from '@/lib/exportReport';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLiveAnnouncer } from '@/contexts/LiveAnnouncerContext';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
-import { RotateCcw, FileText, ChevronLeft, ChevronRight, Scan, BarChart3, ShieldCheck, Lock } from 'lucide-react';
+import { RotateCcw, FileText, ChevronLeft, ChevronRight, Scan, BarChart3, ShieldCheck, Lock, Mail } from 'lucide-react';
 import PrivateModeToggle from '@/components/PrivateModeToggle';
 
 type ViewState = 'upload' | 'processing' | 'results';
@@ -210,6 +211,26 @@ export default function AnalyzePage() {
     setSidePanelOpen(true);
   }, []);
 
+  const handleExport = useCallback(() => {
+    exportReport(analysis, { fileName, locale });
+  }, [analysis, fileName, locale]);
+
+  const handleContactUs = useCallback(() => {
+    const score = analysis.summary.score;
+    const issues = analysis.annotations.slice(0, 10).map(
+      (a) => `- [${a.severity}] "${a.label}": ${a.explanation || ''}`
+    ).join('\n');
+    const body = encodeURIComponent(
+      `Inclusify Analysis Report\n` +
+      `File: ${fileName}\n` +
+      `LGBTQ+ Inclusivity Score: ${score}/100\n` +
+      `Total Issues: ${analysis.summary.totalIssues}\n\n` +
+      `Top Issues:\n${issues}\n\n` +
+      `---\nSent from Inclusify`
+    );
+    window.location.href = `mailto:wieder.shahaf@gmail.com,shahaf200019@gmail.com?subject=Inclusify Analysis Feedback&body=${body}`;
+  }, [analysis, fileName]);
+
   // Keyboard navigation for issues list
   useKeyboardNavigation({
     containerRef: issuesListRef,
@@ -337,6 +358,8 @@ export default function AnalyzePage() {
         <HealthWarningBanner
           message={t('modelUnavailable')}
           variant="info"
+          linkHref={`/${locale}/glossary`}
+          linkText={t('modelUnavailableLinkText')}
         />
       )}
       <div className="flex flex-col flex-1">
@@ -485,14 +508,34 @@ export default function AnalyzePage() {
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={handleReset}
-                  className="btn-ghost px-4 py-2 rounded-lg text-sm flex items-center gap-2"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  {t('analyzeAnother')}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleContactUs}
+                    className="btn-ghost px-4 py-2 rounded-lg text-sm flex items-center gap-2"
+                    title="Send analysis results to the Inclusify team"
+                  >
+                    <Mail className="w-4 h-4" />
+                    {t('contactUs')}
+                  </button>
+                  <button
+                    onClick={handleReset}
+                    className="btn-ghost px-4 py-2 rounded-lg text-sm flex items-center gap-2"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    {t('analyzeAnother')}
+                  </button>
+                </div>
               </div>
+
+              {/* LLM-down fallback banner — shown when backend fell back to rules-only */}
+              {viewState === 'results' && analysisMode === 'rules_only' && (
+                <HealthWarningBanner
+                  message={t('llmDownResults')}
+                  variant="error"
+                  linkHref={`/${locale}/glossary`}
+                  linkText={t('llmDownResultsLink')}
+                />
+              )}
 
               {/* Main Content Grid - Flexible */}
               <div className={`flex-1 min-h-0 grid gap-4 ${isHebrew ? 'lg:grid-cols-[380px,1fr]' : 'lg:grid-cols-[1fr,380px]'}`}>
@@ -524,6 +567,7 @@ export default function AnalyzePage() {
                     recommendations={analysis.summary.recommendations}
                     wordCount={wordCount}
                     translations={summaryTranslations}
+                    onExport={handleExport}
                   />
 
                   {/* Issues List */}
