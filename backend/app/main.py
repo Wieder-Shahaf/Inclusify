@@ -15,6 +15,8 @@ from app.modules.ingestion.service import warm_up_docling
 from app.core.blob_storage import ensure_container
 from app.modules.analysis import router as analysis_router
 from app.modules.admin import router as admin_router
+from app.modules.profile import router as profile_router
+from app.modules.contact import router as contact_router
 from app.routers.health import router as health_router
 from app.db.connection import create_pool
 from app.core.redis import init_redis, close_redis
@@ -114,6 +116,8 @@ app.include_router(google_oauth_router, prefix="/auth/google", tags=["Auth"])
 app.include_router(ingestion_router.router, prefix="/api/v1/ingestion", tags=["Ingestion"])
 app.include_router(analysis_router.router, prefix="/api/v1/analysis", tags=["Analysis"])
 app.include_router(admin_router.router, prefix="/api/v1/admin", tags=["Admin"])
+app.include_router(profile_router.router, prefix="/api/v1/users", tags=["Profile"])
+app.include_router(contact_router.router, prefix="/api/v1/contact", tags=["Contact"])
 
 
 @app.get("/")
