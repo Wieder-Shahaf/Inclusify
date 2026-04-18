@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Full Platform
 status: active
-stopped_at: Phase 8 plan 08-02 complete — ready for 08-03
-last_updated: "2026-04-18T01:00:00.000Z"
-last_activity: 2026-04-18 - Executed 08-02 (D-02 LLM-down banner in results view, 3 tasks, 4 tests GREEN)
+stopped_at: Phase 8 plan 08-03 complete — ready for 08-04
+last_updated: "2026-04-18T15:38:00.000Z"
+last_activity: 2026-04-18 - Executed 08-03 (D-03 PDF footer watermark + returnBase64 mode, 2 tasks, 8 tests GREEN)
 progress:
   total_phases: 14
   completed_phases: 13
   total_plans: 42
-  completed_plans: 39
-  percent: 93
+  completed_plans: 40
+  percent: 95
 ---
 
 # Project State
@@ -49,6 +49,8 @@ All decisions logged in PROJECT.md Key Decisions table.
 - 08-01: he.json profile.setup.skip corrected to "דלג בינתיים" per UI-SPEC copywriting contract
 - 08-02: Option B thin harness used for TDD test — PaperUpload two-step flow made full-page integration test impractical
 - 08-02: HealthWarningBanner variant="error" for rules_only results banner per UI-SPEC
+- 08-03: Footer watermark at pageHeight-8mm centered, gray 8pt; locale switch he → Hebrew string
+- 08-03: returnBase64 uses doc.output('datauristring'); no doc.save() call when true
 
 ### Pending Todos
 
