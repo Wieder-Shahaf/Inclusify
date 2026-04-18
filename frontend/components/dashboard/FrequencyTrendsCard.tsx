@@ -24,6 +24,11 @@ export default function FrequencyTrendsCard({ days }: FrequencyTrendsCardProps) 
     const token = localStorage.getItem('auth_token');
     if (!token) return;
 
+    // TODO(security): The browser WebSocket API does not support custom headers on the
+    // initial handshake, so the JWT is passed as a URL query parameter. Tokens in URLs
+    // are logged by web servers, proxies, CDNs, and browser history. Medium-term fix:
+    // implement a /api/v1/admin/ws-ticket endpoint that issues a single-use, short-TTL
+    // ticket and pass that in the URL instead of the full long-lived JWT.
     const ws = new WebSocket(`${WS_BASE_URL}/api/v1/admin/ws?token=${encodeURIComponent(token)}`);
     ws.onopen = () => setWsConnected(true);
     ws.onclose = (ev) => {
