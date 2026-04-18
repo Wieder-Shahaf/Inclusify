@@ -38,7 +38,7 @@ from app.auth.users import current_user_optional
 from app.db.models import User
 from app.db import repository as repo
 from app.modules.analysis.call_metrics import CallMetrics
-from app.modules.analysis.hybrid_detector import HybridDetector
+from app.modules.analysis.hybrid_detector import HybridDetector, detect_language
 
 logger = logging.getLogger(__name__)
 
@@ -446,9 +446,19 @@ async def analyze_text(
     language = body.language or "auto"
     private_mode = body.private_mode if body.private_mode is not None else True
     user_id = current_user.id if current_user else "anonymous"
+
+    # Resolve detected_language: prefer explicit value from upload pipeline,
+    # fall back to auto-detecting from text when language is "auto".
+    if body.detected_language:
+        detected_language = body.detected_language
+    elif language != "auto":
+        detected_language = language
+    else:
+        detected_language = detect_language(body.text)
+
     logger.info(
-        "Analysis started: user=%s text_length=%d language=%s private_mode=%s",
-        user_id, text_length, language, private_mode,
+        "Analysis started: user=%s text_length=%d language=%s detected_language=%s private_mode=%s",
+        user_id, text_length, language, detected_language, private_mode,
     )
 
     start_time = time.monotonic()
@@ -479,7 +489,7 @@ async def analyze_text(
             title=body.title,
             author=body.author,
             page_count=body.page_count,
-            detected_language=body.detected_language,
+            detected_language=detected_language,
         )
 
     # Always persist model performance metrics (no text stored — privacy-safe)
