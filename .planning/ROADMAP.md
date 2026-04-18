@@ -45,7 +45,7 @@
 | 5.5. Backend OAuth | v1.0 | 2/2 | Complete | 2026-03-18 |
 | 6. Admin & Analytics | v1.0 | 2/2 | Complete | 2026-03-11 |
 | 7. Production Hardening | v1.0 | 2/2 | Complete | 2026-03-11 |
-| 8. Achva Feedback (12/04) | v1.1 | 4/5 | In Progress | — |
+| 8. Achva Feedback (12/04) | v1.1 | 5/5 | Complete | 2026-04-18 |
 
 ---
 
@@ -70,11 +70,11 @@
 **Plans:** 5 plans
 
 Plans:
-- [ ] 08-01-PLAN.md — D-01: Profile popup required fields fix + tests + i18n
-- [ ] 08-02-PLAN.md — D-02: LLM-down banner wiring in analyze results + i18n
+- [x] 08-01-PLAN.md — D-01: Profile popup required fields fix + tests + i18n
+- [x] 08-02-PLAN.md — D-02: LLM-down banner wiring in analyze results + i18n
 - [x] 08-03-PLAN.md — D-03: PDF footer watermark + returnBase64 mode + tests
 - [x] 08-04-PLAN.md — D-04: Contact Us modal + smtplib endpoint + Navbar integration + tests
-- [ ] 08-05-PLAN.md — D-05: Admin frequency trends SQL + HTTP + WebSocket + bar chart UI + tests
+- [x] 08-05-PLAN.md — D-05: Admin frequency trends SQL + HTTP + WebSocket + bar chart UI + tests
 
 ---
 

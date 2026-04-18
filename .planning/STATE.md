@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Full Platform
 status: active
-stopped_at: Phase 8 plan 08-04 complete — ready for 08-05
-last_updated: "2026-04-18T16:10:00.000Z"
-last_activity: 2026-04-18 - Executed 08-04 (D-04 Contact Us modal + smtplib backend, 3 tasks, 7 tests GREEN)
+stopped_at: Phase 8 plan 08-05 complete — D-05 frequency trends + WS done
+last_updated: "2026-04-18T17:10:00.000Z"
+last_activity: 2026-04-18 - Executed 08-05 (D-05 admin frequency trends + WebSocket auto-refresh, 3 tasks, 9 tests GREEN)
 progress:
   total_phases: 14
   completed_phases: 13
   total_plans: 42
-  completed_plans: 41
-  percent: 98
+  completed_plans: 42
+  percent: 100
 ---
 
 # Project State
@@ -54,6 +54,11 @@ All decisions logged in PROJECT.md Key Decisions table.
 - 08-04: Recipients always queried from DB WHERE role='site_admin'; POST body sender_email never used for routing
 - 08-04: AnalysisData defined locally in ContactModal.tsx (not re-exported from exportReport.ts)
 - 08-04: models.py str | None → Optional[str] for Python 3.9 SQLAlchemy compatibility
+- 08-05: WebSocket JWT auth via query param — Depends() injection does not work in FastAPI WS handlers
+- 08-05: AdminWSManager as module-level singleton in admin/router.py; imported by analysis/router.py
+- 08-05: Broadcast wrapped in try/except so WS failures never fail the analysis request
+- 08-05: WS close code 4001 for missing/invalid token; 4003 for non-admin role
+- 08-05: Custom SVG SimpleBarChart — no D3 dependency, follows existing SimpleLineChart pattern
 
 ### Pending Todos
 
