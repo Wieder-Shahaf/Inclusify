@@ -186,8 +186,8 @@
       "uploadingDesc": "מעביר את הקובץ בצורה מאובטחת...",
       "parsing": "מעבד תוכן",
       "parsingDesc": "מחלץ טקסט מהמסמך...",
-      "analyzing": "מנתח שפה",
-      "analyzingDesc": "סורק דפוסי שפה מכלילה...",
+      "analyzing": "בודק שפה לא מכלילה...",
+      "analyzingDesc": "סורק שפה מכלילה כלפי קהילת הלהט״ב...",
       "generating": "מייצר תובנות",
       "generatingDesc": "מכין את הדוח המותאם אישית שלך...",
       "complete": "הניתוח הושלם",
@@ -195,7 +195,7 @@
       "takingLonger": "הניתוח לוקח יותר זמן מהרגיל..."
     },
     "summaryCard": {
-      "score": "ציון מכלילות",
+      "score": "ציון מכלילות להט״ב+.",
       "totalIssues": "סה״כ בעיות",
       "wordCount": "מספר מילים",
       "categories": "בעיות לפי קטגוריה",
@@ -225,6 +225,7 @@
       "privacyFirstDesc": "המידע נשאר מאובטח"
     },
     "analyzeAnother": "ניתוח נוסף",
+    "contactUs": "צור קשר",
     "issuesFound": "בעיות שנמצאו",
     "issueFound": "בעיה נמצאה",
     "issuesFoundPlural": "בעיות נמצאו",
@@ -236,7 +237,8 @@
     "exportReport": "ייצוא דוח",
     "sampleFileName": "מסמך_אקדמי_לדוגמה.txt",
     "serviceUnavailable": "שירות הניתוח לא זמין זמנית. ניתן להמשיך לגלוש.",
-    "modelUnavailable": "מודל ה-AI לא זמין — הניתוח יתבצע על בסיס חוקים בלבד.",
+    "modelUnavailable": "מודל ה-AI לא זמין — כרגע לא ניתן לבצע ניתוח. עיינו במילון המונחים שלנו.",
+    "modelUnavailableLinkText": "עיינו במילון",
     "basicAnalysisMode": "מצב ניתוח בסיסי",
     "basicAnalysisModeDesc": "ניתוח AI מתקדם לא זמין",
     "errors": {
@@ -319,6 +321,35 @@
       "invalidCredentials": "אימייל או סיסמה שגויים",
       "emailExists": "חשבון עם אימייל זה כבר קיים",
       "generic": "משהו השתבש. נא לנסות שוב."
+    }
+  },
+  "profile": {
+    "title": "הפרופיל שלי",
+    "save": "שמור שינויים",
+    "saving": "שומר...",
+    "saveSuccess": "הפרופיל עודכן בהצלחה!",
+    "saveError": "שמירת הפרופיל נכשלה. נסה שוב.",
+    "fullName": "שם מלא",
+    "fullNamePlaceholder": "לדוג׳ ד״ר ישראל ישראלי",
+    "profession": "מקצוע / תפקיד",
+    "professionPlaceholder": "לדוג׳ חוקר/ת, מרצה",
+    "institution": "מוסד",
+    "institutionPlaceholder": "לדוג׳ אוניברסיטת תל אביב",
+    "setup": {
+      "title": "השלמת פרופיל",
+      "subtitle": "עזרו לנו להתאים אישית את החוויה שלכם.",
+      "fullName": "שם מלא",
+      "fullNamePlaceholder": "לדוג׳ ד״ר ישראל ישראלי",
+      "profession": "מקצוע / תפקיד",
+      "professionPlaceholder": "לדוג׳ חוקר/ת, מרצה",
+      "institution": "מוסד",
+      "institutionPlaceholder": "לדוג׳ אוניברסיטת תל אביב",
+      "save": "שמור פרופיל",
+      "saving": "שומר...",
+      "skip": "דלג בינתיים",
+      "success": "הפרופיל נשמר!",
+      "error": "שמירה נכשלה. נסה שוב.",
+      "required": "שדה חובה"
     }
   },
   "glossary": {
