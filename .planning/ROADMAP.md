@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 Full Platform** — Phases 1–7 (shipped 2026-04-12) → [archive](.planning/milestones/v1.0-ROADMAP.md)
-- 🔄 **v1.1 Achva Feedback** — Phase 8 (in progress)
+- ✅ **v1.1 Achva Feedback** — Phase 8 (shipped 2026-04-18) → [archive](.planning/milestones/v1.1-ROADMAP.md)
 
 ## Phases
 
@@ -28,6 +28,15 @@
 
 </details>
 
+<details>
+<summary>✅ v1.1 Achva Feedback (Phase 8) — SHIPPED 2026-04-18</summary>
+
+- [x] Phase 8: Achva Feedback (5/5 plans) — completed 2026-04-18
+
+**Total:** 1 phase, 5 plans, all complete
+
+</details>
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -49,33 +58,4 @@
 
 ---
 
-### Phase 8: Achva Feedback (12/04)
-
-**Goal:** Implement 5 stakeholder-requested improvements from Achva meeting on 2026-04-12 that require code changes (6 other items are already implemented and verified in code).
-
-**Requirements:** D-01, D-02, D-03, D-04, D-05
-
-**Scope (5 code-change items — 6 verify-only items already in code):**
-- D-01: Profile completion popup requires all 3 fields (full_name, institution, profession)
-- D-02: LLM-down fallback banner in analyze results view + glossary link
-- D-03: PDF footer watermark (locale-aware) + base64 return mode for exportReport
-- D-04: Contact Us modal in navbar + backend smtplib endpoint with optional PDF attachment
-- D-05: Admin label frequency trends bar chart + top-5 phrases + WebSocket auto-refresh
-
-**Verify-only (already implemented in code):**
-- Loading text, score label, rule-based drop, inclusive_sentence field, admin user filters
-
-**Depends on:** Phase 7 (complete)
-
-**Plans:** 5 plans
-
-Plans:
-- [x] 08-01-PLAN.md — D-01: Profile popup required fields fix + tests + i18n
-- [x] 08-02-PLAN.md — D-02: LLM-down banner wiring in analyze results + i18n
-- [x] 08-03-PLAN.md — D-03: PDF footer watermark + returnBase64 mode + tests
-- [x] 08-04-PLAN.md — D-04: Contact Us modal + smtplib endpoint + Navbar integration + tests
-- [x] 08-05-PLAN.md — D-05: Admin frequency trends SQL + HTTP + WebSocket + bar chart UI + tests
-
----
-
-*Created: 2026-03-08 | v1.0 shipped: 2026-04-12 | Phase 8 planned: 2026-04-18*
+*Created: 2026-03-08 | v1.0 shipped: 2026-04-12 | v1.1 shipped: 2026-04-18*

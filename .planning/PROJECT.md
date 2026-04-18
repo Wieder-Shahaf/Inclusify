@@ -39,6 +39,11 @@ Academics and researchers can identify and fix non-inclusive language in their w
 - ✓ WCAG 2.1 accessibility compliance — v1.0
 - ✓ GitHub Actions CI/CD pipeline — v1.0
 - ✓ Guest mode (anonymous analysis with DB persistence) — v1.0
+- ✓ Profile completion enforcement (all 3 fields required) — v1.1
+- ✓ LLM-down fallback banner with glossary link — v1.1
+- ✓ PDF footer watermark (locale-aware EN/HE) + base64 export mode — v1.1
+- ✓ Contact Us modal with email delivery + optional PDF attachment — v1.1
+- ✓ Admin frequency trends bar chart + WebSocket auto-refresh — v1.1
 
 ### Active
 
@@ -100,6 +105,11 @@ Academics and researchers can identify and fix non-inclusive language in their w
 | Azure CLI scripts over Terraform | Course simplicity, team familiarity | ✓ Good — idempotent provisioning works |
 | Guest mode with DB persistence | Enable anonymous analysis, convert to user later | ✓ Good — Redis-backed session tracking |
 | QLoRA rank=8, dropout=0.2 | Best from 9-config grid search | ✓ Good — 90% F1, exceeded 80% target |
+| Profile popup 3-field enforcement | All fields needed for meaningful org attribution | ✓ Good — dismiss() prevents re-render race condition |
+| WebSocket JWT via query param | Depends() injection unsupported in FastAPI WS handlers | ✓ Good — 4001/4003 close codes provide clear auth failure signal |
+| AdminWSManager module-level singleton | Shared broadcast state across analysis and admin routers | ✓ Good — try/except broadcast prevents WS failures from affecting analysis |
+| Custom SVG SimpleBarChart | No D3 dependency; follows existing SimpleLineChart pattern | ✓ Good — consistent with codebase conventions, lighter bundle |
+| smtplib recipients from DB (site_admin role) | Decouple admin emails from request body | ✓ Good — POST body sender_email never used for routing, prevents spoofing |
 
 ---
-*Last updated: 2026-04-12 after v1.0 milestone*
+*Last updated: 2026-04-18 after v1.1 milestone*

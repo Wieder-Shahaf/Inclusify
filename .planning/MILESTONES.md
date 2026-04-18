@@ -32,3 +32,34 @@ Production-deployed LGBTQ+ inclusive language analyzer: full Docker containeriza
 - Requirements: `.planning/milestones/v1.0-REQUIREMENTS.md`
 
 ---
+
+## v1.1 — Achva Feedback
+
+**Shipped:** 2026-04-18
+**Phases:** 8 (1 phase)
+**Plans:** 5 / Tasks: 8+
+**Timeline:** 2026-04-18 (1 day sprint)
+**LOC:** +3,252 / -276 (39 files changed)
+**Commits:** 28
+
+### Delivered
+
+5 stakeholder-requested improvements from the Achva LGBTQ+ organization April 12 meeting: profile completion enforcement, LLM-down fallback banner, locale-aware PDF footer watermark, Contact Us modal with email delivery, and admin frequency trends dashboard with WebSocket auto-refresh.
+
+### Key Accomplishments
+
+1. **Profile completion enforcement** — popup requires all 3 fields (full_name + institution + profession) with session-scoped dismiss; prevent race condition on refreshProfile() re-render
+2. **LLM-down banner** — fixed-position banner in analyze results when analysis_mode is rules_only; glossary link + Hebrew i18n
+3. **PDF footer watermark** — locale-aware footer (EN: "Achva LGBTQ+ Studential Organization" / HE: "ארגון אחווה להט״ב הסטודנטיאלי") + returnBase64 mode for email attachments; diagonal watermark removed
+4. **Contact Us modal** — Radix Dialog modal in Navbar; smtplib multipart backend with DB-queried admin recipients; optional PDF attachment; SMTP vars in docker-compose
+5. **Admin frequency trends** — SQL + HTTP endpoint + FastAPI WebSocket auto-refresh; custom SVG SimpleBarChart (no D3); pulsing green dot connection indicator
+
+### Known Deferred Items at Close
+
+6 items acknowledged (see STATE.md Deferred Items): 1 UAT pending, 4 verification human_needed, 1 quick-task missing summary.
+
+### Archive
+
+- Roadmap: `.planning/milestones/v1.1-ROADMAP.md`
+
+---

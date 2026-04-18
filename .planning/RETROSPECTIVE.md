@@ -64,14 +64,64 @@
 
 ---
 
+---
+
+## Milestone: v1.1 — Achva Feedback
+
+**Shipped:** 2026-04-18
+**Phases:** 1 (Phase 8) | **Plans:** 5
+
+### What Was Built
+
+- Profile completion popup requiring all 3 fields (full_name + institution + profession) with session-scoped dismiss
+- LLM-down fallback banner in analyze results view with glossary link and Hebrew i18n
+- PDF footer watermark (locale-aware EN/HE) replacing diagonal watermark + returnBase64 mode for email attachments
+- Contact Us Radix Dialog modal wired into Navbar + smtplib multipart backend with DB-queried admin recipients + optional PDF attachment
+- Admin frequency trends: SQL + HTTP endpoint + FastAPI WebSocket auto-refresh + custom SVG SimpleBarChart (no D3)
+
+### What Worked
+
+- **Single-day sprint pattern** — 5 focused plans with clear D-item scope executed cleanly in one session
+- **TDD gate compliance** — all 5 plans followed Wave 0 failing tests → implementation → green; caught interface issues early
+- **Code review pass** — dedicated review + fix cycle caught 5 issues (SMTP leak, status badge, WS docs, private_mode fallback, SQL injection in HAVING)
+- **UI-SPEC contract** — having a design spec upfront meant zero back-and-forth on copy, spacing, or component choices
+- **Module-level singleton for WS** — AdminWSManager pattern reused from existing SimpleLineChart approach; clean, no extra deps
+
+### What Was Inefficient
+
+- **UAT test #6 (WebSocket cross-tab) left pending** — requires two browser sessions; should have been flagged as "manual only" during planning so it didn't block milestone close
+- **SMTP vars missing from docker-compose** — discovered only during UAT; should be part of a deployment checklist
+- **Quick task 260407-kps missing SUMMARY** — task was completed in code but documentation was never closed out
+
+### Patterns Established
+
+- **WS JWT via query param**: FastAPI Depends() doesn't work in WebSocket handlers; pass token as `?token=` query param with 4001/4003 close codes
+- **Broadcast try/except**: always wrap WS broadcast in try/except so connection failures never fail the primary request path
+- **smtplib recipients from DB**: never use POST body email for routing; always query `WHERE role='site_admin'` to prevent spoofing
+- **returnBase64 pattern**: `doc.output('datauristring')` for in-memory PDF; `doc.save()` for download — controlled by options flag
+
+### Key Lessons
+
+- **Plan for manual-only UAT steps explicitly** — cross-tab/cross-browser scenarios can't be automated; mark them as human-only in the plan so they don't delay milestone close.
+- **Deployment env vars belong in the plan scope** — SMTP_USER/PASSWORD/HOST/PORT should have been in the D-04 plan's deployment checklist, not discovered during UAT.
+- **Close quick task docs at completion time** — a missing SUMMARY creates audit noise at milestone close; the 30-second habit of writing one line prevents it.
+
+### Cost Observations
+
+- Sessions: 1 focused session (2026-04-18)
+- 28 commits across 5 plans — clean, atomic, well-scoped
+- All 5 D-items delivered in one day: stakeholder feedback → shipped in 6 days from meeting
+
+---
+
 ## Cross-Milestone Trends
 
-| Metric | v1.0 |
-|--------|------|
-| Phases | 13 |
-| Plans | 37 |
-| Timeline (days) | 122 |
-| LOC | ~19,100 |
-| Commits | 415 |
-| Urgent insertions | 5 decimal phases |
-| Requirements shipped | 14/14 |
+| Metric | v1.0 | v1.1 |
+|--------|------|------|
+| Phases | 13 | 1 |
+| Plans | 37 | 5 |
+| Timeline (days) | 122 | 1 |
+| LOC | ~19,100 | +3,252 |
+| Commits | 415 | 28 |
+| Urgent insertions | 5 decimal phases | 0 |
+| Requirements shipped | 14/14 | 5/5 |

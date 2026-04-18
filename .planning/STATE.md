@@ -1,16 +1,14 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: Full Platform
-status: active
-stopped_at: Phase 8 plan 08-05 complete — D-05 frequency trends + WS done
-last_updated: "2026-04-18T17:10:00.000Z"
-last_activity: 2026-04-18 - Executed 08-05 (D-05 admin frequency trends + WebSocket auto-refresh, 3 tasks, 9 tests GREEN)
+milestone: v1.1
+milestone_name: Achva Feedback
+status: complete
+last_updated: "2026-04-18T20:00:00.000Z"
 progress:
-  total_phases: 14
-  completed_phases: 13
-  total_plans: 42
-  completed_plans: 42
+  total_phases: 1
+  completed_phases: 1
+  total_plans: 5
+  completed_plans: 5
   percent: 100
 ---
 
@@ -18,21 +16,20 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-12)
+See: .planning/PROJECT.md (updated 2026-04-18)
 
 **Core value:** Academics can identify and fix non-inclusive language in their work before publication
-**Current focus:** v1.0 shipped — April 15 presentation ready. Next: /gsd-new-milestone for v2.0
+**Current focus:** v1.1 shipped — ready for July 8 final presentation. Next: /gsd-new-milestone for v2.0
 
 ## Milestone Complete
 
-**v1.0 Full Platform** — shipped 2026-04-12
+**v1.1 Achva Feedback** — shipped 2026-04-18
 
-- 13 phases, 37 plans, all complete
-- Azure Container Apps deployment live
-- Fine-tuned Qwen2.5-3B (90% F1) serving via vLLM
-- Full auth, admin dashboard, accessibility, CI/CD
+- 1 phase (Phase 8), 5 plans, all complete
+- Profile completion enforcement, LLM-down banner, PDF watermark, Contact Us modal, admin WS bar chart
+- 28 commits, 39 files, +3252/-276 LOC
 
-Archive: `.planning/milestones/v1.0-ROADMAP.md`
+Archives: `.planning/milestones/v1.1-ROADMAP.md` | `.planning/milestones/v1.0-ROADMAP.md`
 
 ## Accumulated Context
 
@@ -73,3 +70,16 @@ None — ready for April 15 presentation.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260407-kps | Fix vLLM response parsing crash in llm_client.py | 2026-04-07 | aa049b7 | [260407-kps-fix-vllm-response-parsing-crash-in-llm-c](.planning/quick/260407-kps-fix-vllm-response-parsing-crash-in-llm-c/) |
+
+## Deferred Items
+
+Items acknowledged and deferred at milestone close on 2026-04-18:
+
+| Category | Item | Status |
+|----------|------|--------|
+| uat_gap | Phase 08: 08-HUMAN-UAT.md — 1 pending scenario (D-05 WebSocket auto-refresh) | partial |
+| verification | Phase 01: 01-VERIFICATION.md | human_needed |
+| verification | Phase 03: 03-VERIFICATION.md | human_needed |
+| verification | Phase 05.2: 05.2-01-VERIFICATION.md | gaps_found |
+| verification | Phase 08: 08-VERIFICATION.md | human_needed |
+| quick_task | 260407-kps-fix-vllm-response-parsing-crash-in-llm-c | missing summary |
