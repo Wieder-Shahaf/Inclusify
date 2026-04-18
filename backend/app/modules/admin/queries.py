@@ -6,9 +6,8 @@ Requirements: ADMIN-01 (analytics), ADMIN-02 (user/org management)
 Uses asyncpg raw SQL (not ORM) for efficient aggregate queries.
 All functions accept an asyncpg Connection and return dicts or tuples.
 """
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
-from zoneinfo import ZoneInfo
 import asyncpg
 
 
@@ -26,7 +25,7 @@ async def get_analytics_kpis(conn: asyncpg.Connection, days: int) -> dict:
             - total_analyses: Count of analysis_runs in period
             - documents_processed: Distinct documents with succeeded runs in period
     """
-    cutoff = datetime.now(ZoneInfo('Asia/Jerusalem')) - timedelta(days=days)
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
 
     # Total users (all time)
     total_users = await conn.fetchval("SELECT COUNT(*) FROM users")
@@ -131,7 +130,7 @@ async def get_model_metrics_kpis(conn: asyncpg.Connection, days: int) -> dict:
             - mode_rules_only: count of rules-only analyses
     """
     from datetime import datetime, timedelta
-    cutoff = datetime.now(ZoneInfo('Asia/Jerusalem')) - timedelta(days=days)
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
 
     row = await conn.fetchrow("""
         SELECT
@@ -187,7 +186,7 @@ async def get_recent_activity(
     Returns:
         Tuple of (list of activity dicts with issue_count, total count)
     """
-    cutoff = datetime.now(ZoneInfo('Asia/Jerusalem')) - timedelta(days=days)
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
     offset = (page - 1) * page_size
 
     # Count total in period
