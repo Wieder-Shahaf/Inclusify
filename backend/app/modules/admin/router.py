@@ -5,9 +5,11 @@ Requirements: ADMIN-01 (analytics), ADMIN-02 (user/org management)
 
 All endpoints require site_admin role (403 for non-admins).
 """
-from fastapi import APIRouter, Depends, Query, Request, HTTPException, status
+from fastapi import APIRouter, Depends, Query, Request, HTTPException, status, WebSocket, WebSocketDisconnect
+from jose import jwt, JWTError
 
 from app.auth.deps import require_admin
+from app.core.config import settings
 from .schemas import (
     AnalyticsResponse,
     UsersListResponse,
@@ -17,6 +19,34 @@ from .schemas import (
 )
 from . import queries
 
+
+class AdminWSManager:
+    """Manages WebSocket connections for admin real-time updates."""
+
+    def __init__(self):
+        self.connections: list[WebSocket] = []
+
+    async def connect(self, ws: WebSocket):
+        await ws.accept()
+        self.connections.append(ws)
+
+    def disconnect(self, ws: WebSocket):
+        if ws in self.connections:
+            self.connections.remove(ws)
+
+    async def broadcast(self, message: dict):
+        dead = []
+        for ws in self.connections:
+            try:
+                await ws.send_json(message)
+            except Exception:
+                dead.append(ws)
+        for ws in dead:
+            if ws in self.connections:
+                self.connections.remove(ws)
+
+
+ws_manager = AdminWSManager()
 
 router = APIRouter()
 
@@ -113,3 +143,35 @@ async def get_recent_activity(
             "page_size": page_size,
             "total_pages": total_pages
         }
+
+
+@router.websocket("/ws")
+async def admin_ws(websocket: WebSocket, token: str = None):
+    """WebSocket endpoint for admin real-time updates.
+
+    Authenticates via JWT in query param (Depends() does not work in WS handlers).
+    Closes with 4001 on missing/invalid token, 4003 on non-admin role.
+    """
+    if not token:
+        await websocket.close(code=4001)
+        return
+    try:
+        payload = jwt.decode(
+            token,
+            settings.JWT_SECRET,
+            algorithms=["HS256"],
+            audience="fastapi-users:auth",
+        )
+    except JWTError:
+        await websocket.close(code=4001)
+        return
+    if payload.get("role") != "site_admin":
+        await websocket.close(code=4003)
+        return
+    await ws_manager.connect(websocket)
+    try:
+        while True:
+            # Keep-alive: ignore any messages from client
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        ws_manager.disconnect(websocket)

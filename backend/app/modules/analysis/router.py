@@ -2,21 +2,13 @@
 Analysis Router - LGBTQ+ Inclusive Language Detection
 
 =============================================================================
-                        HYBRID DETECTION (LLM + Rules)
+                        LLM-BASED DETECTION
 =============================================================================
-This module uses hybrid detection combining:
-- LLM (lightblue/suzume-llama-3-8B-multilingual) for contextual analysis
-- Rule-based detection as fallback for high-precision known terms
+This module uses LLM-based contextual analysis only.
 
 Detection modes (reported in analysis_mode field):
-- "llm": All sentences successfully analyzed by LLM
-- "hybrid": Some LLM success + some rule-based fallback
-- "rules_only": LLM unavailable, using rule-based only
-
-The rule-based approach serves as:
-1. A fallback when the LLM endpoint is unavailable
-2. A baseline for high-precision detection of known terms
-3. Complementary detection for terms not in LLM training
+- "llm": LLM analysis completed (full or partial sentence coverage)
+- "rules_only": LLM unavailable — no issues returned
 
 DB persistence:
 - When private_mode=False and DB is available, persists documents,
@@ -39,6 +31,7 @@ from app.db.models import User
 from app.db import repository as repo
 from app.modules.analysis.call_metrics import CallMetrics
 from app.modules.analysis.hybrid_detector import HybridDetector, detect_language
+from app.modules.admin.router import ws_manager
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +63,7 @@ class Issue(BaseModel):
     type: str
     description: str
     suggestion: Optional[str] = None
+    inclusive_sentence: Optional[str] = None
     start: int
     end: int
     confidence: Optional[float] = None
@@ -99,190 +93,6 @@ _SEVERITY_TO_DB = {
 def _map_severity_to_db(api_severity: str) -> str:
     """Map API severity (outdated/biased/...) to DB severity (low/medium/high)."""
     return _SEVERITY_TO_DB.get(api_severity, "medium")
-
-
-# =============================================================================
-# Rule-Based Term Dictionary
-# =============================================================================
-
-INCLUSIVE_LANGUAGE_RULES = [
-    # English terms
-    {
-        "term": "homosexual",
-        "severity": "outdated",
-        "type": "Outdated Terminology",
-        "description": "The term 'homosexual' is considered clinical and outdated. It has historically been used in pathologizing contexts.",
-        "suggestion": "Use 'gay' or 'lesbian' depending on context, or 'LGBTQ+ person'",
-    },
-    {
-        "term": "transsexual",
-        "severity": "outdated",
-        "type": "Outdated Terminology",
-        "description": "The term 'transsexual' is outdated and often perceived as medicalizing. It focuses on medical transition rather than identity.",
-        "suggestion": "Use 'transgender person' or 'trans person'",
-    },
-    {
-        "term": "sexual preference",
-        "severity": "factually_incorrect",
-        "type": "Incorrect Terminology",
-        "description": "Sexual orientation is not a choice or preference. Using 'preference' implies it can be changed.",
-        "suggestion": "Use 'sexual orientation'",
-    },
-    {
-        "term": "born a man",
-        "severity": "potentially_offensive",
-        "type": "Invalidating Language",
-        "description": "This phrase invalidates a person's gender identity and implies that assigned sex determines gender.",
-        "suggestion": "Use 'assigned male at birth (AMAB)' if medically relevant",
-    },
-    {
-        "term": "born a woman",
-        "severity": "potentially_offensive",
-        "type": "Invalidating Language",
-        "description": "This phrase invalidates a person's gender identity and implies that assigned sex determines gender.",
-        "suggestion": "Use 'assigned female at birth (AFAB)' if medically relevant",
-    },
-    {
-        "term": "normal people",
-        "severity": "biased",
-        "type": "Biased Language",
-        "description": "Using 'normal' to describe non-LGBTQ+ people implies that LGBTQ+ people are abnormal.",
-        "suggestion": "Use 'cisgender' or 'heterosexual' if referring to those specific groups, or be more specific",
-    },
-    {
-        "term": "the gays",
-        "severity": "biased",
-        "type": "Dehumanizing Language",
-        "description": "Using 'the gays' as a noun can be dehumanizing and othering.",
-        "suggestion": "Use 'gay people' or 'gay individuals'",
-    },
-    {
-        "term": "lifestyle choice",
-        "severity": "factually_incorrect",
-        "type": "Incorrect Framing",
-        "description": "Being LGBTQ+ is not a lifestyle choice. This framing is often used to delegitimize LGBTQ+ identities.",
-        "suggestion": "Remove or rephrase; sexual orientation and gender identity are not choices",
-    },
-    {
-        "term": "gay lifestyle",
-        "severity": "biased",
-        "type": "Stereotyping",
-        "description": "There is no single 'gay lifestyle.' This term promotes stereotypes and reduces diverse experiences to a monolith.",
-        "suggestion": "Be specific about what you mean, or remove the phrase entirely",
-    },
-    {
-        "term": "admitted to being gay",
-        "severity": "biased",
-        "type": "Stigmatizing Language",
-        "description": "Using 'admitted' implies that being gay is something shameful to confess.",
-        "suggestion": "Use 'came out as gay' or 'shared that they are gay'",
-    },
-    {
-        "term": "sex change",
-        "severity": "outdated",
-        "type": "Outdated Terminology",
-        "description": "The term 'sex change' is outdated and focuses narrowly on surgery.",
-        "suggestion": "Use 'gender-affirming surgery' or 'transition' depending on context",
-    },
-    {
-        "term": "transgenders",
-        "severity": "potentially_offensive",
-        "type": "Grammatically Incorrect",
-        "description": "Using 'transgender' as a noun is grammatically incorrect and dehumanizing.",
-        "suggestion": "Use 'transgender people' or 'transgender individuals'",
-    },
-    {
-        "term": "transgendered",
-        "severity": "factually_incorrect",
-        "type": "Incorrect Grammar",
-        "description": "'Transgendered' is grammatically incorrect. Transgender is an adjective, not a verb.",
-        "suggestion": "Use 'transgender' (e.g., 'transgender person')",
-    },
-    # Hebrew terms
-    {
-        "term": "הומוסקסואל",
-        "severity": "outdated",
-        "type": "מונח מיושן",
-        "description": "המונח 'הומוסקסואל' נחשב קליני ומיושן. היסטורית שימש בהקשרים פתולוגיים.",
-        "suggestion": "השתמשו ב'גיי', 'לסבית', או 'אדם מקהילת הלהט\"ב'",
-    },
-    {
-        "term": "טרנסקסואל",
-        "severity": "outdated",
-        "type": "מונח מיושן",
-        "description": "המונח 'טרנסקסואל' מיושן ונתפס כממדיקל. הוא מתמקד במעבר רפואי ולא בזהות.",
-        "suggestion": "השתמשו ב'אדם טרנסג'נדר' או 'אדם טרנס'",
-    },
-    {
-        "term": "העדפה מינית",
-        "severity": "factually_incorrect",
-        "type": "מונח שגוי",
-        "description": "נטייה מינית אינה בחירה או העדפה. שימוש ב'העדפה' מרמז שניתן לשנות אותה.",
-        "suggestion": "השתמשו ב'נטייה מינית'",
-    },
-    {
-        "term": "נולד גבר",
-        "severity": "potentially_offensive",
-        "type": "שפה פוגענית",
-        "description": "ביטוי זה פוגע בזהות המגדרית של האדם ומרמז שהמין שהוקצה בלידה קובע את המגדר.",
-        "suggestion": "השתמשו ב'הוקצה זכר בלידה' אם רלוונטי רפואית",
-    },
-    {
-        "term": "נולדה אישה",
-        "severity": "potentially_offensive",
-        "type": "שפה פוגענית",
-        "description": "ביטוי זה פוגע בזהות המגדרית של האדם ומרמז שהמין שהוקצה בלידה קובע את המגדר.",
-        "suggestion": "השתמשו ב'הוקצתה נקבה בלידה' אם רלוונטי רפואית",
-    },
-    {
-        "term": "אנשים נורמליים",
-        "severity": "biased",
-        "type": "שפה מוטה",
-        "description": "שימוש ב'נורמלי' לתיאור אנשים שאינם מקהילת הלהט\"ב מרמז שאנשים מהקהילה אינם נורמליים.",
-        "suggestion": "השתמשו ב'סיסג'נדר' או 'הטרוסקסואל' אם מתכוונים לקבוצות אלו",
-    },
-]
-
-
-# =============================================================================
-# Rule-Based Detection Function
-# =============================================================================
-
-def detect_rule_based_issues(text: str) -> list[Issue]:
-    """Detect problematic terms using rule-based keyword matching."""
-    logger.info("Rule-based detection started: text_length=%d rules=%d", len(text), len(INCLUSIVE_LANGUAGE_RULES))
-    start_time = time.monotonic()
-    issues = []
-    text_lower = text.lower()
-
-    for rule in INCLUSIVE_LANGUAGE_RULES:
-        term = rule["term"]
-        term_lower = term.lower()
-
-        start = 0
-        while True:
-            idx = text_lower.find(term_lower, start)
-            if idx == -1:
-                break
-
-            actual_span = text[idx:idx + len(term)]
-
-            issues.append(Issue(
-                flagged_text=actual_span,
-                severity=rule["severity"],
-                type=rule["type"],
-                description=rule["description"],
-                suggestion=rule.get("suggestion"),
-                start=idx,
-                end=idx + len(term),
-            ))
-
-            start = idx + len(term)
-
-    issues.sort(key=lambda x: x.start)
-    elapsed = time.monotonic() - start_time
-    logger.info("Rule-based detection completed: issues_found=%d elapsed_s=%.3f", len(issues), elapsed)
-    return issues
 
 
 # =============================================================================
@@ -508,6 +318,11 @@ async def analyze_text(
             text_storage_ref=text_storage_ref,
             file_storage_ref=body.file_storage_ref,
         )
+        try:
+            await ws_manager.broadcast({"event": "new_analysis"})
+        except Exception:
+            # Broadcast failures must not fail the analysis request
+            pass
 
     # Always persist model performance metrics (no text stored — privacy-safe)
     await _persist_metrics(
