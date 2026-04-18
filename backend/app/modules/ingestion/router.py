@@ -5,11 +5,13 @@ Uses subprocess isolation to protect the API server from memory exhaustion.
 """
 
 import asyncio
+import hashlib
 import logging
 
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from app.modules.ingestion.service import parse_document_async
 from app.modules.ingestion.schemas import UploadResponse
+from app.core.blob_storage import upload_file_bytes as _blob_upload_file
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +71,9 @@ async def upload_document(
         filename, result["page_count"], text_length,
     )
 
+    file_sha256 = hashlib.sha256(file_bytes).hexdigest()
+    file_storage_ref = await _blob_upload_file(file_sha256, filename, file_bytes)
+
     return UploadResponse(
         filename=filename,
         content_type=file.content_type,
@@ -78,5 +83,6 @@ async def upload_document(
         full_text_length=text_length,
         title=result.get("title"),
         author=result.get("author"),
-        detected_language=result.get("detected_language")
+        detected_language=result.get("detected_language"),
+        file_storage_ref=file_storage_ref,
     )

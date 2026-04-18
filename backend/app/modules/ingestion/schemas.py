@@ -12,6 +12,7 @@ class UploadResponse(BaseModel):
     title: Optional[str] = None
     author: Optional[str] = None
     detected_language: Optional[str] = None
+    file_storage_ref: Optional[str] = None
 
 
 class UploadError(BaseModel):

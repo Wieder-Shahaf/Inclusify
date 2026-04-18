@@ -192,11 +192,11 @@ export interface FileMetadata {
   filename: string;
   mimeType: string;
   inputType: 'pdf' | 'docx' | 'pptx' | 'txt';
-
   pageCount: number;
   title?: string | null;
   author?: string | null;
   detectedLanguage?: string | null;
+  fileStorageRef?: string | null;
 }
 
 export interface UploadResult extends FileMetadata {
@@ -231,6 +231,7 @@ export async function analyzeText(
       title: meta?.title ?? null,
       author: meta?.author ?? null,
       detected_language: meta?.detectedLanguage ?? null,
+      file_storage_ref: meta?.fileStorageRef ?? null,
     }),
   });
 
@@ -276,6 +277,7 @@ export async function uploadFile(file: File): Promise<UploadResult> {
     title: data.title ?? null,
     author: data.author ?? null,
     detectedLanguage: data.detected_language ?? null,
+    fileStorageRef: data.file_storage_ref ?? null,
   };
 }
 

@@ -52,13 +52,13 @@ services:
     image: mcr.microsoft.com/azure-storage/azurite:latest
     profiles:
       - dev
-    command: azurite-blob --blobHost 0.0.0.0 --blobPort 10000
+    command: azurite-blob --blobHost 0.0.0.0 --blobPort 10000 --skipApiVersionCheck
     ports:
       - "10000:10000"
     volumes:
       - azurite_data:/data
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:10000/devstoreaccount1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:10000/devstoreaccount1 2>/dev/null; ret=$?; [ $ret -eq 0 ] || [ $ret -eq 8 ]"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -99,7 +99,7 @@ services:
       # LLM inference service (transformers-based, not vLLM)
       - VLLM_URL=${VLLM_URL:-http://52.224.246.238:8001}
       # Blob storage (Azurite locally, Azure Blob in prod)
-      - AZURE_STORAGE_CONNECTION_STRING=${AZURE_STORAGE_CONNECTION_STRING:-DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OWEJMq/gT4=;BlobEndpoint=http://azurite:10000/devstoreaccount1;}
+      - AZURE_STORAGE_CONNECTION_STRING=${AZURE_STORAGE_CONNECTION_STRING:-DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;}
       - AZURE_STORAGE_CONTAINER=${AZURE_STORAGE_CONTAINER:-texts}
     ports:
       - "8000:8000"

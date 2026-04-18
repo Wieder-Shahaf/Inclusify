@@ -137,6 +137,7 @@ export default function AnalyzePage() {
           title: uploadResult.title,
           author: uploadResult.author,
           detectedLanguage: uploadResult.detectedLanguage,
+          fileStorageRef: uploadResult.fileStorageRef,
         },
       });
 
