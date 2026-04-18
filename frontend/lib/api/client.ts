@@ -192,6 +192,7 @@ export interface FileMetadata {
   filename: string;
   mimeType: string;
   inputType: 'pdf' | 'docx' | 'pptx' | 'txt';
+
   pageCount: number;
   title?: string | null;
   author?: string | null;
@@ -223,7 +224,7 @@ export async function analyzeText(
       text,
       language: options?.language || 'auto',
       private_mode: options?.privateMode ?? true,
-      input_type: meta?.inputType ?? 'paste',
+      input_type: meta?.inputType ?? null,
       original_filename: meta?.filename ?? null,
       mime_type: meta?.mimeType ?? null,
       page_count: meta?.pageCount ?? null,
