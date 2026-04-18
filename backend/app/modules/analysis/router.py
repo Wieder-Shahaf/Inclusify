@@ -266,7 +266,7 @@ async def analyze_text(
     """
     text_length = len(body.text)
     language = body.language or "auto"
-    private_mode = body.private_mode if body.private_mode is not None else True
+    private_mode = body.private_mode if body.private_mode is not None else False
     user_id = current_user.id if current_user else "anonymous"
 
     # Resolve detected_language: prefer explicit value from upload pipeline,
