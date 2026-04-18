@@ -28,6 +28,7 @@ DB persistence:
 
 import logging
 import hashlib
+import os
 import time
 
 from fastapi import APIRouter, Depends, Request
@@ -290,20 +291,21 @@ def detect_rule_based_issues(text: str) -> list[Issue]:
 # Allow user to be None for guest runs
 async def _persist_results(
     request: Request,
-    user: User | None,  # Changed this line to allow None
+    user: User | None,
     text: str,
     language: str,
     private_mode: bool,
     analysis_mode: str,
     issues: list[Issue],
     runtime_ms: int,
-    input_type: str = "paste",
+    input_type: Optional[str] = None,
     original_filename: Optional[str] = None,
     mime_type: Optional[str] = None,
     title: Optional[str] = None,
     author: Optional[str] = None,
     page_count: Optional[int] = None,
     detected_language: Optional[str] = None,
+    text_storage_ref: Optional[str] = None,
 ) -> None:
     """Persist analysis results to DB. Fails silently — never breaks the response."""
     pool = getattr(request.app.state, "db_pool", None)
@@ -324,7 +326,7 @@ async def _persist_results(
                 private_mode=private_mode,
                 mime_type=mime_type or "text/plain",
                 original_filename=original_filename,
-                text_storage_ref=None,
+                text_storage_ref=text_storage_ref,
                 text_sha256=text_sha256,
                 title=title,
                 author=author,
@@ -415,6 +417,24 @@ async def _persist_metrics(
 
 
 # =============================================================================
+# Text Storage (non-private mode only)
+# =============================================================================
+
+TEXT_STORE_DIR = "/app/text_store"
+
+
+def _store_text(text: str, sha256: str) -> str:
+    """Write text to local store, return reference path. Idempotent — skip if exists."""
+    os.makedirs(TEXT_STORE_DIR, exist_ok=True)
+    path = os.path.join(TEXT_STORE_DIR, f"{sha256}.txt")
+    if not os.path.exists(path):
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text)
+        logger.info("Text stored: ref=%s.txt chars=%d", sha256, len(text))
+    return f"local://{sha256}.txt"
+
+
+# =============================================================================
 # Endpoint (Hybrid Detection + Optional DB Persistence)
 # =============================================================================
 
@@ -472,8 +492,15 @@ async def analyze_text(
         len(issues), analysis_mode, elapsed,
     )
 
-    # Persist full results to DB only when private_mode is off 
-    if not private_mode :
+    # Persist full results to DB only when private_mode is off
+    if not private_mode:
+        text_sha256 = hashlib.sha256(body.text.encode("utf-8")).hexdigest()
+        try:
+            text_storage_ref = _store_text(body.text, text_sha256)
+        except Exception as e:
+            logger.warning("Text storage failed, continuing without ref: %s", e)
+            text_storage_ref = None
+
         await _persist_results(
             request=request,
             user=current_user,
@@ -483,13 +510,14 @@ async def analyze_text(
             analysis_mode=analysis_mode,
             issues=issues,
             runtime_ms=runtime_ms,
-            input_type=body.input_type or "paste",
+            input_type=body.input_type,
             original_filename=body.original_filename,
             mime_type=body.mime_type,
             title=body.title,
             author=body.author,
             page_count=body.page_count,
             detected_language=detected_language,
+            text_storage_ref=text_storage_ref,
         )
 
     # Always persist model performance metrics (no text stored — privacy-safe)

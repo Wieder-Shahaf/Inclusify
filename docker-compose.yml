@@ -85,6 +85,8 @@ services:
     volumes:
       # Mount source for hot-reload in dev
       - ./backend:/app:cached
+      # Persist uploaded text files across container restarts
+      - ./backend/text_store:/app/text_store
     depends_on:
       postgres:
         condition: service_healthy
