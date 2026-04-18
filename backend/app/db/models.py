@@ -5,8 +5,10 @@ The User model maps FastAPI Users' expected attributes (id, hashed_password)
 to the actual DB column names (user_id, password_hash) using mapped_column.
 This lets FastAPI Users work without changing the canonical schema.
 """
+from __future__ import annotations
+
 import uuid
-from typing import List
+from typing import List, Optional
 
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseOAuthAccountTableUUID
 from sqlalchemy import Boolean, ForeignKey, String
@@ -67,6 +69,9 @@ class User(Base):
     role: Mapped[str] = mapped_column(
         String(20), default="user", nullable=False
     )
+    full_name: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    profession: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    institution: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
 
     # OAuth accounts relationship
     oauth_accounts: Mapped[List["OAuthAccount"]] = relationship(
