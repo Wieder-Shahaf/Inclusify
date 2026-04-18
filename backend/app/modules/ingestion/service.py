@@ -191,4 +191,12 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
 
 async def parse_document_async(file_bytes: bytes, filename: str) -> dict:
     loop = asyncio.get_running_loop()
-    return await loop.run_in_executor(None, _parse_document_sync, file_bytes, filename)
+    return await loop.run_in_executor(None, _parse_document_sync, file_bytes, filename)
+
+
+async def warm_up_docling() -> None:
+    """Pre-load Docling model weights at startup so the first upload is not slow."""
+    loop = asyncio.get_running_loop()
+    logger.info("Docling warm-up started — loading model weights")
+    await loop.run_in_executor(None, _get_docling_converter)
+    logger.info("Docling warm-up complete")

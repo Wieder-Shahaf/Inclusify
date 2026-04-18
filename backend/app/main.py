@@ -11,6 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.modules.ingestion import router as ingestion_router
+from app.modules.ingestion.service import warm_up_docling
 from app.modules.analysis import router as analysis_router
 from app.modules.admin import router as admin_router
 from app.routers.health import router as health_router
@@ -43,6 +44,12 @@ async def lifespan(app: FastAPI):
         await create_db_and_tables()
     except Exception as e:
         logger.error(f"Failed to create SQLAlchemy tables: {e}")
+
+    # Startup: pre-load Docling model weights so first upload is instant
+    try:
+        await warm_up_docling()
+    except Exception as e:
+        logger.warning("Docling warm-up failed (will retry on first upload): %s", e)
 
     # Startup: initialize Redis for refresh tokens
     try:
