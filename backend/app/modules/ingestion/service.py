@@ -32,7 +32,8 @@ def _get_docling_converter():
 def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_PAGES) -> dict:
     ext = os.path.splitext(filename)[1].lower() or ".pdf"
     temp_fd, temp_path = tempfile.mkstemp(suffix=ext)
-    
+    logger.info("Extraction started: filename=%s ext=%s size_bytes=%d", filename, ext, len(file_bytes))
+
     try:
         with os.fdopen(temp_fd, 'wb') as f:
             f.write(file_bytes)
@@ -53,19 +54,23 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
                 except UnicodeDecodeError:
                     text = file_bytes.decode("latin-1", errors="replace")
             has_hebrew = any('\u0590' <= c <= '\u05FF' for c in text[:500])
+            detected = "he" if has_hebrew else "en"
+            logger.info("Extraction completed (TXT passthrough): filename=%s detected_language=%s text_length=%d", filename, detected, len(text))
             return {
                 "text": text,
                 "page_count": 1,
                 "title": None,
                 "author": None,
-                "detected_language": "he" if has_hebrew else "en",
+                "detected_language": detected,
             }
 
         if ext == ".pdf":
             try:
                 reader = PdfReader(temp_path)
                 page_count = len(reader.pages)
+                logger.info("PDF page check: filename=%s pages=%d max_pages=%d", filename, page_count, max_pages)
                 if page_count > max_pages:
+                    logger.warning("PDF rejected: page limit exceeded filename=%s pages=%d limit=%d", filename, page_count, max_pages)
                     return {"error": f"Document exceeds {max_pages} page limit ({page_count} pages)"}
 
                 if reader.metadata:
@@ -74,11 +79,16 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
                     if reader.metadata.author:
                         pdf_author = reader.metadata.author
             except Exception:
+                logger.error("PDF corrupted: filename=%s", filename)
                 return {"error": "PDF appears corrupted"}
 
 
+        import time as _time
+        _t0 = _time.monotonic()
+        logger.info("Docling conversion started: filename=%s ext=%s", filename, ext)
         converter = _get_docling_converter()
         result = converter.convert(temp_path)
+        logger.info("Docling conversion completed: filename=%s elapsed_s=%.3f", filename, _time.monotonic() - _t0)
         doc_dict = result.document.export_to_dict()
         items = doc_dict.get("texts", [])
 
@@ -154,10 +164,17 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
         full_markdown = result.document.export_to_markdown()
         has_hebrew = any('\u0590' <= c <= '\u05FF' for c in full_markdown[:500])
         detected_lang = "he" if has_hebrew else "en"
+        final_pages = len(result.document.pages) if hasattr(result.document, 'pages') else page_count
+        logger.info(
+            "Extraction completed: filename=%s pages=%d text_length=%d detected_language=%s title=%s author=%s",
+            filename, final_pages, len(full_markdown), detected_lang,
+            repr(title[:50]) if title else None,
+            repr(author[:50]) if author else None,
+        )
 
         return {
             "text": full_markdown,
-            "page_count": len(result.document.pages) if hasattr(result.document, 'pages') else page_count,
+            "page_count": final_pages,
             "title": title,
             "author": author,
             "detected_language": detected_lang

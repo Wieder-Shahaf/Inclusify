@@ -245,7 +245,7 @@ class VLLMClient:
 
         Decorated with circuit breaker - will raise CircuitBreakerError if circuit is open.
         """
-        logger.info("vLLM request started: url=%s sentence_chars=%d", self.base_url, len(sentence))
+        logger.debug("vLLM request started: url=%s sentence_chars=%d", self.base_url, len(sentence))
         t0 = time.monotonic()
 
         async with httpx.AsyncClient(timeout=self.timeout) as client:
@@ -265,7 +265,7 @@ class VLLMClient:
             response.raise_for_status()
 
         elapsed = time.monotonic() - t0
-        logger.info("vLLM response received: status=%d elapsed_s=%.3f", response.status_code, elapsed)
+        logger.debug("vLLM response received: status=%d elapsed_s=%.3f", response.status_code, elapsed)
 
         data = response.json()
         choices = data.get("choices")
