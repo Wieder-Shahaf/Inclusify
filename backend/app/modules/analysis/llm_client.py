@@ -32,18 +32,25 @@ STRICT JSON SCHEMA:
 {
   "category": "<rule category: e.g., 'N/A', 'Historical Pathologization', 'Identity Invalidation', 'Tone Policing', 'Medical Misinformation', 'False Causality', etc.>",
   "severity": "<EXACTLY one of: 'Correct', 'Outdated', 'Biased', 'Potentially Offensive', 'Factually Incorrect'>",
+  "phrase": "<the exact problematic word or short phrase from the sentence, or null if severity is 'Correct'>",
   "explanation": "<detailed reasoning for the classification>",
-  "suggestion": "<inclusive replacement phrasing, or null if severity is 'Correct'>"
+  "suggestion": "<inclusive replacement phrasing for the problematic term/phrase only, or null if severity is 'Correct'>",
+  "inclusive_sentence": "<the full original sentence rewritten to be completely inclusive, or null if severity is 'Correct'>"
 }
 
 RULES:
 - If the sentence is inclusive and appropriate, classify as "Correct" with category "N/A"
 - Only classify as harmful if there is clear evidence of problematic language
 - Provide specific, academic explanations
+- "phrase" is the specific problematic word or short phrase within the sentence (NOT the full sentence)
+- "phrase" MUST be null ONLY when severity is "Correct"
 - "suggestion" MUST be null ONLY when severity is "Correct"
-- For "Outdated", "Biased", "Potentially Offensive": provide a concrete inclusive rephrasing of the problematic sentence
-- For "Factually Incorrect": provide the corrected, factually accurate version of the statement
-- Never leave "suggestion" null when severity is not "Correct\""""
+- "inclusive_sentence" MUST be null ONLY when severity is "Correct"
+- For "Outdated", "Biased", "Potentially Offensive": provide a concrete inclusive rephrasing
+- For "Factually Incorrect": provide the corrected, factually accurate version
+- "suggestion" is the replacement for the flagged term/phrase only
+- "inclusive_sentence" is the entire sentence rewritten with all issues corrected
+- Never leave "phrase", "suggestion" or "inclusive_sentence" null when severity is not "Correct\""""
 
 
 # Severity mapping from LLM output to API severity levels
@@ -188,8 +195,10 @@ class VLLMClient:
         return {
             "category": "Simulated Mock Response",
             "severity": "Outdated",
+            "phrase": "[MOCK] problematic phrase",
             "explanation": "[MOCK] This is a simulated response because the vLLM server is not reachable.",
             "suggestion": "[MOCK] Please use inclusive and affirming language.",
+            "inclusive_sentence": "[MOCK] Please use inclusive and affirming language in this sentence.",
             "confidence": 0.99
         }
 

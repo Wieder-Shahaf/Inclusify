@@ -88,6 +88,7 @@ export default function AnalyzePage() {
     return () => clearInterval(interval);
   }, []);
 
+
   // Error handler that maps backend errors to user-friendly messages
   const handleApiError = useCallback((error: unknown) => {
     let message = t('errors.generic');
@@ -348,6 +349,14 @@ export default function AnalyzePage() {
           linkText={t('modelUnavailableLinkText')}
         />
       )}
+      {viewState === 'results' && analysisMode === 'rules_only' && (
+        <HealthWarningBanner
+          message={t('llmDownResults')}
+          variant="error"
+          linkHref={`/${locale}/glossary`}
+          linkText={t('llmDownResultsLink')}
+        />
+      )}
       <div className="flex flex-col flex-1">
         <AnimatePresence mode="wait">
           {/* Upload State */}
@@ -512,16 +521,6 @@ export default function AnalyzePage() {
                   </button>
                 </div>
               </div>
-
-              {/* LLM-down fallback banner — shown when backend fell back to rules-only */}
-              {viewState === 'results' && analysisMode === 'rules_only' && (
-                <HealthWarningBanner
-                  message={t('llmDownResults')}
-                  variant="error"
-                  linkHref={`/${locale}/glossary`}
-                  linkText={t('llmDownResultsLink')}
-                />
-              )}
 
               {/* Main Content Grid - Flexible */}
               <div className={`flex-1 min-h-0 grid gap-4 ${isHebrew ? 'lg:grid-cols-[380px,1fr]' : 'lg:grid-cols-[1fr,380px]'}`}>

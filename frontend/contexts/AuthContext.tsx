@@ -8,6 +8,9 @@ interface User {
   id: string;
   email: string;
   role: string;
+  full_name: string | null;
+  profession: string | null;
+  institution: string | null;
 }
 
 interface AuthContextType {
@@ -17,6 +20,7 @@ interface AuthContextType {
   register: (email: string, password: string) => Promise<void>;
   logout: () => void;
   getToken: () => string | null;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -31,8 +35,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const validateAndSetUser = useCallback(async (token: string) => {
     try {
-      const userData = await authApi.getCurrentUser(token);
-      setUser({ id: userData.id, email: userData.email, role: userData.role || 'user' });
+      const [userData, profile] = await Promise.all([
+        authApi.getCurrentUser(token),
+        authApi.getProfile(token).catch(() => ({ full_name: null, profession: null, institution: null })),
+      ]);
+      setUser({
+        id: userData.id,
+        email: userData.email,
+        role: userData.role || 'user',
+        full_name: profile.full_name,
+        profession: profile.profession,
+        institution: profile.institution,
+      });
     } catch {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('auth_token_expiry');
@@ -76,6 +90,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await login(email, password);
   };
 
+  const refreshProfile = useCallback(async () => {
+    const token = localStorage.getItem('auth_token');
+    if (!token || !user) return;
+    const profile = await authApi.getProfile(token);
+    setUser(prev => prev ? { ...prev, ...profile } : null);
+  }, [user]);
+
   const logout = () => {
     authApi.logout();
     setUser(null);
@@ -83,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout, getToken }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout, getToken, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

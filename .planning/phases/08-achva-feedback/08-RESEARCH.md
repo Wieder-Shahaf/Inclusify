@@ -659,22 +659,25 @@ app.include_router(contact_router.router, prefix="/api/v1/contact", tags=["Conta
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Contact Us button placement in Navbar vs. analyze page only**
    - What we know: CONTEXT.md D-04a says "button lives in the navigation bar (always visible, all pages)". The analyze page currently has a Contact Us button in the results header.
    - What's unclear: Should both placements coexist? Or should the analyze-page button be removed once Navbar has the button?
    - Recommendation: Keep both — navbar button is always visible; analyze-page button remains in the results header with pre-attached report context.
+   - **RESOLVED:** Keep both placements — navbar button is always visible across every page; the analyze-page button remains in the results header and pre-attaches the generated report context to the ContactModal.
 
 2. **WebSocket auth: what happens if admin token expires while dashboard is open?**
    - What we know: Token lifetime is 30 days. WS close code 4001 = unauthorized.
    - What's unclear: Should the frontend auto-reconnect silently or show an error?
    - Recommendation: On `code === 4001` in `onclose`, redirect to login (follow existing `fetchWithAuth` behavior).
+   - **RESOLVED:** On `code === 4001` in `ws.onclose`, redirect to login — mirroring the existing `fetchWithAuth` 401 behavior. Frontend implements `ws.onclose = (e) => { if (e.code === 4001) router.push('/login') }` (or equivalent `window.location.href` redirect with locale prefix).
 
 3. **FrequencyTrendsTab placement: new card below KPIs in OverviewTab, or new admin tab?**
    - What we know: CONTEXT.md D-05a says "new section to the admin dashboard." D-05c mentions expandable dropdowns.
    - What's unclear: Whether "section" means inside OverviewTab or a new top-level tab.
    - Recommendation: New card below the recent activity section within OverviewTab. This avoids changes to the tab bar and is consistent with "section."
+   - **RESOLVED:** New card below the recent activity section within OverviewTab. No tab-bar changes; consistent with the CONTEXT "section" wording.
 
 ---
 

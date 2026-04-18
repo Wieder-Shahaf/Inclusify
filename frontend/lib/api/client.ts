@@ -52,6 +52,7 @@ interface BackendIssue {
   severity: string;
   description: string;
   suggestion?: string;
+  inclusive_sentence?: string;
   flagged_text?: string;
   start?: number;
   end?: number;
@@ -151,6 +152,7 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
         label: phrase,
         explanation: issue.description,
         suggestion: issue.suggestion,
+        inclusive_sentence: issue.inclusive_sentence,
         confidence: issue.confidence,
         references: [
           { label: 'LGBTQ+ Language Guide', url: 'https://www.glaad.org/reference' },

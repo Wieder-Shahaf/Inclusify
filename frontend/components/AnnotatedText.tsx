@@ -9,6 +9,7 @@ export type Annotation = {
   severity: Severity;
   label: string;
   suggestion?: string;
+  inclusive_sentence?: string;
   explanation?: string;
   confidence?: number;
   references?: Array<{ label: string; url: string }>;

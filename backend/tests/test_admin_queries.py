@@ -21,13 +21,13 @@ async def test_frequency_trends_empty():
 @pytest.mark.asyncio
 async def test_frequency_trends_shape():
     rows = [
-        {"category": "bias", "total_count": 3, "all_excerpts": ["x", "x", "y"]},
-        {"category": "pathologization", "total_count": 1, "all_excerpts": ["z"]},
+        {"category": "Biased", "total_count": 3, "all_excerpts": ["x", "x", "y"]},
+        {"category": "Outdated Terminology", "total_count": 1, "all_excerpts": ["z"]},
     ]
     conn = _mock_conn(rows)
     result = await get_label_frequency_trends(conn, days=30)
     assert len(result) == 2
-    assert result[0]["category"] == "bias"
+    assert result[0]["category"] == "Biased"
     assert result[0]["count"] == 3
     assert {"phrase": "x", "count": 2} in result[0]["top_phrases"]
     assert {"phrase": "y", "count": 1} in result[0]["top_phrases"]
@@ -36,7 +36,7 @@ async def test_frequency_trends_shape():
 @pytest.mark.asyncio
 async def test_top_phrases_limited_to_five_and_sorted():
     excerpts = ["a"] * 5 + ["b"] * 4 + ["c"] * 3 + ["d"] * 2 + ["e"] * 1 + ["f"] * 1
-    rows = [{"category": "bias", "total_count": len(excerpts), "all_excerpts": excerpts}]
+    rows = [{"category": "Biased", "total_count": len(excerpts), "all_excerpts": excerpts}]
     conn = _mock_conn(rows)
     result = await get_label_frequency_trends(conn, days=30)
     top = result[0]["top_phrases"]

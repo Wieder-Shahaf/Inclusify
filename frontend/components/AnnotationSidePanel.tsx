@@ -12,6 +12,7 @@ import {
 import {
   ArrowRight,
   BookOpen,
+  CheckCircle2,
   ExternalLink,
   Lightbulb,
   Quote,
@@ -219,6 +220,27 @@ export default function AnnotationSidePanel({
                     Copied to clipboard!
                   </motion.p>
                 )}
+              </motion.div>
+            )}
+
+            {/* Inclusive Sentence */}
+            {annotation.inclusive_sentence && (
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.33 }}
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <CheckCircle2 className="w-5 h-5 text-green-500" />
+                  <h3 className="font-semibold text-slate-800 dark:text-white">
+                    Inclusive version
+                  </h3>
+                </div>
+                <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                  <p className="text-green-800 dark:text-green-200 leading-relaxed">
+                    {annotation.inclusive_sentence}
+                  </p>
+                </div>
               </motion.div>
             )}
 

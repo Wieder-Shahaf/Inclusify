@@ -32,6 +32,7 @@ from app.db import repository as repo
 from app.modules.analysis.call_metrics import CallMetrics
 from app.modules.analysis.hybrid_detector import HybridDetector, detect_language
 from app.modules.admin.router import ws_manager
+from app.core.blob_storage import upload_text as _blob_upload_text
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +65,7 @@ class Issue(BaseModel):
     description: str
     suggestion: Optional[str] = None
     inclusive_sentence: Optional[str] = None
+    phrase: Optional[str] = None
     start: int
     end: int
     confidence: Optional[float] = None
@@ -171,7 +173,7 @@ async def _persist_results(
                             start_idx=iss.start,
                             end_idx=iss.end,
                             explanation=iss.description,
-                            excerpt_redacted=iss.flagged_text,
+                            excerpt_redacted=iss.phrase or iss.flagged_text,
                             confidence=iss.confidence,
                         )
                         if iss.suggestion:
@@ -227,13 +229,6 @@ async def _persist_metrics(
         )
     except Exception:
         logger.exception("Metrics persistence failed — analysis results were still returned to user")
-
-
-# =============================================================================
-# Text Storage (non-private mode only)
-# =============================================================================
-
-from app.core.blob_storage import upload_text as _blob_upload_text
 
 
 # =============================================================================

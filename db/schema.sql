@@ -19,6 +19,10 @@ CREATE TABLE users (
   is_superuser BOOLEAN NOT NULL DEFAULT FALSE,
   is_verified BOOLEAN NOT NULL DEFAULT FALSE,
 
+  full_name TEXT,
+  profession TEXT,
+  institution TEXT,
+
   locale TEXT DEFAULT 'he',
   consent_store_text BOOLEAN NOT NULL DEFAULT FALSE,
 

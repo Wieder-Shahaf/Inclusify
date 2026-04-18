@@ -109,7 +109,7 @@ function AdminDashboardContent({ translations }: AdminDashboardProps) {
   ];
 
   return (
-    <div className="py-4 px-2 space-y-4">
+    <div className="py-4 space-y-4">
       {/* Header with time range selector */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>

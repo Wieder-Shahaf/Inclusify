@@ -31,19 +31,23 @@ export default function UsersTab({ translations }: UsersTabProps) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
-  const { data, isLoading, error } = useAdminUsers(page, 20, search || undefined);
+  const [institutionInput, setInstitutionInput] = useState('');
+  const [institution, setInstitution] = useState('');
+  const [minAnalyses, setMinAnalyses] = useState<number | undefined>(undefined);
+  const { data, isLoading, error } = useAdminUsers(page, 20, search || undefined, institution || undefined, minAnalyses);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setSearch(searchInput);
+    setInstitution(institutionInput);
     setPage(1);
   };
 
   return (
     <div className="space-y-4">
-      {/* Search */}
-      <form onSubmit={handleSearch} className="flex items-center gap-2">
-        <div className="relative flex-1 max-w-md">
+      {/* Filters */}
+      <form onSubmit={handleSearch} className="flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[200px] max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
@@ -53,6 +57,23 @@ export default function UsersTab({ translations }: UsersTabProps) {
             className="w-full pl-10 pr-4 py-2 rounded-lg border bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-pride-purple/50"
           />
         </div>
+        <input
+          type="text"
+          value={institutionInput}
+          onChange={(e) => setInstitutionInput(e.target.value)}
+          placeholder="Institution..."
+          className="flex-1 min-w-[160px] max-w-xs px-4 py-2 rounded-lg border bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-pride-purple/50"
+        />
+        <select
+          value={minAnalyses ?? ''}
+          onChange={(e) => setMinAnalyses(e.target.value ? Number(e.target.value) : undefined)}
+          className="px-3 py-2 rounded-lg border bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-pride-purple/50"
+        >
+          <option value="">Any analyses</option>
+          <option value="1">1+ analyses</option>
+          <option value="5">5+ analyses</option>
+          <option value="10">10+ analyses</option>
+        </select>
         <button
           type="submit"
           className="px-4 py-2 rounded-lg bg-pride-purple text-white text-sm font-medium hover:bg-pride-purple/90 transition-colors"

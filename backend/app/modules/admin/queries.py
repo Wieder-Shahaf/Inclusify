@@ -247,6 +247,21 @@ async def get_label_frequency_trends(conn: asyncpg.Connection, days: int) -> lis
     from collections import Counter
 
     cutoff = datetime.utcnow() - timedelta(days=days)
+    # Hebrew → English category normalization
+    _HE_TO_EN: dict[str, str] = {
+        'מוטה': 'Biased',
+        'שגוי עובדתית': 'Factually Incorrect',
+        'סיבתיות כוזבת': 'False Causality',
+        'פתולוגיזציה היסטורית': 'Historical Pathologization',
+        'ביטול זהות': 'Identity Invalidation',
+        'דקדוק שגוי': 'Incorrect Grammar',
+        'מידע רפואי שגוי': 'Medical Misinformation',
+        'מונח מיושן': 'Outdated Terminology',
+        'פוגעני פוטנציאלי': 'Potentially Offensive',
+        'סטיגמה חברתית': 'Social Stigma',
+        'השתקת שיח': 'Tone Policing',
+    }
+
     rows = await conn.fetch("""
         SELECT f.category,
                COUNT(*) AS total_count,
@@ -259,13 +274,32 @@ async def get_label_frequency_trends(conn: asyncpg.Connection, days: int) -> lis
         ORDER BY total_count DESC
     """, cutoff)
 
-    result = []
+    _VALID_CATEGORIES = {
+        'Historical Pathologization',
+        'Factually Incorrect',
+        'Biased',
+        'Potentially Offensive',
+        'Outdated Terminology',
+    }
+
+    # Merge Hebrew and English rows for the same canonical category
+    merged: dict[str, dict] = {}
     for row in rows:
-        phrase_counts = Counter(row['all_excerpts'])
+        canonical = _HE_TO_EN.get(row['category'], row['category'])
+        if canonical not in _VALID_CATEGORIES:
+            continue
+        if canonical not in merged:
+            merged[canonical] = {'count': 0, 'excerpts': []}
+        merged[canonical]['count'] += int(row['total_count'])
+        merged[canonical]['excerpts'].extend(e for e in row['all_excerpts'] if e)
+
+    result = []
+    for category, data in sorted(merged.items(), key=lambda x: -x[1]['count']):
+        phrase_counts = Counter(data['excerpts'])
         top5 = [{'phrase': p, 'count': c} for p, c in phrase_counts.most_common(5)]
         result.append({
-            'category': row['category'],
-            'count': int(row['total_count']),
+            'category': category,
+            'count': data['count'],
             'top_phrases': top5,
         })
     return result

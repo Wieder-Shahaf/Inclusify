@@ -1,174 +1,8 @@
 """
-Tests for hybrid detection logic.
-Tests cover overlap calculation, result merging, and HybridDetector orchestration.
+Tests for LLM detection logic and HybridDetector orchestration.
 """
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-
-from app.modules.analysis.router import Issue
-
-
-class TestOverlapCalculation:
-    """Tests for overlap calculation between issues."""
-
-    def test_calculate_overlap_full(self):
-        """Full overlap returns 1.0."""
-        from app.modules.analysis.hybrid_detector import calculate_overlap
-
-        # Two issues at exact same span
-        issue1 = Issue(
-            flagged_text="homosexual",
-            severity="outdated",
-            type="Outdated Terminology",
-            description="Test",
-            start=10,
-            end=20
-        )
-        issue2 = Issue(
-            flagged_text="homosexual",
-            severity="biased",
-            type="Different Type",
-            description="Test",
-            start=10,
-            end=20
-        )
-
-        assert calculate_overlap(issue1, issue2) == 1.0
-
-    def test_calculate_overlap_partial(self):
-        """Partial overlap calculated correctly."""
-        from app.modules.analysis.hybrid_detector import calculate_overlap
-
-        # 50% overlap: issue1 spans 10-20, issue2 spans 15-25
-        issue1 = Issue(
-            flagged_text="first",
-            severity="outdated",
-            type="Type",
-            description="Test",
-            start=10,
-            end=20
-        )
-        issue2 = Issue(
-            flagged_text="second",
-            severity="biased",
-            type="Type",
-            description="Test",
-            start=15,
-            end=25
-        )
-
-        overlap = calculate_overlap(issue1, issue2)
-        # Overlap: 15-20 = 5 characters
-        # Min length: min(10, 10) = 10
-        # Ratio: 5/10 = 0.5
-        assert overlap == 0.5
-
-    def test_calculate_overlap_none(self):
-        """No overlap returns 0.0."""
-        from app.modules.analysis.hybrid_detector import calculate_overlap
-
-        issue1 = Issue(
-            flagged_text="first",
-            severity="outdated",
-            type="Type",
-            description="Test",
-            start=0,
-            end=10
-        )
-        issue2 = Issue(
-            flagged_text="second",
-            severity="biased",
-            type="Type",
-            description="Test",
-            start=20,
-            end=30
-        )
-
-        assert calculate_overlap(issue1, issue2) == 0.0
-
-
-class TestMergeResults:
-    """Tests for merging LLM and rule-based results."""
-
-    def test_merge_results_prefers_llm(self):
-        """LLM issue kept, overlapping rule issue dropped."""
-        from app.modules.analysis.hybrid_detector import merge_results
-
-        llm_issue = Issue(
-            flagged_text="homosexual",
-            severity="biased",
-            type="LLM Detected",
-            description="LLM analysis",
-            start=10,
-            end=20
-        )
-        rule_issue = Issue(
-            flagged_text="homosexual",
-            severity="outdated",
-            type="Rule Detected",
-            description="Rule analysis",
-            start=10,
-            end=20
-        )
-
-        result = merge_results([llm_issue], [rule_issue])
-
-        assert len(result) == 1
-        assert result[0].type == "LLM Detected"
-
-    def test_merge_results_adds_non_overlapping(self):
-        """Non-overlapping rule issues added."""
-        from app.modules.analysis.hybrid_detector import merge_results
-
-        llm_issue = Issue(
-            flagged_text="homosexual",
-            severity="biased",
-            type="LLM Detected",
-            description="LLM analysis",
-            start=0,
-            end=10
-        )
-        rule_issue = Issue(
-            flagged_text="transsexual",
-            severity="outdated",
-            type="Rule Detected",
-            description="Rule analysis",
-            start=50,
-            end=60
-        )
-
-        result = merge_results([llm_issue], [rule_issue])
-
-        assert len(result) == 2
-
-    def test_merge_results_sorted_by_position(self):
-        """Issues sorted by start position."""
-        from app.modules.analysis.hybrid_detector import merge_results
-
-        # LLM issue at position 50
-        llm_issue = Issue(
-            flagged_text="homosexual",
-            severity="biased",
-            type="LLM",
-            description="Test",
-            start=50,
-            end=60
-        )
-        # Rule issue at position 10 (earlier)
-        rule_issue = Issue(
-            flagged_text="transsexual",
-            severity="outdated",
-            type="Rule",
-            description="Test",
-            start=10,
-            end=20
-        )
-
-        result = merge_results([llm_issue], [rule_issue])
-
-        assert len(result) == 2
-        assert result[0].start == 10  # Rule issue first
-        assert result[1].start == 50  # LLM issue second
 
 
 class TestHybridDetector:
@@ -209,7 +43,7 @@ class TestHybridDetector:
 
     @pytest.mark.asyncio
     async def test_hybrid_detector_hybrid_mode(self):
-        """Partial LLM success -> mode='hybrid'."""
+        """Partial LLM success -> mode='llm' (system is LLM-only, no hybrid mode)."""
         from app.modules.analysis.hybrid_detector import HybridDetector
 
         call_count = 0
@@ -238,7 +72,7 @@ class TestHybridDetector:
         # Two sentences: one succeeds with LLM, one fails
         issues, mode, _ = await detector.analyze("First sentence. Second sentence with homosexual.")
 
-        assert mode == "hybrid"
+        assert mode == "llm"
 
     @pytest.mark.asyncio
     async def test_hybrid_detector_language_detection(self):

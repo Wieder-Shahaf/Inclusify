@@ -33,14 +33,12 @@ interface OverviewTabProps {
   };
 }
 
-// Skeleton loader component
 function SkeletonLoader({ className }: { className?: string }) {
   return (
     <div className={cn('animate-pulse bg-slate-200 dark:bg-slate-700 rounded', className)} />
   );
 }
 
-// KPI Card Component
 function KpiCard({
   label,
   value,
@@ -96,11 +94,12 @@ function KpiCard({
 export default function OverviewTab({ days, translations }: OverviewTabProps) {
   const [activityPage, setActivityPage] = useState(1);
   const { kpis, isLoading: kpisLoading, error: kpisError } = useAdminKPIs(days);
-  const { data: activityData, isLoading: activityLoading, error: activityError } = useAdminActivity(activityPage, 20, days);
+  const { data: activityData, isLoading: activityLoading, error: activityError } = useAdminActivity(activityPage, 10, days);
 
   return (
-    <div className="space-y-6">
-      {/* KPI Cards */}
+    <div className="space-y-5 min-w-0">
+
+      {/* KPI row — full width, 4 columns */}
       <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
         <KpiCard
           label={translations.kpis.totalAnalyses}
@@ -132,126 +131,132 @@ export default function OverviewTab({ days, translations }: OverviewTabProps) {
         />
       </div>
 
-      {/* Error states */}
       {kpisError && (
         <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400 text-sm">
           Failed to load KPIs. Please try again.
         </div>
       )}
 
-      {/* Activity Table */}
-      <div className="rounded-2xl border bg-white dark:bg-slate-900 p-5 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="font-semibold text-slate-800 dark:text-white flex items-center gap-2">
-              <Activity className="w-4 h-4 text-pride-purple" />
-              {translations.sections.recentActivity}
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              {translations.sections.recentActivityDesc}
-            </p>
-          </div>
-        </div>
+      {/* Two-column layout: Activity (left) + Trends (right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-5 items-start min-w-0">
 
-        {activityLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                <SkeletonLoader className="w-8 h-8 rounded-lg" />
-                <div className="flex-1">
-                  <SkeletonLoader className="h-4 w-40 mb-2" />
-                  <SkeletonLoader className="h-3 w-24" />
-                </div>
-                <SkeletonLoader className="h-3 w-16" />
-              </div>
-            ))}
-          </div>
-        ) : activityError ? (
-          <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400 text-sm">
-            Failed to load activity. Please try again.
-          </div>
-        ) : activityData?.activity.length === 0 ? (
-          <div className="p-8 text-center text-slate-500 dark:text-slate-400">
-            No recent activity
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">
-                  <th className="py-2 pr-4 font-medium">User</th>
-                  <th className="py-2 pr-4 font-medium">Document</th>
-                  <th className="py-2 pr-4 font-medium">Date</th>
-                  <th className="py-2 pr-4 font-medium">Status</th>
-                  <th className="py-2 font-medium">Issues</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activityData?.activity.map((item, idx) => (
-                  <motion.tr
-                    key={item.run_id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="border-b border-slate-50 dark:border-slate-800/50 last:border-0"
-                  >
-                    <td className="py-3 pr-4 text-slate-800 dark:text-white">{item.user_email}</td>
-                    <td className="py-3 pr-4 text-slate-600 dark:text-slate-400 truncate max-w-[200px]">
-                      {item.document_name || 'Direct text'}
-                    </td>
-                    <td className="py-3 pr-4 text-slate-500 dark:text-slate-400">
-                      {new Date(item.started_at).toLocaleDateString()}
-                    </td>
-                    <td className="py-3 pr-4">
-                      <span className={cn(
-                        'px-2 py-0.5 rounded-full text-xs font-medium',
-                        item.status === 'succeeded'
-                          ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
-                          : item.status === 'failed'
-                          ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
-                          : 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400'
-                      )}>
-                        {item.status}
-                      </span>
-                    </td>
-                    <td className="py-3">
-                      <span className="font-semibold text-slate-800 dark:text-white">{item.issue_count}</span>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Pagination */}
-        {activityData && activityData.total_pages > 1 && (
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <span className="text-sm text-slate-500 dark:text-slate-400">
-              Page {activityData.page} of {activityData.total_pages}
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setActivityPage((p) => Math.max(1, p - 1))}
-                disabled={activityPage === 1}
-                className="p-2 rounded-lg border bg-white dark:bg-slate-800 disabled:opacity-50"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setActivityPage((p) => Math.min(activityData.total_pages, p + 1))}
-                disabled={activityPage === activityData.total_pages}
-                className="p-2 rounded-lg border bg-white dark:bg-slate-800 disabled:opacity-50"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
+        {/* Left: Recent Activity */}
+        <div className="rounded-2xl border bg-white dark:bg-slate-900 p-5 shadow-sm min-w-0">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+                <Activity className="w-4 h-4 text-pride-purple" />
+                {translations.sections.recentActivity}
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                {translations.sections.recentActivityDesc}
+              </p>
             </div>
           </div>
-        )}
-      </div>
 
-      {/* Label Frequency Trends */}
-      <FrequencyTrendsCard days={days} />
+          {activityLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                  <SkeletonLoader className="w-8 h-8 rounded-lg" />
+                  <div className="flex-1">
+                    <SkeletonLoader className="h-4 w-40 mb-2" />
+                    <SkeletonLoader className="h-3 w-24" />
+                  </div>
+                  <SkeletonLoader className="h-3 w-16" />
+                </div>
+              ))}
+            </div>
+          ) : activityError ? (
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400 text-sm">
+              Failed to load activity. Please try again.
+            </div>
+          ) : activityData?.activity.length === 0 ? (
+            <div className="p-8 text-center text-slate-500 dark:text-slate-400">
+              No recent activity
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">
+                    <th className="py-2 pr-4 font-medium">User</th>
+                    <th className="py-2 pr-4 font-medium">Document</th>
+                    <th className="py-2 pr-4 font-medium">Date</th>
+                    <th className="py-2 pr-4 font-medium">Status</th>
+                    <th className="py-2 font-medium">Issues</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activityData?.activity.map((item, idx) => (
+                    <motion.tr
+                      key={item.run_id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className="border-b border-slate-50 dark:border-slate-800/50 last:border-0"
+                    >
+                      <td className="py-3 pr-4 text-slate-800 dark:text-white truncate max-w-[140px]">{item.user_email}</td>
+                      <td className="py-3 pr-4 text-slate-600 dark:text-slate-400 truncate max-w-[160px]">
+                        {item.document_name || 'Direct text'}
+                      </td>
+                      <td className="py-3 pr-4 text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                        {new Date(item.started_at).toLocaleDateString()}
+                      </td>
+                      <td className="py-3 pr-4">
+                        <span className={cn(
+                          'px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap',
+                          item.status === 'succeeded'
+                            ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
+                            : item.status === 'failed'
+                            ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+                            : 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400'
+                        )}>
+                          {item.status}
+                        </span>
+                      </td>
+                      <td className="py-3">
+                        <span className="font-semibold text-slate-800 dark:text-white">{item.issue_count}</span>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {activityData && activityData.total_pages > 1 && (
+            <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <span className="text-sm text-slate-500 dark:text-slate-400">
+                Page {activityData.page} of {activityData.total_pages}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setActivityPage((p) => Math.max(1, p - 1))}
+                  disabled={activityPage === 1}
+                  className="p-2 rounded-lg border bg-white dark:bg-slate-800 disabled:opacity-50"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setActivityPage((p) => Math.min(activityData.total_pages, p + 1))}
+                  disabled={activityPage === activityData.total_pages}
+                  className="p-2 rounded-lg border bg-white dark:bg-slate-800 disabled:opacity-50"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right: Label Frequency Trends — sticky so it stays visible while scrolling activity */}
+        <div className="lg:sticky lg:top-4 min-w-0">
+          <FrequencyTrendsCard days={days} />
+        </div>
+
+      </div>
     </div>
   );
 }

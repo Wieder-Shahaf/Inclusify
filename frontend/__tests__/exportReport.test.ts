@@ -46,6 +46,7 @@ jest.mock('jspdf-autotable', () => ({
 
 import { exportReport } from '../lib/exportReport';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockAnalysis: any = {
   text: 'Sample text for analysis',
   annotations: [
@@ -125,6 +126,7 @@ describe('exportReport', () => {
       locale: 'en',
       returnBase64: true,
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allTextArgs = textSpy.mock.calls.map((call: any[]) => call[0]);
     expect(allTextArgs).toEqual(
       expect.arrayContaining([
@@ -139,6 +141,7 @@ describe('exportReport', () => {
       locale: 'he',
       returnBase64: true,
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allTextArgs = textSpy.mock.calls.map((call: any[]) => call[0]);
     expect(allTextArgs).toEqual(
       expect.arrayContaining([
@@ -154,6 +157,7 @@ describe('exportReport', () => {
       returnBase64: true,
     });
     const diagonalCall = textSpy.mock.calls.find(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (call: any[]) => call[2] && typeof call[2] === 'object' && call[2].angle === 45
     );
     expect(diagonalCall).toBeUndefined();
