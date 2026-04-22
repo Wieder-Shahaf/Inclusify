@@ -16,6 +16,10 @@ from .schemas import (
     ActivityResponse,
     ModelMetricsResponse,
     FrequencyTrendsResponse,
+    RuleItem,
+    RulesListResponse,
+    RuleCreate,
+    RuleUpdate,
 )
 from . import queries
 
@@ -143,6 +147,85 @@ async def get_recent_activity(
             "page_size": page_size,
             "total_pages": total_pages
         }
+
+
+@router.get("/rules", response_model=RulesListResponse)
+async def list_rules(
+    request: Request,
+    user: dict = Depends(require_admin),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100),
+    language: str = Query(default=None, description="Filter by language (he/en)"),
+    category: str = Query(default=None, max_length=100),
+    is_enabled: bool = Query(default=None),
+):
+    """Get paginated list of detection rules."""
+    pool = _verify_db_pool(request)
+    async with pool.acquire() as conn:
+        rules, total = await queries.get_rules_paginated(
+            conn, page, page_size, language, category, is_enabled
+        )
+        total_pages = (total + page_size - 1) // page_size if total > 0 else 0
+        return {"rules": rules, "total": total, "page": page, "page_size": page_size, "total_pages": total_pages}
+
+
+@router.post("/rules", response_model=RuleItem, status_code=status.HTTP_201_CREATED)
+async def create_rule(
+    request: Request,
+    payload: RuleCreate,
+    user: dict = Depends(require_admin),
+):
+    """Create a new detection rule."""
+    pool = _verify_db_pool(request)
+    async with pool.acquire() as conn:
+        rule = await queries.create_rule(conn, payload.model_dump())
+    return rule
+
+
+@router.patch("/rules/{rule_id}", response_model=RuleItem)
+async def update_rule(
+    rule_id: str,
+    request: Request,
+    payload: RuleUpdate,
+    user: dict = Depends(require_admin),
+):
+    """Update fields on an existing rule."""
+    pool = _verify_db_pool(request)
+    async with pool.acquire() as conn:
+        rule = await queries.update_rule(conn, rule_id, payload.model_dump(exclude_unset=True))
+    if rule is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rule not found")
+    return rule
+
+
+@router.patch("/rules/{rule_id}/toggle", response_model=RuleItem)
+async def toggle_rule(
+    rule_id: str,
+    request: Request,
+    is_enabled: bool = Query(..., description="New enabled state"),
+    user: dict = Depends(require_admin),
+):
+    """Activate or deactivate a detection rule."""
+    pool = _verify_db_pool(request)
+    async with pool.acquire() as conn:
+        rule = await queries.toggle_rule(conn, rule_id, is_enabled)
+    if rule is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rule not found")
+    return rule
+
+
+@router.delete("/rules/{rule_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_rule(
+    rule_id: str,
+    request: Request,
+    user: dict = Depends(require_admin),
+):
+    """Permanently delete a detection rule."""
+    pool = _verify_db_pool(request)
+    async with pool.acquire() as conn:
+        deleted = await queries.delete_rule(conn, rule_id)
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rule not found")
 
 
 @router.websocket("/ws")

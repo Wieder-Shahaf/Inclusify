@@ -22,7 +22,8 @@
     "tabs": {
       "overview": "Overview",
       "users": "Users",
-      "modelPerformance": "Model Performance"
+      "modelPerformance": "Model Performance",
+      "rules": "Rules"
     },
     "modelMetrics": {
       "kpis": {
@@ -100,6 +101,55 @@
       "subtitle": "Most flagged categories in the selected period",
       "topPhrases": "Top phrases",
       "noData": "No findings recorded in this period."
+    },
+    "rules": {
+      "title": "Detection Rules",
+      "addRule": "Add Rule",
+      "filters": {
+        "allLanguages": "All languages",
+        "allCategories": "Filter by category...",
+        "allStatuses": "All statuses",
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "table": {
+        "name": "Name",
+        "language": "Lang",
+        "category": "Category",
+        "severity": "Severity",
+        "patternType": "Pattern Type",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "form": {
+        "addTitle": "Add Rule",
+        "editTitle": "Edit Rule",
+        "language": "Language",
+        "name": "Name",
+        "description": "Description",
+        "category": "Category",
+        "severity": "Default Severity",
+        "patternType": "Pattern Type",
+        "patternValue": "Pattern Value",
+        "exampleBad": "Example (bad)",
+        "exampleGood": "Example (good)",
+        "save": "Save",
+        "cancel": "Cancel",
+        "saving": "Saving..."
+      },
+      "deleteConfirm": "Are you sure you want to permanently delete this rule?",
+      "noRules": "No rules found.",
+      "severityLabels": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      },
+      "patternTypeLabels": {
+        "regex": "Regex",
+        "keyword": "Keyword",
+        "prompt": "Prompt",
+        "other": "Other"
+      }
     }
   },
   "home": {

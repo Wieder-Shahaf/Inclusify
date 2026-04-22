@@ -17,6 +17,7 @@ from app.modules.analysis import router as analysis_router
 from app.modules.admin import router as admin_router
 from app.modules.profile import router as profile_router
 from app.modules.contact import router as contact_router
+from app.modules.feedback import router as feedback_router
 from app.routers.health import router as health_router
 from app.db.connection import create_pool
 from app.core.redis import init_redis, close_redis
@@ -118,6 +119,7 @@ app.include_router(analysis_router.router, prefix="/api/v1/analysis", tags=["Ana
 app.include_router(admin_router.router, prefix="/api/v1/admin", tags=["Admin"])
 app.include_router(profile_router.router, prefix="/api/v1/users", tags=["Profile"])
 app.include_router(contact_router.router, prefix="/api/v1/contact", tags=["Contact"])
+app.include_router(feedback_router.router, prefix="/api/v1/feedback", tags=["Feedback"])
 
 
 @app.get("/")

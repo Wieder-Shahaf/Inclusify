@@ -133,3 +133,100 @@ export function useAdminFrequencyTrends(days: number) {
   );
   return { data, isLoading, error, refresh: mutate };
 }
+
+// ── Rules management ──────────────────────────────────────────────────────────
+
+export interface RuleItem {
+  rule_id: string;
+  language: string;
+  name: string;
+  description: string | null;
+  category: string;
+  default_severity: 'low' | 'medium' | 'high';
+  pattern_type: 'regex' | 'keyword' | 'prompt' | 'other';
+  pattern_value: string;
+  example_bad: string | null;
+  example_good: string | null;
+  is_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RulesListResponse {
+  rules: RuleItem[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+export interface RuleCreate {
+  language: 'he' | 'en';
+  name: string;
+  description?: string;
+  category: string;
+  default_severity?: 'low' | 'medium' | 'high';
+  pattern_type: 'regex' | 'keyword' | 'prompt' | 'other';
+  pattern_value: string;
+  example_bad?: string;
+  example_good?: string;
+}
+
+export function useAdminRules(
+  page: number,
+  pageSize: number = 20,
+  language?: string,
+  category?: string,
+  isEnabled?: boolean,
+) {
+  const params = new URLSearchParams({ page: String(page), page_size: String(pageSize) });
+  if (language) params.set('language', language);
+  if (category) params.set('category', category);
+  if (isEnabled !== undefined) params.set('is_enabled', String(isEnabled));
+
+  const { data, error, isLoading, mutate } = useSWR<RulesListResponse>(
+    `${API_BASE_URL}/api/v1/admin/rules?${params.toString()}`,
+    fetcher,
+    { revalidateOnFocus: false },
+  );
+  return { data, isLoading, error, refresh: mutate };
+}
+
+export async function createRule(payload: RuleCreate): Promise<RuleItem> {
+  const res = await fetchWithAuth(`${API_BASE_URL}/api/v1/admin/rules`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Failed to create rule: ${res.status}`);
+  return res.json();
+}
+
+export async function updateRule(
+  ruleId: string,
+  payload: Partial<RuleCreate & { is_enabled: boolean }>,
+): Promise<RuleItem> {
+  const res = await fetchWithAuth(`${API_BASE_URL}/api/v1/admin/rules/${ruleId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Failed to update rule: ${res.status}`);
+  return res.json();
+}
+
+export async function toggleRule(ruleId: string, isEnabled: boolean): Promise<RuleItem> {
+  const res = await fetchWithAuth(
+    `${API_BASE_URL}/api/v1/admin/rules/${ruleId}/toggle?is_enabled=${isEnabled}`,
+    { method: 'PATCH' },
+  );
+  if (!res.ok) throw new Error(`Failed to toggle rule: ${res.status}`);
+  return res.json();
+}
+
+export async function deleteRule(ruleId: string): Promise<void> {
+  const res = await fetchWithAuth(`${API_BASE_URL}/api/v1/admin/rules/${ruleId}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error(`Failed to delete rule: ${res.status}`);
+}

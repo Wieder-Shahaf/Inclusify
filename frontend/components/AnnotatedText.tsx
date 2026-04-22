@@ -13,6 +13,7 @@ export type Annotation = {
   explanation?: string;
   confidence?: number;
   references?: Array<{ label: string; url: string }>;
+  finding_id?: string;
 };
 
 type AnnotatedTextProps = {

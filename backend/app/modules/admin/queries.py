@@ -303,3 +303,124 @@ async def get_label_frequency_trends(conn: asyncpg.Connection, days: int) -> lis
             'top_phrases': top5,
         })
     return result
+
+
+# ── Rules CRUD ────────────────────────────────────────────────────────────────
+
+async def get_rules_paginated(
+    conn: asyncpg.Connection,
+    page: int = 1,
+    page_size: int = 20,
+    language: Optional[str] = None,
+    category: Optional[str] = None,
+    is_enabled: Optional[bool] = None,
+) -> tuple[list[dict], int]:
+    """Get paginated list of detection rules with optional filters."""
+    offset = (page - 1) * page_size
+
+    conditions: list[str] = []
+    params: list = []
+
+    if language:
+        params.append(language)
+        conditions.append(f"language = ${len(params)}")
+    if category:
+        params.append(f"%{category}%")
+        conditions.append(f"category ILIKE ${len(params)}")
+    if is_enabled is not None:
+        params.append(is_enabled)
+        conditions.append(f"is_enabled = ${len(params)}")
+
+    where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
+    total = await conn.fetchval(f"SELECT COUNT(*) FROM rules {where}", *params)
+
+    params_paged = params + [page_size, offset]
+    rows = await conn.fetch(
+        f"""
+        SELECT rule_id, language, name, description, category,
+               default_severity, pattern_type, pattern_value,
+               example_bad, example_good, is_enabled, created_at, updated_at
+        FROM rules {where}
+        ORDER BY created_at DESC
+        LIMIT ${len(params_paged) - 1} OFFSET ${len(params_paged)}
+        """,
+        *params_paged,
+    )
+    return [dict(r) for r in rows], total or 0
+
+
+async def create_rule(conn: asyncpg.Connection, data: dict) -> dict:
+    """Insert a new detection rule and return the full row."""
+    row = await conn.fetchrow(
+        """
+        INSERT INTO rules
+            (language, name, description, category, default_severity,
+             pattern_type, pattern_value, example_bad, example_good)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        RETURNING rule_id, language, name, description, category,
+                  default_severity, pattern_type, pattern_value,
+                  example_bad, example_good, is_enabled, created_at, updated_at
+        """,
+        data['language'],
+        data['name'],
+        data.get('description'),
+        data['category'],
+        data.get('default_severity', 'medium'),
+        data['pattern_type'],
+        data['pattern_value'],
+        data.get('example_bad'),
+        data.get('example_good'),
+    )
+    return dict(row)
+
+
+async def update_rule(conn: asyncpg.Connection, rule_id: str, updates: dict) -> Optional[dict]:
+    """Update allowed fields on a rule; returns updated row or None if not found."""
+    allowed = {
+        'name', 'description', 'category', 'default_severity',
+        'pattern_type', 'pattern_value', 'example_bad', 'example_good', 'is_enabled',
+    }
+    filtered = {k: v for k, v in updates.items() if k in allowed and v is not None}
+    if not filtered:
+        row = await conn.fetchrow("SELECT * FROM rules WHERE rule_id = $1", rule_id)
+        return dict(row) if row else None
+
+    set_clauses = [f"{col} = ${i + 2}" for i, col in enumerate(filtered)]
+    values = list(filtered.values())
+
+    row = await conn.fetchrow(
+        f"""
+        UPDATE rules
+        SET {', '.join(set_clauses)}
+        WHERE rule_id = $1
+        RETURNING rule_id, language, name, description, category,
+                  default_severity, pattern_type, pattern_value,
+                  example_bad, example_good, is_enabled, created_at, updated_at
+        """,
+        rule_id,
+        *values,
+    )
+    return dict(row) if row else None
+
+
+async def toggle_rule(conn: asyncpg.Connection, rule_id: str, is_enabled: bool) -> Optional[dict]:
+    """Set is_enabled on a rule; returns updated row or None if not found."""
+    row = await conn.fetchrow(
+        """
+        UPDATE rules SET is_enabled = $2
+        WHERE rule_id = $1
+        RETURNING rule_id, language, name, description, category,
+                  default_severity, pattern_type, pattern_value,
+                  example_bad, example_good, is_enabled, created_at, updated_at
+        """,
+        rule_id,
+        is_enabled,
+    )
+    return dict(row) if row else None
+
+
+async def delete_rule(conn: asyncpg.Connection, rule_id: str) -> bool:
+    """Delete a rule by ID. Returns True if a row was deleted."""
+    result = await conn.execute("DELETE FROM rules WHERE rule_id = $1", rule_id)
+    return result == "DELETE 1"

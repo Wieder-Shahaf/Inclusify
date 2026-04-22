@@ -11,7 +11,10 @@ import logging
 import re as _re
 from typing import TYPE_CHECKING, Optional
 
+from pybreaker import CircuitBreakerError
+
 from app.modules.analysis.call_metrics import CallMetrics
+from app.modules.analysis.circuit_breaker import vllm_breaker
 from app.modules.analysis.llm_client import VLLMClient, map_severity
 from app.modules.analysis.sentence_splitter import split_with_offsets
 
@@ -127,11 +130,19 @@ class HybridDetector:
         call_metrics = CallMetrics(total_sentences=len(sentences))
 
         async def analyze_one(sentence: str, start_offset: int, end_offset: int):
+            # Skip immediately if circuit is already open — no point queuing.
+            if vllm_breaker.current_state == "open":
+                return None, sentence, start_offset, end_offset
             result = await self.client.analyze_sentence(sentence, metrics=call_metrics)
             return (result, sentence, start_offset, end_offset)
 
         tasks = [analyze_one(s, start, end) for s, start, end in sentences]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+        # Overall safety cap: 3 min for the entire analysis regardless of document size.
+        try:
+            results = await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=180)
+        except asyncio.TimeoutError:
+            logger.warning("Analysis hit overall 180s timeout — returning partial results")
+            results = []
 
         for item in results:
             if isinstance(item, Exception):
@@ -160,9 +171,12 @@ class HybridDetector:
 
                     suggestion = result.get("suggestion")
                     if not isinstance(suggestion, str) or not suggestion.strip() or suggestion.strip().lower() == "null":
-                        suggestion = await self.client.get_suggestion(
-                            sentence, severity, category, metrics=call_metrics
-                        )
+                        if vllm_breaker.current_state != "open":
+                            suggestion = await self.client.get_suggestion(
+                                sentence, severity, category, metrics=call_metrics
+                            )
+                        else:
+                            suggestion = None
 
                     inclusive_sentence = result.get("inclusive_sentence")
                     if not isinstance(inclusive_sentence, str) or not inclusive_sentence.strip() or inclusive_sentence.strip().lower() == "null":

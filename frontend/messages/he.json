@@ -22,7 +22,8 @@
     "tabs": {
       "overview": "סקירה",
       "users": "משתמשים",
-      "modelPerformance": "ביצועי מודל"
+      "modelPerformance": "ביצועי מודל",
+      "rules": "כללים"
     },
     "modelMetrics": {
       "kpis": {
@@ -100,6 +101,55 @@
       "subtitle": "הקטגוריות המסומנות ביותר בתקופה הנבחרת",
       "topPhrases": "ביטויים מובילים",
       "noData": "לא נמצאו ממצאים בתקופה זו."
+    },
+    "rules": {
+      "title": "כללי זיהוי",
+      "addRule": "הוסף כלל",
+      "filters": {
+        "allLanguages": "כל השפות",
+        "allCategories": "סנן לפי קטגוריה...",
+        "allStatuses": "כל הסטטוסים",
+        "active": "פעיל",
+        "inactive": "לא פעיל"
+      },
+      "table": {
+        "name": "שם",
+        "language": "שפה",
+        "category": "קטגוריה",
+        "severity": "חומרה",
+        "patternType": "סוג תבנית",
+        "status": "סטטוס",
+        "actions": "פעולות"
+      },
+      "form": {
+        "addTitle": "הוספת כלל",
+        "editTitle": "עריכת כלל",
+        "language": "שפה",
+        "name": "שם",
+        "description": "תיאור",
+        "category": "קטגוריה",
+        "severity": "חומרה ברירת מחדל",
+        "patternType": "סוג תבנית",
+        "patternValue": "ערך התבנית",
+        "exampleBad": "דוגמה (שגוי)",
+        "exampleGood": "דוגמה (תקין)",
+        "save": "שמור",
+        "cancel": "ביטול",
+        "saving": "שומר..."
+      },
+      "deleteConfirm": "האם למחוק את הכלל לצמיתות?",
+      "noRules": "לא נמצאו כללים.",
+      "severityLabels": {
+        "low": "נמוך",
+        "medium": "בינוני",
+        "high": "גבוה"
+      },
+      "patternTypeLabels": {
+        "regex": "ביטוי רגולרי",
+        "keyword": "מילת מפתח",
+        "prompt": "פרומפט",
+        "other": "אחר"
+      }
     }
   },
   "home": {
