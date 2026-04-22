@@ -23,7 +23,8 @@
       "overview": "Overview",
       "users": "Users",
       "modelPerformance": "Model Performance",
-      "rules": "Rules"
+      "rules": "Rules",
+      "feedback": "Feedback"
     },
     "modelMetrics": {
       "kpis": {
@@ -150,6 +151,22 @@
         "prompt": "Prompt",
         "other": "Other"
       }
+    },
+    "feedback": {
+      "title": "User Feedback",
+      "filterAll": "All",
+      "filterUp": "Helpful",
+      "filterDown": "False Detection",
+      "colVote": "Vote",
+      "colFlaggedText": "Flagged Text",
+      "colSeverity": "Severity",
+      "colUser": "User",
+      "colDate": "Date",
+      "colComment": "Comment",
+      "noData": "No feedback submitted yet.",
+      "helpful": "Helpful",
+      "falsePositive": "False Detection",
+      "anonymous": "Anonymous"
     }
   },
   "home": {

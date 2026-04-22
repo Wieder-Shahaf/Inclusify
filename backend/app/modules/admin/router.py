@@ -20,6 +20,7 @@ from .schemas import (
     RulesListResponse,
     RuleCreate,
     RuleUpdate,
+    FeedbackListResponse,
 )
 from . import queries
 
@@ -226,6 +227,47 @@ async def delete_rule(
         deleted = await queries.delete_rule(conn, rule_id)
     if not deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rule not found")
+
+
+@router.get("/feedback", response_model=FeedbackListResponse)
+async def list_feedback(
+    request: Request,
+    user: dict = Depends(require_admin),
+    page: int = Query(default=1, ge=1, description="Page number"),
+    page_size: int = Query(default=20, ge=1, le=100, description="Items per page"),
+    vote: str = Query(default=None, description="Filter by vote: 'up' or 'down'"),
+):
+    """Get paginated list of user feedback votes on analysis flags.
+
+    Returns empty results gracefully when the DB schema hasn't been migrated yet
+    (new feedback columns may not exist in older deployments).
+    """
+    pool = _verify_db_pool(request)
+    try:
+        async with pool.acquire() as conn:
+            items, total, total_helpful, total_false_positive = await queries.get_feedback_paginated(
+                conn, page, page_size, vote_filter=vote
+            )
+            total_pages = (total + page_size - 1) // page_size if total > 0 else 0
+            return {
+                "items": items,
+                "total": total,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": total_pages,
+                "total_helpful": total_helpful,
+                "total_false_positive": total_false_positive,
+            }
+    except Exception:
+        import logging
+        logging.getLogger(__name__).warning(
+            "feedback query failed — DB schema may need migration"
+        )
+        return {
+            "items": [], "total": 0, "page": page,
+            "page_size": page_size, "total_pages": 0,
+            "total_helpful": 0, "total_false_positive": 0,
+        }
 
 
 @router.websocket("/ws")

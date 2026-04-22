@@ -424,3 +424,67 @@ async def delete_rule(conn: asyncpg.Connection, rule_id: str) -> bool:
     """Delete a rule by ID. Returns True if a row was deleted."""
     result = await conn.execute("DELETE FROM rules WHERE rule_id = $1", rule_id)
     return result == "DELETE 1"
+
+
+# ── Feedback ──────────────────────────────────────────────────────────────────
+
+async def get_feedback_paginated(
+    conn: asyncpg.Connection,
+    page: int = 1,
+    page_size: int = 20,
+    vote_filter: Optional[str] = None,   # 'up' | 'down' | None
+) -> tuple[list[dict], int, int, int]:
+    """Return (rows, total_filtered, total_helpful_all, total_false_positive_all)."""
+    offset = (page - 1) * page_size
+
+    conditions: list[str] = []
+    params: list = []
+
+    if vote_filter in ("up", "down"):
+        params.append(vote_filter)
+        conditions.append(f"fb.vote = ${len(params)}")
+
+    where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
+    # Count matching rows (respects filter)
+    total = await conn.fetchval(
+        f"SELECT COUNT(*) FROM feedback fb {where}", *params
+    )
+
+    # Overall totals (ignores filter) — for KPI cards
+    summary_row = await conn.fetchrow(
+        """
+        SELECT
+            COUNT(*) FILTER (WHERE vote = 'up')   AS total_helpful,
+            COUNT(*) FILTER (WHERE vote = 'down')  AS total_false_positive
+        FROM feedback
+        """
+    )
+    total_helpful        = int(summary_row["total_helpful"] or 0)
+    total_false_positive = int(summary_row["total_false_positive"] or 0)
+
+    params_paged = params + [page_size, offset]
+    rows = await conn.fetch(
+        f"""
+        SELECT
+            fb.feedback_id,
+            fb.vote,
+            fb.feedback_type,
+            fb.flagged_text,
+            fb.severity,
+            fb.start_idx,
+            fb.end_idx,
+            fb.comment,
+            fb.created_at,
+            fb.finding_id,
+            fb.run_id,
+            COALESCE(u.email, 'anonymous') AS user_email
+        FROM feedback fb
+        LEFT JOIN users u ON fb.user_id = u.user_id
+        {where}
+        ORDER BY fb.created_at DESC
+        LIMIT ${len(params_paged) - 1} OFFSET ${len(params_paged)}
+        """,
+        *params_paged,
+    )
+    return [dict(r) for r in rows], total or 0, total_helpful, total_false_positive

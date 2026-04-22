@@ -33,6 +33,35 @@ from app.auth.oauth import google_oauth_router
 logger = logging.getLogger(__name__)
 
 
+async def _migrate_feedback_table(pool) -> None:
+    """Idempotent: ensure feedback table has the per-flag vote columns.
+
+    Safe to run on every startup — uses ADD COLUMN IF NOT EXISTS.
+    Needed because the table was originally created with run_id NOT NULL
+    and without vote/flagged_text/severity/start_idx/end_idx columns.
+    """
+    if pool is None:
+        return
+    try:
+        async with pool.acquire(timeout=5.0) as conn:
+            # Drop NOT NULL on run_id so feedback can be submitted without a persisted run
+            await conn.execute(
+                "ALTER TABLE feedback ALTER COLUMN run_id DROP NOT NULL"
+            )
+            # Add per-flag context columns (idempotent)
+            await conn.execute("""
+                ALTER TABLE feedback
+                  ADD COLUMN IF NOT EXISTS vote         TEXT CHECK (vote IN ('up','down')),
+                  ADD COLUMN IF NOT EXISTS flagged_text TEXT,
+                  ADD COLUMN IF NOT EXISTS severity     TEXT,
+                  ADD COLUMN IF NOT EXISTS start_idx    INT,
+                  ADD COLUMN IF NOT EXISTS end_idx      INT
+            """)
+        logger.info("Feedback table migration applied (idempotent)")
+    except Exception as e:
+        logger.warning("Feedback table migration skipped: %s", e)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage application lifespan - pool creation and cleanup."""
@@ -42,6 +71,9 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"Failed to create database pool: {e}")
         app.state.db_pool = None
+
+    # Startup: apply idempotent feedback schema migration
+    await _migrate_feedback_table(app.state.db_pool)
 
     # Startup: create SQLAlchemy tables (for FastAPI Users)
     try:

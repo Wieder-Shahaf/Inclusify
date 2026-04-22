@@ -22,6 +22,7 @@ export default async function AdminPage({ params }: Props) {
       users: t('admin.tabs.users'),
       modelPerformance: t('admin.tabs.modelPerformance'),
       rules: t('admin.tabs.rules'),
+      feedback: t('admin.tabs.feedback'),
     },
     modelMetrics: {
       kpis: {
@@ -110,6 +111,22 @@ export default async function AdminPage({ params }: Props) {
         prompt: t('admin.rules.patternTypeLabels.prompt'),
         other: t('admin.rules.patternTypeLabels.other'),
       },
+    },
+    feedback: {
+      title: t('admin.feedback.title'),
+      filterAll: t('admin.feedback.filterAll'),
+      filterUp: t('admin.feedback.filterUp'),
+      filterDown: t('admin.feedback.filterDown'),
+      colVote: t('admin.feedback.colVote'),
+      colFlaggedText: t('admin.feedback.colFlaggedText'),
+      colSeverity: t('admin.feedback.colSeverity'),
+      colUser: t('admin.feedback.colUser'),
+      colDate: t('admin.feedback.colDate'),
+      colComment: t('admin.feedback.colComment'),
+      noData: t('admin.feedback.noData'),
+      helpful: t('admin.feedback.helpful'),
+      falsePositive: t('admin.feedback.falsePositive'),
+      anonymous: t('admin.feedback.anonymous'),
     },
   };
 

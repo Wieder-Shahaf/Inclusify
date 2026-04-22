@@ -23,7 +23,8 @@
       "overview": "סקירה",
       "users": "משתמשים",
       "modelPerformance": "ביצועי מודל",
-      "rules": "כללים"
+      "rules": "כללים",
+      "feedback": "משוב"
     },
     "modelMetrics": {
       "kpis": {
@@ -150,6 +151,22 @@
         "prompt": "פרומפט",
         "other": "אחר"
       }
+    },
+    "feedback": {
+      "title": "משוב משתמשים",
+      "filterAll": "הכל",
+      "filterUp": "מועיל",
+      "filterDown": "זיהוי שגוי",
+      "colVote": "הצבעה",
+      "colFlaggedText": "טקסט מסומן",
+      "colSeverity": "חומרה",
+      "colUser": "משתמש",
+      "colDate": "תאריך",
+      "colComment": "הערה",
+      "noData": "טרם התקבל משוב.",
+      "helpful": "מועיל",
+      "falsePositive": "זיהוי שגוי",
+      "anonymous": "אנונימי"
     }
   },
   "home": {

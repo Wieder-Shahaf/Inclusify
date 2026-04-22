@@ -177,3 +177,30 @@ class RuleUpdate(BaseModel):
     example_bad: Optional[str] = None
     example_good: Optional[str] = None
     is_enabled: Optional[bool] = None
+
+
+# ── Feedback schemas ──────────────────────────────────────────────────────────
+
+class FeedbackItem(BaseModel):
+    feedback_id: UUID
+    vote: Optional[str]
+    feedback_type: str
+    flagged_text: Optional[str]
+    severity: Optional[str]
+    start_idx: Optional[int]
+    end_idx: Optional[int]
+    comment: Optional[str]
+    created_at: datetime
+    user_email: str
+    finding_id: Optional[UUID]
+    run_id: Optional[UUID]
+
+
+class FeedbackListResponse(BaseModel):
+    items: list[FeedbackItem]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+    total_helpful: int = 0
+    total_false_positive: int = 0

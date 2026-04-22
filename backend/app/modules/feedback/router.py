@@ -88,7 +88,14 @@ async def submit_feedback(
             "Feedback saved: vote=%s flagged_text=%r severity=%s user=%s",
             body.vote, body.flagged_text, body.severity, user_id or "guest",
         )
-    except Exception:
-        logger.exception("Feedback persistence failed — returning success anyway")
+    except Exception as e:
+        err_str = str(e).lower()
+        if "column" in err_str or "not-null" in err_str or "null value" in err_str or "violates" in err_str:
+            logger.warning(
+                "Feedback not persisted — DB schema needs migration. "
+                "Run: psql $DATABASE_URL -f db/migrations/001_feedback_columns.sql"
+            )
+        else:
+            logger.exception("Feedback persistence failed — returning success anyway")
 
     return FeedbackResponse(success=True)
