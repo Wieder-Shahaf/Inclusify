@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import IssueTooltip from './IssueTooltip';
@@ -359,6 +360,162 @@ function PdfViewer({
   );
 }
 
+// ── docx-preview: loaded lazily to avoid SSR errors ─────────────────────────
+let docxLib: typeof import('docx-preview') | null = null;
+
+function useDocxLib() {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    if (docxLib) { setReady(true); return; }
+    import('docx-preview').then((mod) => {
+      docxLib = mod;
+      setReady(true);
+    });
+  }, []);
+  return ready ? docxLib : null;
+}
+
+// ── Find non-overlapping phrase matches in a plain string ─────────────────────
+interface PhraseMatch {
+  start: number;
+  end: number;
+  annotation: Annotation;
+  rawPhrase: string;
+}
+
+function findTextMatches(
+  text: string,
+  phrases: Array<{ phrase: string; annotation: Annotation }>,
+): PhraseMatch[] {
+  const lower = text.toLowerCase();
+  const all: PhraseMatch[] = [];
+  for (const { phrase, annotation } of phrases) {
+    if (!phrase) continue;
+    const lp = phrase.toLowerCase();
+    let idx = 0;
+    while (true) {
+      const pos = lower.indexOf(lp, idx);
+      if (pos === -1) break;
+      all.push({ start: pos, end: pos + phrase.length, annotation, rawPhrase: text.slice(pos, pos + phrase.length) });
+      idx = pos + phrase.length;
+    }
+  }
+  all.sort((a, b) => a.start - b.start);
+  const result: PhraseMatch[] = [];
+  let lastEnd = -1;
+  for (const m of all) {
+    if (m.start >= lastEnd) {
+      result.push(m);
+      lastEnd = m.end;
+    }
+  }
+  return result;
+}
+
+// ── DOCX viewer: docx-preview render + TreeWalker phrase injection ────────────
+function DocxViewer({
+  file,
+  annotations,
+  onAnnotationClick,
+}: {
+  file: File;
+  annotations: Annotation[];
+  onAnnotationClick: (ann: Annotation) => void;
+}) {
+  const docx = useDocxLib();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [portals, setPortals] = useState<Array<{ el: HTMLElement; annotation: Annotation; rawPhrase: string }>>([]);
+
+  useEffect(() => {
+    if (!docx || !containerRef.current || !file) return;
+    const container = containerRef.current;
+    container.innerHTML = '';
+    setPortals([]);
+
+    const phrases = annotations.map((ann) => ({ phrase: ann.label, annotation: ann }));
+
+    file
+      .arrayBuffer()
+      .then((buffer) =>
+        docx.renderAsync(buffer as ArrayBuffer, container, undefined, {
+          inWrapper: true,
+          ignoreWidth: true,
+          className: 'docx',
+        }),
+      )
+      .then(() => {
+        if (!containerRef.current) return;
+
+        // Collect all text nodes first, then process in reverse so DOM mutations
+        // to later nodes don't invalidate earlier positions in the list.
+        const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+        const nodes: Text[] = [];
+        let n: Node | null;
+        while ((n = walker.nextNode())) nodes.push(n as Text);
+
+        const newPortals: Array<{ el: HTMLElement; annotation: Annotation; rawPhrase: string }> = [];
+
+        for (let i = nodes.length - 1; i >= 0; i--) {
+          const textNode = nodes[i];
+          const text = textNode.nodeValue ?? '';
+          const matches = findTextMatches(text, phrases);
+          if (!matches.length) continue;
+
+          const parent = textNode.parentNode;
+          const nextSib = textNode.nextSibling;
+          if (!parent) continue;
+          parent.removeChild(textNode);
+
+          let cursor = 0;
+          for (const match of matches) {
+            if (match.start > cursor) {
+              parent.insertBefore(document.createTextNode(text.slice(cursor, match.start)), nextSib);
+            }
+            const span = document.createElement('span');
+            span.id = `ann-${match.annotation.start}`;
+            parent.insertBefore(span, nextSib);
+            newPortals.push({ el: span, annotation: match.annotation, rawPhrase: match.rawPhrase });
+            cursor = match.end;
+          }
+          if (cursor < text.length) {
+            parent.insertBefore(document.createTextNode(text.slice(cursor)), nextSib);
+          }
+        }
+
+        setPortals(newPortals);
+      })
+      .catch((err) => {
+        console.error('DOCX render error:', err);
+      });
+  }, [docx, file, annotations]);
+
+  if (!docx) {
+    return (
+      <div className="flex items-center justify-center h-32 text-slate-400 text-sm animate-pulse">
+        Loading document viewer…
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div ref={containerRef} className="docx-viewer-wrap" />
+      {portals.map((p, idx) =>
+        createPortal(
+          <IssueTooltip
+            annotation={p.annotation}
+            onOpenSidePanel={() => onAnnotationClick(p.annotation)}
+          >
+            {p.rawPhrase}
+          </IssueTooltip>,
+          p.el,
+          `docx-portal-${idx}`,
+        ),
+      )}
+    </>
+  );
+}
+
 // ── Public component ─────────────────────────────────────────────────────────
 export interface DocumentViewerProps {
   inputType: 'pdf' | 'docx' | 'pptx' | 'txt';
@@ -395,7 +552,17 @@ export default function DocumentViewer({
     );
   }
 
-  if ((inputType === 'pptx' || inputType === 'docx') && markdownText) {
+  if (inputType === 'docx' && uploadedFile) {
+    return (
+      <DocxViewer
+        file={uploadedFile}
+        annotations={annotations}
+        onAnnotationClick={onAnnotationClick}
+      />
+    );
+  }
+
+  if (inputType === 'pptx' && markdownText) {
     return (
       <MarkdownViewer
         markdownText={markdownText}
