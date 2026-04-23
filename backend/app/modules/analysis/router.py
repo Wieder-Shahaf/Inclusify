@@ -282,7 +282,10 @@ async def analyze_text(
 
     start_time = time.monotonic()
 
-    issues, analysis_mode, call_metrics = await _hybrid_detector.analyze(body.text, language=language, chunks=body.chunks)
+    issues, analysis_mode, call_metrics = await _hybrid_detector.analyze(
+        body.text, language=language, chunks=body.chunks,
+        db_pool=getattr(request.app.state, 'db_pool', None),
+    )
 
     elapsed = time.monotonic() - start_time
     runtime_ms = int(elapsed * 1000)

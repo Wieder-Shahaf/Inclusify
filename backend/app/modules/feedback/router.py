@@ -10,16 +10,32 @@ Vote mapping:
 """
 
 import logging
+import time
+from collections import defaultdict
 from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Request
-from pydantic import BaseModel
+from fastapi import APIRouter, HTTPException, Request
+from pydantic import BaseModel, Field
 
 from app.auth.users import current_user_optional
 from app.db import repository as repo
 from fastapi import Depends
 from app.db.models import User
+
+# Simple in-memory rate limit: max 10 votes per IP per minute
+_rate_store: dict[str, list[float]] = defaultdict(list)
+_RATE_LIMIT = 10
+_RATE_WINDOW = 60.0
+
+
+def _check_rate_limit(ip: str) -> None:
+    now = time.monotonic()
+    timestamps = _rate_store[ip]
+    _rate_store[ip] = [t for t in timestamps if now - t < _RATE_WINDOW]
+    if len(_rate_store[ip]) >= _RATE_LIMIT:
+        raise HTTPException(status_code=429, detail="Too many feedback submissions")
+    _rate_store[ip].append(now)
 
 logger = logging.getLogger(__name__)
 
@@ -32,14 +48,14 @@ _VOTE_TO_TYPE = {
 
 
 class FeedbackRequest(BaseModel):
-    vote: str                          # 'up' | 'down'
-    flagged_text: str
-    severity: str
+    vote: str
+    flagged_text: str = Field(..., max_length=500)
+    severity: str = Field(..., max_length=50)
     start_idx: int
     end_idx: int
     finding_id: Optional[UUID] = None
     run_id: Optional[UUID] = None
-    comment: Optional[str] = None
+    comment: Optional[str] = Field(None, max_length=1000)
 
 
 class FeedbackResponse(BaseModel):
@@ -58,6 +74,9 @@ async def submit_feedback(
     Both authenticated users and guests can submit feedback.
     DB persistence fails silently — the response is always 200.
     """
+    client_ip = request.client.host if request.client else "unknown"
+    _check_rate_limit(client_ip)
+
     if body.vote not in ("up", "down"):
         return FeedbackResponse(success=False)
 
@@ -89,8 +108,9 @@ async def submit_feedback(
             body.vote, body.flagged_text, body.severity, user_id or "guest",
         )
     except Exception as e:
-        err_str = str(e).lower()
-        if "column" in err_str or "not-null" in err_str or "null value" in err_str or "violates" in err_str:
+        import asyncpg
+        if isinstance(e, (asyncpg.UndefinedColumnError, asyncpg.NotNullViolationError,
+                          asyncpg.CheckViolationError)):
             logger.warning(
                 "Feedback not persisted — DB schema needs migration. "
                 "Run: psql $DATABASE_URL -f db/migrations/001_feedback_columns.sql"
