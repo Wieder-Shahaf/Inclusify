@@ -78,6 +78,7 @@ class AnalysisResponse(BaseModel):
     corrected_text: Optional[str] = None
     note: Optional[str] = None
     analysis_mode: Literal['llm', 'hybrid', 'rules_only'] = 'rules_only'
+    run_id: Optional[str] = None
 
 
 # =============================================================================
@@ -119,12 +120,12 @@ async def _persist_results(
     page_count: Optional[int] = None,
     detected_language: Optional[str] = None,
     text_storage_ref: Optional[str] = None,
-) -> None:
-    """Persist analysis results to DB. Fails silently — never breaks the response."""
+) -> Optional[str]:
+    """Persist analysis results to DB. Returns run_id on success, None otherwise."""
     pool = getattr(request.app.state, "db_pool", None)
     if pool is None:
         logger.debug("DB pool not available — skipping persistence")
-        return
+        return None
 
     text_sha256 = hashlib.sha256(text.encode("utf-8")).hexdigest()
 
@@ -191,8 +192,11 @@ async def _persist_results(
                 await repo.finish_run(conn, run_id=run_id, status="failed", runtime_ms=runtime_ms, error_message=str(inner_e))
                 logger.error("Findings insert failed. Run marked as failed.")
 
+            return str(run_id)
+
     except Exception:
         logger.exception("Complete DB persistence failure — analysis results were still returned to user")
+        return None
 
 # =============================================================================
 # Metrics Persistence (always fires, privacy-safe — no text stored)
@@ -287,6 +291,7 @@ async def analyze_text(
         len(issues), analysis_mode, elapsed,
     )
 
+    persisted_run_id: Optional[str] = None
     # Persist full results to DB only when private_mode is off
     if not private_mode:
         if current_user is None:
@@ -300,7 +305,7 @@ async def analyze_text(
         # Map client input_type ('pdf','docx','pptx','txt') → DB enum ('paste'|'upload')
         db_input_type = "upload" if body.input_type and body.input_type != "paste" else "paste"
 
-        await _persist_results(
+        persisted_run_id = await _persist_results(
             request=request,
             user=current_user,
             text=body.text,
@@ -339,4 +344,5 @@ async def analyze_text(
         corrected_text=None,
         note=f"Found {len(issues)} issue(s). Mode: {analysis_mode}",
         analysis_mode=analysis_mode,
+        run_id=persisted_run_id if not private_mode else None,
     )

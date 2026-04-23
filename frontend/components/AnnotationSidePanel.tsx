@@ -20,6 +20,7 @@ import {
   Check,
   ThumbsUp,
   ThumbsDown,
+  Lock,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { submitFeedback } from '@/lib/api/client';
@@ -30,6 +31,8 @@ type AnnotationSidePanelProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   locale?: string;
+  isPrivate?: boolean;
+  runId?: string;
 };
 
 const severityInfo = {
@@ -68,6 +71,8 @@ export default function AnnotationSidePanel({
   open,
   onOpenChange,
   locale = 'en',
+  isPrivate = false,
+  runId,
 }: AnnotationSidePanelProps) {
   const [copied, setCopied] = useState(false);
   const [vote, setVote] = useState<'up' | 'down' | null>(null);
@@ -89,31 +94,33 @@ export default function AnnotationSidePanel({
   const info = severityInfo[annotation.severity] || severityInfo.biased;
 
   const t = {
-    flaggedTerm:       isHe ? 'מונח מסומן'                : 'Flagged Term',
-    whyProblematic:    isHe ? 'מדוע זה בעייתי?'           : 'Why is this problematic?',
-    modelConfidence:   isHe ? 'ביטחון המודל'               : 'Model confidence',
-    suggestedAlt:      isHe ? 'חלופה מומלצת'               : 'Suggested Alternative',
-    copySuggestion:    isHe ? 'העתק הצעה'                  : 'Copy suggestion',
-    copied:            isHe ? '!הועתק ללוח'                : 'Copied to clipboard!',
-    inclusiveVersion:  isHe ? 'גרסה מכלילה'                : 'Inclusive version',
-    learnMore:         isHe ? 'למידע נוסף'                  : 'Learn More',
-    closePanel:        isHe ? 'הבנתי, סגור'                : 'Got it, close panel',
-    feedbackQuestion:  isHe ? 'האם הדגל הזה מועיל?'       : 'Was this flag helpful?',
-    voteUp:            isHe ? 'כן, מועיל'                  : 'Yes, helpful',
-    voteDown:          isHe ? 'לא, זיהוי שגוי'             : 'No, false detection',
-    feedbackThanks:    isHe ? 'תודה על המשוב!'             : 'Thanks for your feedback!',
+    flaggedTerm:         isHe ? 'מונח מסומן'                : 'Flagged Term',
+    whyProblematic:      isHe ? 'מדוע זה בעייתי?'           : 'Why is this problematic?',
+    modelConfidence:     isHe ? 'ביטחון המודל'               : 'Model confidence',
+    suggestedAlt:        isHe ? 'חלופה מומלצת'               : 'Suggested Alternative',
+    copySuggestion:      isHe ? 'העתק הצעה'                  : 'Copy suggestion',
+    copied:              isHe ? '!הועתק ללוח'                : 'Copied to clipboard!',
+    inclusiveVersion:    isHe ? 'גרסה מכלילה'                : 'Inclusive version',
+    learnMore:           isHe ? 'למידע נוסף'                  : 'Learn More',
+    closePanel:          isHe ? 'הבנתי, סגור'                : 'Got it, close panel',
+    feedbackQuestion:    isHe ? 'האם הדגל הזה מועיל?'       : 'Was this flag helpful?',
+    voteUp:              isHe ? 'כן, מועיל'                  : 'Yes, helpful',
+    voteDown:            isHe ? 'לא, זיהוי שגוי'             : 'No, false detection',
+    feedbackThanks:      isHe ? 'תודה על המשוב!'             : 'Thanks for your feedback!',
+    privateNoFeedback:   isHe ? 'משוב אינו זמין במצב פרטי'  : 'Feedback unavailable in private mode',
   };
 
   const handleVote = (v: 'up' | 'down') => {
-    if (vote !== null) return; // already voted
+    if (vote !== null) return;
     setVote(v);
     submitFeedback({
       vote: v,
-      flaggedText: annotation!.label,
-      severity: annotation!.severity,
-      startIdx: annotation!.start,
-      endIdx: annotation!.end,
-      findingId: annotation!.finding_id,
+      flaggedText: annotation.label,
+      severity: annotation.severity,
+      startIdx: annotation.start,
+      endIdx: annotation.end,
+      findingId: annotation.finding_id,
+      runId,
     });
   };
 
@@ -343,7 +350,7 @@ export default function AnnotationSidePanel({
           </div>
         </div>
 
-        {/* Feedback — thumbs up/down */}
+        {/* Feedback — thumbs up/down (hidden in private mode) */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -354,7 +361,12 @@ export default function AnnotationSidePanel({
             'rounded-xl border border-slate-200 dark:border-slate-700 p-4',
             'bg-slate-50 dark:bg-slate-800/50',
           )}>
-            {vote === null ? (
+            {isPrivate ? (
+              <div className={cn('flex items-center gap-2 text-slate-400 dark:text-slate-500', isHe && 'flex-row-reverse')}>
+                <Lock className="w-4 h-4 shrink-0" />
+                <p className="text-xs">{t.privateNoFeedback}</p>
+              </div>
+            ) : vote === null ? (
               <>
                 <p className={cn(
                   'text-xs font-medium text-slate-500 dark:text-slate-400 mb-3',

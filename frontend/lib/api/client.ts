@@ -66,6 +66,7 @@ interface BackendAnalysisResponse {
   corrected_text?: string;
   note?: string;
   analysis_mode?: 'llm' | 'hybrid' | 'rules_only';
+  run_id?: string;
 }
 
 // Frontend analysis result
@@ -76,6 +77,7 @@ export interface AnalysisResult {
   originalText: string;
   correctedText?: string;
   analysisMode?: 'llm' | 'hybrid' | 'rules_only';
+  runId?: string;
 }
 
 // Map backend severity to frontend severity
@@ -187,6 +189,7 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
     originalText: response.original_text,
     correctedText: response.corrected_text,
     analysisMode: response.analysis_mode,
+    runId: response.run_id,
   };
 }
 

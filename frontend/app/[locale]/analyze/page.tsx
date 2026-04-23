@@ -92,6 +92,7 @@ export default function AnalyzePage() {
   const [backendHealthy, setBackendHealthy] = useState<boolean | null>(null);
   const [modelAvailable, setModelAvailable] = useState<boolean | null>(null);
   const [analysisMode, setAnalysisMode] = useState<'llm' | 'hybrid' | 'rules_only' | null>(null);
+  const [currentRunId, setCurrentRunId] = useState<string | undefined>();
   const [showGuestPrompt, setShowGuestPrompt] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [processingStage, setProcessingStage] = useState<'uploading' | 'parsing' | 'analyzing' | 'generating' | 'complete'>('uploading');
@@ -193,6 +194,7 @@ export default function AnalyzePage() {
         },
       });
       setAnalysisMode(result.analysisMode || null);
+      setCurrentRunId(result.runId);
       setViewState('results');
       announce(t('a11y.analysisComplete', { count: Object.values(result.counts).reduce((a, b) => a + b, 0) }));
     } catch (error) {
@@ -877,6 +879,8 @@ export default function AnalyzePage() {
         open={sidePanelOpen}
         onOpenChange={setSidePanelOpen}
         locale={locale}
+        isPrivate={privateMode}
+        runId={currentRunId}
       />
       <ContactModal
         open={contactOpen}
