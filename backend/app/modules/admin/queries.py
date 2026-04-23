@@ -381,7 +381,8 @@ async def update_rule(conn: asyncpg.Connection, rule_id: str, updates: dict) -> 
         'name', 'description', 'category', 'default_severity',
         'pattern_type', 'pattern_value', 'example_bad', 'example_good', 'is_enabled',
     }
-    filtered = {k: v for k, v in updates.items() if k in allowed and v is not None}
+    nullable = {'description', 'example_bad', 'example_good'}
+    filtered = {k: v for k, v in updates.items() if k in allowed and (v is not None or k in nullable)}
     if not filtered:
         row = await conn.fetchrow("SELECT * FROM rules WHERE rule_id = $1", rule_id)
         return dict(row) if row else None

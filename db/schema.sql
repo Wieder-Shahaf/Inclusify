@@ -50,7 +50,7 @@ CREATE TABLE documents (
   document_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(user_id) ON DELETE SET NULL,
 
-  input_type TEXT NOT NULL CHECK (input_type IN ('paste','upload')),
+  input_type TEXT NOT NULL CHECK (input_type IN ('pdf', 'docx', 'pptx', 'txt')),
   language TEXT NOT NULL DEFAULT 'auto' CHECK (language IN ('he','en','auto')),
 
   private_mode BOOLEAN NOT NULL DEFAULT TRUE,

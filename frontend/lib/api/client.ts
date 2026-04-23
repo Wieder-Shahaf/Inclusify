@@ -193,6 +193,18 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
   };
 }
 
+export interface BboxAnnotation {
+  start: number;
+  end: number;
+  page: number;
+  bbox: { l: number; t: number; r: number; b: number };
+}
+
+export interface PageSize {
+  width: number;
+  height: number;
+}
+
 export interface FileMetadata {
   filename: string;
   mimeType: string;
@@ -208,6 +220,9 @@ export interface FileMetadata {
 export interface UploadResult extends FileMetadata {
   text: string;
   chunks?: string[] | null;
+  bboxAnnotations?: BboxAnnotation[] | null;
+  pageSizes?: Record<string, PageSize> | null;
+  markdownText?: string | null;
 }
 
 // Main API function
@@ -301,6 +316,9 @@ export async function uploadFile(file: File): Promise<UploadResult> {
     detectedLanguage: data.detected_language ?? null,
     fileStorageRef: data.file_storage_ref ?? null,
     chunks: data.chunks ?? null,
+    bboxAnnotations: data.bbox_annotations ?? null,
+    pageSizes: data.page_sizes ?? null,
+    markdownText: data.markdown_text ?? null,
   };
 }
 

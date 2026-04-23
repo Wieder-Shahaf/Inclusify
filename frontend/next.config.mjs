@@ -11,6 +11,11 @@ const withAnalyzer = withBundleAnalyzer({
 const nextConfig = {
   turbopack: false,
   output: 'standalone',
+  webpack: (config) => {
+    // react-pdf requires the pdfjs-dist worker to be served as a static asset
+    config.resolve.alias.canvas = false;
+    return config;
+  },
 };
 
 export default withAnalyzer(withNextIntl(nextConfig));

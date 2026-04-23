@@ -270,6 +270,51 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
         chunker = _get_hybrid_chunker()
         chunks_data = [c.text for c in chunker.chunk(result.document) if c.text.strip()]
 
+        # PDF: build offset→bbox index for visual overlay rendering.
+        bbox_annotations = None
+        page_sizes = None
+        if ext == ".pdf":
+            bbox_annotations = []
+            search_start = 0
+            for item in items:
+                item_text = item.get("text", "")
+                prov_list = item.get("prov", [])
+                if not item_text or not prov_list:
+                    continue
+                prov = prov_list[0]
+                raw_bbox = prov.get("bbox")
+                if raw_bbox is None:
+                    continue
+                bbox = {"l": raw_bbox.l, "t": raw_bbox.t, "r": raw_bbox.r, "b": raw_bbox.b} if hasattr(raw_bbox, 'l') else raw_bbox
+                page_no = prov.get("page_no", 1)
+                idx = full_text.find(item_text, search_start)
+                if idx != -1:
+                    bbox_annotations.append({
+                        "start": idx,
+                        "end": idx + len(item_text),
+                        "page": page_no,
+                        "bbox": bbox,
+                    })
+                    search_start = idx + len(item_text)
+
+            page_sizes = {}
+            if hasattr(result.document, 'pages'):
+                for pg_no, pg in result.document.pages.items():
+                    sz = getattr(pg, 'size', None)
+                    if sz:
+                        page_sizes[str(pg_no)] = {
+                            "width": getattr(sz, 'width', None),
+                            "height": getattr(sz, 'height', None),
+                        }
+
+        # PPTX / DOCX: export markdown for structured rendering in the UI.
+        markdown_text = None
+        if ext in (".pptx", ".docx"):
+            try:
+                markdown_text = result.document.export_to_markdown()
+            except Exception:
+                logger.debug("export_to_markdown failed for %s — skipping", filename)
+
         logger.info(
             "Extraction completed: filename=%s pages=%d text_length=%d chunks=%d detected_language=%s title=%s author=%s",
             filename, final_pages, len(full_text), len(chunks_data), detected_lang,
@@ -284,6 +329,9 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
             "author": author,
             "detected_language": detected_lang,
             "chunks": chunks_data,
+            "bbox_annotations": bbox_annotations,
+            "page_sizes": page_sizes,
+            "markdown_text": markdown_text,
         }
     except Exception as e:
         logger.error("Processing failed: %s", str(e), exc_info=True)

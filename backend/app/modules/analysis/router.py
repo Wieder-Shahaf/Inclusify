@@ -305,9 +305,6 @@ async def analyze_text(
         text_sha256 = hashlib.sha256(body.text.encode("utf-8")).hexdigest()
         text_storage_ref = await _blob_upload_text(text_sha256, body.text)
 
-        # Map client input_type ('pdf','docx','pptx','txt') → DB enum ('paste'|'upload')
-        db_input_type = "upload" if body.input_type and body.input_type != "paste" else "paste"
-
         persisted_run_id = await _persist_results(
             request=request,
             user=current_user,
@@ -317,7 +314,7 @@ async def analyze_text(
             analysis_mode=analysis_mode,
             issues=issues,
             runtime_ms=runtime_ms,
-            input_type=db_input_type,
+            input_type=body.input_type or "txt",
             original_filename=body.original_filename,
             mime_type=body.mime_type,
             title=body.title,

@@ -239,6 +239,20 @@ class HybridDetector:
                     if not isinstance(phrase, str) or not phrase.strip() or phrase.strip().lower() == "null":
                         phrase = None
 
+                    # Narrow offsets to the phrase when the LLM returned one.
+                    # Fall back to the full sentence span when phrase is absent or
+                    # not locatable (e.g. LLM hallucinated a different form).
+                    actual_start = start_offset
+                    actual_end = end_offset
+                    if phrase:
+                        phrase_idx = sentence.find(phrase)
+                        if phrase_idx == -1:
+                            # Case-insensitive fallback
+                            phrase_idx = sentence.lower().find(phrase.lower())
+                        if phrase_idx != -1:
+                            actual_start = start_offset + phrase_idx
+                            actual_end = actual_start + len(phrase)
+
                     issue = Issue(
                         flagged_text=sentence,
                         severity=severity,
@@ -247,8 +261,8 @@ class HybridDetector:
                         suggestion=suggestion,
                         inclusive_sentence=inclusive_sentence,
                         phrase=phrase,
-                        start=start_offset,
-                        end=end_offset,
+                        start=actual_start,
+                        end=actual_end,
                         confidence=confidence,
                     )
                     llm_issues.append(issue)

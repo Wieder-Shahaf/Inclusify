@@ -5,6 +5,8 @@ Requirements: ADMIN-01 (analytics), ADMIN-02 (user/org management)
 
 All endpoints require site_admin role (403 for non-admins).
 """
+import re
+
 from fastapi import APIRouter, Depends, Query, Request, HTTPException, status, WebSocket, WebSocketDisconnect
 from jose import jwt, JWTError
 
@@ -54,6 +56,18 @@ class AdminWSManager:
 ws_manager = AdminWSManager()
 
 router = APIRouter()
+
+
+def _validate_regex(pattern_type: str | None, pattern_value: str | None) -> None:
+    """Raise 422 if pattern_type is 'regex' and pattern_value is not a valid Python regex."""
+    if pattern_type == 'regex' and pattern_value:
+        try:
+            re.compile(pattern_value)
+        except re.error as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Invalid regex pattern: {exc}",
+            )
 
 def _verify_db_pool(request: Request):
     """Verify that DB pool is initialized, else raise 503."""
@@ -177,6 +191,7 @@ async def create_rule(
     user: dict = Depends(require_admin),
 ):
     """Create a new detection rule."""
+    _validate_regex(payload.pattern_type, payload.pattern_value)
     pool = _verify_db_pool(request)
     async with pool.acquire() as conn:
         rule = await queries.create_rule(conn, payload.model_dump())
@@ -191,6 +206,7 @@ async def update_rule(
     user: dict = Depends(require_admin),
 ):
     """Update fields on an existing rule."""
+    _validate_regex(payload.pattern_type, payload.pattern_value)
     pool = _verify_db_pool(request)
     async with pool.acquire() as conn:
         rule = await queries.update_rule(conn, rule_id, payload.model_dump(exclude_unset=True))

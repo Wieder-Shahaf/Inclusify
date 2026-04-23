@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 
 class UploadResponse(BaseModel):
@@ -14,6 +14,9 @@ class UploadResponse(BaseModel):
     detected_language: Optional[str] = None
     file_storage_ref: Optional[str] = None
     chunks: Optional[List[str]] = None
+    bbox_annotations: Optional[List[Dict[str, Any]]] = None
+    page_sizes: Optional[Dict[str, Any]] = None
+    markdown_text: Optional[str] = None
 
 
 class UploadError(BaseModel):

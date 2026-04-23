@@ -47,9 +47,12 @@ const SEVERITY_STYLES: Record<string, { bg: string; text: string; label: string 
 function SkeletonRow() {
   return (
     <tr className="border-b border-slate-100 dark:border-slate-800">
-      {[32, 48, 24, 40, 28, 36].map((w, i) => (
+      {[128, 192, 96, 160, 112, 144].map((w, i) => (
         <td key={i} className="px-4 py-4">
-          <div className={cn(`h-4 w-${w} animate-pulse bg-slate-200 dark:bg-slate-700 rounded`)} />
+          <div
+            className="h-4 animate-pulse bg-slate-200 dark:bg-slate-700 rounded"
+            style={{ width: w }}
+          />
         </td>
       ))}
     </tr>

@@ -86,4 +86,7 @@ async def upload_document(
         detected_language=result.get("detected_language"),
         file_storage_ref=file_storage_ref,
         chunks=result.get("chunks"),
+        bbox_annotations=result.get("bbox_annotations"),
+        page_sizes=result.get("page_sizes"),
+        markdown_text=result.get("markdown_text"),
     )

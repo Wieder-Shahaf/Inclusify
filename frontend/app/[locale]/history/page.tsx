@@ -13,7 +13,7 @@ import {
 } from '@/lib/api/client';
 import {
   FileText, Clock, AlertTriangle, TrendingUp, History, Loader2,
-  BookOpen, Globe, Trash2, X, ChevronDown, ChevronUp, CheckCircle2,
+  BookOpen, Globe, Trash2, X, ChevronDown, ChevronUp, CheckCircle2, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 
 // ── helpers ────────────────────────────────────────────────────────────────
@@ -389,18 +389,23 @@ export default function HistoryPage() {
   const locale = (params?.locale as string) ?? 'en';
   const isHe = locale === 'he';
 
+  const PAGE_SIZE = 50;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [kpis, setKpis] = useState<HistoryKPIs | null>(null);
   const [analyses, setAnalyses] = useState<HistoryEntry[]>([]);
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
+  const [offset, setOffset] = useState(0);
+  const [total, setTotal] = useState(0);
 
-  const load = useCallback(() => {
+  const load = useCallback((off: number) => {
     setLoading(true);
-    getHistory()
+    setError(null);
+    getHistory(PAGE_SIZE, off)
       .then((data) => {
         setKpis(data.kpis);
         setAnalyses(data.analyses);
+        setTotal(data.total);
       })
       .catch((err) => {
         if (err.message !== 'Session expired') {
@@ -411,7 +416,10 @@ export default function HistoryPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(offset); }, [load, offset]);
+
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
 
   const handleDelete = useCallback(async (runId: string) => {
     try {
@@ -442,7 +450,7 @@ export default function HistoryPage() {
       <div className="flex-1 flex items-center justify-center py-20 text-center">
         <div>
           <p className="text-red-500 font-medium mb-3">{error}</p>
-          <button onClick={load} className="text-sm text-pride-purple hover:underline">
+          <button onClick={() => load(offset)} className="text-sm text-pride-purple hover:underline">
             {isHe ? 'נסה שוב' : 'Try again'}
           </button>
         </div>
@@ -546,7 +554,9 @@ export default function HistoryPage() {
         ) : (
           <div className="space-y-3">
             <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
-              {isHe ? `${analyses.length} ניתוחים אחרונים` : `${analyses.length} recent analyses`}
+              {isHe
+                ? `${offset + 1}–${Math.min(offset + analyses.length, total)} מתוך ${total} ניתוחים`
+                : `${offset + 1}–${Math.min(offset + analyses.length, total)} of ${total} analyses`}
             </p>
             {analyses.map(entry => (
               <AnalysisCard
@@ -557,6 +567,29 @@ export default function HistoryPage() {
                 onDelete={() => handleDelete(entry.run_id)}
               />
             ))}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-3 pt-4">
+                <button
+                  onClick={() => setOffset(o => Math.max(0, o - PAGE_SIZE))}
+                  disabled={offset === 0 || loading}
+                  className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                  aria-label={isHe ? 'עמוד קודם' : 'Previous page'}
+                >
+                  {isHe ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+                </button>
+                <span className="text-sm text-slate-600 dark:text-slate-400 tabular-nums">
+                  {isHe ? `${currentPage} / ${totalPages}` : `${currentPage} / ${totalPages}`}
+                </span>
+                <button
+                  onClick={() => setOffset(o => o + PAGE_SIZE)}
+                  disabled={offset + PAGE_SIZE >= total || loading}
+                  className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                  aria-label={isHe ? 'עמוד הבא' : 'Next page'}
+                >
+                  {isHe ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

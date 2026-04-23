@@ -8,10 +8,10 @@ import AnnotationSidePanel from '@/components/AnnotationSidePanel';
 import SeverityBadge from '@/components/SeverityBadge';
 import PaperUpload from '@/components/PaperUpload';
 import ProcessingAnimation from '@/components/ProcessingAnimation';
-import IssueTooltip from '@/components/IssueTooltip';
 import HealthWarningBanner from '@/components/HealthWarningBanner';
 import { Annotation } from '@/components/AnnotatedText';
-import { analyzeText, uploadFile, healthCheck, modelHealthCheck } from '@/lib/api/client';
+import DocumentViewer from '@/components/DocumentViewer';
+import { analyzeText, uploadFile, healthCheck, modelHealthCheck, BboxAnnotation, PageSize } from '@/lib/api/client';
 import { exportReport } from '@/lib/exportReport';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLiveAnnouncer } from '@/contexts/LiveAnnouncerContext';
@@ -86,6 +86,7 @@ export default function AnalyzePage() {
   const [viewState, setViewState] = useState<ViewState>('upload');
   const [fileName, setFileName] = useState('');
   const [analysis, setAnalysis] = useState<AnalysisData>(emptyAnalysis);
+  const [activeFilters, setActiveFilters] = useState<Set<Severity>>(new Set());
   const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | null>(null);
   const [selectedResultIndex, setSelectedResultIndex] = useState<number | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
@@ -98,6 +99,12 @@ export default function AnalyzePage() {
   const [processingStage, setProcessingStage] = useState<'uploading' | 'parsing' | 'analyzing' | 'generating' | 'complete'>('uploading');
   const [privateMode, setPrivateMode] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  // Document viewer state
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [docInputType, setDocInputType] = useState<'pdf' | 'docx' | 'pptx' | 'txt'>('txt');
+  const [bboxAnnotations, setBboxAnnotations] = useState<BboxAnnotation[] | null>(null);
+  const [pageSizes, setPageSizes] = useState<Record<string, PageSize> | null>(null);
+  const [markdownText, setMarkdownText] = useState<string | null>(null);
 
   useEffect(() => {
     const checkHealth = async () => {
@@ -195,6 +202,12 @@ export default function AnalyzePage() {
       });
       setAnalysisMode(result.analysisMode || null);
       setCurrentRunId(result.runId);
+      // Store document viewer metadata
+      setUploadedFile(file);
+      setDocInputType(uploadResult.inputType);
+      setBboxAnnotations(uploadResult.bboxAnnotations ?? null);
+      setPageSizes(uploadResult.pageSizes ?? null);
+      setMarkdownText(uploadResult.markdownText ?? null);
       setViewState('results');
       announce(t('a11y.analysisComplete', { count: Object.values(result.counts).reduce((a, b) => a + b, 0) }));
     } catch (error) {
@@ -215,6 +228,10 @@ export default function AnalyzePage() {
     setProcessingStage('uploading');
     setShowGuestPrompt(true);
     setPrivateMode(false);
+    setUploadedFile(null);
+    setBboxAnnotations(null);
+    setPageSizes(null);
+    setMarkdownText(null);
   }, []);
 
   const handleIssueClick = useCallback((result: AnalysisData['results'][0], index: number) => {
@@ -243,6 +260,18 @@ export default function AnalyzePage() {
     exportReport(analysis, { fileName, locale });
   }, [analysis, fileName, locale]);
 
+  const toggleFilter = useCallback((sev: Severity) => {
+    setActiveFilters(prev => {
+      const next = new Set(prev);
+      if (next.has(sev)) next.delete(sev); else next.add(sev);
+      return next;
+    });
+  }, []);
+
+  const filteredResults = activeFilters.size === 0
+    ? analysis.results
+    : analysis.results.filter(r => activeFilters.has(r.severity));
+
   useKeyboardNavigation({
     containerRef: issuesListRef,
     itemSelector: 'button[role="listitem"]',
@@ -251,51 +280,6 @@ export default function AnalyzePage() {
       if (analysis.results[index]) handleIssueClick(analysis.results[index], index);
     },
   });
-
-  const renderHighlightedText = () => {
-    const { text, annotations } = analysis;
-    if (!text) return null;
-    if (annotations.length === 0) return <span className="whitespace-pre-wrap">{text}</span>;
-
-    const parts: Array<{ content: string; annotation?: Annotation }> = [];
-    let cursor = 0;
-
-    const sorted = [...annotations].sort((a, b) => a.start - b.start);
-    const nonOverlapping: Annotation[] = [];
-    let lastEnd = -1;
-    for (const ann of sorted) {
-      if (ann.start >= lastEnd) {
-        nonOverlapping.push(ann);
-        lastEnd = ann.end;
-      }
-    }
-
-    for (const ann of nonOverlapping) {
-      if (ann.start > cursor) parts.push({ content: text.slice(cursor, ann.start) });
-      parts.push({ content: text.slice(ann.start, ann.end), annotation: ann });
-      cursor = ann.end;
-    }
-    if (cursor < text.length) parts.push({ content: text.slice(cursor) });
-
-    return (
-      <span className="whitespace-pre-wrap leading-8">
-        {parts.map((part, idx) =>
-          part.annotation ? (
-            <span key={idx} id={`ann-${part.annotation.start}`}>
-              <IssueTooltip
-                annotation={part.annotation}
-                onOpenSidePanel={() => handleAnnotationClick(part.annotation!)}
-              >
-                {part.content}
-              </IssueTooltip>
-            </span>
-          ) : (
-            <span key={idx}>{part.content}</span>
-          )
-        )}
-      </span>
-    );
-  };
 
   const totalIssues =
     analysis.counts.outdated +
@@ -560,13 +544,23 @@ export default function AnalyzePage() {
                     <span className="text-xs text-slate-400">{t('hoverHint')}</span>
                   </div>
 
-                  {/* Scrollable text */}
+                  {/* Scrollable document area */}
                   <div
                     ref={textPanelRef}
                     className="flex-1 px-7 py-6 overflow-y-auto text-[0.9rem] text-slate-700 dark:text-slate-200 scroll-smooth min-h-0"
                     dir={isHebrew ? 'rtl' : 'ltr'}
                   >
-                    {renderHighlightedText()}
+                    <DocumentViewer
+                      inputType={docInputType}
+                      text={analysis.text}
+                      annotations={analysis.annotations}
+                      uploadedFile={uploadedFile}
+                      bboxAnnotations={bboxAnnotations}
+                      pageSizes={pageSizes}
+                      markdownText={markdownText}
+                      onAnnotationClick={handleAnnotationClick}
+                      isHebrew={isHebrew}
+                    />
                   </div>
 
                   {/* Severity legend */}
@@ -719,13 +713,52 @@ export default function AnalyzePage() {
                     transition={{ duration: 0.4, delay: 0.14 }}
                     className="glass rounded-xl border overflow-hidden flex-shrink-0"
                   >
-                    <div className="px-4 py-3 border-b bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
-                      <h3 className="text-sm font-semibold flex items-center gap-2">
-                        {t('issuesFound')}
-                        <span className="px-2 py-0.5 text-xs rounded-full bg-pride-purple/15 text-pride-purple font-bold">
-                          {analysis.results.length}
-                        </span>
-                      </h3>
+                    <div className="px-4 py-3 border-b bg-slate-50/50 dark:bg-slate-800/50">
+                      <div className="flex items-center justify-between mb-2.5">
+                        <h3 className="text-sm font-semibold flex items-center gap-2">
+                          {t('issuesFound')}
+                          <span className="px-2 py-0.5 text-xs rounded-full bg-pride-purple/15 text-pride-purple font-bold">
+                            {filteredResults.length}
+                            {activeFilters.size > 0 && analysis.results.length !== filteredResults.length && (
+                              <span className="font-normal text-pride-purple/60"> / {analysis.results.length}</span>
+                            )}
+                          </span>
+                        </h3>
+                        {activeFilters.size > 0 && (
+                          <button
+                            onClick={() => setActiveFilters(new Set())}
+                            className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                          >
+                            {t('filterClear') || 'Clear'}
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(Object.keys(categoryConfig) as Severity[]).map((sev) => {
+                          const cfg = categoryConfig[sev];
+                          const active = activeFilters.has(sev);
+                          const count = analysis.counts[sev];
+                          return (
+                            <button
+                              key={sev}
+                              onClick={() => toggleFilter(sev)}
+                              disabled={count === 0}
+                              className={cn(
+                                'flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border transition-all',
+                                active
+                                  ? 'border-current bg-current/10'
+                                  : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600',
+                                active && cfg.text,
+                                count === 0 && 'opacity-40 cursor-not-allowed',
+                              )}
+                            >
+                              <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', cfg.dot)} />
+                              {cfg.label}
+                              <span className="opacity-60 tabular-nums">{count}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
 
                     <div
@@ -742,14 +775,22 @@ export default function AnalyzePage() {
                           </p>
                           <p className="text-xs text-slate-500 mt-1">{t('noIssuesMessage')}</p>
                         </div>
+                      ) : filteredResults.length === 0 ? (
+                        <div className="p-6 text-center">
+                          <p className="text-sm text-slate-500 dark:text-slate-400">
+                            {t('filterNoMatch') || 'No issues match the selected filters.'}
+                          </p>
+                        </div>
                       ) : (
-                        analysis.results.map((result, i) => (
+                        filteredResults.map((result) => {
+                          const origIdx = analysis.results.indexOf(result);
+                          return (
                           <motion.button
-                            key={i}
-                            onClick={() => handleIssueClick(result, i)}
+                            key={origIdx}
+                            onClick={() => handleIssueClick(result, origIdx)}
                             className={cn(
                               'w-full px-4 py-3.5 text-start transition-all border-l-[3px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pride-purple focus-visible:ring-inset',
-                              selectedResultIndex === i
+                              selectedResultIndex === origIdx
                                 ? 'bg-pride-purple/5 dark:bg-pride-purple/10 border-l-pride-purple'
                                 : 'border-l-transparent hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-l-slate-200 dark:hover:border-l-slate-700'
                             )}
@@ -757,7 +798,7 @@ export default function AnalyzePage() {
                             tabIndex={0}
                             initial={{ opacity: 0, x: isHebrew ? -10 : 10 }}
                             animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: i * 0.04 }}
+                            transition={{ delay: origIdx * 0.04 }}
                           >
                             {/* Phrase + badge */}
                             <div className="flex items-start justify-between gap-2 mb-1.5">
@@ -784,7 +825,7 @@ export default function AnalyzePage() {
                               </div>
                             )}
                           </motion.button>
-                        ))
+                        );})
                       )}
                     </div>
                   </motion.div>
