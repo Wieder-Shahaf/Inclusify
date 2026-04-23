@@ -78,6 +78,7 @@ class AnalysisResponse(BaseModel):
     corrected_text: Optional[str] = None
     note: Optional[str] = None
     analysis_mode: Literal['llm', 'hybrid', 'rules_only'] = 'rules_only'
+    run_id: Optional[str] = None
 
 
 # =============================================================================
@@ -119,13 +120,12 @@ async def _persist_results(
     page_count: Optional[int] = None,
     detected_language: Optional[str] = None,
     text_storage_ref: Optional[str] = None,
-    file_storage_ref: Optional[str] = None,
-) -> None:
-    """Persist analysis results to DB. Fails silently — never breaks the response."""
+) -> Optional[str]:
+    """Persist analysis results to DB. Returns run_id on success, None otherwise."""
     pool = getattr(request.app.state, "db_pool", None)
     if pool is None:
         logger.debug("DB pool not available — skipping persistence")
-        return
+        return None
 
     text_sha256 = hashlib.sha256(text.encode("utf-8")).hexdigest()
 
@@ -141,7 +141,6 @@ async def _persist_results(
                 mime_type=mime_type or "text/plain",
                 original_filename=original_filename,
                 text_storage_ref=text_storage_ref,
-                file_storage_ref=file_storage_ref,
                 text_sha256=text_sha256,
                 title=title,
                 author=author,
@@ -193,8 +192,11 @@ async def _persist_results(
                 await repo.finish_run(conn, run_id=run_id, status="failed", runtime_ms=runtime_ms, error_message=str(inner_e))
                 logger.error("Findings insert failed. Run marked as failed.")
 
+            return str(run_id)
+
     except Exception:
         logger.exception("Complete DB persistence failure — analysis results were still returned to user")
+        return None
 
 # =============================================================================
 # Metrics Persistence (always fires, privacy-safe — no text stored)
@@ -280,7 +282,10 @@ async def analyze_text(
 
     start_time = time.monotonic()
 
-    issues, analysis_mode, call_metrics = await _hybrid_detector.analyze(body.text, language=language, chunks=body.chunks)
+    issues, analysis_mode, call_metrics = await _hybrid_detector.analyze(
+        body.text, language=language, chunks=body.chunks,
+        db_pool=getattr(request.app.state, 'db_pool', None),
+    )
 
     elapsed = time.monotonic() - start_time
     runtime_ms = int(elapsed * 1000)
@@ -289,12 +294,21 @@ async def analyze_text(
         len(issues), analysis_mode, elapsed,
     )
 
+    persisted_run_id: Optional[str] = None
     # Persist full results to DB only when private_mode is off
     if not private_mode:
+        if current_user is None:
+            logger.warning(
+                "Analysis saved as GUEST (user_id=NULL) — run will NOT appear in history. "
+                "User must be logged in for history tracking."
+            )
         text_sha256 = hashlib.sha256(body.text.encode("utf-8")).hexdigest()
         text_storage_ref = await _blob_upload_text(text_sha256, body.text)
 
-        await _persist_results(
+        # Map client input_type ('pdf','docx','pptx','txt') → DB enum ('paste'|'upload')
+        db_input_type = "upload" if body.input_type and body.input_type != "paste" else "paste"
+
+        persisted_run_id = await _persist_results(
             request=request,
             user=current_user,
             text=body.text,
@@ -303,7 +317,7 @@ async def analyze_text(
             analysis_mode=analysis_mode,
             issues=issues,
             runtime_ms=runtime_ms,
-            input_type=body.input_type,
+            input_type=db_input_type,
             original_filename=body.original_filename,
             mime_type=body.mime_type,
             title=body.title,
@@ -311,7 +325,6 @@ async def analyze_text(
             page_count=body.page_count,
             detected_language=detected_language,
             text_storage_ref=text_storage_ref,
-            file_storage_ref=body.file_storage_ref,
         )
         try:
             await ws_manager.broadcast({"event": "new_analysis"})
@@ -334,4 +347,5 @@ async def analyze_text(
         corrected_text=None,
         note=f"Found {len(issues)} issue(s). Mode: {analysis_mode}",
         analysis_mode=analysis_mode,
+        run_id=persisted_run_id if not private_mode else None,
     )

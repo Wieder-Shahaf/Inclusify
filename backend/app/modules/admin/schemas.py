@@ -9,8 +9,8 @@ Defines response models for:
 - Paginated organization list with user counts
 - Recent activity with issue counts
 """
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
+from typing import Optional, Literal
 from datetime import datetime
 from uuid import UUID
 
@@ -127,3 +127,80 @@ class FrequencyTrendItem(BaseModel):
 class FrequencyTrendsResponse(BaseModel):
     trends: list[FrequencyTrendItem]
     days: int
+
+
+# ── Rules management schemas ──────────────────────────────────────────────────
+
+class RuleItem(BaseModel):
+    rule_id: UUID
+    language: str
+    name: str
+    description: Optional[str]
+    category: str
+    default_severity: str
+    pattern_type: str
+    pattern_value: str
+    example_bad: Optional[str]
+    example_good: Optional[str]
+    is_enabled: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class RulesListResponse(BaseModel):
+    rules: list[RuleItem]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
+class RuleCreate(BaseModel):
+    language: Literal['he', 'en']
+    name: str = Field(min_length=1, max_length=200)
+    description: Optional[str] = None
+    category: str = Field(min_length=1, max_length=100)
+    default_severity: Literal['low', 'medium', 'high'] = 'medium'
+    pattern_type: Literal['regex', 'keyword', 'prompt', 'other']
+    pattern_value: str = Field(min_length=1)
+    example_bad: Optional[str] = None
+    example_good: Optional[str] = None
+
+
+class RuleUpdate(BaseModel):
+    name: Optional[str] = Field(default=None, min_length=1, max_length=200)
+    description: Optional[str] = None
+    category: Optional[str] = Field(default=None, min_length=1, max_length=100)
+    default_severity: Optional[Literal['low', 'medium', 'high']] = None
+    pattern_type: Optional[Literal['regex', 'keyword', 'prompt', 'other']] = None
+    pattern_value: Optional[str] = Field(default=None, min_length=1)
+    example_bad: Optional[str] = None
+    example_good: Optional[str] = None
+    is_enabled: Optional[bool] = None
+
+
+# ── Feedback schemas ──────────────────────────────────────────────────────────
+
+class FeedbackItem(BaseModel):
+    feedback_id: UUID
+    vote: Optional[str]
+    feedback_type: str
+    flagged_text: Optional[str]
+    severity: Optional[str]
+    start_idx: Optional[int]
+    end_idx: Optional[int]
+    comment: Optional[str]
+    created_at: datetime
+    user_email: str
+    finding_id: Optional[UUID]
+    run_id: Optional[UUID]
+
+
+class FeedbackListResponse(BaseModel):
+    items: list[FeedbackItem]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+    total_helpful: int = 0
+    total_false_positive: int = 0

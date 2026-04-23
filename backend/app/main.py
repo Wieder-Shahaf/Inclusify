@@ -17,6 +17,7 @@ from app.modules.analysis import router as analysis_router
 from app.modules.admin import router as admin_router
 from app.modules.profile import router as profile_router
 from app.modules.contact import router as contact_router
+from app.modules.feedback import router as feedback_router
 from app.routers.health import router as health_router
 from app.db.connection import create_pool
 from app.core.redis import init_redis, close_redis
@@ -32,6 +33,35 @@ from app.auth.oauth import google_oauth_router
 logger = logging.getLogger(__name__)
 
 
+async def _migrate_feedback_table(pool) -> None:
+    """Idempotent: ensure feedback table has the per-flag vote columns.
+
+    Safe to run on every startup — uses ADD COLUMN IF NOT EXISTS.
+    Needed because the table was originally created with run_id NOT NULL
+    and without vote/flagged_text/severity/start_idx/end_idx columns.
+    """
+    if pool is None:
+        return
+    try:
+        async with pool.acquire(timeout=5.0) as conn:
+            # Drop NOT NULL on run_id so feedback can be submitted without a persisted run
+            await conn.execute(
+                "ALTER TABLE feedback ALTER COLUMN run_id DROP NOT NULL"
+            )
+            # Add per-flag context columns (idempotent)
+            await conn.execute("""
+                ALTER TABLE feedback
+                  ADD COLUMN IF NOT EXISTS vote         TEXT CHECK (vote IN ('up','down')),
+                  ADD COLUMN IF NOT EXISTS flagged_text TEXT,
+                  ADD COLUMN IF NOT EXISTS severity     TEXT,
+                  ADD COLUMN IF NOT EXISTS start_idx    INT,
+                  ADD COLUMN IF NOT EXISTS end_idx      INT
+            """)
+        logger.info("Feedback table migration applied (idempotent)")
+    except Exception as e:
+        logger.warning("Feedback table migration skipped: %s", e)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage application lifespan - pool creation and cleanup."""
@@ -41,6 +71,9 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"Failed to create database pool: {e}")
         app.state.db_pool = None
+
+    # Startup: apply idempotent feedback schema migration
+    await _migrate_feedback_table(app.state.db_pool)
 
     # Startup: create SQLAlchemy tables (for FastAPI Users)
     try:
@@ -118,6 +151,7 @@ app.include_router(analysis_router.router, prefix="/api/v1/analysis", tags=["Ana
 app.include_router(admin_router.router, prefix="/api/v1/admin", tags=["Admin"])
 app.include_router(profile_router.router, prefix="/api/v1/users", tags=["Profile"])
 app.include_router(contact_router.router, prefix="/api/v1/contact", tags=["Contact"])
+app.include_router(feedback_router.router, prefix="/api/v1/feedback", tags=["Feedback"])
 
 
 @app.get("/")

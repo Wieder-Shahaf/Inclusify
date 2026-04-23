@@ -96,7 +96,7 @@ function KpiCard({
       initial={{ opacity: 0, scale: 0.9, y: 20 }}
       animate={isLoading ? { opacity: 0, scale: 0.9, y: 20 } : { opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="rounded-xl border bg-white dark:bg-slate-900 p-4 shadow-sm"
+      className="rounded-2xl border bg-white dark:bg-slate-900 p-5 shadow-sm"
     >
       {isLoading ? (
         <div className="space-y-3">
@@ -114,9 +114,9 @@ function KpiCard({
             </div>
             <Tooltip text={tooltip} />
           </div>
-          <div className="mt-3">
+          <div className="mt-4">
             <p className="text-2xl font-bold text-slate-800 dark:text-white">{value}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{label}</p>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">{label}</p>
             {sub && <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{sub}</p>}
           </div>
         </>
@@ -128,14 +128,14 @@ function KpiCard({
 function ModeBar({ label, count, total, color }: { label: string; count: number; total: number; color: string }) {
   const pct = total > 0 ? Math.round((count / total) * 100) : 0;
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
       <div className="flex justify-between text-sm">
         <span className="text-slate-700 dark:text-slate-300">{label}</span>
         <span className="text-slate-500 dark:text-slate-400 tabular-nums">
           {count.toLocaleString()} <span className="text-xs">({pct}%)</span>
         </span>
       </div>
-      <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+      <div className="h-2.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
         <motion.div
           className={cn('h-full rounded-full', color)}
           initial={{ width: 0 }}
@@ -156,7 +156,7 @@ export default function ModelPerformanceTab({ days, translations }: ModelPerform
   return (
     <div className="space-y-6">
       {/* KPI Cards */}
-      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <KpiCard
           label={translations.kpis.avgLatency}
           value={data?.avg_latency_ms != null ? `${(data.avg_latency_ms / 1000).toFixed(2)} s` : '—'}
@@ -202,8 +202,8 @@ export default function ModelPerformanceTab({ days, translations }: ModelPerform
       )}
 
       {/* Mode Breakdown */}
-      <div className="rounded-2xl border bg-white dark:bg-slate-900 p-5 shadow-sm">
-        <h3 className="font-semibold text-slate-800 dark:text-white flex items-center gap-2 mb-4">
+      <div className="rounded-2xl border bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <h3 className="font-semibold text-slate-800 dark:text-white flex items-center gap-2 mb-5">
           <Cpu className="w-4 h-4 text-pride-purple" />
           {translations.modeBreakdown.title}
         </h3>
@@ -225,7 +225,7 @@ export default function ModelPerformanceTab({ days, translations }: ModelPerform
             {translations.noData}
           </p>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-5">
             <ModeBar
               label={translations.modeBreakdown.llm}
               count={data.mode_llm}

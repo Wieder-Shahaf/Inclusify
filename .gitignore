@@ -44,3 +44,8 @@ az.txt
 
 PRETRAINING.md
 lamma_tasks.json
+env.team
+
+# Claude Code / AI tooling
+.agents/
+skills-lock.json

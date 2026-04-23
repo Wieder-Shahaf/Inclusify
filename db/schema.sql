@@ -213,12 +213,22 @@ CREATE INDEX idx_exports_run ON report_exports(run_id);
 CREATE TABLE feedback (
   feedback_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-  run_id UUID NOT NULL REFERENCES analysis_runs(run_id) ON DELETE CASCADE,
+  -- run_id and finding_id are nullable: feedback can be submitted for in-memory
+  -- analyses (private mode / DB not connected) where no run was persisted.
+  run_id UUID REFERENCES analysis_runs(run_id) ON DELETE CASCADE,
   finding_id UUID REFERENCES findings(finding_id) ON DELETE SET NULL,
   user_id UUID REFERENCES users(user_id) ON DELETE SET NULL,
 
   feedback_type TEXT NOT NULL
     CHECK (feedback_type IN ('helpful','false_positive','false_negative')),
+
+  -- Raw vote captured from the UI (up/down). feedback_type is the semantic label.
+  vote TEXT CHECK (vote IN ('up','down')),
+
+  flagged_text TEXT,
+  severity TEXT,
+  start_idx INT,
+  end_idx INT,
 
   comment TEXT,
   created_at TIMESTAMP NOT NULL DEFAULT NOW()

@@ -66,6 +66,7 @@ interface BackendAnalysisResponse {
   corrected_text?: string;
   note?: string;
   analysis_mode?: 'llm' | 'hybrid' | 'rules_only';
+  run_id?: string;
 }
 
 // Frontend analysis result
@@ -76,6 +77,7 @@ export interface AnalysisResult {
   originalText: string;
   correctedText?: string;
   analysisMode?: 'llm' | 'hybrid' | 'rules_only';
+  runId?: string;
 }
 
 // Map backend severity to frontend severity
@@ -187,6 +189,7 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
     originalText: response.original_text,
     correctedText: response.corrected_text,
     analysisMode: response.analysis_mode,
+    runId: response.run_id,
   };
 }
 
@@ -219,26 +222,40 @@ export async function analyzeText(
 ): Promise<AnalysisResult> {
   const fetchFn = options?.useAuth ? fetchWithAuth : fetch;
   const meta = options?.fileMeta;
-  const response = await fetchFn(`${API_BASE_URL}/api/v1/analysis/analyze`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      text,
-      language: options?.language || 'auto',
-      private_mode: options?.privateMode ?? true,
-      input_type: meta?.inputType ?? null,
-      original_filename: meta?.filename ?? null,
-      mime_type: meta?.mimeType ?? null,
-      page_count: meta?.pageCount ?? null,
-      title: meta?.title ?? null,
-      author: meta?.author ?? null,
-      detected_language: meta?.detectedLanguage ?? null,
-      file_storage_ref: meta?.fileStorageRef ?? null,
-      chunks: meta?.chunks ?? null,
-    }),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 4 * 60 * 1000); // 4 min safety cap
+
+  let response: Response;
+  try {
+    response = await fetchFn(`${API_BASE_URL}/api/v1/analysis/analyze`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        text,
+        language: options?.language || 'auto',
+        private_mode: options?.privateMode ?? true,
+        input_type: meta?.inputType ?? null,
+        original_filename: meta?.filename ?? null,
+        mime_type: meta?.mimeType ?? null,
+        page_count: meta?.pageCount ?? null,
+        title: meta?.title ?? null,
+        author: meta?.author ?? null,
+        detected_language: meta?.detectedLanguage ?? null,
+        file_storage_ref: meta?.fileStorageRef ?? null,
+        chunks: meta?.chunks ?? null,
+      }),
+    });
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw new Error('Analysis timed out. The server is taking too long — please try again.');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -285,6 +302,114 @@ export async function uploadFile(file: File): Promise<UploadResult> {
     fileStorageRef: data.file_storage_ref ?? null,
     chunks: data.chunks ?? null,
   };
+}
+
+export interface HistoryEntry {
+  run_id: string;
+  document_id: string;
+  title: string | null;
+  filename: string | null;
+  input_type: string;
+  language: string | null;
+  page_count: number | null;
+  analyzed_at: string | null;
+  runtime_ms: number | null;
+  findings_count: number;
+  findings_low: number;
+  findings_medium: number;
+  findings_high: number;
+}
+
+export interface HistoryKPIs {
+  total_analyses: number;
+  total_findings: number;
+  avg_issues_per_doc: number;
+  findings_low: number;
+  findings_medium: number;
+  findings_high: number;
+}
+
+export interface HistoryResponse {
+  kpis: HistoryKPIs;
+  analyses: HistoryEntry[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface FindingDetail {
+  finding_id: string;
+  category: string;
+  severity: 'low' | 'medium' | 'high';
+  start_idx: number;
+  end_idx: number;
+  confidence: number | null;
+  explanation: string | null;
+  excerpt: string | null;
+  suggestion: string | null;
+}
+
+export interface AnalysisDetail extends HistoryEntry {
+  status: string;
+  findings: FindingDetail[];
+}
+
+export async function getAnalysisDetail(runId: string): Promise<AnalysisDetail> {
+  const response = await fetchWithAuth(
+    `${API_BASE_URL}/api/v1/users/me/history/${runId}`
+  );
+  if (!response.ok) throw new Error(`Failed to load analysis: ${response.status}`);
+  return response.json();
+}
+
+export async function deleteAnalysis(runId: string): Promise<void> {
+  const response = await fetchWithAuth(
+    `${API_BASE_URL}/api/v1/users/me/history/${runId}`,
+    { method: 'DELETE' }
+  );
+  if (!response.ok) throw new Error(`Failed to delete analysis: ${response.status}`);
+}
+
+export async function getHistory(limit = 50, offset = 0): Promise<HistoryResponse> {
+  const response = await fetchWithAuth(
+    `${API_BASE_URL}/api/v1/users/me/history?limit=${limit}&offset=${offset}`
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to load history: ${response.status}`);
+  }
+  return response.json();
+}
+
+export interface FeedbackPayload {
+  vote: 'up' | 'down';
+  flaggedText: string;
+  severity: string;
+  startIdx: number;
+  endIdx: number;
+  findingId?: string;
+  runId?: string;
+  comment?: string;
+}
+
+export async function submitFeedback(payload: FeedbackPayload): Promise<void> {
+  try {
+    await fetchWithAuth(`${API_BASE_URL}/api/v1/feedback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        vote: payload.vote,
+        flagged_text: payload.flaggedText,
+        severity: payload.severity,
+        start_idx: payload.startIdx,
+        end_idx: payload.endIdx,
+        finding_id: payload.findingId ?? null,
+        run_id: payload.runId ?? null,
+        comment: payload.comment ?? null,
+      }),
+    });
+  } catch {
+    // Feedback is best-effort — silently swallow errors
+  }
 }
 
 // Health check

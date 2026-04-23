@@ -11,7 +11,10 @@ import logging
 import re as _re
 from typing import TYPE_CHECKING, Optional
 
+from pybreaker import CircuitBreakerError
+
 from app.modules.analysis.call_metrics import CallMetrics
+from app.modules.analysis.circuit_breaker import vllm_breaker
 from app.modules.analysis.llm_client import VLLMClient, map_severity
 from app.modules.analysis.sentence_splitter import split_with_offsets
 
@@ -84,19 +87,72 @@ def detect_language(text: str) -> str:
 
 
 class HybridDetector:
-    """LLM-only detector for LGBTQ+ inclusive language analysis."""
+    """LLM + DB-rules detector for LGBTQ+ inclusive language analysis."""
 
     def __init__(self, vllm_client: VLLMClient = None):
         self.client = vllm_client or VLLMClient()
+
+    async def _load_db_rules(self, pool) -> list[dict]:
+        """Fetch enabled rules from DB. Returns empty list on any failure."""
+        if pool is None:
+            return []
+        try:
+            import re as _re_mod
+            async with pool.acquire(timeout=3.0) as conn:
+                rows = await conn.fetch(
+                    "SELECT term, default_severity, category, pattern_type, pattern_value "
+                    "FROM rules WHERE is_enabled = TRUE LIMIT 500"
+                )
+                rules = []
+                for row in rows:
+                    rules.append(dict(row))
+                return rules
+        except Exception:
+            logger.warning("Could not load rules from DB — skipping rule-based pass")
+            return []
+
+    def _apply_rules(self, text: str, rules: list[dict]) -> list["Issue"]:
+        """Apply DB rules to text, return Issues for matches not already covered by LLM."""
+        import re as _re_mod
+        from app.modules.analysis.router import Issue
+        issues = []
+        for rule in rules:
+            pattern_type = rule.get("pattern_type", "exact")
+            pattern_value = rule.get("pattern_value") or rule.get("term", "")
+            if not pattern_value:
+                continue
+            try:
+                if pattern_type == "regex":
+                    matches = list(_re_mod.finditer(pattern_value, text, _re_mod.IGNORECASE))
+                else:
+                    matches = list(_re_mod.finditer(
+                        _re_mod.escape(pattern_value), text, _re_mod.IGNORECASE
+                    ))
+            except _re_mod.error:
+                continue
+            for m in matches:
+                issues.append(Issue(
+                    flagged_text=m.group(0),
+                    severity=rule.get("default_severity", "outdated"),
+                    type=rule.get("category") or "Rule Match",
+                    description=f"Flagged by rule: {rule.get('term', pattern_value)}",
+                    suggestion=None,
+                    phrase=m.group(0),
+                    start=m.start(),
+                    end=m.end(),
+                    confidence=1.0,
+                ))
+        return issues
 
     async def analyze(
         self,
         text: str,
         language: str = "auto",
         chunks: Optional[list[str]] = None,
+        db_pool=None,
     ) -> tuple[list["Issue"], str, CallMetrics]:
         """
-        Analyze text for LGBTQ+ inclusive language issues using LLM only.
+        Analyze text for LGBTQ+ inclusive language issues using LLM + DB rules.
 
         Returns:
             Tuple of (issues_list, analysis_mode, call_metrics).
@@ -127,11 +183,19 @@ class HybridDetector:
         call_metrics = CallMetrics(total_sentences=len(sentences))
 
         async def analyze_one(sentence: str, start_offset: int, end_offset: int):
+            # Skip immediately if circuit is already open — no point queuing.
+            if vllm_breaker.current_state == "open":
+                return None, sentence, start_offset, end_offset
             result = await self.client.analyze_sentence(sentence, metrics=call_metrics)
             return (result, sentence, start_offset, end_offset)
 
         tasks = [analyze_one(s, start, end) for s, start, end in sentences]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+        # Overall safety cap: 3 min for the entire analysis regardless of document size.
+        try:
+            results = await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=180)
+        except asyncio.TimeoutError:
+            logger.warning("Analysis hit overall 180s timeout — returning partial results")
+            results = []
 
         for item in results:
             if isinstance(item, Exception):
@@ -160,9 +224,12 @@ class HybridDetector:
 
                     suggestion = result.get("suggestion")
                     if not isinstance(suggestion, str) or not suggestion.strip() or suggestion.strip().lower() == "null":
-                        suggestion = await self.client.get_suggestion(
-                            sentence, severity, category, metrics=call_metrics
-                        )
+                        if vllm_breaker.current_state != "open":
+                            suggestion = await self.client.get_suggestion(
+                                sentence, severity, category, metrics=call_metrics
+                            )
+                        else:
+                            suggestion = None
 
                     inclusive_sentence = result.get("inclusive_sentence")
                     if not isinstance(inclusive_sentence, str) or not inclusive_sentence.strip() or inclusive_sentence.strip().lower() == "null":
@@ -198,6 +265,22 @@ class HybridDetector:
             mode = "rules_only"
         else:
             mode = "llm"
+
+        # Apply DB-managed rules as an additional pass; deduplicate by span overlap
+        db_rules = await self._load_db_rules(db_pool)
+        if db_rules:
+            rule_issues = self._apply_rules(text, db_rules)
+            llm_spans = {(i.start, i.end) for i in llm_issues}
+            new_rule_issues = [
+                ri for ri in rule_issues
+                if not any(
+                    ri.start < ls_end and ri.end > ls_start
+                    for ls_start, ls_end in llm_spans
+                )
+            ]
+            if new_rule_issues:
+                logger.info("DB rules added %d issue(s) not found by LLM", len(new_rule_issues))
+            llm_issues = llm_issues + new_rule_issues
 
         return llm_issues, mode, call_metrics
 

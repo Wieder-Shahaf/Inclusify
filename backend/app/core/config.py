@@ -8,11 +8,20 @@ Settings hierarchy:
 """
 import os
 from functools import lru_cache
+from pathlib import Path
 from typing import Optional
 from urllib.parse import quote_plus
 
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Resolve .env regardless of where uvicorn is invoked from.
+# Priority: backend/.env → project-root/.env → no file (env vars only)
+_THIS_DIR = Path(__file__).resolve().parent          # backend/app/core/
+_BACKEND_DIR = _THIS_DIR.parent.parent               # backend/
+_ROOT_ENV = _BACKEND_DIR.parent / ".env"             # Inclusify/.env
+_LOCAL_ENV = _BACKEND_DIR / ".env"                   # backend/.env  (optional override)
+_ENV_FILES = [str(p) for p in (_LOCAL_ENV, _ROOT_ENV) if p.exists()]
 
 
 class Settings(BaseSettings):
@@ -20,7 +29,7 @@ class Settings(BaseSettings):
 
     # Added extra="ignore" to prevent Pydantic from crashing on unknown variables
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=_ENV_FILES or None,
         case_sensitive=True,
         extra="ignore",
     )
