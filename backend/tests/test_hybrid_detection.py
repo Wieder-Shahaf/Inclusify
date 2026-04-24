@@ -29,17 +29,17 @@ class TestHybridDetector:
 
     @pytest.mark.asyncio
     async def test_hybrid_detector_fallback_mode(self):
-        """All LLM failure -> mode='rules_only'."""
+        """All LLM failure -> still mode='llm' with empty results."""
         from app.modules.analysis.hybrid_detector import HybridDetector
 
         mock_client = MagicMock()
-        # LLM returns None (failure)
         mock_client.analyze_sentence = AsyncMock(return_value=None)
 
         detector = HybridDetector(vllm_client=mock_client)
         issues, mode, _ = await detector.analyze("The homosexual lifestyle is outdated terminology.")
 
-        assert mode == "rules_only"
+        assert mode == "llm"
+        assert issues == []
 
     @pytest.mark.asyncio
     async def test_hybrid_detector_hybrid_mode(self):
@@ -86,12 +86,11 @@ class TestHybridDetector:
 
         # Hebrew text
         _, mode, _ = await detector.analyze("זה משפט בעברית.", language="auto")
-        # Should detect Hebrew and process accordingly
-        assert mode == "rules_only"  # Because LLM returns None
+        assert mode == "llm"
 
         # English text
         _, mode, _ = await detector.analyze("This is English.", language="auto")
-        assert mode == "rules_only"
+        assert mode == "llm"
 
 
 class TestAnalysisModeResponse:
@@ -112,14 +111,13 @@ class TestAnalysisModeResponse:
         assert response.analysis_mode == "llm"
 
     def test_analysis_mode_literal_values(self):
-        """analysis_mode accepts all valid literal values."""
+        """analysis_mode accepts 'llm'."""
         from app.modules.analysis.router import AnalysisResponse
 
-        for mode in ["llm", "hybrid", "rules_only"]:
-            response = AnalysisResponse(
-                original_text="Test",
-                analysis_status="Success",
-                issues_found=[],
-                analysis_mode=mode
-            )
-            assert response.analysis_mode == mode
+        response = AnalysisResponse(
+            original_text="Test",
+            analysis_status="Success",
+            issues_found=[],
+            analysis_mode="llm"
+        )
+        assert response.analysis_mode == "llm"

@@ -4,13 +4,15 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Annotation } from './AnnotatedText';
-import { ArrowRight, Info, X } from 'lucide-react';
+import { Info, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 interface IssueTooltipProps {
   annotation: Annotation;
   children: React.ReactNode;
   onOpenSidePanel: () => void;
+  /** Skip the default text-highlight classes — used when the child element provides its own visual (e.g. PDF bbox overlay). */
+  noHighlight?: boolean;
 }
 
 const severityConfig = {
@@ -48,7 +50,7 @@ const severityConfig = {
   },
 };
 
-export default function IssueTooltip({ annotation, children, onOpenSidePanel }: IssueTooltipProps) {
+export default function IssueTooltip({ annotation, children, onOpenSidePanel, noHighlight = false }: IssueTooltipProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0, arrowX: 144, showBelow: false });
@@ -199,84 +201,46 @@ export default function IssueTooltip({ annotation, children, onOpenSidePanel }: 
         >
           <div
             className={cn(
-              'w-72 rounded-xl shadow-2xl border relative flex flex-col',
+              'w-64 rounded-xl shadow-2xl border relative flex flex-col',
               'bg-white dark:bg-slate-900',
               'border-slate-200 dark:border-slate-700',
-              'max-h-[420px]',
               isPinned && 'ring-2 ring-pride-purple/30'
             )}
           >
-            {/* ── Fixed header ── */}
-            <div className="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-slate-100 dark:border-slate-800 shrink-0">
-              <span className={cn('w-2.5 h-2.5 rounded-full shrink-0', config.dotColor)} />
+            {/* Severity + category */}
+            <div className="flex items-center gap-2 px-4 pt-3 pb-2 shrink-0">
+              <span className={cn('w-2 h-2 rounded-full shrink-0', config.dotColor)} />
               <span className={cn(
-                'text-xs font-semibold px-2.5 py-1 rounded-full',
+                'text-xs font-semibold px-2 py-0.5 rounded-full shrink-0',
                 config.bgColor,
                 config.textColor
               )}>
                 {config.label}
               </span>
+              {annotation.category && (
+                <span className="text-xs text-slate-400 dark:text-slate-500 truncate">
+                  {annotation.category}
+                </span>
+              )}
               {isPinned && (
                 <button
                   onClick={handleClose}
-                  className="ml-auto p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  className="ml-auto p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
                   aria-label="Close tooltip"
                 >
-                  <X className="w-4 h-4 text-slate-400" />
+                  <X className="w-3.5 h-3.5 text-slate-400" />
                 </button>
               )}
             </div>
 
-            {/* ── Scrollable body ── */}
-            <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-3 space-y-3">
-              {/* Issue Term */}
-              <p className="text-base font-semibold text-slate-800 dark:text-white leading-snug">
-                &ldquo;{annotation.label}&rdquo;
-              </p>
-
-              {/* Explanation */}
-              {annotation.explanation && (
-                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                  {annotation.explanation}
-                </p>
-              )}
-
-              {/* Confidence */}
-              {annotation.confidence != null && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">Confidence:</span>
-                  <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
-                    {Math.round(annotation.confidence * 100)}%
-                  </span>
-                </div>
-              )}
-
-              {/* Suggestion */}
-              {annotation.suggestion && (
-                <div className="p-3 rounded-lg bg-gradient-to-r from-pride-purple/5 to-pride-pink/5 dark:from-pride-purple/10 dark:to-pride-pink/10 border border-pride-purple/20">
-                  <div className="flex items-start gap-2">
-                    <ArrowRight className="w-4 h-4 text-pride-purple shrink-0 mt-0.5" />
-                    <div>
-                      <span className="text-xs text-slate-500 dark:text-slate-400 block mb-1">
-                        Suggested replacement:
-                      </span>
-                      <span className="text-sm text-pride-purple font-medium">
-                        {annotation.suggestion}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* ── Fixed footer ── */}
-            <div className="px-4 pb-4 pt-3 border-t border-slate-100 dark:border-slate-800 shrink-0">
+            {/* View details button */}
+            <div className="px-3 pb-3 shrink-0">
               <button
                 onClick={handleViewDetails}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-pride-purple/10 hover:bg-pride-purple/20 text-pride-purple font-medium text-sm transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-pride-purple/10 hover:bg-pride-purple/20 text-pride-purple font-medium text-xs transition-colors"
               >
-                <Info className="w-4 h-4" />
-                View full details & references
+                <Info className="w-3.5 h-3.5" />
+                View full details
               </button>
             </div>
 
@@ -306,11 +270,12 @@ export default function IssueTooltip({ annotation, children, onOpenSidePanel }: 
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}
-        className={cn(
+        className={noHighlight ? undefined : cn(
           'cursor-pointer rounded-sm px-0.5 transition-all duration-200',
           isPinned ? config.activeHighlight : config.highlightColor,
           'hover:opacity-90'
         )}
+        style={noHighlight ? { display: 'block', width: '100%', height: '100%', cursor: 'pointer' } : undefined}
       >
         {children}
       </span>

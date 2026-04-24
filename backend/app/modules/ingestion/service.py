@@ -275,8 +275,20 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
         page_sizes = None
         if ext == ".pdf":
             bbox_annotations = []
+            # Sort items into reading order (page asc, top-of-page first) so the
+            # sequential find() search advances monotonically and doesn't miss items
+            # when Docling returns them out of order.
+            def _reading_order(item):
+                prov_list = item.get("prov", [])
+                if not prov_list:
+                    return (9999, -9999.0)
+                prov = prov_list[0]
+                pg = prov.get("page_no", 9999)
+                raw = prov.get("bbox")
+                t = (raw.t if hasattr(raw, 't') else raw.get('t', 0.0)) if raw else 0.0
+                return (pg, -t)  # higher t = top of page = earlier in reading order
             search_start = 0
-            for item in items:
+            for item in sorted(items, key=_reading_order):
                 item_text = item.get("text", "")
                 prov_list = item.get("prov", [])
                 if not item_text or not prov_list:

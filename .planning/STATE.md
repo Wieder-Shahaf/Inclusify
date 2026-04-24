@@ -1,14 +1,14 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Achva Feedback
+milestone: v1.0
+milestone_name: milestone
 status: complete
-last_updated: "2026-04-18T20:00:00.000Z"
+last_updated: "2026-04-24T18:42:14.849Z"
 progress:
-  total_phases: 1
-  completed_phases: 1
-  total_plans: 5
-  completed_plans: 5
+  total_phases: 14
+  completed_phases: 14
+  total_plans: 42
+  completed_plans: 42
   percent: 100
 ---
 

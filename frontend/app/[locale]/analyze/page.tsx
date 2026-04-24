@@ -92,7 +92,7 @@ export default function AnalyzePage() {
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [backendHealthy, setBackendHealthy] = useState<boolean | null>(null);
   const [modelAvailable, setModelAvailable] = useState<boolean | null>(null);
-  const [analysisMode, setAnalysisMode] = useState<'llm' | 'hybrid' | 'rules_only' | null>(null);
+  const [analysisMode, setAnalysisMode] = useState<'llm' | null>(null);
   const [currentRunId, setCurrentRunId] = useState<string | undefined>();
   const [showGuestPrompt, setShowGuestPrompt] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -180,7 +180,16 @@ export default function AnalyzePage() {
         result.counts.biased * weights.biased +
         result.counts.factually_incorrect * weights.factually_incorrect +
         result.counts.potentially_offensive * weights.potentially_offensive;
-      const score = Math.max(0, Math.round(100 - (totalWeightedIssues / Math.max(wc, 1)) * 200));
+      // sqrt-based penalty so a handful of issues registers meaningfully regardless of doc length;
+      // small density term adds extra penalty for short docs with many issues.
+      const score = Math.max(
+        0,
+        Math.round(
+          100
+          - Math.sqrt(totalWeightedIssues) * 6
+          - (totalWeightedIssues / Math.max(wc / 100, 1)) * 1.5,
+        ),
+      );
 
       const recommendations: string[] = [];
       if (result.counts.potentially_offensive > 0) recommendations.push(t('recommendations.potentially_offensive'));
@@ -235,16 +244,23 @@ export default function AnalyzePage() {
   }, []);
 
   const handleIssueClick = useCallback((result: AnalysisData['results'][0], index: number) => {
-    const annotation = analysis.annotations.find(
-      (a) => a.label.toLowerCase() === result.phrase.toLowerCase()
-    );
+    const annotation =
+      analysis.annotations.find(
+        (a) => a.label.toLowerCase() === result.phrase.toLowerCase(),
+      ) ??
+      analysis.annotations.find(
+        (a) =>
+          a.label.toLowerCase().includes(result.phrase.toLowerCase()) ||
+          result.phrase.toLowerCase().includes(a.label.toLowerCase()),
+      );
+
+    if (!annotation) return;
+
     setSelectedResultIndex(index);
-    if (annotation) {
-      setSelectedAnnotation(annotation);
-      setSidePanelOpen(true);
-      const el = document.getElementById(`ann-${annotation.start}`);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+    setSelectedAnnotation(annotation);
+    setSidePanelOpen(true);
+    const el = document.getElementById(`ann-${annotation.start}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [analysis.annotations]);
 
   const handleAnnotationClick = useCallback((annotation: Annotation) => {
@@ -372,14 +388,7 @@ export default function AnalyzePage() {
           linkText={t('modelUnavailableLinkText')}
         />
       )}
-      {viewState === 'results' && analysisMode === 'rules_only' && (
-        <HealthWarningBanner
-          message={t('llmDownResults')}
-          variant="error"
-          linkHref={`/${locale}/glossary`}
-          linkText={t('llmDownResultsLink')}
-        />
-      )}
+
 
       <div className="flex flex-col flex-1">
         <AnimatePresence mode="wait">
@@ -503,14 +512,7 @@ export default function AnalyzePage() {
                           {t('privateMode.badge')}
                         </span>
                       )}
-                      {analysisMode === 'rules_only' && (
-                        <span
-                          className="px-2 py-0.5 text-xs rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
-                          title={t('basicAnalysisModeDesc')}
-                        >
-                          {t('basicAnalysisMode')}
-                        </span>
-                      )}
+
                     </h2>
                     <p className="text-xs text-slate-500 mt-0.5">
                       {totalIssues} {totalIssues === 1 ? t('issueFound') : t('issuesFoundPlural')}
@@ -784,12 +786,13 @@ export default function AnalyzePage() {
                       ) : (
                         filteredResults.map((result) => {
                           const origIdx = analysis.results.indexOf(result);
+                          const cfg = categoryConfig[result.severity];
                           return (
                           <motion.button
                             key={origIdx}
                             onClick={() => handleIssueClick(result, origIdx)}
                             className={cn(
-                              'w-full px-4 py-3.5 text-start transition-all border-l-[3px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pride-purple focus-visible:ring-inset',
+                              'w-full px-3 py-2.5 text-start transition-all border-l-[3px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pride-purple focus-visible:ring-inset',
                               selectedResultIndex === origIdx
                                 ? 'bg-pride-purple/5 dark:bg-pride-purple/10 border-l-pride-purple'
                                 : 'border-l-transparent hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-l-slate-200 dark:hover:border-l-slate-700'
@@ -800,26 +803,29 @@ export default function AnalyzePage() {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: origIdx * 0.04 }}
                           >
-                            {/* Phrase + badge */}
-                            <div className="flex items-start justify-between gap-2 mb-1.5">
-                              <p className="font-semibold text-sm text-slate-800 dark:text-white leading-snug">
-                                &ldquo;{result.phrase}&rdquo;
-                              </p>
-                              <div className="flex-shrink-0 mt-0.5">
+                            {/* Phrase + badge on one line */}
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <span className={cn('w-2 h-2 rounded-full flex-shrink-0', cfg.dot)} />
+                                <p className="font-semibold text-sm text-slate-800 dark:text-white leading-snug truncate">
+                                  &ldquo;{result.phrase}&rdquo;
+                                </p>
+                              </div>
+                              <div className="flex-shrink-0">
                                 <SeverityBadge level={result.severity} />
                               </div>
                             </div>
 
-                            {/* Explanation */}
+                            {/* Explanation — 1 line, subtle */}
                             {result.explanation && (
-                              <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-2 leading-relaxed">
+                              <p className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1 leading-relaxed pl-3.5">
                                 {result.explanation}
                               </p>
                             )}
 
-                            {/* Suggestion */}
+                            {/* Suggestion preview */}
                             {result.suggestion && (
-                              <div className="flex items-center gap-1.5 text-xs text-pride-purple font-medium">
+                              <div className="flex items-center gap-1 mt-1 pl-3.5 text-[11px] text-pride-purple/80 font-medium">
                                 <ArrowRight className="w-3 h-3 flex-shrink-0" />
                                 <span className="truncate">{result.suggestion}</span>
                               </div>

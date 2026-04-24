@@ -77,7 +77,7 @@ class CallMetrics:
         """Return a dict ready for INSERT into model_metrics.
 
         Args:
-            analysis_mode: 'llm', 'hybrid', or 'rules_only'.
+            analysis_mode: 'llm'.
             total_runtime_ms: End-to-end wall-clock time for the full request.
         """
         return {

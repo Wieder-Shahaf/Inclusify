@@ -18,8 +18,6 @@ interface ModelPerformanceTabProps {
     modeBreakdown: {
       title: string;
       llm: string;
-      hybrid: string;
-      rulesOnly: string;
       analyses: string;
     };
     noData: string;
@@ -181,7 +179,7 @@ export default function ModelPerformanceTab({ days, translations }: ModelPerform
           value={fmt(data?.fallback_rate, '%')}
           icon={<GitBranch className="w-5 h-5" />}
           color="purple"
-          tooltip="Percentage of analyses that fell back to rule-based detection (hybrid or rules-only mode) because the AI model was unavailable."
+          tooltip="Percentage of analyses where the AI model was unavailable."
           isLoading={isLoading}
         />
         <KpiCard
@@ -210,7 +208,7 @@ export default function ModelPerformanceTab({ days, translations }: ModelPerform
 
         {isLoading ? (
           <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
+            {[1].map((i) => (
               <div key={i} className="space-y-2">
                 <div className="flex justify-between">
                   <SkeletonLoader className="h-4 w-24" />
@@ -231,18 +229,6 @@ export default function ModelPerformanceTab({ days, translations }: ModelPerform
               count={data.mode_llm}
               total={data.total_analyses}
               color="bg-sky-500"
-            />
-            <ModeBar
-              label={translations.modeBreakdown.hybrid}
-              count={data.mode_hybrid}
-              total={data.total_analyses}
-              color="bg-purple-500"
-            />
-            <ModeBar
-              label={translations.modeBreakdown.rulesOnly}
-              count={data.mode_rules_only}
-              total={data.total_analyses}
-              color="bg-amber-500"
             />
             <p className="text-xs text-slate-400 dark:text-slate-500 pt-1">
               {data.total_analyses.toLocaleString()} {translations.modeBreakdown.analyses}

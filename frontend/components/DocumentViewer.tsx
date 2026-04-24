@@ -7,20 +7,7 @@ import remarkGfm from 'remark-gfm';
 import IssueTooltip from './IssueTooltip';
 import { Annotation } from './AnnotatedText';
 import type { BboxAnnotation, PageSize } from '@/lib/api/client';
-
-// ── Severity colours for PDF bbox overlays ──────────────────────────────────
-const SEV_FILL: Record<string, string> = {
-  outdated: 'rgba(14,165,233,0.2)',
-  biased: 'rgba(245,158,11,0.2)',
-  potentially_offensive: 'rgba(244,63,94,0.2)',
-  factually_incorrect: 'rgba(239,68,68,0.2)',
-};
-const SEV_BORDER: Record<string, string> = {
-  outdated: 'rgb(14,165,233)',
-  biased: 'rgb(245,158,11)',
-  potentially_offensive: 'rgb(244,63,94)',
-  factually_incorrect: 'rgb(239,68,68)',
-};
+import 'react-pdf/dist/Page/TextLayer.css';
 
 // ── react-pdf: loaded lazily to avoid SSR errors ────────────────────────────
 let pdfLib: typeof import('react-pdf') | null = null;
@@ -242,44 +229,92 @@ function MarkdownViewer({
   );
 }
 
-// ── PDF viewer with bbox overlays ────────────────────────────────────────────
+// ── PDF viewer with text-layer phrase injection ──────────────────────────────
 const PDF_RENDER_WIDTH = 680;
 
 function PdfViewer({
   file,
   annotations,
-  bboxAnnotations,
-  pageSizes,
   onAnnotationClick,
 }: {
   file: File;
   annotations: Annotation[];
-  bboxAnnotations: BboxAnnotation[];
-  pageSizes: Record<string, PageSize>;
   onAnnotationClick: (ann: Annotation) => void;
 }) {
   const pdf = usePdfLib();
   const [numPages, setNumPages] = useState(0);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [portals, setPortals] = useState<Array<{ el: HTMLElement; annotation: Annotation; rawPhrase: string }>>([]);
+  const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const injectedPages = useRef<Set<number>>(new Set());
+
+  const phrases = useMemo(
+    () => annotations.map(ann => ({ phrase: ann.label, annotation: ann })),
+    [annotations],
+  );
 
   useEffect(() => {
     const url = URL.createObjectURL(file);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFileUrl(url);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPortals([]);
+    pageRefs.current.clear();
+    injectedPages.current.clear();
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
-  // page_no → overlays for that page
-  const overlaysByPage = useMemo(() => {
-    const map: Record<number, Array<{ bbox: BboxAnnotation['bbox']; annotation: Annotation }>> = {};
-    for (const ann of annotations) {
-      for (const ba of bboxAnnotations) {
-        if (ann.start < ba.end && ann.end > ba.start) {
-          (map[ba.page] ??= []).push({ bbox: ba.bbox, annotation: ann });
+  const makeTextLayerHandler = useCallback(
+    (pageNumber: number) => () => {
+      if (injectedPages.current.has(pageNumber)) return;
+      injectedPages.current.add(pageNumber);
+
+      const pageEl = pageRefs.current.get(pageNumber);
+      if (!pageEl) return;
+
+      const textLayer = pageEl.querySelector('.react-pdf__Page__textContent');
+      if (!textLayer) return;
+
+      const walker = document.createTreeWalker(textLayer, NodeFilter.SHOW_TEXT);
+      const nodes: Text[] = [];
+      let n: Node | null;
+      while ((n = walker.nextNode())) nodes.push(n as Text);
+
+      const newPortals: Array<{ el: HTMLElement; annotation: Annotation; rawPhrase: string }> = [];
+
+      for (let i = nodes.length - 1; i >= 0; i--) {
+        const textNode = nodes[i];
+        const text = textNode.nodeValue ?? '';
+        const matches = findTextMatches(text, phrases);
+        if (!matches.length) continue;
+
+        const parent = textNode.parentNode;
+        const nextSib = textNode.nextSibling;
+        if (!parent) continue;
+        parent.removeChild(textNode);
+
+        let cursor = 0;
+        for (const match of matches) {
+          if (match.start > cursor) {
+            parent.insertBefore(document.createTextNode(text.slice(cursor, match.start)), nextSib);
+          }
+          const span = document.createElement('span');
+          span.id = `ann-${match.annotation.start}`;
+          parent.insertBefore(span, nextSib);
+          newPortals.push({ el: span, annotation: match.annotation, rawPhrase: match.rawPhrase });
+          cursor = match.end;
+        }
+        if (cursor < text.length) {
+          parent.insertBefore(document.createTextNode(text.slice(cursor)), nextSib);
         }
       }
-    }
-    return map;
-  }, [annotations, bboxAnnotations]);
+
+      if (newPortals.length > 0) {
+        setPortals(prev => [...prev, ...newPortals]);
+      }
+    },
+    [phrases],
+  );
 
   if (!pdf || !fileUrl) {
     return (
@@ -292,71 +327,57 @@ function PdfViewer({
   const { Document, Page } = pdf;
 
   return (
-    <Document
-      file={fileUrl}
-      onLoadSuccess={({ numPages: n }) => setNumPages(n)}
-      loading={
-        <div className="flex items-center justify-center h-32 text-slate-400 text-sm animate-pulse">
-          Rendering PDF…
-        </div>
-      }
-      error={
-        <div className="flex items-center justify-center h-32 text-slate-400 text-sm">
-          Could not render PDF preview.
-        </div>
-      }
-    >
-      {Array.from({ length: numPages }, (_, i) => {
-        const pageNo = i + 1;
-        const ps = pageSizes[String(pageNo)];
-        const overlays = overlaysByPage[pageNo] ?? [];
-
-        return (
-          <div
-            key={pageNo}
-            className="relative mb-4 shadow-md mx-auto"
-            style={{ width: PDF_RENDER_WIDTH, display: 'block' }}
-          >
-            <Page
-              pageNumber={pageNo}
-              width={PDF_RENDER_WIDTH}
-              renderTextLayer={false}
-              renderAnnotationLayer={false}
-            />
-
-            {ps &&
-              overlays.map(({ bbox, annotation }, idx) => {
-                const scale = PDF_RENDER_WIDTH / ps.width;
-                const left = bbox.l * scale;
-                // PDF origin is bottom-left; CSS origin is top-left → flip Y
-                const top = (ps.height - bbox.t) * scale;
-                const width = Math.max((bbox.r - bbox.l) * scale, 4);
-                const height = Math.max((bbox.t - bbox.b) * scale, 4);
-
-                return (
-                  <div
-                    key={`${pageNo}-${idx}`}
-                    style={{
-                      position: 'absolute',
-                      left,
-                      top,
-                      width,
-                      height,
-                      backgroundColor: SEV_FILL[annotation.severity] ?? SEV_FILL.biased,
-                      border: `1.5px solid ${SEV_BORDER[annotation.severity] ?? SEV_BORDER.biased}`,
-                      borderRadius: 2,
-                      cursor: 'pointer',
-                      zIndex: 10,
-                    }}
-                    title={annotation.label}
-                    onClick={() => onAnnotationClick(annotation)}
-                  />
-                );
-              })}
+    <>
+      <Document
+        file={fileUrl}
+        onLoadSuccess={({ numPages: n }) => setNumPages(n)}
+        loading={
+          <div className="flex items-center justify-center h-32 text-slate-400 text-sm animate-pulse">
+            Rendering PDF…
           </div>
-        );
-      })}
-    </Document>
+        }
+        error={
+          <div className="flex items-center justify-center h-32 text-slate-400 text-sm">
+            Could not render PDF preview.
+          </div>
+        }
+      >
+        {Array.from({ length: numPages }, (_, i) => {
+          const pageNo = i + 1;
+          return (
+            <div
+              key={pageNo}
+              ref={(el) => {
+                if (el) pageRefs.current.set(pageNo, el);
+                else pageRefs.current.delete(pageNo);
+              }}
+              className="relative mb-4 shadow-md mx-auto"
+              style={{ width: PDF_RENDER_WIDTH, display: 'block' }}
+            >
+              <Page
+                pageNumber={pageNo}
+                width={PDF_RENDER_WIDTH}
+                renderTextLayer={true}
+                renderAnnotationLayer={false}
+                onRenderTextLayerSuccess={makeTextLayerHandler(pageNo)}
+              />
+            </div>
+          );
+        })}
+      </Document>
+      {portals.map((p, idx) =>
+        createPortal(
+          <IssueTooltip
+            annotation={p.annotation}
+            onOpenSidePanel={() => onAnnotationClick(p.annotation)}
+          >
+            {p.rawPhrase}
+          </IssueTooltip>,
+          p.el,
+          `pdf-portal-${idx}`,
+        ),
+      )}
+    </>
   );
 }
 
@@ -430,6 +451,7 @@ function DocxViewer({
     if (!docx || !containerRef.current || !file) return;
     const container = containerRef.current;
     container.innerHTML = '';
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPortals([]);
 
     const phrases = annotations.map((ann) => ({ phrase: ann.label, annotation: ann }));
@@ -540,13 +562,11 @@ export default function DocumentViewer({
   onAnnotationClick,
   isHebrew,
 }: DocumentViewerProps) {
-  if (inputType === 'pdf' && uploadedFile && bboxAnnotations && pageSizes) {
+  if (inputType === 'pdf' && uploadedFile) {
     return (
       <PdfViewer
         file={uploadedFile}
         annotations={annotations}
-        bboxAnnotations={bboxAnnotations}
-        pageSizes={pageSizes}
         onAnnotationClick={onAnnotationClick}
       />
     );

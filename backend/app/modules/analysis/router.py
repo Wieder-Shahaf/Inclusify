@@ -8,7 +8,7 @@ This module uses LLM-based contextual analysis only.
 
 Detection modes (reported in analysis_mode field):
 - "llm": LLM analysis completed (full or partial sentence coverage)
-- "rules_only": LLM unavailable — no issues returned
+- "llm": always (empty results when LLM unavailable)
 
 DB persistence:
 - When private_mode=False and DB is available, persists documents,
@@ -77,7 +77,7 @@ class AnalysisResponse(BaseModel):
     issues_found: list[Issue]
     corrected_text: Optional[str] = None
     note: Optional[str] = None
-    analysis_mode: Literal['llm', 'hybrid', 'rules_only'] = 'rules_only'
+    analysis_mode: Literal['llm'] = 'llm'
     run_id: Optional[str] = None
 
 
@@ -258,7 +258,7 @@ async def analyze_text(
     - Guest: run is saved with user_id=NULL
 
     Uses hybrid detection (LLM + rule-based fallback).
-    Response includes analysis_mode: "llm" | "hybrid" | "rules_only".
+    Response includes analysis_mode: "llm".
 
     """
     text_length = len(body.text)
@@ -284,7 +284,6 @@ async def analyze_text(
 
     issues, analysis_mode, call_metrics = await _hybrid_detector.analyze(
         body.text, language=language, chunks=body.chunks,
-        db_pool=getattr(request.app.state, 'db_pool', None),
     )
 
     elapsed = time.monotonic() - start_time

@@ -54,6 +54,7 @@ interface BackendIssue {
   suggestion?: string;
   inclusive_sentence?: string;
   flagged_text?: string;
+  phrase?: string;
   start?: number;
   end?: number;
   confidence?: number;
@@ -65,7 +66,7 @@ interface BackendAnalysisResponse {
   issues_found: BackendIssue[];
   corrected_text?: string;
   note?: string;
-  analysis_mode?: 'llm' | 'hybrid' | 'rules_only';
+  analysis_mode?: 'llm';
   run_id?: string;
 }
 
@@ -76,7 +77,7 @@ export interface AnalysisResult {
   counts: Record<Severity, number>;
   originalText: string;
   correctedText?: string;
-  analysisMode?: 'llm' | 'hybrid' | 'rules_only';
+  analysisMode?: 'llm';
   runId?: string;
 }
 
@@ -126,11 +127,20 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
     factually_incorrect: 0,
   };
 
-  for (const issue of response.issues_found) {
+  for (const issue of response.issues_found.filter(i => i.confidence != null && i.confidence > 0)) {
     const severity = mapSeverity(issue.severity || issue.type);
-    const phrase = issue.flagged_text || issue.type || 'Issue';
+    // phrase: use the specific flagged phrase from the LLM; fall back to the
+    // text slice (start/end), then flagged_text only as a last resort since
+    // flagged_text is now the full chunk context, not the individual phrase.
+    const phrase =
+      issue.phrase ||
+      (issue.start !== undefined && issue.end !== undefined
+        ? inputText.slice(issue.start, issue.end)
+        : null) ||
+      issue.type ||
+      'Issue';
 
-    // Add to results (unique per phrase)
+    // Add to results (unique per phrase text — one result card per distinct problematic term)
     const existingResult = results.find(r => r.phrase.toLowerCase() === phrase.toLowerCase());
     if (!existingResult) {
       results.push({
@@ -146,12 +156,12 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
 
     // Find occurrences in text and create annotations
     if (issue.start !== undefined && issue.end !== undefined) {
-      // Use exact positions if provided
       annotations.push({
         start: issue.start,
         end: issue.end,
         severity,
-        label: phrase,
+        label: inputText.slice(issue.start, issue.end) || phrase,
+        category: issue.type,
         explanation: issue.description,
         suggestion: issue.suggestion,
         inclusive_sentence: issue.inclusive_sentence,
@@ -162,7 +172,7 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
       });
       counts[severity] += 1;
     } else {
-      // Find all occurrences in text
+      // Fall back to text search when offsets are missing
       const occurrences = findOccurrences(inputText, phrase);
       for (const occ of occurrences) {
         annotations.push({
@@ -170,6 +180,7 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
           end: occ.end,
           severity,
           label: phrase,
+          category: issue.type,
           explanation: issue.description,
           suggestion: issue.suggestion,
           confidence: issue.confidence,
@@ -182,9 +193,18 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
     }
   }
 
+  const matchedResults = results.filter(result =>
+    annotations.some(
+      a =>
+        a.label.toLowerCase() === result.phrase.toLowerCase() ||
+        a.label.toLowerCase().includes(result.phrase.toLowerCase()) ||
+        result.phrase.toLowerCase().includes(a.label.toLowerCase()),
+    ),
+  );
+
   return {
     annotations,
-    results,
+    results: matchedResults,
     counts,
     originalText: response.original_text,
     correctedText: response.corrected_text,

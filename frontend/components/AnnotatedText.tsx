@@ -8,6 +8,7 @@ export type Annotation = {
   end: number;
   severity: Severity;
   label: string;
+  category?: string;
   suggestion?: string;
   inclusive_sentence?: string;
   explanation?: string;

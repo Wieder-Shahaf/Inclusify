@@ -95,14 +95,13 @@ async def insert_finding(
     end_idx: int,
     explanation: Optional[str] = None,
     excerpt_redacted: Optional[str] = None,
-    rule_id=None,
     confidence=None,
 ):
     row = await conn.fetchrow(
         """
         INSERT INTO findings
-          (run_id, category, severity, start_idx, end_idx, confidence, explanation, rule_id, excerpt_redacted)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+          (run_id, category, severity, start_idx, end_idx, confidence, explanation, excerpt_redacted)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
         RETURNING finding_id;
         """,
         run_id,
@@ -112,7 +111,6 @@ async def insert_finding(
         end_idx,
         confidence,
         explanation,
-        rule_id,
         excerpt_redacted,
     )
     return row["finding_id"]

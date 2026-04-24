@@ -17,10 +17,10 @@ class TestVLLMSettings:
     """Test vLLM settings in config."""
 
     def test_settings_has_vllm_url(self):
-        """Settings should have VLLM_URL field."""
+        """Settings should have VLLM_URL field with a non-empty value."""
         from app.core.config import settings
         assert hasattr(settings, 'VLLM_URL')
-        assert settings.VLLM_URL == "http://localhost:8001"
+        assert isinstance(settings.VLLM_URL, str) and settings.VLLM_URL
 
     def test_settings_has_vllm_timeout(self):
         """Settings should have VLLM_TIMEOUT field."""

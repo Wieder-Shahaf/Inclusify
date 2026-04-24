@@ -17,7 +17,7 @@ Environment="LD_LIBRARY_PATH=/usr/local/cuda-12.4/lib64"
 # vLLM serve command with LoRA adapter (THROUGHPUT OPTIMIZED)
 # - FP16 model (5.8GB on disk, ~6GB VRAM)
 # - dtype=half (not bfloat16 - T4 incompatible)
-# - max-model-len=2048 (saves VRAM, sufficient for sentence analysis)
+# - max-model-len=4096 (doubled from 2048; fits on T4 16GB, needed for chunk-level analysis with full system prompt)
 # - host=0.0.0.0 (allow external connections for backend integration)
 # - gpu-memory-utilization=0.88 (increased KV cache, headroom for CUDA graphs)
 # - max-num-seqs=16 (T4 CUDA graph limit, higher causes OOM during capture)
@@ -28,7 +28,7 @@ Environment="LD_LIBRARY_PATH=/usr/local/cuda-12.4/lib64"
 ExecStart=/home/azureuser/vllm-venv/bin/vllm serve \
     /home/azureuser/models/Qwen2.5-3B-Instruct \
     --dtype half \
-    --max-model-len 2048 \
+    --max-model-len 4096 \
     --port 8001 \
     --host 0.0.0.0 \
     --gpu-memory-utilization 0.88 \

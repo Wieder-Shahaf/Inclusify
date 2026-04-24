@@ -7,7 +7,6 @@ import { cn } from '@/lib/utils';
 import ModelPerformanceTab from './ModelPerformanceTab';
 import OverviewTab from './OverviewTab';
 import UsersTab from './UsersTab';
-import RulesTab from './RulesTab';
 import FeedbackTab from './FeedbackTab';
 
 interface AdminDashboardProps {
@@ -18,7 +17,6 @@ interface AdminDashboardProps {
       overview: string;
       users: string;
       modelPerformance: string;
-      rules: string;
       feedback: string;
     };
     modelMetrics: {
@@ -31,8 +29,6 @@ interface AdminDashboardProps {
       modeBreakdown: {
         title: string;
         llm: string;
-        hybrid: string;
-        rulesOnly: string;
         analyses: string;
       };
       noData: string;
@@ -60,46 +56,6 @@ interface AdminDashboardProps {
       searchPlaceholder: string;
       noResults: string;
     };
-    rules: {
-      title: string;
-      addRule: string;
-      filters: {
-        allLanguages: string;
-        allCategories: string;
-        allStatuses: string;
-        active: string;
-        inactive: string;
-      };
-      table: {
-        name: string;
-        language: string;
-        category: string;
-        severity: string;
-        patternType: string;
-        status: string;
-        actions: string;
-      };
-      form: {
-        addTitle: string;
-        editTitle: string;
-        language: string;
-        name: string;
-        description: string;
-        category: string;
-        severity: string;
-        patternType: string;
-        patternValue: string;
-        exampleBad: string;
-        exampleGood: string;
-        save: string;
-        cancel: string;
-        saving: string;
-      };
-      deleteConfirm: string;
-      noRules: string;
-      severityLabels: { low: string; medium: string; high: string };
-      patternTypeLabels: { regex: string; keyword: string; prompt: string; other: string };
-    };
     feedback: {
       title: string;
       filterAll: string;
@@ -119,7 +75,7 @@ interface AdminDashboardProps {
   };
 }
 
-type TabKey = 'overview' | 'users' | 'model-performance' | 'rules' | 'feedback';
+type TabKey = 'overview' | 'users' | 'model-performance' | 'feedback';
 
 // Skeleton loader for suspense fallback
 function DashboardSkeleton() {
@@ -159,7 +115,6 @@ function AdminDashboardContent({ translations }: AdminDashboardProps) {
     { key: 'overview', label: translations.tabs.overview },
     { key: 'users', label: translations.tabs.users },
     { key: 'model-performance', label: translations.tabs.modelPerformance },
-    { key: 'rules', label: translations.tabs.rules },
     { key: 'feedback', label: translations.tabs.feedback },
   ];
 
@@ -233,9 +188,6 @@ function AdminDashboardContent({ translations }: AdminDashboardProps) {
           days={days}
           translations={translations.modelMetrics}
         />
-      )}
-      {activeTab === 'rules' && (
-        <RulesTab translations={translations.rules} />
       )}
       {activeTab === 'feedback' && (
         <FeedbackTab translations={translations.feedback} />

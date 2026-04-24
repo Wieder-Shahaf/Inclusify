@@ -3,7 +3,7 @@ LLM detector for LGBTQ+ inclusive language analysis.
 
 Uses LLM-based contextual analysis exclusively. When the LLM is unavailable
 (circuit breaker open or all sentences fail), returns empty results with
-analysis_mode='rules_only' so the frontend can surface the appropriate message.
+analysis_mode='llm'.
 """
 
 import asyncio
@@ -11,17 +11,77 @@ import logging
 import re as _re
 from typing import TYPE_CHECKING, Optional
 
-from pybreaker import CircuitBreakerError
-
 from app.modules.analysis.call_metrics import CallMetrics
 from app.modules.analysis.circuit_breaker import vllm_breaker
-from app.modules.analysis.llm_client import VLLMClient, map_severity
+from app.modules.analysis.llm_client import VLLMClient, map_severity, extract_chunk_issues
 from app.modules.analysis.sentence_splitter import split_with_offsets
 
 if TYPE_CHECKING:
     from app.modules.analysis.router import Issue
 
 logger = logging.getLogger(__name__)
+
+def _find_references_start(text: str) -> int:
+    """
+    Return the char offset where the references/bibliography section begins,
+    or len(text) if no such section is found. Uses the LAST match so that
+    inline mentions of the word 'references' don't trigger early cutoff.
+    """
+    pattern = _re.compile(
+        r'(?:^|\n)[ \t]*'
+        r'(?:REFERENCES|References|BIBLIOGRAPHY|Bibliography|'
+        r'Works\s+Cited|WORKS\s+CITED|Literature\s+Cited|LITERATURE\s+CITED)'
+        r'[ \t]*(?:\n|$)',
+        _re.MULTILINE,
+    )
+    matches = list(pattern.finditer(text))
+    if not matches:
+        return len(text)
+    return matches[-1].start()
+
+
+# Terms that ARE the recommended inclusive vocabulary per APA/GLAAD —
+# flagging them as problematic is always a false positive.
+_SAFE_PHRASES: frozenset[str] = frozenset({
+    "sexual orientation",
+    "gender identity",
+    "gender expression",
+    "lgbtq+",
+})
+
+
+def _deduplicate_issues(issues: list) -> list:
+    """
+    Remove duplicate LLM issues within a single run:
+    1. Identical phrase (case-insensitive) → keep highest-confidence entry.
+    2. Span fully contained within an already-kept span → drop the inner one.
+    """
+    if not issues:
+        return issues
+
+    # Step 1: per-phrase dedup — keep highest confidence
+    by_phrase: dict[str, object] = {}
+    no_phrase: list = []
+    for iss in issues:
+        if not iss.phrase:
+            no_phrase.append(iss)
+            continue
+        key = iss.phrase.strip().lower()
+        prev = by_phrase.get(key)
+        if prev is None or (iss.confidence or 0.0) > (prev.confidence or 0.0):
+            by_phrase[key] = iss
+
+    candidates = list(by_phrase.values()) + no_phrase
+
+    # Step 2: span containment dedup — sort by confidence desc, drop dominated spans
+    result: list = []
+    for iss in sorted(candidates, key=lambda i: (i.confidence or 0.0), reverse=True):
+        if any(kept.start <= iss.start and iss.end <= kept.end for kept in result):
+            continue
+        result.append(iss)
+
+    return result
+
 
 def _locate_chunks(full_text: str, chunks: list[str]) -> list[tuple[str, int, int]]:
     """
@@ -87,69 +147,16 @@ def detect_language(text: str) -> str:
 
 
 class HybridDetector:
-    """LLM + DB-rules detector for LGBTQ+ inclusive language analysis."""
+    """LLM detector for LGBTQ+ inclusive language analysis."""
 
     def __init__(self, vllm_client: VLLMClient = None):
         self.client = vllm_client or VLLMClient()
-
-    async def _load_db_rules(self, pool) -> list[dict]:
-        """Fetch enabled rules from DB. Returns empty list on any failure."""
-        if pool is None:
-            return []
-        try:
-            import re as _re_mod
-            async with pool.acquire(timeout=3.0) as conn:
-                rows = await conn.fetch(
-                    "SELECT term, default_severity, category, pattern_type, pattern_value "
-                    "FROM rules WHERE is_enabled = TRUE LIMIT 500"
-                )
-                rules = []
-                for row in rows:
-                    rules.append(dict(row))
-                return rules
-        except Exception:
-            logger.warning("Could not load rules from DB — skipping rule-based pass")
-            return []
-
-    def _apply_rules(self, text: str, rules: list[dict]) -> list["Issue"]:
-        """Apply DB rules to text, return Issues for matches not already covered by LLM."""
-        import re as _re_mod
-        from app.modules.analysis.router import Issue
-        issues = []
-        for rule in rules:
-            pattern_type = rule.get("pattern_type", "exact")
-            pattern_value = rule.get("pattern_value") or rule.get("term", "")
-            if not pattern_value:
-                continue
-            try:
-                if pattern_type == "regex":
-                    matches = list(_re_mod.finditer(pattern_value, text, _re_mod.IGNORECASE))
-                else:
-                    matches = list(_re_mod.finditer(
-                        _re_mod.escape(pattern_value), text, _re_mod.IGNORECASE
-                    ))
-            except _re_mod.error:
-                continue
-            for m in matches:
-                issues.append(Issue(
-                    flagged_text=m.group(0),
-                    severity=rule.get("default_severity", "outdated"),
-                    type=rule.get("category") or "Rule Match",
-                    description=f"Flagged by rule: {rule.get('term', pattern_value)}",
-                    suggestion=None,
-                    phrase=m.group(0),
-                    start=m.start(),
-                    end=m.end(),
-                    confidence=1.0,
-                ))
-        return issues
 
     async def analyze(
         self,
         text: str,
         language: str = "auto",
         chunks: Optional[list[str]] = None,
-        db_pool=None,
     ) -> tuple[list["Issue"], str, CallMetrics]:
         """
         Analyze text for LGBTQ+ inclusive language issues using LLM + DB rules.
@@ -157,7 +164,7 @@ class HybridDetector:
         Returns:
             Tuple of (issues_list, analysis_mode, call_metrics).
             analysis_mode is 'llm' when at least one sentence was processed,
-            or 'rules_only' when LLM was completely unavailable.
+            'llm' in all cases.
         """
         from app.modules.analysis.router import Issue
 
@@ -172,9 +179,20 @@ class HybridDetector:
         else:
             sentences = split_with_offsets(text, language)
 
+        # Skip chunks that fall entirely within the references/bibliography section —
+        # citation titles and author names generate high-volume false positives.
+        refs_start = _find_references_start(text)
+        if refs_start < len(text):
+            before = len(sentences)
+            sentences = [(s, st, en) for s, st, en in sentences if st < refs_start]
+            logger.info(
+                "References section detected at offset %d — dropped %d chunk(s)",
+                refs_start, before - len(sentences),
+            )
+
         logger.info(
-            "LLM detection started: text_length=%d language=%s sentences=%d",
-            len(text), language, len(sentences),
+            "LLM detection started: text_length=%d language=%s sentences=%d refs_start=%d",
+            len(text), language, len(sentences), refs_start,
         )
 
         llm_issues: list[Issue] = []
@@ -202,59 +220,85 @@ class HybridDetector:
                 llm_failure_count += 1
                 continue
 
-            result, sentence, start_offset, end_offset = item
+            result, chunk, start_offset, end_offset = item
 
             if result is not None:
                 llm_success_count += 1
 
-                severity = map_severity(result.get("severity", ""))
-                if severity is not None:
-                    category = result.get("category", "LLM Detected")
-                    if not isinstance(category, str) or category != category:
+                for issue_data in extract_chunk_issues(result):
+                    severity = map_severity(issue_data.get("severity", ""))
+                    if severity is None:
+                        continue
+
+                    # Drop hallucinated issues where the phrase has no LGBTQ+ signal.
+                    phrase_lower = (issue_data.get("phrase") or "").lower().strip()
+                    _LGBTQ_SIGNALS = {
+                        "gay", "lesbian", "bisexual", "transgender", "trans", "queer",
+                        "nonbinary", "non-binary", "lgbtq", "lgbt", "homosexual",
+                        "heterosexual", "cisgender", "cis", "gender", "sexual",
+                        "orientation", "identity", "dysphoria", "same-sex", "lifestyle",
+                        "passing", "transitioning", "pronoun", "assigned", "deviant",
+                        "pervert", "trann", "sodomit", "conversion", "reparative",
+                    }
+                    if phrase_lower and not any(sig in phrase_lower for sig in _LGBTQ_SIGNALS):
+                        logger.debug("Dropping off-topic LLM issue: phrase=%r", phrase_lower)
+                        continue
+
+                    # Drop false positives on APA/GLAAD-recommended inclusive terms.
+                    if phrase_lower in _SAFE_PHRASES:
+                        logger.debug("Dropping safe-phrase false positive: %r", phrase_lower)
+                        continue
+
+                    category = issue_data.get("category", "LLM Detected")
+                    if not isinstance(category, str):
                         category = "LLM Detected"
-                    explanation = result.get("explanation", "")
-                    if not isinstance(explanation, str) or explanation != explanation:
+                    explanation = issue_data.get("explanation", "")
+                    if not isinstance(explanation, str):
                         explanation = ""
 
-                    confidence_raw = result.get("confidence")
-                    if isinstance(confidence_raw, (int, float)) and confidence_raw == confidence_raw:
-                        confidence = max(0.0, min(1.0, float(confidence_raw)))
-                    else:
-                        confidence = None
-
-                    suggestion = result.get("suggestion")
+                    suggestion = issue_data.get("suggestion")
                     if not isinstance(suggestion, str) or not suggestion.strip() or suggestion.strip().lower() == "null":
                         if vllm_breaker.current_state != "open":
                             suggestion = await self.client.get_suggestion(
-                                sentence, severity, category, metrics=call_metrics
+                                chunk, severity, category, metrics=call_metrics
                             )
                         else:
                             suggestion = None
+                    # Drop suggestions that are identical to the flagged phrase —
+                    # these are truncated/degenerate model outputs with no value.
+                    phrase_for_cmp = issue_data.get("phrase") or ""
+                    if suggestion and phrase_for_cmp and suggestion.strip() == phrase_for_cmp.strip():
+                        suggestion = None
 
-                    inclusive_sentence = result.get("inclusive_sentence")
+                    inclusive_sentence = issue_data.get("inclusive_sentence")
                     if not isinstance(inclusive_sentence, str) or not inclusive_sentence.strip() or inclusive_sentence.strip().lower() == "null":
                         inclusive_sentence = None
 
-                    phrase = result.get("phrase")
+                    phrase = issue_data.get("phrase")
                     if not isinstance(phrase, str) or not phrase.strip() or phrase.strip().lower() == "null":
                         phrase = None
 
-                    # Narrow offsets to the phrase when the LLM returned one.
-                    # Fall back to the full sentence span when phrase is absent or
-                    # not locatable (e.g. LLM hallucinated a different form).
+                    # Narrow offsets to the phrase span within the chunk.
+                    # Fall back to full chunk span when phrase is absent or not locatable.
                     actual_start = start_offset
                     actual_end = end_offset
                     if phrase:
-                        phrase_idx = sentence.find(phrase)
+                        phrase_idx = chunk.find(phrase)
                         if phrase_idx == -1:
-                            # Case-insensitive fallback
-                            phrase_idx = sentence.lower().find(phrase.lower())
+                            phrase_idx = chunk.lower().find(phrase.lower())
                         if phrase_idx != -1:
                             actual_start = start_offset + phrase_idx
                             actual_end = actual_start + len(phrase)
 
+                    confidence_raw = issue_data.get("confidence")
+                    confidence = (
+                        max(0.0, min(1.0, float(confidence_raw)))
+                        if isinstance(confidence_raw, (int, float)) and confidence_raw == confidence_raw
+                        else None
+                    )
+
                     issue = Issue(
-                        flagged_text=sentence,
+                        flagged_text=chunk,
                         severity=severity,
                         type=category,
                         description=explanation,
@@ -276,25 +320,19 @@ class HybridDetector:
 
         if llm_success_count == 0:
             logger.warning("LLM unavailable for all sentences — returning empty results")
-            mode = "rules_only"
-        else:
-            mode = "llm"
+        mode = "llm"
 
-        # Apply DB-managed rules as an additional pass; deduplicate by span overlap
-        db_rules = await self._load_db_rules(db_pool)
-        if db_rules:
-            rule_issues = self._apply_rules(text, db_rules)
-            llm_spans = {(i.start, i.end) for i in llm_issues}
-            new_rule_issues = [
-                ri for ri in rule_issues
-                if not any(
-                    ri.start < ls_end and ri.end > ls_start
-                    for ls_start, ls_end in llm_spans
-                )
-            ]
-            if new_rule_issues:
-                logger.info("DB rules added %d issue(s) not found by LLM", len(new_rule_issues))
-            llm_issues = llm_issues + new_rule_issues
+        # Drop issues with no usable confidence score.
+        before_conf = len(llm_issues)
+        llm_issues = [i for i in llm_issues if i.confidence is not None and i.confidence > 0]
+        if len(llm_issues) < before_conf:
+            logger.info("Confidence filter removed %d issue(s) with null/zero confidence", before_conf - len(llm_issues))
+
+        # Deduplicate LLM issues (same phrase, overlapping spans).
+        before_dedup = len(llm_issues)
+        llm_issues = _deduplicate_issues(llm_issues)
+        if len(llm_issues) < before_dedup:
+            logger.info("Dedup removed %d duplicate issue(s)", before_dedup - len(llm_issues))
 
         return llm_issues, mode, call_metrics
 

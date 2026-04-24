@@ -104,35 +104,6 @@ CREATE TABLE guideline_sources (
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- 7) Rules
-CREATE TABLE rules (
-  rule_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-  language TEXT NOT NULL CHECK (language IN ('he','en')),
-  name TEXT NOT NULL,
-  description TEXT,
-
-  category TEXT NOT NULL,
-  default_severity TEXT NOT NULL DEFAULT 'medium'
-    CHECK (default_severity IN ('low','medium','high')),
-
-  pattern_type TEXT NOT NULL CHECK (pattern_type IN ('regex','keyword','prompt','other')),
-  pattern_value TEXT NOT NULL,
-
-  example_bad TEXT,
-  example_good TEXT,
-
-  is_enabled BOOLEAN NOT NULL DEFAULT TRUE,
-
-  source_id UUID REFERENCES guideline_sources(source_id) ON DELETE SET NULL,
-
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX idx_rules_language ON rules(language);
-CREATE INDEX idx_rules_enabled ON rules(is_enabled);
-
 -- 8) Findings
 CREATE TABLE findings (
   finding_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -147,8 +118,6 @@ CREATE TABLE findings (
   confidence DOUBLE PRECISION CHECK (confidence IS NULL OR (confidence BETWEEN 0 AND 1)),
 
   explanation TEXT,
-  rule_id UUID REFERENCES rules(rule_id) ON DELETE SET NULL,
-
   excerpt_redacted TEXT,
 
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
@@ -278,7 +247,7 @@ CREATE TABLE model_metrics (
   metric_id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
   analysis_mode         TEXT NOT NULL
-    CHECK (analysis_mode IN ('llm', 'hybrid', 'rules_only')),
+    CHECK (analysis_mode IN ('llm')),
 
   total_sentences       INT  NOT NULL DEFAULT 0,
   llm_calls             INT  NOT NULL DEFAULT 0,
@@ -318,10 +287,6 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_users_updated
 BEFORE UPDATE ON users
-FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-
-CREATE TRIGGER trg_rules_updated
-BEFORE UPDATE ON rules
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TRIGGER trg_glossary_updated

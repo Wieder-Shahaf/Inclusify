@@ -36,8 +36,6 @@ class TestGetModelMetricsKpis:
             "min_latency_ms": None,
             "max_latency_ms": None,
             "mode_llm": 0,
-            "mode_hybrid": 0,
-            "mode_rules_only": 0,
         })
 
         result = await get_model_metrics_kpis(mock_conn, days=30)
@@ -62,9 +60,7 @@ class TestGetModelMetricsKpis:
             "avg_latency_ms": 234.5,
             "min_latency_ms": 100.0,
             "max_latency_ms": 890.0,
-            "mode_llm": 7,
-            "mode_hybrid": 2,
-            "mode_rules_only": 1,
+            "mode_llm": 10,
         })
 
         result = await get_model_metrics_kpis(mock_conn, days=7)
@@ -74,9 +70,7 @@ class TestGetModelMetricsKpis:
         assert result["error_rate"] == pytest.approx(5.0)
         assert result["fallback_rate"] == pytest.approx(20.0)
         assert result["avg_latency_ms"] == pytest.approx(234.5)
-        assert result["mode_llm"] == 7
-        assert result["mode_hybrid"] == 2
-        assert result["mode_rules_only"] == 1
+        assert result["mode_llm"] == 10
 
 
 class TestInsertModelMetric:
@@ -90,7 +84,7 @@ class TestInsertModelMetric:
         mock_conn.execute = AsyncMock()
 
         data = {
-            "analysis_mode": "hybrid",
+            "analysis_mode": "llm",
             "total_sentences": 5,
             "llm_calls": 4,
             "llm_successes": 3,
@@ -110,7 +104,7 @@ class TestInsertModelMetric:
         # First arg is the SQL string
         assert "INSERT INTO model_metrics" in call_args[0]
         # Positional params match our data values
-        assert "hybrid" in call_args
+        assert "llm" in call_args
         assert 5 in call_args
         assert 4 in call_args
 
@@ -122,7 +116,7 @@ class TestInsertModelMetric:
         mock_conn.execute = AsyncMock()
 
         data = {
-            "analysis_mode": "rules_only",
+            "analysis_mode": "llm",
             "total_sentences": 3,
             "llm_calls": 0,
             "llm_successes": 0,
@@ -162,8 +156,6 @@ class TestAdminModelMetricsEndpoint:
             "min_latency_ms": 100.0,
             "max_latency_ms": 300.0,
             "mode_llm": 5,
-            "mode_hybrid": 0,
-            "mode_rules_only": 0,
         })
         ctx = MagicMock()
         ctx.__aenter__ = AsyncMock(return_value=mock_conn)
