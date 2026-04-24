@@ -96,14 +96,14 @@ class TestHybridDetectorReturnsMetrics:
 
 class TestHybridDetectorMode:
     @pytest.mark.asyncio
-    async def test_mode_rules_only_when_llm_all_fail(self):
+    async def test_mode_llm_when_llm_all_fail(self):
         from app.modules.analysis.hybrid_detector import HybridDetector
 
         mock_client = _make_vllm_client(result=None)
         detector = HybridDetector(vllm_client=mock_client)
 
         _, mode, _ = await detector.analyze("Some text.", language="en")
-        assert mode == "rules_only"
+        assert mode == "llm"
 
     @pytest.mark.asyncio
     async def test_mode_llm_when_all_succeed(self):
@@ -117,13 +117,13 @@ class TestHybridDetectorMode:
         assert mode == "llm"
 
     @pytest.mark.asyncio
-    async def test_empty_text_returns_rules_only_mode(self):
+    async def test_empty_text_returns_llm_mode(self):
         from app.modules.analysis.hybrid_detector import HybridDetector
 
         mock_client = _make_vllm_client(result=None)
         detector = HybridDetector(vllm_client=mock_client)
 
         issues, mode, metrics = await detector.analyze("", language="en")
-        assert mode == "rules_only"
+        assert mode == "llm"
         assert metrics.total_sentences == 0
         assert metrics.llm_calls == 0

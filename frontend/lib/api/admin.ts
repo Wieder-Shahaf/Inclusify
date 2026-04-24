@@ -101,8 +101,6 @@ export interface ModelMetricsResponse {
   min_latency_ms: number | null;
   max_latency_ms: number | null;
   mode_llm: number;
-  mode_hybrid: number;
-  mode_rules_only: number;
 }
 
 export function useModelMetrics(days: number) {
@@ -130,6 +128,49 @@ export function useAdminFrequencyTrends(days: number) {
     `${API_BASE_URL}/api/v1/admin/frequency-trends?days=${days}`,
     fetcher,
     { revalidateOnFocus: false, dedupingInterval: 60000 }
+  );
+  return { data, isLoading, error, refresh: mutate };
+}
+
+// ── Feedback ──────────────────────────────────────────────────────────────────
+
+export interface FeedbackItem {
+  feedback_id: string;
+  vote: 'up' | 'down' | null;
+  feedback_type: string;
+  flagged_text: string | null;
+  severity: string | null;
+  start_idx: number | null;
+  end_idx: number | null;
+  comment: string | null;
+  created_at: string;
+  user_email: string;
+  finding_id: string | null;
+  run_id: string | null;
+}
+
+export interface FeedbackListResponse {
+  items: FeedbackItem[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  total_helpful: number;
+  total_false_positive: number;
+}
+
+export function useAdminFeedback(
+  page: number,
+  pageSize: number = 20,
+  voteFilter?: 'up' | 'down',
+) {
+  const params = new URLSearchParams({ page: String(page), page_size: String(pageSize) });
+  if (voteFilter) params.set('vote', voteFilter);
+
+  const { data, error, isLoading, mutate } = useSWR<FeedbackListResponse>(
+    `${API_BASE_URL}/api/v1/admin/feedback?${params.toString()}`,
+    fetcher,
+    { revalidateOnFocus: false },
   );
   return { data, isLoading, error, refresh: mutate };
 }

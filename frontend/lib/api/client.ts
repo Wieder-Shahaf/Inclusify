@@ -54,6 +54,7 @@ interface BackendIssue {
   suggestion?: string;
   inclusive_sentence?: string;
   flagged_text?: string;
+  phrase?: string;
   start?: number;
   end?: number;
   confidence?: number;
@@ -65,7 +66,8 @@ interface BackendAnalysisResponse {
   issues_found: BackendIssue[];
   corrected_text?: string;
   note?: string;
-  analysis_mode?: 'llm' | 'hybrid' | 'rules_only';
+  analysis_mode?: 'llm';
+  run_id?: string;
 }
 
 // Frontend analysis result
@@ -75,7 +77,8 @@ export interface AnalysisResult {
   counts: Record<Severity, number>;
   originalText: string;
   correctedText?: string;
-  analysisMode?: 'llm' | 'hybrid' | 'rules_only';
+  analysisMode?: 'llm';
+  runId?: string;
 }
 
 // Map backend severity to frontend severity
@@ -124,11 +127,20 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
     factually_incorrect: 0,
   };
 
-  for (const issue of response.issues_found) {
+  for (const issue of response.issues_found.filter(i => i.confidence != null && i.confidence > 0)) {
     const severity = mapSeverity(issue.severity || issue.type);
-    const phrase = issue.flagged_text || issue.type || 'Issue';
+    // phrase: use the specific flagged phrase from the LLM; fall back to the
+    // text slice (start/end), then flagged_text only as a last resort since
+    // flagged_text is now the full chunk context, not the individual phrase.
+    const phrase =
+      issue.phrase ||
+      (issue.start !== undefined && issue.end !== undefined
+        ? inputText.slice(issue.start, issue.end)
+        : null) ||
+      issue.type ||
+      'Issue';
 
-    // Add to results (unique per phrase)
+    // Add to results (unique per phrase text — one result card per distinct problematic term)
     const existingResult = results.find(r => r.phrase.toLowerCase() === phrase.toLowerCase());
     if (!existingResult) {
       results.push({
@@ -144,12 +156,12 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
 
     // Find occurrences in text and create annotations
     if (issue.start !== undefined && issue.end !== undefined) {
-      // Use exact positions if provided
       annotations.push({
         start: issue.start,
         end: issue.end,
         severity,
-        label: phrase,
+        label: inputText.slice(issue.start, issue.end) || phrase,
+        category: issue.type,
         explanation: issue.description,
         suggestion: issue.suggestion,
         inclusive_sentence: issue.inclusive_sentence,
@@ -160,7 +172,7 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
       });
       counts[severity] += 1;
     } else {
-      // Find all occurrences in text
+      // Fall back to text search when offsets are missing
       const occurrences = findOccurrences(inputText, phrase);
       for (const occ of occurrences) {
         annotations.push({
@@ -168,6 +180,7 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
           end: occ.end,
           severity,
           label: phrase,
+          category: issue.type,
           explanation: issue.description,
           suggestion: issue.suggestion,
           confidence: issue.confidence,
@@ -180,14 +193,36 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
     }
   }
 
+  const matchedResults = results.filter(result =>
+    annotations.some(
+      a =>
+        a.label.toLowerCase() === result.phrase.toLowerCase() ||
+        a.label.toLowerCase().includes(result.phrase.toLowerCase()) ||
+        result.phrase.toLowerCase().includes(a.label.toLowerCase()),
+    ),
+  );
+
   return {
     annotations,
-    results,
+    results: matchedResults,
     counts,
     originalText: response.original_text,
     correctedText: response.corrected_text,
     analysisMode: response.analysis_mode,
+    runId: response.run_id,
   };
+}
+
+export interface BboxAnnotation {
+  start: number;
+  end: number;
+  page: number;
+  bbox: { l: number; t: number; r: number; b: number };
+}
+
+export interface PageSize {
+  width: number;
+  height: number;
 }
 
 export interface FileMetadata {
@@ -205,6 +240,9 @@ export interface FileMetadata {
 export interface UploadResult extends FileMetadata {
   text: string;
   chunks?: string[] | null;
+  bboxAnnotations?: BboxAnnotation[] | null;
+  pageSizes?: Record<string, PageSize> | null;
+  markdownText?: string | null;
 }
 
 // Main API function
@@ -219,26 +257,40 @@ export async function analyzeText(
 ): Promise<AnalysisResult> {
   const fetchFn = options?.useAuth ? fetchWithAuth : fetch;
   const meta = options?.fileMeta;
-  const response = await fetchFn(`${API_BASE_URL}/api/v1/analysis/analyze`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      text,
-      language: options?.language || 'auto',
-      private_mode: options?.privateMode ?? true,
-      input_type: meta?.inputType ?? null,
-      original_filename: meta?.filename ?? null,
-      mime_type: meta?.mimeType ?? null,
-      page_count: meta?.pageCount ?? null,
-      title: meta?.title ?? null,
-      author: meta?.author ?? null,
-      detected_language: meta?.detectedLanguage ?? null,
-      file_storage_ref: meta?.fileStorageRef ?? null,
-      chunks: meta?.chunks ?? null,
-    }),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 4 * 60 * 1000); // 4 min safety cap
+
+  let response: Response;
+  try {
+    response = await fetchFn(`${API_BASE_URL}/api/v1/analysis/analyze`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        text,
+        language: options?.language || 'auto',
+        private_mode: options?.privateMode ?? true,
+        input_type: meta?.inputType ?? null,
+        original_filename: meta?.filename ?? null,
+        mime_type: meta?.mimeType ?? null,
+        page_count: meta?.pageCount ?? null,
+        title: meta?.title ?? null,
+        author: meta?.author ?? null,
+        detected_language: meta?.detectedLanguage ?? null,
+        file_storage_ref: meta?.fileStorageRef ?? null,
+        chunks: meta?.chunks ?? null,
+      }),
+    });
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw new Error('Analysis timed out. The server is taking too long — please try again.');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -284,7 +336,118 @@ export async function uploadFile(file: File): Promise<UploadResult> {
     detectedLanguage: data.detected_language ?? null,
     fileStorageRef: data.file_storage_ref ?? null,
     chunks: data.chunks ?? null,
+    bboxAnnotations: data.bbox_annotations ?? null,
+    pageSizes: data.page_sizes ?? null,
+    markdownText: data.markdown_text ?? null,
   };
+}
+
+export interface HistoryEntry {
+  run_id: string;
+  document_id: string;
+  title: string | null;
+  filename: string | null;
+  input_type: string;
+  language: string | null;
+  page_count: number | null;
+  analyzed_at: string | null;
+  runtime_ms: number | null;
+  findings_count: number;
+  findings_low: number;
+  findings_medium: number;
+  findings_high: number;
+}
+
+export interface HistoryKPIs {
+  total_analyses: number;
+  total_findings: number;
+  avg_issues_per_doc: number;
+  findings_low: number;
+  findings_medium: number;
+  findings_high: number;
+}
+
+export interface HistoryResponse {
+  kpis: HistoryKPIs;
+  analyses: HistoryEntry[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface FindingDetail {
+  finding_id: string;
+  category: string;
+  severity: 'low' | 'medium' | 'high';
+  start_idx: number;
+  end_idx: number;
+  confidence: number | null;
+  explanation: string | null;
+  excerpt: string | null;
+  suggestion: string | null;
+}
+
+export interface AnalysisDetail extends HistoryEntry {
+  status: string;
+  findings: FindingDetail[];
+}
+
+export async function getAnalysisDetail(runId: string): Promise<AnalysisDetail> {
+  const response = await fetchWithAuth(
+    `${API_BASE_URL}/api/v1/users/me/history/${runId}`
+  );
+  if (!response.ok) throw new Error(`Failed to load analysis: ${response.status}`);
+  return response.json();
+}
+
+export async function deleteAnalysis(runId: string): Promise<void> {
+  const response = await fetchWithAuth(
+    `${API_BASE_URL}/api/v1/users/me/history/${runId}`,
+    { method: 'DELETE' }
+  );
+  if (!response.ok) throw new Error(`Failed to delete analysis: ${response.status}`);
+}
+
+export async function getHistory(limit = 50, offset = 0): Promise<HistoryResponse> {
+  const response = await fetchWithAuth(
+    `${API_BASE_URL}/api/v1/users/me/history?limit=${limit}&offset=${offset}`
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to load history: ${response.status}`);
+  }
+  return response.json();
+}
+
+export interface FeedbackPayload {
+  vote: 'up' | 'down';
+  flaggedText: string;
+  severity: string;
+  startIdx: number;
+  endIdx: number;
+  findingId?: string;
+  runId?: string;
+  comment?: string;
+}
+
+export async function submitFeedback(payload: FeedbackPayload): Promise<void> {
+  try {
+    await fetchWithAuth(`${API_BASE_URL}/api/v1/feedback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        vote: payload.vote,
+        flagged_text: payload.flaggedText,
+        severity: payload.severity,
+        start_idx: payload.startIdx,
+        end_idx: payload.endIdx,
+        finding_id: payload.findingId ?? null,
+        run_id: payload.runId ?? null,
+        comment: payload.comment ?? null,
+      }),
+    });
+  } catch {
+    // Feedback is best-effort — silently swallow errors
+  }
 }
 
 // Health check

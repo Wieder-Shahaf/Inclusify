@@ -10,7 +10,6 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import {
-  ArrowRight,
   BookOpen,
   CheckCircle2,
   ExternalLink,
@@ -18,42 +17,57 @@ import {
   Quote,
   Copy,
   Check,
+  ThumbsUp,
+  ThumbsDown,
+  Lock,
+  AlertTriangle,
+  Clock,
+  Scale,
+  XCircle,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { submitFeedback } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 
 type AnnotationSidePanelProps = {
   annotation: Annotation | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  locale?: string;
+  isPrivate?: boolean;
+  runId?: string;
 };
 
 const severityInfo = {
   outdated: {
-    icon: '📅',
-    title: 'Outdated Terminology',
+    Icon: Clock,
+    title: { en: 'Outdated Terminology', he: 'מינוח מיושן' },
     color: 'from-sky-500 to-sky-600',
+    iconColor: 'text-sky-500',
     bgLight: 'bg-sky-50 dark:bg-sky-900/20',
     borderColor: 'border-sky-200 dark:border-sky-800',
   },
   biased: {
-    icon: '⚖️',
-    title: 'Biased Language',
+    Icon: Scale,
+    title: { en: 'Biased Language', he: 'שפה מוטה' },
     color: 'from-amber-500 to-amber-600',
+    iconColor: 'text-amber-500',
     bgLight: 'bg-amber-50 dark:bg-amber-900/20',
     borderColor: 'border-amber-200 dark:border-amber-800',
   },
   potentially_offensive: {
-    icon: '⚠️',
-    title: 'Potentially Offensive',
+    Icon: AlertTriangle,
+    title: { en: 'Potentially Offensive', he: 'עלול לפגוע' },
     color: 'from-rose-500 to-rose-600',
+    iconColor: 'text-rose-500',
     bgLight: 'bg-rose-50 dark:bg-rose-900/20',
     borderColor: 'border-rose-200 dark:border-rose-800',
   },
   factually_incorrect: {
-    icon: '❌',
-    title: 'Factually Incorrect',
+    Icon: XCircle,
+    title: { en: 'Factually Incorrect', he: 'שגוי עובדתית' },
     color: 'from-red-500 to-red-600',
+    iconColor: 'text-red-500',
     bgLight: 'bg-red-50 dark:bg-red-900/20',
     borderColor: 'border-red-200 dark:border-red-800',
   },
@@ -63,12 +77,62 @@ export default function AnnotationSidePanel({
   annotation,
   open,
   onOpenChange,
+  locale = 'en',
+  isPrivate = false,
+  runId,
 }: AnnotationSidePanelProps) {
   const [copied, setCopied] = useState(false);
+  const [vote, setVote] = useState<'up' | 'down' | null>(null);
+  const [inclusiveExpanded, setInclusiveExpanded] = useState(false);
+
+  const hasHebrew = (s?: string) => !!s && /[֐-׿]/.test(s);
+  const isHe =
+    locale === 'he' ||
+    hasHebrew(annotation?.label) ||
+    hasHebrew(annotation?.explanation);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setVote(null);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setInclusiveExpanded(false);
+  }, [annotation?.start, annotation?.end]);
 
   if (!annotation) return null;
 
   const info = severityInfo[annotation.severity] || severityInfo.biased;
+  const { Icon } = info;
+
+  const t = {
+    flaggedTerm:       isHe ? 'מונח מסומן'               : 'Flagged Term',
+    whyProblematic:    isHe ? 'מדוע זה בעייתי?'          : 'Why problematic',
+    modelConfidence:   isHe ? 'ביטחון המודל'              : 'Confidence',
+    suggestedAlt:      isHe ? 'חלופה מומלצת'              : 'Suggested Alternative',
+    copySuggestion:    isHe ? 'העתק הצעה'                 : 'Copy',
+    copied:            isHe ? '!הועתק'                    : 'Copied!',
+    inclusiveVersion:  isHe ? 'גרסה מכלילה'               : 'Inclusive Version',
+    learnMore:         isHe ? 'למידע נוסף'                 : 'References',
+    closePanel:        isHe ? 'סגור'                      : 'Close',
+    feedbackQuestion:  isHe ? 'האם הדגל הזה מועיל?'      : 'Was this flag helpful?',
+    voteUp:            isHe ? 'כן'                        : 'Yes',
+    voteDown:          isHe ? 'לא'                        : 'No',
+    feedbackThanks:    isHe ? 'תודה!'                     : 'Thanks for the feedback!',
+    privateNoFeedback: isHe ? 'משוב אינו זמין במצב פרטי' : 'Feedback unavailable in private mode',
+  };
+
+  const handleVote = (v: 'up' | 'down') => {
+    if (vote !== null) return;
+    setVote(v);
+    submitFeedback({
+      vote: v,
+      flaggedText: annotation.label,
+      severity: annotation.severity,
+      startIdx: annotation.start,
+      endIdx: annotation.end,
+      findingId: annotation.finding_id,
+      runId,
+    });
+  };
 
   const handleCopySuggestion = async () => {
     if (annotation.suggestion) {
@@ -80,228 +144,232 @@ export default function AnnotationSidePanel({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-md p-0 overflow-hidden flex flex-col">
-        {/* Header with gradient */}
-        <div className={cn('relative overflow-hidden')}>
-          {/* Background gradient */}
-          <div className={cn('absolute inset-0 bg-gradient-to-br opacity-10', info.color)} />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white dark:to-slate-900" />
-
-          <SheetHeader className="relative p-6 pb-4">
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="text-4xl mb-3"
-            >
-              {info.icon}
-            </motion.div>
-            <SheetTitle className="text-left">
-              <motion.span
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.1 }}
-                className="text-xl font-bold text-slate-800 dark:text-white"
-              >
-                {info.title}
-              </motion.span>
-            </SheetTitle>
-            <motion.div
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.15 }}
-              className="mt-2"
-            >
-              <SeverityBadge level={annotation.severity} />
-            </motion.div>
+      <SheetContent
+        className="w-full sm:max-w-sm p-0 overflow-hidden flex flex-col"
+        dir={isHe ? 'rtl' : 'ltr'}
+      >
+        {/* Compact header */}
+        <div className={cn('relative overflow-hidden border-b border-slate-100 dark:border-slate-800')}>
+          <div className={cn('absolute inset-0 bg-gradient-to-br opacity-[0.06]', info.color)} />
+          <SheetHeader className={cn('relative px-5 py-4', isHe ? 'text-right' : 'text-left')}>
+            <div className={cn('flex items-center gap-2.5', isHe && 'flex-row-reverse')}>
+              <Icon className={cn('w-4 h-4 shrink-0', info.iconColor)} />
+              <div className={cn('flex flex-col gap-0.5', isHe && 'items-end')}>
+                <SheetTitle className={cn('text-sm font-semibold text-slate-700 dark:text-slate-200', isHe ? 'text-right' : 'text-left')}>
+                  {info.title[isHe ? 'he' : 'en']}
+                </SheetTitle>
+                {annotation.category && (
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                    {annotation.category}
+                  </span>
+                )}
+              </div>
+              <div className={cn('ml-auto', isHe && 'ml-0 mr-auto')}>
+                <SeverityBadge level={annotation.severity} />
+              </div>
+            </div>
           </SheetHeader>
         </div>
 
-        {/* Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto px-6 pb-6">
-          <div className="space-y-6">
-            {/* Original Term */}
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className={cn('p-4 rounded-xl border', info.bgLight, info.borderColor)}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <Quote className="w-4 h-4 text-slate-400" />
-                <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                  Flagged Term
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto px-5 py-4">
+          <div className="space-y-4">
+
+            {/* Flagged Term */}
+            <div className={cn('px-3 py-2.5 rounded-lg border', info.bgLight, info.borderColor)}>
+              <div className={cn('flex items-center gap-1.5 mb-1', isHe && 'flex-row-reverse')}>
+                <Quote className="w-3 h-3 text-slate-400" />
+                <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
+                  {t.flaggedTerm}
                 </span>
               </div>
-              <p className="text-lg font-semibold text-slate-800 dark:text-white">
+              <p className={cn('text-sm font-semibold text-slate-800 dark:text-white', isHe && 'text-right')}>
                 &ldquo;{annotation.label}&rdquo;
               </p>
-            </motion.div>
+            </div>
 
             {/* Explanation */}
             {annotation.explanation && (
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.25 }}
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <Lightbulb className="w-5 h-5 text-pride-purple" />
-                  <h3 className="font-semibold text-slate-800 dark:text-white">
-                    Why is this problematic?
-                  </h3>
+              <div>
+                <div className={cn('flex items-center gap-1.5 mb-1.5', isHe && 'flex-row-reverse')}>
+                  <Lightbulb className="w-3.5 h-3.5 text-pride-purple" />
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                    {t.whyProblematic}
+                  </span>
                 </div>
-                <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+                <p className={cn('text-xs text-slate-600 dark:text-slate-300 leading-relaxed', isHe && 'text-right')}>
                   {annotation.explanation}
                 </p>
-              </motion.div>
+              </div>
             )}
 
             {/* Confidence */}
-            {annotation.confidence != null && (
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.28 }}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Model confidence
-                  </span>
-                  <span className="text-sm font-semibold text-slate-800 dark:text-white">
+            <div className={cn('flex items-center gap-3', isHe && 'flex-row-reverse')}>
+              <span className="text-[11px] text-slate-400 dark:text-slate-500 shrink-0">{t.modelConfidence}</span>
+              {annotation.confidence != null ? (
+                <>
+                  <div className="flex-1 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-pride-purple/60"
+                      style={{ width: `${annotation.confidence * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 tabular-nums shrink-0">
                     {Math.round(annotation.confidence * 100)}%
                   </span>
-                </div>
-                <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
-                  <div
-                    className="h-1.5 rounded-full bg-pride-purple"
-                    style={{ width: `${annotation.confidence * 100}%` }}
-                  />
-                </div>
-              </motion.div>
-            )}
+                </>
+              ) : (
+                <span className="text-[11px] text-slate-300 dark:text-slate-600 shrink-0">—</span>
+              )}
+            </div>
 
-            {/* Suggestion */}
+            {/* Suggested Alternative — green card style, collapsible for long text */}
             {annotation.suggestion && (
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.3 }}
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <ArrowRight className="w-5 h-5 text-pride-purple" />
-                  <h3 className="font-semibold text-slate-800 dark:text-white">
-                    Suggested Alternative
-                  </h3>
+              <div>
+                <div className={cn('flex items-center gap-1.5 mb-1.5', isHe && 'flex-row-reverse')}>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                    {t.suggestedAlt}
+                  </span>
                 </div>
-                <div className="relative group">
-                  <div className="p-4 rounded-xl bg-gradient-to-r from-pride-purple/5 to-pride-pink/5 dark:from-pride-purple/10 dark:to-pride-pink/10 border border-pride-purple/20">
-                    <p className="text-pride-purple font-medium text-lg pr-10">
-                      {annotation.suggestion}
-                    </p>
-                  </div>
+                <div className="relative px-3 py-2.5 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                  <p className={cn(
+                    'text-xs text-green-800 dark:text-green-200 leading-relaxed',
+                    isHe ? 'pl-0 pr-7 text-right' : 'pr-7',
+                    !inclusiveExpanded && 'line-clamp-3',
+                  )}>
+                    {annotation.suggestion}
+                  </p>
+                  {annotation.suggestion.length > 160 && (
+                    <button
+                      onClick={() => setInclusiveExpanded(e => !e)}
+                      className="mt-1.5 text-[11px] text-green-700 dark:text-green-400 font-medium hover:underline"
+                    >
+                      {inclusiveExpanded ? 'Show less' : 'Show more'}
+                    </button>
+                  )}
                   <button
                     onClick={handleCopySuggestion}
-                    className="absolute top-3 right-3 p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
-                    title="Copy suggestion"
-                  >
-                    {copied ? (
-                      <Check className="w-4 h-4 text-green-500" />
-                    ) : (
-                      <Copy className="w-4 h-4 text-slate-400" />
+                    className={cn(
+                      'absolute top-2 p-1.5 rounded-md hover:bg-green-100 dark:hover:bg-green-800/40 transition-colors',
+                      isHe ? 'left-2' : 'right-2'
                     )}
+                    title={t.copySuggestion}
+                  >
+                    {copied
+                      ? <Check className="w-3.5 h-3.5 text-green-600" />
+                      : <Copy className="w-3.5 h-3.5 text-green-400" />
+                    }
                   </button>
                 </div>
                 {copied && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-xs text-green-500 mt-2 text-center"
-                  >
-                    Copied to clipboard!
-                  </motion.p>
+                  <p className="text-[11px] text-green-500 mt-1 text-center">{t.copied}</p>
                 )}
-              </motion.div>
-            )}
-
-            {/* Inclusive Sentence */}
-            {annotation.inclusive_sentence && (
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.33 }}
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500" />
-                  <h3 className="font-semibold text-slate-800 dark:text-white">
-                    Inclusive version
-                  </h3>
-                </div>
-                <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                  <p className="text-green-800 dark:text-green-200 leading-relaxed">
-                    {annotation.inclusive_sentence}
-                  </p>
-                </div>
-              </motion.div>
+              </div>
             )}
 
             {/* References */}
             {annotation.references && annotation.references.length > 0 && (
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.35 }}
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <BookOpen className="w-5 h-5 text-pride-purple" />
-                  <h3 className="font-semibold text-slate-800 dark:text-white">
-                    Learn More
-                  </h3>
+              <div>
+                <div className={cn('flex items-center gap-1.5 mb-1.5', isHe && 'flex-row-reverse')}>
+                  <BookOpen className="w-3.5 h-3.5 text-pride-purple" />
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                    {t.learnMore}
+                  </span>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {annotation.references.map((ref, i) => (
-                    <motion.a
+                    <a
                       key={i}
                       href={ref.url}
                       target="_blank"
                       rel="noreferrer"
-                      initial={{ x: -10, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 0.4 + i * 0.05 }}
-                      className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-pride-purple/50 hover:bg-pride-purple/5 transition-all group"
+                      className={cn(
+                        'flex items-center gap-2.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700',
+                        'hover:border-pride-purple/40 hover:bg-pride-purple/5 transition-all group',
+                        isHe && 'flex-row-reverse'
+                      )}
                     >
-                      <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-pride-purple/10 transition-colors">
-                        <ExternalLink className="w-5 h-5 text-slate-400 group-hover:text-pride-purple transition-colors" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-slate-800 dark:text-white group-hover:text-pride-purple transition-colors truncate">
+                      <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-pride-purple transition-colors shrink-0" />
+                      <div className={cn('flex-1 min-w-0', isHe && 'text-right')}>
+                        <p className="text-xs font-medium text-slate-700 dark:text-slate-200 group-hover:text-pride-purple transition-colors truncate">
                           {ref.label}
                         </p>
-                        <p className="text-xs text-slate-400 truncate">
-                          {new URL(ref.url).hostname}
-                        </p>
+                        <p className="text-[10px] text-slate-400 truncate">{new URL(ref.url).hostname}</p>
                       </div>
-                    </motion.a>
+                    </a>
                   ))}
                 </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Feedback */}
+        <div className="px-5 pb-3 shrink-0">
+          <div className={cn(
+            'rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2.5',
+            'bg-slate-50 dark:bg-slate-800/50',
+          )}>
+            {isPrivate ? (
+              <div className={cn('flex items-center gap-2 text-slate-400', isHe && 'flex-row-reverse')}>
+                <Lock className="w-3.5 h-3.5 shrink-0" />
+                <p className="text-[11px]">{t.privateNoFeedback}</p>
+              </div>
+            ) : vote === null ? (
+              <div className={cn('flex items-center gap-2', isHe && 'flex-row-reverse')}>
+                <p className={cn('text-[11px] text-slate-500 dark:text-slate-400 flex-1', isHe && 'text-right')}>
+                  {t.feedbackQuestion}
+                </p>
+                <div className="flex gap-1.5 shrink-0">
+                  <button
+                    onClick={() => handleVote('up')}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-600 text-[11px] font-medium text-slate-600 dark:text-slate-300 hover:border-green-400 hover:bg-green-50 hover:text-green-700 dark:hover:bg-green-900/20 dark:hover:text-green-400 transition-all"
+                    aria-label={t.voteUp}
+                  >
+                    <ThumbsUp className="w-3 h-3" />
+                    {t.voteUp}
+                  </button>
+                  <button
+                    onClick={() => handleVote('down')}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-600 text-[11px] font-medium text-slate-600 dark:text-slate-300 hover:border-rose-400 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-900/20 dark:hover:text-rose-400 transition-all"
+                    aria-label={t.voteDown}
+                  >
+                    <ThumbsDown className="w-3 h-3" />
+                    {t.voteDown}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className={cn('flex items-center gap-2', isHe && 'flex-row-reverse')}
+              >
+                <div className={cn(
+                  'w-6 h-6 rounded-full flex items-center justify-center shrink-0',
+                  vote === 'up' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-rose-100 dark:bg-rose-900/30',
+                )}>
+                  {vote === 'up'
+                    ? <ThumbsUp className="w-3 h-3 text-green-600 dark:text-green-400" />
+                    : <ThumbsDown className="w-3 h-3 text-rose-600 dark:text-rose-400" />
+                  }
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-300">{t.feedbackThanks}</p>
               </motion.div>
             )}
           </div>
         </div>
 
         {/* Footer */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50"
-        >
+        <div className="px-5 pb-4 shrink-0">
           <button
             onClick={() => onOpenChange(false)}
-            className="w-full btn-primary py-3"
+            className="w-full py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
           >
-            Got it, close panel
+            {t.closePanel}
           </button>
-        </motion.div>
+        </div>
       </SheetContent>
     </Sheet>
   );

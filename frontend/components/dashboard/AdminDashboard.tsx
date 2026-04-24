@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import ModelPerformanceTab from './ModelPerformanceTab';
 import OverviewTab from './OverviewTab';
 import UsersTab from './UsersTab';
+import FeedbackTab from './FeedbackTab';
 
 interface AdminDashboardProps {
   translations: {
@@ -16,6 +17,7 @@ interface AdminDashboardProps {
       overview: string;
       users: string;
       modelPerformance: string;
+      feedback: string;
     };
     modelMetrics: {
       kpis: {
@@ -27,8 +29,6 @@ interface AdminDashboardProps {
       modeBreakdown: {
         title: string;
         llm: string;
-        hybrid: string;
-        rulesOnly: string;
         analyses: string;
       };
       noData: string;
@@ -56,10 +56,26 @@ interface AdminDashboardProps {
       searchPlaceholder: string;
       noResults: string;
     };
+    feedback: {
+      title: string;
+      filterAll: string;
+      filterUp: string;
+      filterDown: string;
+      colVote: string;
+      colFlaggedText: string;
+      colSeverity: string;
+      colUser: string;
+      colDate: string;
+      colComment: string;
+      noData: string;
+      helpful: string;
+      falsePositive: string;
+      anonymous: string;
+    };
   };
 }
 
-type TabKey = 'overview' | 'users' | 'model-performance';
+type TabKey = 'overview' | 'users' | 'model-performance' | 'feedback';
 
 // Skeleton loader for suspense fallback
 function DashboardSkeleton() {
@@ -99,6 +115,7 @@ function AdminDashboardContent({ translations }: AdminDashboardProps) {
     { key: 'overview', label: translations.tabs.overview },
     { key: 'users', label: translations.tabs.users },
     { key: 'model-performance', label: translations.tabs.modelPerformance },
+    { key: 'feedback', label: translations.tabs.feedback },
   ];
 
   const timeRangeOptions = [
@@ -141,7 +158,7 @@ function AdminDashboardContent({ translations }: AdminDashboardProps) {
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={cn(
-              'px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors',
+              'flex-1 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors text-center',
               activeTab === tab.key
                 ? 'border-pride-purple text-pride-purple'
                 : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
@@ -171,6 +188,9 @@ function AdminDashboardContent({ translations }: AdminDashboardProps) {
           days={days}
           translations={translations.modelMetrics}
         />
+      )}
+      {activeTab === 'feedback' && (
+        <FeedbackTab translations={translations.feedback} />
       )}
     </div>
   );

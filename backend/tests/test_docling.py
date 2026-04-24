@@ -54,7 +54,7 @@ class TestParseDocumentSync:
         mock_result = MagicMock()
         mock_result.document.export_to_text.return_value = "Document Title\n\nSample text content."
         mock_result.document.export_to_dict.return_value = {"texts": []}
-        mock_result.document.pages = [MagicMock()] * 5
+        mock_result.document.pages = {i: MagicMock() for i in range(1, 6)}
         mock_converter_instance.convert.return_value = mock_result
 
         mock_chunker_instance = MagicMock()

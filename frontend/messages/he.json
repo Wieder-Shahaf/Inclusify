@@ -22,7 +22,8 @@
     "tabs": {
       "overview": "סקירה",
       "users": "משתמשים",
-      "modelPerformance": "ביצועי מודל"
+      "modelPerformance": "ביצועי מודל",
+      "feedback": "משוב"
     },
     "modelMetrics": {
       "kpis": {
@@ -34,8 +35,6 @@
       "modeBreakdown": {
         "title": "פירוט מצב זיהוי",
         "llm": "LLM בלבד",
-        "hybrid": "היברידי (LLM + חוקים)",
-        "rulesOnly": "חוקים בלבד",
         "analyses": "ניתוחים בסך הכל"
       },
       "noData": "לא נרשמו ניתוחים בתקופה זו."
@@ -100,6 +99,22 @@
       "subtitle": "הקטגוריות המסומנות ביותר בתקופה הנבחרת",
       "topPhrases": "ביטויים מובילים",
       "noData": "לא נמצאו ממצאים בתקופה זו."
+    },
+    "feedback": {
+      "title": "משוב משתמשים",
+      "filterAll": "הכל",
+      "filterUp": "מועיל",
+      "filterDown": "זיהוי שגוי",
+      "colVote": "הצבעה",
+      "colFlaggedText": "טקסט מסומן",
+      "colSeverity": "חומרה",
+      "colUser": "משתמש",
+      "colDate": "תאריך",
+      "colComment": "הערה",
+      "noData": "טרם התקבל משוב.",
+      "helpful": "מועיל",
+      "falsePositive": "זיהוי שגוי",
+      "anonymous": "אנונימי"
     }
   },
   "home": {

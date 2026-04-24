@@ -40,6 +40,69 @@ def _get_docling_converter():
         logger.info("Docling converter initialized")
     return _docling_converter
 
+def _extract_docx_fallback(file_bytes: bytes) -> dict:
+    """Extract text from DOCX using python-docx when docling is unavailable."""
+    import io
+    from docx import Document as DocxDocument
+    doc = DocxDocument(io.BytesIO(file_bytes))
+    paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
+    full_text = "\n".join(paragraphs)
+    core = doc.core_properties
+    title = core.title or None
+    author = core.author or None
+    has_hebrew = any('֐' <= c <= '׿' for c in full_text[:500])
+    detected = "he" if has_hebrew else "en"
+    logger.info("DOCX fallback extraction: paragraphs=%d text_length=%d", len(paragraphs), len(full_text))
+    return {"text": full_text, "page_count": 1, "title": title, "author": author, "detected_language": detected}
+
+
+def _extract_pptx_fallback(file_bytes: bytes) -> dict:
+    """Extract text from PPTX using python-pptx when docling is unavailable."""
+    import io
+    from pptx import Presentation
+    prs = Presentation(io.BytesIO(file_bytes))
+    lines = []
+    for slide in prs.slides:
+        for shape in slide.shapes:
+            if shape.has_text_frame:
+                for para in shape.text_frame.paragraphs:
+                    text = para.text.strip()
+                    if text:
+                        lines.append(text)
+    full_text = "\n".join(lines)
+    has_hebrew = any('֐' <= c <= '׿' for c in full_text[:500])
+    detected = "he" if has_hebrew else "en"
+    logger.info("PPTX fallback extraction: slides=%d text_length=%d", len(prs.slides), len(full_text))
+    return {"text": full_text, "page_count": len(prs.slides), "title": None, "author": None, "detected_language": detected}
+
+
+def _extract_pdf_fallback(temp_path: str, file_bytes: bytes, max_pages: int) -> dict:
+    """Extract text from PDF using pypdf when docling is unavailable."""
+    try:
+        reader = PdfReader(temp_path)
+        page_count = len(reader.pages)
+        if page_count > max_pages:
+            return {"error": f"Document exceeds {max_pages} page limit ({page_count} pages)"}
+        title = None
+        author = None
+        if reader.metadata:
+            title = reader.metadata.title or None
+            author = reader.metadata.author or None
+        text_parts = []
+        for page in reader.pages:
+            text_parts.append(page.extract_text() or "")
+        full_text = "\n".join(text_parts)
+        has_hebrew = any('֐' <= c <= '׿' for c in full_text[:500])
+        detected = "he" if has_hebrew else "en"
+        logger.info("PDF fallback extraction: pages=%d text_length=%d", page_count, len(full_text))
+        return {"text": full_text, "page_count": page_count, "title": title, "author": author, "detected_language": detected}
+    except PdfReadError as e:
+        msg = str(e).lower()
+        if "password" in msg or "encrypted" in msg:
+            return {"error": "PDF is password-protected"}
+        return {"error": "PDF appears corrupted"}
+
+
 def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_PAGES) -> dict:
     ext = os.path.splitext(filename)[1].lower() or ".pdf"
     temp_fd, temp_path = tempfile.mkstemp(suffix=ext)
@@ -100,6 +163,25 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
                 logger.error("PDF corrupted: filename=%s", filename)
                 return {"error": "PDF appears corrupted"}
 
+
+        # Try docling first; fall back to lightweight parsers if not installed
+        try:
+            import docling  # noqa: F401
+            _docling_available = True
+        except ImportError:
+            _docling_available = False
+
+        if not _docling_available:
+            logger.warning("Docling not installed — using fallback parser for %s", ext)
+            if ext == ".docx":
+                return _extract_docx_fallback(file_bytes)
+            elif ext == ".pptx":
+                return _extract_pptx_fallback(file_bytes)
+            elif ext == ".pdf":
+                result = _extract_pdf_fallback(temp_path, file_bytes, max_pages)
+                return result
+            else:
+                return {"error": f"Unsupported format {ext} (docling not installed)"}
 
         _t0 = time.monotonic()
         logger.info("Docling conversion started: filename=%s ext=%s", filename, ext)
@@ -188,6 +270,63 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
         chunker = _get_hybrid_chunker()
         chunks_data = [c.text for c in chunker.chunk(result.document) if c.text.strip()]
 
+        # PDF: build offset→bbox index for visual overlay rendering.
+        bbox_annotations = None
+        page_sizes = None
+        if ext == ".pdf":
+            bbox_annotations = []
+            # Sort items into reading order (page asc, top-of-page first) so the
+            # sequential find() search advances monotonically and doesn't miss items
+            # when Docling returns them out of order.
+            def _reading_order(item):
+                prov_list = item.get("prov", [])
+                if not prov_list:
+                    return (9999, -9999.0)
+                prov = prov_list[0]
+                pg = prov.get("page_no", 9999)
+                raw = prov.get("bbox")
+                t = (raw.t if hasattr(raw, 't') else raw.get('t', 0.0)) if raw else 0.0
+                return (pg, -t)  # higher t = top of page = earlier in reading order
+            search_start = 0
+            for item in sorted(items, key=_reading_order):
+                item_text = item.get("text", "")
+                prov_list = item.get("prov", [])
+                if not item_text or not prov_list:
+                    continue
+                prov = prov_list[0]
+                raw_bbox = prov.get("bbox")
+                if raw_bbox is None:
+                    continue
+                bbox = {"l": raw_bbox.l, "t": raw_bbox.t, "r": raw_bbox.r, "b": raw_bbox.b} if hasattr(raw_bbox, 'l') else raw_bbox
+                page_no = prov.get("page_no", 1)
+                idx = full_text.find(item_text, search_start)
+                if idx != -1:
+                    bbox_annotations.append({
+                        "start": idx,
+                        "end": idx + len(item_text),
+                        "page": page_no,
+                        "bbox": bbox,
+                    })
+                    search_start = idx + len(item_text)
+
+            page_sizes = {}
+            if hasattr(result.document, 'pages'):
+                for pg_no, pg in result.document.pages.items():
+                    sz = getattr(pg, 'size', None)
+                    if sz:
+                        page_sizes[str(pg_no)] = {
+                            "width": getattr(sz, 'width', None),
+                            "height": getattr(sz, 'height', None),
+                        }
+
+        # PPTX / DOCX: export markdown for structured rendering in the UI.
+        markdown_text = None
+        if ext in (".pptx", ".docx"):
+            try:
+                markdown_text = result.document.export_to_markdown()
+            except Exception:
+                logger.debug("export_to_markdown failed for %s — skipping", filename)
+
         logger.info(
             "Extraction completed: filename=%s pages=%d text_length=%d chunks=%d detected_language=%s title=%s author=%s",
             filename, final_pages, len(full_text), len(chunks_data), detected_lang,
@@ -202,6 +341,9 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
             "author": author,
             "detected_language": detected_lang,
             "chunks": chunks_data,
+            "bbox_annotations": bbox_annotations,
+            "page_sizes": page_sizes,
+            "markdown_text": markdown_text,
         }
     except Exception as e:
         logger.error("Processing failed: %s", str(e), exc_info=True)

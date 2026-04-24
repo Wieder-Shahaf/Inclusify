@@ -21,6 +21,7 @@ export default async function AdminPage({ params }: Props) {
       overview: t('admin.tabs.overview'),
       users: t('admin.tabs.users'),
       modelPerformance: t('admin.tabs.modelPerformance'),
+      feedback: t('admin.tabs.feedback'),
     },
     modelMetrics: {
       kpis: {
@@ -32,8 +33,6 @@ export default async function AdminPage({ params }: Props) {
       modeBreakdown: {
         title: t('admin.modelMetrics.modeBreakdown.title'),
         llm: t('admin.modelMetrics.modeBreakdown.llm'),
-        hybrid: t('admin.modelMetrics.modeBreakdown.hybrid'),
-        rulesOnly: t('admin.modelMetrics.modeBreakdown.rulesOnly'),
         analyses: t('admin.modelMetrics.modeBreakdown.analyses'),
       },
       noData: t('admin.modelMetrics.noData'),
@@ -60,6 +59,22 @@ export default async function AdminPage({ params }: Props) {
     users: {
       searchPlaceholder: t('admin.users.searchPlaceholder'),
       noResults: t('admin.users.noResults'),
+    },
+    feedback: {
+      title: t('admin.feedback.title'),
+      filterAll: t('admin.feedback.filterAll'),
+      filterUp: t('admin.feedback.filterUp'),
+      filterDown: t('admin.feedback.filterDown'),
+      colVote: t('admin.feedback.colVote'),
+      colFlaggedText: t('admin.feedback.colFlaggedText'),
+      colSeverity: t('admin.feedback.colSeverity'),
+      colUser: t('admin.feedback.colUser'),
+      colDate: t('admin.feedback.colDate'),
+      colComment: t('admin.feedback.colComment'),
+      noData: t('admin.feedback.noData'),
+      helpful: t('admin.feedback.helpful'),
+      falsePositive: t('admin.feedback.falsePositive'),
+      anonymous: t('admin.feedback.anonymous'),
     },
   };
 

@@ -141,8 +141,7 @@ async def get_model_metrics_kpis(conn: asyncpg.Connection, days: int) -> dict:
             - min_latency_ms: global minimum latency across all requests
             - max_latency_ms: global maximum latency across all requests
             - mode_llm: count of fully-LLM analyses
-            - mode_hybrid: count of hybrid analyses
-            - mode_rules_only: count of rules-only analyses
+            - mode_llm: count of LLM-only analyses
     """
     from datetime import datetime, timedelta
     cutoff = datetime.utcnow() - timedelta(days=days)
@@ -162,9 +161,7 @@ async def get_model_metrics_kpis(conn: asyncpg.Connection, days: int) -> dict:
             ROUND(AVG(avg_latency_ms)::NUMERIC, 1)           AS avg_latency_ms,
             ROUND(MIN(min_latency_ms)::NUMERIC, 1)           AS min_latency_ms,
             ROUND(MAX(max_latency_ms)::NUMERIC, 1)           AS max_latency_ms,
-            SUM(CASE WHEN analysis_mode = 'llm'        THEN 1 ELSE 0 END) AS mode_llm,
-            SUM(CASE WHEN analysis_mode = 'hybrid'     THEN 1 ELSE 0 END) AS mode_hybrid,
-            SUM(CASE WHEN analysis_mode = 'rules_only' THEN 1 ELSE 0 END) AS mode_rules_only
+            SUM(CASE WHEN analysis_mode = 'llm' THEN 1 ELSE 0 END) AS mode_llm
         FROM model_metrics
         WHERE created_at >= $1
     """, cutoff)
@@ -179,8 +176,6 @@ async def get_model_metrics_kpis(conn: asyncpg.Connection, days: int) -> dict:
         "min_latency_ms":  float(row["min_latency_ms"]) if row["min_latency_ms"] is not None else None,
         "max_latency_ms":  float(row["max_latency_ms"]) if row["max_latency_ms"] is not None else None,
         "mode_llm":        int(row["mode_llm"] or 0),
-        "mode_hybrid":     int(row["mode_hybrid"] or 0),
-        "mode_rules_only": int(row["mode_rules_only"] or 0),
     }
 
 
@@ -303,3 +298,67 @@ async def get_label_frequency_trends(conn: asyncpg.Connection, days: int) -> lis
             'top_phrases': top5,
         })
     return result
+
+
+# ── Feedback ──────────────────────────────────────────────────────────────────
+
+async def get_feedback_paginated(
+    conn: asyncpg.Connection,
+    page: int = 1,
+    page_size: int = 20,
+    vote_filter: Optional[str] = None,   # 'up' | 'down' | None
+) -> tuple[list[dict], int, int, int]:
+    """Return (rows, total_filtered, total_helpful_all, total_false_positive_all)."""
+    offset = (page - 1) * page_size
+
+    conditions: list[str] = []
+    params: list = []
+
+    if vote_filter in ("up", "down"):
+        params.append(vote_filter)
+        conditions.append(f"fb.vote = ${len(params)}")
+
+    where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
+    # Count matching rows (respects filter)
+    total = await conn.fetchval(
+        f"SELECT COUNT(*) FROM feedback fb {where}", *params
+    )
+
+    # Overall totals (ignores filter) — for KPI cards
+    summary_row = await conn.fetchrow(
+        """
+        SELECT
+            COUNT(*) FILTER (WHERE vote = 'up')   AS total_helpful,
+            COUNT(*) FILTER (WHERE vote = 'down')  AS total_false_positive
+        FROM feedback
+        """
+    )
+    total_helpful        = int(summary_row["total_helpful"] or 0)
+    total_false_positive = int(summary_row["total_false_positive"] or 0)
+
+    params_paged = params + [page_size, offset]
+    rows = await conn.fetch(
+        f"""
+        SELECT
+            fb.feedback_id,
+            fb.vote,
+            fb.feedback_type,
+            fb.flagged_text,
+            fb.severity,
+            fb.start_idx,
+            fb.end_idx,
+            fb.comment,
+            fb.created_at,
+            fb.finding_id,
+            fb.run_id,
+            COALESCE(u.email, 'anonymous') AS user_email
+        FROM feedback fb
+        LEFT JOIN users u ON fb.user_id = u.user_id
+        {where}
+        ORDER BY fb.created_at DESC
+        LIMIT ${len(params_paged) - 1} OFFSET ${len(params_paged)}
+        """,
+        *params_paged,
+    )
+    return [dict(r) for r in rows], total or 0, total_helpful, total_false_positive

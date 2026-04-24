@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS model_metrics (
   metric_id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
   analysis_mode         TEXT NOT NULL
-    CHECK (analysis_mode IN ('llm', 'hybrid', 'rules_only')),
+    CHECK (analysis_mode IN ('llm')),
 
   total_sentences       INT  NOT NULL DEFAULT 0,
   llm_calls             INT  NOT NULL DEFAULT 0,

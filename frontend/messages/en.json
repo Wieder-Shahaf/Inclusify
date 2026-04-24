@@ -22,7 +22,8 @@
     "tabs": {
       "overview": "Overview",
       "users": "Users",
-      "modelPerformance": "Model Performance"
+      "modelPerformance": "Model Performance",
+      "feedback": "Feedback"
     },
     "modelMetrics": {
       "kpis": {
@@ -34,8 +35,6 @@
       "modeBreakdown": {
         "title": "Detection Mode Breakdown",
         "llm": "LLM Only",
-        "hybrid": "Hybrid (LLM + Rules)",
-        "rulesOnly": "Rules Only",
         "analyses": "total analyses"
       },
       "noData": "No analyses recorded in this period."
@@ -100,6 +99,22 @@
       "subtitle": "Most flagged categories in the selected period",
       "topPhrases": "Top phrases",
       "noData": "No findings recorded in this period."
+    },
+    "feedback": {
+      "title": "User Feedback",
+      "filterAll": "All",
+      "filterUp": "Helpful",
+      "filterDown": "False Detection",
+      "colVote": "Vote",
+      "colFlaggedText": "Flagged Text",
+      "colSeverity": "Severity",
+      "colUser": "User",
+      "colDate": "Date",
+      "colComment": "Comment",
+      "noData": "No feedback submitted yet.",
+      "helpful": "Helpful",
+      "falsePositive": "False Detection",
+      "anonymous": "Anonymous"
     }
   },
   "home": {

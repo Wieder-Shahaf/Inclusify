@@ -100,7 +100,7 @@ class TestPersistResultsGuestRun:
                 text="The homosexual patient.",
                 language="en",
                 private_mode=False,
-                analysis_mode="rules_only",
+                analysis_mode="llm",
                 issues=[_make_issue()],
                 runtime_ms=100,
             )
@@ -131,7 +131,7 @@ class TestPersistResultsGuestRun:
                 text="The homosexual patient.",
                 language="en",
                 private_mode=False,
-                analysis_mode="rules_only",
+                analysis_mode="llm",
                 issues=[_make_issue()],
                 runtime_ms=100,
             )
@@ -197,7 +197,7 @@ class TestPersistResultsNoPool:
                 text="Some text.",
                 language="en",
                 private_mode=False,
-                analysis_mode="rules_only",
+                analysis_mode="llm",
                 issues=[_make_issue()],
                 runtime_ms=50,
             )
@@ -221,7 +221,7 @@ class TestPersistResultsNoPool:
                 text="Some text.",
                 language="en",
                 private_mode=False,
-                analysis_mode="rules_only",
+                analysis_mode="llm",
                 issues=[],
                 runtime_ms=50,
             )
@@ -253,7 +253,7 @@ class TestPersistResultsTransactionBoundary:
                 text="Test text.",
                 language="en",
                 private_mode=False,
-                analysis_mode="rules_only",
+                analysis_mode="llm",
                 issues=[_make_issue()],
                 runtime_ms=100,
             )
@@ -285,7 +285,7 @@ class TestPersistResultsTransactionBoundary:
                 text="Test text.",
                 language="en",
                 private_mode=False,
-                analysis_mode="rules_only",
+                analysis_mode="llm",
                 issues=[_make_issue()],
                 runtime_ms=100,
             )
@@ -315,7 +315,7 @@ class TestPersistResultsTransactionBoundary:
                 text="Test.",
                 language="en",
                 private_mode=False,
-                analysis_mode="rules_only",
+                analysis_mode="llm",
                 issues=[_make_issue()],
                 runtime_ms=50,
             )
@@ -342,7 +342,7 @@ class TestPersistResultsTransactionBoundary:
                 text="The homosexual patient.",
                 language="en",
                 private_mode=False,
-                analysis_mode="rules_only",
+                analysis_mode="llm",
                 issues=[_make_issue(suggestion="Use 'gay' or 'lesbian'")],
                 runtime_ms=100,
             )
@@ -369,7 +369,7 @@ class TestPersistResultsTransactionBoundary:
                 text="The homosexual patient.",
                 language="en",
                 private_mode=False,
-                analysis_mode="rules_only",
+                analysis_mode="llm",
                 issues=[_make_issue(suggestion=None)],
                 runtime_ms=100,
             )
@@ -388,7 +388,7 @@ class TestPrivateModeGate:
              patch("app.modules.analysis.router._persist_metrics", new_callable=AsyncMock), \
              patch("app.modules.analysis.router._hybrid_detector") as mock_detector:
 
-            mock_detector.analyze = AsyncMock(return_value=([], "rules_only", MagicMock()))
+            mock_detector.analyze = AsyncMock(return_value=([], "llm", MagicMock()))
 
             from httpx import AsyncClient, ASGITransport
             from app.main import app
@@ -409,7 +409,8 @@ class TestPrivateModeGate:
              patch("app.modules.analysis.router._persist_metrics", new_callable=AsyncMock), \
              patch("app.modules.analysis.router._hybrid_detector") as mock_detector:
 
-            mock_detector.analyze = AsyncMock(return_value=([], "rules_only", MagicMock()))
+            mock_persist.return_value = None
+            mock_detector.analyze = AsyncMock(return_value=([], "llm", MagicMock()))
 
             from httpx import AsyncClient, ASGITransport
             from app.main import app
@@ -434,7 +435,8 @@ class TestPrivateModeGate:
              patch("app.modules.analysis.router._persist_metrics", new_callable=AsyncMock), \
              patch("app.modules.analysis.router._hybrid_detector") as mock_detector:
 
-            mock_detector.analyze = AsyncMock(return_value=([], "rules_only", MagicMock()))
+            mock_persist.return_value = None
+            mock_detector.analyze = AsyncMock(return_value=([], "llm", MagicMock()))
 
             from httpx import AsyncClient, ASGITransport
             from app.main import app

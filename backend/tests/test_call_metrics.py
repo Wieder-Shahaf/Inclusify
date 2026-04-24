@@ -111,9 +111,9 @@ class TestCallMetricsToInsertDict:
         m.record_call(200.0, success=True)
         m.record_call(0.0, success=False, error_type="timeout")
 
-        d = m.to_insert_dict(analysis_mode="hybrid", total_runtime_ms=1500)
+        d = m.to_insert_dict(analysis_mode="llm", total_runtime_ms=1500)
 
-        assert d["analysis_mode"] == "hybrid"
+        assert d["analysis_mode"] == "llm"
         assert d["total_sentences"] == 5
         assert d["llm_calls"] == 3
         assert d["llm_successes"] == 2
@@ -127,7 +127,7 @@ class TestCallMetricsToInsertDict:
 
     def test_no_llm_calls_serialises_none_latency(self):
         m = CallMetrics(total_sentences=3)
-        d = m.to_insert_dict(analysis_mode="rules_only", total_runtime_ms=50)
+        d = m.to_insert_dict(analysis_mode="llm", total_runtime_ms=50)
 
         assert d["llm_calls"] == 0
         assert d["avg_latency_ms"] is None
@@ -135,7 +135,7 @@ class TestCallMetricsToInsertDict:
         assert d["max_latency_ms"] is None
 
     def test_all_modes_accepted(self):
-        for mode in ("llm", "hybrid", "rules_only"):
+        for mode in ("llm",):
             m = CallMetrics()
             d = m.to_insert_dict(analysis_mode=mode, total_runtime_ms=0)
             assert d["analysis_mode"] == mode
