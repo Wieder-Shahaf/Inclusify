@@ -46,7 +46,8 @@ export default async function AdminPage({ params }: Props) {
     kpis: {
       totalAnalyses: t('admin.kpi.totalAnalyses'),
       activeUsers: t('admin.kpi.activeUsers'),
-      documentsProcessed: t('admin.kpi.documentsProcessed'),
+      totalUsers: t('admin.kpi.totalUsers'),
+      findingsFound: t('admin.kpi.issuesFound'),
     },
     sections: {
       recentActivity: t('admin.recentActivity'),

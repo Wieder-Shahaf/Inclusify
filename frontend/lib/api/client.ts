@@ -83,6 +83,9 @@ export interface AnalysisResult {
 
 // Map backend severity to frontend severity
 function mapSeverity(backendSeverity: string): Severity {
+  // Normalize: lowercase + collapse spaces to underscores so that LLM values
+  // like "Potentially Offensive" match the snake_case keys below.
+  const normalized = backendSeverity.toLowerCase().replace(/\s+/g, '_');
   const severityMap: Record<string, Severity> = {
     'low': 'outdated',
     'medium': 'biased',
@@ -92,10 +95,10 @@ function mapSeverity(backendSeverity: string): Severity {
     'biased': 'biased',
     'potentially_offensive': 'potentially_offensive',
     'factually_incorrect': 'factually_incorrect',
-    'gender bias': 'biased',
+    'gender_bias': 'biased',
     'medicalization': 'outdated',
   };
-  return severityMap[backendSeverity.toLowerCase()] || 'biased';
+  return severityMap[normalized] || 'biased';
 }
 
 // Find all occurrences of a phrase in text
@@ -146,6 +149,7 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
       results.push({
         phrase,
         severity,
+        category: issue.type || undefined,
         explanation: issue.description,
         suggestion: issue.suggestion,
         references: [

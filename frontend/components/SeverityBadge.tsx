@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 export type Severity = 'outdated' | 'biased' | 'potentially_offensive' | 'factually_incorrect';
 
-export default function SeverityBadge({ level }: { level: Severity }) {
+export default function SeverityBadge({ level, className }: { level: Severity; className?: string }) {
   const t = useTranslations('severity');
 
   const color = {
@@ -15,5 +15,5 @@ export default function SeverityBadge({ level }: { level: Severity }) {
     factually_incorrect: 'bg-red-100 text-red-900 dark:bg-red-900/40 dark:text-red-100',
   }[level];
 
-  return <span className={cn('badge', color)}>{t(level)}</span>;
+  return <span className={cn('badge', color, className)}>{t(level)}</span>;
 }

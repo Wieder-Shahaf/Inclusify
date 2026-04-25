@@ -34,7 +34,7 @@ export default function UsersTab({ translations }: UsersTabProps) {
   const [institutionInput, setInstitutionInput] = useState('');
   const [institution, setInstitution] = useState('');
   const [minAnalyses, setMinAnalyses] = useState<number | undefined>(undefined);
-  const { data, isLoading, error } = useAdminUsers(page, 20, search || undefined, institution || undefined, minAnalyses);
+  const { data, isLoading, error } = useAdminUsers(page, 5, search || undefined, institution || undefined, minAnalyses);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,9 +44,9 @@ export default function UsersTab({ translations }: UsersTabProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex h-full min-w-0 flex-col gap-3 overflow-hidden">
       {/* Filters */}
-      <form onSubmit={handleSearch} className="flex flex-wrap items-center gap-3">
+      <form onSubmit={handleSearch} className="flex shrink-0 flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
@@ -83,8 +83,8 @@ export default function UsersTab({ translations }: UsersTabProps) {
       </form>
 
       {/* Users Table */}
-      <div className="rounded-2xl border bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
-        <div className="flex items-center gap-2 px-6 py-4 border-b border-slate-100 dark:border-slate-800">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border bg-white dark:bg-slate-900 shadow-sm">
+        <div className="flex shrink-0 items-center gap-2 px-5 py-3 border-b border-slate-100 dark:border-slate-800">
           <Users className="w-5 h-5 text-pride-purple" />
           <h3 className="font-semibold text-slate-800 dark:text-white">Users</h3>
           {data && (
@@ -93,7 +93,7 @@ export default function UsersTab({ translations }: UsersTabProps) {
         </div>
 
         {isLoading ? (
-          <div className="p-6 space-y-4">
+          <div className="min-h-0 flex-1 space-y-4 overflow-hidden p-5">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="flex items-center gap-6">
                 <SkeletonLoader className="h-4 w-48" />
@@ -112,12 +112,14 @@ export default function UsersTab({ translations }: UsersTabProps) {
             {translations.users?.noResults || 'No users found'}
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide bg-slate-50/70 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800">
                   <th className="px-6 py-3">Email</th>
-                  <th className="px-4 py-3 w-36">Role</th>
+                  <th className="px-4 py-3 w-44">Institution</th>
+                  <th className="px-4 py-3 w-32">Role</th>
+                  <th className="px-4 py-3 w-28">Analyses</th>
                   <th className="px-4 py-3 w-36">Last Login</th>
                   <th className="px-4 py-3 w-36">Created</th>
                 </tr>
@@ -131,8 +133,13 @@ export default function UsersTab({ translations }: UsersTabProps) {
                     transition={{ delay: idx * 0.03 }}
                     className="hover:bg-slate-50/60 dark:hover:bg-slate-800/20 transition-colors"
                   >
-                    <td className="px-6 py-4 font-medium text-slate-800 dark:text-white">{user.email}</td>
-                    <td className="px-4 py-4">
+                    <td className="px-6 py-3 font-medium text-slate-800 dark:text-white">{user.email}</td>
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
+                      <span className="block max-w-[160px] truncate">
+                        {user.institution || '—'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
                       <span className={cn(
                         'px-2.5 py-1 rounded-full text-xs font-medium',
                         user.role === 'site_admin'
@@ -142,12 +149,15 @@ export default function UsersTab({ translations }: UsersTabProps) {
                         {user.role}
                       </span>
                     </td>
-                    <td className="px-4 py-4 text-slate-500 dark:text-slate-400">
+                    <td className="px-4 py-3 font-semibold tabular-nums text-slate-800 dark:text-white">
+                      {user.analysis_count.toLocaleString()}
+                    </td>
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
                       {user.last_login_at
                         ? new Date(user.last_login_at).toLocaleDateString()
                         : <span className="italic text-slate-300 dark:text-slate-600">Never</span>}
                     </td>
-                    <td className="px-4 py-4 text-slate-500 dark:text-slate-400">
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
                       {new Date(user.created_at).toLocaleDateString()}
                     </td>
                   </motion.tr>
@@ -159,7 +169,7 @@ export default function UsersTab({ translations }: UsersTabProps) {
 
         {/* Pagination */}
         {data && data.total_pages > 1 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
+          <div className="flex shrink-0 items-center justify-between px-5 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
             <span className="text-sm text-slate-500 dark:text-slate-400">
               Page {data.page} of {data.total_pages} &nbsp;·&nbsp; {data.total} total
             </span>

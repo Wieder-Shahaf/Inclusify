@@ -19,6 +19,14 @@ import type { Severity } from '@/components/SeverityBadge';
 export interface AnalysisData {
   text: string;
   annotations: Annotation[];
+  results?: Array<{
+    phrase: string;
+    severity: Severity;
+    category?: string;
+    explanation: string;
+    suggestion?: string;
+    references?: Array<{ label: string; url: string }>;
+  }>;
   counts: Record<Severity, number>;
   summary: {
     totalIssues: number;

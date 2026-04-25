@@ -14,12 +14,18 @@ const outputMock = jest.fn(() => 'data:application/pdf;base64,MOCK');
 const setFontSizeSpy = jest.fn();
 const setFontSpy = jest.fn();
 const setTextColorSpy = jest.fn();
+const getTextWidthSpy = jest.fn((text: string) => text.length * 1.8);
+const splitTextToSizeSpy = jest.fn((text: string) => [text]);
 
 jest.mock('jspdf', () => ({
   __esModule: true,
   jsPDF: jest.fn().mockImplementation(() => ({
     setFillColor: jest.fn(),
     rect: jest.fn(),
+    circle: jest.fn(),
+    line: jest.fn(),
+    setDrawColor: jest.fn(),
+    setLineWidth: jest.fn(),
     setTextColor: setTextColorSpy,
     setFontSize: setFontSizeSpy,
     setFont: setFontSpy,
@@ -28,6 +34,9 @@ jest.mock('jspdf', () => ({
     save: saveSpy,
     output: outputMock,
     addImage: jest.fn(),
+    addPage: jest.fn(),
+    getTextWidth: getTextWidthSpy,
+    splitTextToSize: splitTextToSizeSpy,
     internal: {
       pageSize: {
         getWidth: () => 210,
@@ -81,6 +90,8 @@ beforeEach(() => {
   setFontSizeSpy.mockClear();
   setFontSpy.mockClear();
   setTextColorSpy.mockClear();
+  getTextWidthSpy.mockClear();
+  splitTextToSizeSpy.mockClear();
 });
 
 describe('exportReport', () => {
@@ -120,7 +131,7 @@ describe('exportReport', () => {
     expect(saveSpy).toHaveBeenCalledWith(expect.stringMatching(/_inclusify_report\.pdf$/));
   });
 
-  it('footer text for en locale contains "Achva LGBTQ+ Studential Organization"', async () => {
+  it('footer text for en locale contains "Achva LGBTQ+ Student Organization"', async () => {
     await exportReport(mockAnalysis, {
       fileName: 'x',
       locale: 'en',
@@ -130,9 +141,22 @@ describe('exportReport', () => {
     const allTextArgs = textSpy.mock.calls.map((call: any[]) => call[0]);
     expect(allTextArgs).toEqual(
       expect.arrayContaining([
-        expect.stringContaining('Achva LGBTQ+ Studential Organization'),
+        expect.stringContaining('Achva LGBTQ+ Student Organization'),
       ])
     );
+  });
+
+  it('uses the display score passed from the visible UI state', async () => {
+    await exportReport(mockAnalysis, {
+      fileName: 'x',
+      locale: 'en',
+      returnBase64: true,
+      displayScore: 72,
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const allTextArgs = textSpy.mock.calls.map((call: any[]) => call[0]);
+    expect(allTextArgs).toEqual(expect.arrayContaining(['72', '/100']));
+    expect(allTextArgs).not.toEqual(expect.arrayContaining(['72%']));
   });
 
   it('footer text for he locale contains Hebrew watermark string', async () => {

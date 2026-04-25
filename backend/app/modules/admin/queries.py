@@ -50,11 +50,20 @@ async def get_analytics_kpis(conn: asyncpg.Connection, days: int) -> dict:
         WHERE started_at >= $1 AND status = 'succeeded'
     """, cutoff)
 
+    # Findings detected in period
+    total_findings = await conn.fetchval("""
+        SELECT COUNT(*)
+        FROM findings f
+        JOIN analysis_runs ar ON f.run_id = ar.run_id
+        WHERE ar.started_at >= $1
+    """, cutoff)
+
     return {
         "total_users": total_users or 0,
         "active_users": active_users or 0,
         "total_analyses": total_analyses or 0,
-        "documents_processed": docs_processed or 0
+        "documents_processed": docs_processed or 0,
+        "total_findings": total_findings or 0
     }
 
 
@@ -275,6 +284,18 @@ async def get_label_frequency_trends(conn: asyncpg.Connection, days: int) -> lis
         'Biased',
         'Potentially Offensive',
         'Outdated Terminology',
+        'Medicalization',
+        'Generalization',
+        'Demeaning Terminology',
+        'Misleading Framing',
+        'False Causality',
+        'Identity Invalidation',
+        'Incorrect Grammar',
+        'Medical Misinformation',
+        'Social Stigma',
+        'Tone Policing',
+        'Legal',
+        'Social Change',
     }
 
     # Merge Hebrew and English rows for the same canonical category

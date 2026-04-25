@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
 import { createPortal } from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import IssueTooltip from './IssueTooltip';
+import IssueTooltip, { severityConfig } from './IssueTooltip';
 import { Annotation } from './AnnotatedText';
 import type { BboxAnnotation, PageSize } from '@/lib/api/client';
+import { cn } from '@/lib/utils';
 import 'react-pdf/dist/Page/TextLayer.css';
 
 // ── react-pdf: loaded lazily to avoid SSR errors ────────────────────────────
@@ -229,92 +230,192 @@ function MarkdownViewer({
   );
 }
 
-// ── PDF viewer with text-layer phrase injection ──────────────────────────────
+// ── PDF viewer: span-rect overlays per page ──────────────────────────────────
 const PDF_RENDER_WIDTH = 680;
 
-function PdfViewer({
-  file,
-  annotations,
-  onAnnotationClick,
-}: {
+type PdfOverlay = {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+  annotation: Annotation;
+};
+
+export interface PdfNavHandle {
+  scrollToPage: (n: number) => void;
+  /** Returns true if a match was found and scrolled to. */
+  handleSearch: (term: string) => boolean;
+}
+
+const PdfViewer = forwardRef<PdfNavHandle, {
   file: File;
   annotations: Annotation[];
   onAnnotationClick: (ann: Annotation) => void;
-}) {
+  onNumPagesChange?: (n: number) => void;
+  onPageChange?: (n: number) => void;
+}>(function PdfViewer({ file, annotations, onAnnotationClick, onNumPagesChange, onPageChange }, ref) {
   const pdf = usePdfLib();
   const [numPages, setNumPages] = useState(0);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
-  const [portals, setPortals] = useState<Array<{ el: HTMLElement; annotation: Annotation; rawPhrase: string }>>([]);
-  const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
-  const injectedPages = useRef<Set<number>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageOverlays, setPageOverlays] = useState<Map<number, PdfOverlay[]>>(new Map());
 
-  const phrases = useMemo(
-    () => annotations.map(ann => ({ phrase: ann.label, annotation: ann })),
-    [annotations],
-  );
+  const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const processedPages = useRef<Set<number>>(new Set());
+  const pageTextIndex = useRef<Map<number, string>>(new Map());
+
+  const scrollToPage = useCallback((pageNo: number) => {
+    const el = pageRefs.current.get(pageNo);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setCurrentPage(pageNo);
+    }
+  }, []);
+
+  const handleSearch = useCallback((term: string): boolean => {
+    if (!term.trim()) return false;
+    // Normalize whitespace so Docling-extracted phrases match PDF.js-rendered text
+    // (PDF.js may use non-breaking spaces, ligatures, or different spacing).
+    const normalize = (s: string) => s.toLowerCase().replace(/[\s ]+/g, ' ').trim();
+    const normTerm = normalize(term);
+
+    // Annotation overlay anchor: scroll directly to the highlight element
+    const ann = annotations.find(a => normalize(a.label).includes(normTerm));
+    if (ann) {
+      const el = document.getElementById(`ann-${ann.start}`);
+      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); return true; }
+    }
+
+    // General text: find first page whose normalized text contains the term
+    for (const [pageNo, pageText] of Array.from(pageTextIndex.current.entries()).sort(([a], [b]) => a - b)) {
+      if (normalize(pageText).includes(normTerm)) { scrollToPage(pageNo); return true; }
+    }
+
+    // Last resort: page with a matching overlay label
+    for (const [pageNo, overlays] of Array.from(pageOverlays.entries()).sort(([a], [b]) => a - b)) {
+      if (overlays.some(o => normalize(o.annotation.label).includes(normTerm))) {
+        scrollToPage(pageNo);
+        return true;
+      }
+    }
+
+    return false;
+  }, [annotations, pageOverlays, scrollToPage]);
+
+  useImperativeHandle(ref, () => ({ scrollToPage, handleSearch }), [scrollToPage, handleSearch]);
+  useEffect(() => { onNumPagesChange?.(numPages); }, [numPages, onNumPagesChange]);
+  useEffect(() => { onPageChange?.(currentPage); }, [currentPage, onPageChange]);
 
   useEffect(() => {
     const url = URL.createObjectURL(file);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFileUrl(url);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setPortals([]);
+    setPageOverlays(new Map());
     pageRefs.current.clear();
-    injectedPages.current.clear();
-    return () => URL.revokeObjectURL(url);
+    processedPages.current.clear();
+    pageTextIndex.current.clear();
+  }, [file]);
+
+  useEffect(() => {
+    return () => {
+      if (fileUrl) URL.revokeObjectURL(fileUrl);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file]);
 
   const makeTextLayerHandler = useCallback(
     (pageNumber: number) => () => {
-      if (injectedPages.current.has(pageNumber)) return;
-      injectedPages.current.add(pageNumber);
-
+      // Guard inside the rAF (not here) so pages whose text layer fires before content
+      // is ready can be retried on the next onRenderTextLayerSuccess call.
       const pageEl = pageRefs.current.get(pageNumber);
       if (!pageEl) return;
 
-      const textLayer = pageEl.querySelector('.react-pdf__Page__textContent');
-      if (!textLayer) return;
+      // rAF ensures the text layer has been painted and has valid layout rects
+      requestAnimationFrame(() => {
+        if (processedPages.current.has(pageNumber)) return;
 
-      const walker = document.createTreeWalker(textLayer, NodeFilter.SHOW_TEXT);
-      const nodes: Text[] = [];
-      let n: Node | null;
-      while ((n = walker.nextNode())) nodes.push(n as Text);
+        const textLayer = pageEl.querySelector('.react-pdf__Page__textContent');
+        if (!textLayer) return;
 
-      const newPortals: Array<{ el: HTMLElement; annotation: Annotation; rawPhrase: string }> = [];
+        const allSpans = Array.from(textLayer.querySelectorAll('span')) as HTMLElement[];
 
-      for (let i = nodes.length - 1; i >= 0; i--) {
-        const textNode = nodes[i];
-        const text = textNode.nodeValue ?? '';
-        const matches = findTextMatches(text, phrases);
-        if (!matches.length) continue;
+        // Join with a space so adjacent spans ("contemporary"+"sexual") become searchable
+        // as "contemporary sexual". normalize() collapses any double-spaces later.
+        const pageText = allSpans.map(s => s.textContent || '').join(' ');
+        if (!pageText.trim()) return; // Text layer not ready — allow retry on next render
 
-        const parent = textNode.parentNode;
-        const nextSib = textNode.nextSibling;
-        if (!parent) continue;
-        parent.removeChild(textNode);
+        // Mark processed only after confirming content so failed pages can be retried
+        processedPages.current.add(pageNumber);
+        pageTextIndex.current.set(pageNumber, pageText);
 
-        let cursor = 0;
-        for (const match of matches) {
-          if (match.start > cursor) {
-            parent.insertBefore(document.createTextNode(text.slice(cursor, match.start)), nextSib);
+        // For overlay creation only use spans that are actually painted.
+        // Zero-dimension spans are PDF.js selection-layer artifacts that produce bogus rects.
+        const spans = allSpans.filter(s => {
+          if (!(s.textContent || '').length) return false;
+          const r = s.getBoundingClientRect();
+          return r.width > 0 && r.height > 0;
+        });
+        if (spans.length === 0) return;
+
+        // Build fullText with space separators so multi-word phrases across spans can match.
+        // spanMap records each span's start/end in this spaced string.
+        let fullText = '';
+        const spanMap: Array<{ start: number; end: number; el: HTMLElement }> = [];
+        for (const span of spans) {
+          const t = span.textContent || '';
+          if (fullText) fullText += ' ';
+          spanMap.push({ start: fullText.length, end: fullText.length + t.length, el: span });
+          fullText += t;
+        }
+
+        const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim();
+        const lowerFull = normalize(fullText);
+        const pageRect = pageEl.getBoundingClientRect();
+        const overlays: PdfOverlay[] = [];
+
+        for (const ann of annotations) {
+          if (!ann.label) continue;
+          // Normalize phrase whitespace to match the space-joined span text
+          const lowerPhrase = normalize(ann.label);
+          let idx = lowerFull.indexOf(lowerPhrase);
+          while (idx !== -1) {
+            const phraseEnd = idx + lowerPhrase.length;
+            const relevant = spanMap.filter(s => s.end > idx && s.start < phraseEnd);
+            if (relevant.length > 0) {
+              const rects = relevant.map(s => s.el.getBoundingClientRect());
+              const top = Math.min(...rects.map(r => r.top)) - pageRect.top;
+              const left = Math.min(...rects.map(r => r.left)) - pageRect.left;
+              const width = Math.max(...rects.map(r => r.right)) - Math.min(...rects.map(r => r.left));
+              const height = Math.max(...rects.map(r => r.bottom)) - Math.min(...rects.map(r => r.top));
+              // Skip degenerate rects — indicates a span with no real painted position
+              if (width > 2 && height > 2) {
+                overlays.push({ top, left, width, height, annotation: ann });
+              }
+            }
+            idx = lowerFull.indexOf(lowerPhrase, phraseEnd);
           }
-          const span = document.createElement('span');
-          span.id = `ann-${match.annotation.start}`;
-          parent.insertBefore(span, nextSib);
-          newPortals.push({ el: span, annotation: match.annotation, rawPhrase: match.rawPhrase });
-          cursor = match.end;
         }
-        if (cursor < text.length) {
-          parent.insertBefore(document.createTextNode(text.slice(cursor)), nextSib);
-        }
-      }
 
-      if (newPortals.length > 0) {
-        setPortals(prev => [...prev, ...newPortals]);
-      }
+        if (overlays.length > 0) {
+          setPageOverlays(prev => new Map(prev).set(pageNumber, overlays));
+        }
+      });
     },
-    [phrases],
+    [annotations],
   );
+
+  // Precompute which overlay on which page gets the scroll-anchor id for each annotation.
+  // We assign ann-{start} to the first occurrence across all pages (lowest page, lowest idx).
+  const firstOccurrenceKey = useMemo(() => {
+    const map = new Map<number, string>(); // annStart → `${pageNo}-${overlayIdx}`
+    for (const [pageNo, overlays] of Array.from(pageOverlays.entries()).sort(([a], [b]) => a - b)) {
+      overlays.forEach((overlay, i) => {
+        if (!map.has(overlay.annotation.start)) {
+          map.set(overlay.annotation.start, `${pageNo}-${i}`);
+        }
+      });
+    }
+    return map;
+  }, [pageOverlays]);
 
   if (!pdf || !fileUrl) {
     return (
@@ -327,7 +428,7 @@ function PdfViewer({
   const { Document, Page } = pdf;
 
   return (
-    <>
+    <div>
       <Document
         file={fileUrl}
         onLoadSuccess={({ numPages: n }) => setNumPages(n)}
@@ -344,6 +445,7 @@ function PdfViewer({
       >
         {Array.from({ length: numPages }, (_, i) => {
           const pageNo = i + 1;
+          const overlays = pageOverlays.get(pageNo) || [];
           return (
             <div
               key={pageNo}
@@ -352,7 +454,7 @@ function PdfViewer({
                 else pageRefs.current.delete(pageNo);
               }}
               className="relative mb-4 shadow-md mx-auto"
-              style={{ width: PDF_RENDER_WIDTH, display: 'block' }}
+              style={{ width: PDF_RENDER_WIDTH }}
             >
               <Page
                 pageNumber={pageNo}
@@ -361,25 +463,45 @@ function PdfViewer({
                 renderAnnotationLayer={false}
                 onRenderTextLayerSuccess={makeTextLayerHandler(pageNo)}
               />
+              {overlays.map((overlay, idx) => {
+                const cfg = severityConfig[overlay.annotation.severity] || severityConfig.biased;
+                const isAnchor = firstOccurrenceKey.get(overlay.annotation.start) === `${pageNo}-${idx}`;
+                return (
+                  <div
+                    key={idx}
+                    id={isAnchor ? `ann-${overlay.annotation.start}` : undefined}
+                    className="absolute pointer-events-auto"
+                    style={{
+                      top: overlay.top,
+                      left: overlay.left,
+                      width: Math.max(overlay.width, 10),
+                      height: Math.max(overlay.height, 12),
+                      zIndex: 5,
+                    }}
+                  >
+                    <IssueTooltip
+                      annotation={overlay.annotation}
+                      onOpenSidePanel={() => onAnnotationClick(overlay.annotation)}
+                      noHighlight
+                    >
+                      <div
+                        className={cn(
+                          'w-full h-full rounded-sm cursor-pointer transition-opacity',
+                          cfg.highlightColor,
+                          'opacity-40 hover:opacity-65',
+                        )}
+                      />
+                    </IssueTooltip>
+                  </div>
+                );
+              })}
             </div>
           );
         })}
       </Document>
-      {portals.map((p, idx) =>
-        createPortal(
-          <IssueTooltip
-            annotation={p.annotation}
-            onOpenSidePanel={() => onAnnotationClick(p.annotation)}
-          >
-            {p.rawPhrase}
-          </IssueTooltip>,
-          p.el,
-          `pdf-portal-${idx}`,
-        ),
-      )}
-    </>
+    </div>
   );
-}
+});
 
 // ── docx-preview: loaded lazily to avoid SSR errors ─────────────────────────
 let docxLib: typeof import('docx-preview') | null = null;
@@ -468,8 +590,6 @@ function DocxViewer({
       .then(() => {
         if (!containerRef.current) return;
 
-        // Collect all text nodes first, then process in reverse so DOM mutations
-        // to later nodes don't invalidate earlier positions in the list.
         const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
         const nodes: Text[] = [];
         let n: Node | null;
@@ -549,25 +669,32 @@ export interface DocumentViewerProps {
   markdownText: string | null;
   onAnnotationClick: (annotation: Annotation) => void;
   isHebrew: boolean;
+  onPdfNumPages?: (n: number) => void;
+  onPdfPageChange?: (n: number) => void;
 }
 
-export default function DocumentViewer({
+const DocumentViewer = forwardRef<PdfNavHandle, DocumentViewerProps>(function DocumentViewer({
   inputType,
   text,
   annotations,
   uploadedFile,
-  bboxAnnotations,
-  pageSizes,
+  bboxAnnotations: _bboxAnnotations,
+  pageSizes: _pageSizes,
   markdownText,
   onAnnotationClick,
   isHebrew,
-}: DocumentViewerProps) {
+  onPdfNumPages,
+  onPdfPageChange,
+}, ref) {
   if (inputType === 'pdf' && uploadedFile) {
     return (
       <PdfViewer
+        ref={ref}
         file={uploadedFile}
         annotations={annotations}
         onAnnotationClick={onAnnotationClick}
+        onNumPagesChange={onPdfNumPages}
+        onPageChange={onPdfPageChange}
       />
     );
   }
@@ -600,4 +727,6 @@ export default function DocumentViewer({
       onAnnotationClick={onAnnotationClick}
     />
   );
-}
+});
+
+export default DocumentViewer;

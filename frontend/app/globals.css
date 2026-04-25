@@ -247,6 +247,14 @@
   scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
 }
 
+/* Hide scrollbar on the page-level main scroll container */
+main {
+  scrollbar-width: none;
+}
+main::-webkit-scrollbar {
+  display: none;
+}
+
 *::-webkit-scrollbar {
   width: 5px;
   height: 5px;

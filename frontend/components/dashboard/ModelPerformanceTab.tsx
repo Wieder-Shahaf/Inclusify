@@ -15,12 +15,6 @@ interface ModelPerformanceTabProps {
       fallbackRate: string;
       totalLlmCalls: string;
     };
-    modeBreakdown: {
-      title: string;
-      llm: string;
-      analyses: string;
-    };
-    noData: string;
   };
 }
 
@@ -94,7 +88,7 @@ function KpiCard({
       initial={{ opacity: 0, scale: 0.9, y: 20 }}
       animate={isLoading ? { opacity: 0, scale: 0.9, y: 20 } : { opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="rounded-2xl border bg-white dark:bg-slate-900 p-5 shadow-sm"
+      className="flex flex-col gap-3 overflow-hidden rounded-xl border bg-white p-4 shadow-sm dark:bg-slate-900"
     >
       {isLoading ? (
         <div className="space-y-3">
@@ -112,10 +106,10 @@ function KpiCard({
             </div>
             <Tooltip text={tooltip} />
           </div>
-          <div className="mt-4">
-            <p className="text-2xl font-bold text-slate-800 dark:text-white">{value}</p>
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">{label}</p>
-            {sub && <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{sub}</p>}
+          <div className="min-w-0">
+            <p className="text-2xl font-bold leading-none text-slate-800 dark:text-white">{value}</p>
+            <p className="mt-1.5 truncate text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p>
+            {sub && <p className="mt-0.5 truncate text-xs text-slate-400 dark:text-slate-500">{sub}</p>}
           </div>
         </>
       )}
@@ -123,27 +117,6 @@ function KpiCard({
   );
 }
 
-function ModeBar({ label, count, total, color }: { label: string; count: number; total: number; color: string }) {
-  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-  return (
-    <div className="space-y-2">
-      <div className="flex justify-between text-sm">
-        <span className="text-slate-700 dark:text-slate-300">{label}</span>
-        <span className="text-slate-500 dark:text-slate-400 tabular-nums">
-          {count.toLocaleString()} <span className="text-xs">({pct}%)</span>
-        </span>
-      </div>
-      <div className="h-2.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-        <motion.div
-          className={cn('h-full rounded-full', color)}
-          initial={{ width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-        />
-      </div>
-    </div>
-  );
-}
 
 export default function ModelPerformanceTab({ days, translations }: ModelPerformanceTabProps) {
   const { data, isLoading, error } = useModelMetrics(days);
@@ -152,9 +125,9 @@ export default function ModelPerformanceTab({ days, translations }: ModelPerform
     val != null ? `${val.toLocaleString()}${suffix}` : '—';
 
   return (
-    <div className="space-y-6">
+    <div className="flex h-full min-w-0 flex-col gap-3 overflow-hidden">
       {/* KPI Cards */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <div className="grid shrink-0 gap-3 grid-cols-2 lg:grid-cols-4">
         <KpiCard
           label={translations.kpis.avgLatency}
           value={data?.avg_latency_ms != null ? `${(data.avg_latency_ms / 1000).toFixed(2)} s` : '—'}
@@ -194,48 +167,10 @@ export default function ModelPerformanceTab({ days, translations }: ModelPerform
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400 text-sm">
+        <div className="shrink-0 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400 text-sm">
           Failed to load model metrics. Please try again.
         </div>
       )}
-
-      {/* Mode Breakdown */}
-      <div className="rounded-2xl border bg-white dark:bg-slate-900 p-6 shadow-sm">
-        <h3 className="font-semibold text-slate-800 dark:text-white flex items-center gap-2 mb-5">
-          <Cpu className="w-4 h-4 text-pride-purple" />
-          {translations.modeBreakdown.title}
-        </h3>
-
-        {isLoading ? (
-          <div className="space-y-4">
-            {[1].map((i) => (
-              <div key={i} className="space-y-2">
-                <div className="flex justify-between">
-                  <SkeletonLoader className="h-4 w-24" />
-                  <SkeletonLoader className="h-4 w-16" />
-                </div>
-                <SkeletonLoader className="h-2 w-full rounded-full" />
-              </div>
-            ))}
-          </div>
-        ) : !data || data.total_analyses === 0 ? (
-          <p className="text-sm text-slate-500 dark:text-slate-400 py-4 text-center">
-            {translations.noData}
-          </p>
-        ) : (
-          <div className="space-y-5">
-            <ModeBar
-              label={translations.modeBreakdown.llm}
-              count={data.mode_llm}
-              total={data.total_analyses}
-              color="bg-sky-500"
-            />
-            <p className="text-xs text-slate-400 dark:text-slate-500 pt-1">
-              {data.total_analyses.toLocaleString()} {translations.modeBreakdown.analyses}
-            </p>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

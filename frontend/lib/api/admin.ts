@@ -9,6 +9,7 @@ export interface AnalyticsResponse {
   active_users: number;
   total_analyses: number;
   documents_processed: number;
+  total_findings: number;
 }
 
 export interface UserItem {
@@ -17,6 +18,8 @@ export interface UserItem {
   role: string;
   last_login_at: string | null;
   created_at: string;
+  analysis_count: number;
+  institution: string | null;
 }
 
 export interface UsersListResponse {

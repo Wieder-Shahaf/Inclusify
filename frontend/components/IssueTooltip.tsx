@@ -1,11 +1,17 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useId } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Annotation } from './AnnotatedText';
 import { Info, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
+
+const ACTIVE_TOOLTIP_EVENT = 'inclusify:issue-tooltip-active';
+
+type ActiveTooltipEventDetail = {
+  id: string;
+};
 
 interface IssueTooltipProps {
   annotation: Annotation;
@@ -34,11 +40,11 @@ const severityConfig = {
   },
   potentially_offensive: {
     label: 'Potentially Offensive',
-    bgColor: 'bg-rose-100 dark:bg-rose-900/40',
-    textColor: 'text-rose-700 dark:text-rose-300',
-    highlightColor: 'bg-rose-200/80 dark:bg-rose-900/60 border-b-2 border-rose-500',
-    activeHighlight: 'bg-rose-300 dark:bg-rose-800 border-b-2 border-rose-600 ring-2 ring-rose-400/50',
-    dotColor: 'bg-rose-500',
+    bgColor: 'bg-orange-100 dark:bg-orange-900/40',
+    textColor: 'text-orange-700 dark:text-orange-300',
+    highlightColor: 'bg-orange-200/80 dark:bg-orange-900/60 border-b-2 border-orange-500',
+    activeHighlight: 'bg-orange-300 dark:bg-orange-800 border-b-2 border-orange-600 ring-2 ring-orange-400/50',
+    dotColor: 'bg-orange-500',
   },
   factually_incorrect: {
     label: 'Factually Incorrect',
@@ -54,7 +60,7 @@ export default function IssueTooltip({ annotation, children, onOpenSidePanel, no
   const [isHovered, setIsHovered] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0, arrowX: 144, showBelow: false });
-  const [isMounted, setIsMounted] = useState(false);
+  const tooltipId = useId();
   const triggerRef = useRef<HTMLSpanElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -62,59 +68,56 @@ export default function IssueTooltip({ annotation, children, onOpenSidePanel, no
   const config = severityConfig[annotation.severity] || severityConfig.biased;
   const isVisible = isHovered || isPinned;
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- Initialization pattern for portal mounting
-  useEffect(() => { setIsMounted(true); }, []);
-
   const updatePosition = useCallback(() => {
     if (!triggerRef.current) return;
 
     const rect = triggerRef.current.getBoundingClientRect();
-    const tooltipWidth = 288;
+    const tooltipWidth = tooltipRef.current?.offsetWidth ?? 288;
+    const tooltipHeight = tooltipRef.current?.offsetHeight ?? 180;
     const padding = 12;
 
-    // Horizontal: centre on the phrase, clamp to viewport
-    let x = rect.left + rect.width / 2 - tooltipWidth / 2;
+    // Always anchor to the trigger's current viewport rect for scroll-safe positioning.
+    const anchorX = rect.left + rect.width / 2;
+
+    // Horizontal: center tooltip on phrase center and clamp to viewport.
+    let x = anchorX - tooltipWidth / 2;
     if (x < padding) x = padding;
     else if (x + tooltipWidth > window.innerWidth - padding)
       x = window.innerWidth - tooltipWidth - padding;
 
-    const phraseCenter = rect.left + rect.width / 2;
-    const arrowX = Math.max(20, Math.min(phraseCenter - x, tooltipWidth - 20));
+    const arrowX = Math.max(20, Math.min(anchorX - x, tooltipWidth - 20));
 
-    // Direction: go above unless there's significantly more room below
     const spaceAbove = rect.top - padding;
     const spaceBelow = window.innerHeight - rect.bottom - padding;
     const showBelow = spaceAbove < 160 || spaceBelow > spaceAbove + 80;
 
-    const y = showBelow ? rect.bottom + padding : rect.top - padding;
+    let y = showBelow ? rect.bottom + padding : rect.top - tooltipHeight - padding;
+    if (y < padding) y = padding;
+    if (y + tooltipHeight > window.innerHeight - padding) y = Math.max(padding, window.innerHeight - tooltipHeight - padding);
 
     setPosition({ x, y, arrowX, showBelow });
-
-    // After paint, measure the real rendered bounds and nudge if still overflowing.
-    // Runs on every position update (hover AND click), not just on first mount.
-    requestAnimationFrame(() => {
-      if (!tooltipRef.current) return;
-      const r = tooltipRef.current.getBoundingClientRect();
-      const pad = 8;
-      let dy = 0;
-      if (r.bottom > window.innerHeight - pad) dy = window.innerHeight - pad - r.bottom;
-      else if (r.top < pad) dy = pad - r.top;
-      if (dy !== 0) setPosition(p => ({ ...p, y: p.y + dy }));
-    });
   }, []);
 
   useEffect(() => {
     if (!isVisible) return;
     updatePosition();
-    const handleScroll = (e: Event) => {
-        // Ignore scroll events that come from inside the tooltip (user scrolling the body)
-        if (tooltipRef.current?.contains(e.target as Node)) return;
-        if (isPinned) setIsPinned(false);
-        else setIsHovered(false);
-      };
-      window.addEventListener('scroll', handleScroll, true);
-      return () => window.removeEventListener('scroll', handleScroll, true);
-  }, [isVisible, updatePosition, isPinned]);
+
+    const onLayoutChange = () => updatePosition();
+    window.addEventListener('scroll', onLayoutChange, true);
+    window.addEventListener('resize', onLayoutChange);
+
+    const triggerObserver = triggerRef.current ? new ResizeObserver(onLayoutChange) : null;
+    const tooltipObserver = tooltipRef.current ? new ResizeObserver(onLayoutChange) : null;
+    if (triggerRef.current && triggerObserver) triggerObserver.observe(triggerRef.current);
+    if (tooltipRef.current && tooltipObserver) tooltipObserver.observe(tooltipRef.current);
+
+    return () => {
+      window.removeEventListener('scroll', onLayoutChange, true);
+      window.removeEventListener('resize', onLayoutChange);
+      triggerObserver?.disconnect();
+      tooltipObserver?.disconnect();
+    };
+  }, [isVisible, updatePosition]);
 
   useEffect(() => {
     if (!isPinned) return;
@@ -135,8 +138,32 @@ export default function IssueTooltip({ annotation, children, onOpenSidePanel, no
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isPinned]);
 
+  useEffect(() => {
+    const handleTooltipActivated = (event: Event) => {
+      const customEvent = event as CustomEvent<ActiveTooltipEventDetail>;
+      if (customEvent.detail?.id === tooltipId) return;
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+      setIsHovered(false);
+      setIsPinned(false);
+    };
+
+    window.addEventListener(ACTIVE_TOOLTIP_EVENT, handleTooltipActivated as EventListener);
+    return () => {
+      window.removeEventListener(ACTIVE_TOOLTIP_EVENT, handleTooltipActivated as EventListener);
+    };
+  }, [tooltipId]);
+
+  const markAsActiveTooltip = () => {
+    window.dispatchEvent(
+      new CustomEvent<ActiveTooltipEventDetail>(ACTIVE_TOOLTIP_EVENT, {
+        detail: { id: tooltipId },
+      }),
+    );
+  };
+
   const handleMouseEnter = () => {
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    markAsActiveTooltip();
     hoverTimeoutRef.current = setTimeout(() => {
       if (!isPinned) {
         updatePosition();
@@ -155,6 +182,7 @@ export default function IssueTooltip({ annotation, children, onOpenSidePanel, no
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
+    markAsActiveTooltip();
     updatePosition();
     setIsPinned(true);
     setIsHovered(false);
@@ -207,29 +235,38 @@ export default function IssueTooltip({ annotation, children, onOpenSidePanel, no
               isPinned && 'ring-2 ring-pride-purple/30'
             )}
           >
-            {/* Severity + category */}
-            <div className="flex items-center gap-2 px-4 pt-3 pb-2 shrink-0">
-              <span className={cn('w-2 h-2 rounded-full shrink-0', config.dotColor)} />
-              <span className={cn(
-                'text-xs font-semibold px-2 py-0.5 rounded-full shrink-0',
-                config.bgColor,
-                config.textColor
-              )}>
-                {config.label}
-              </span>
-              {annotation.category && (
-                <span className="text-xs text-slate-400 dark:text-slate-500 truncate">
-                  {annotation.category}
+            {/* Severity + confidence + close */}
+            <div className="px-4 pt-3 pb-2 shrink-0">
+              <div className="flex items-center gap-2">
+                <span className={cn('w-2 h-2 rounded-full shrink-0', config.dotColor)} />
+                <span className={cn(
+                  'text-xs font-semibold px-2 py-0.5 rounded-full shrink-0',
+                  config.bgColor,
+                  config.textColor
+                )}>
+                  {config.label}
                 </span>
-              )}
-              {isPinned && (
-                <button
-                  onClick={handleClose}
-                  className="ml-auto p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
-                  aria-label="Close tooltip"
-                >
-                  <X className="w-3.5 h-3.5 text-slate-400" />
-                </button>
+                <div className="ml-auto flex items-center gap-1.5 shrink-0">
+                  {annotation.confidence != null && (
+                    <span className="text-xs text-slate-400 dark:text-slate-500 tabular-nums">
+                      {Math.round(annotation.confidence * 100)}%
+                    </span>
+                  )}
+                  {isPinned && (
+                    <button
+                      onClick={handleClose}
+                      className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      aria-label="Close tooltip"
+                    >
+                      <X className="w-3.5 h-3.5 text-slate-400" />
+                    </button>
+                  )}
+                </div>
+              </div>
+              {annotation.category && (
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 pl-4 leading-snug">
+                  {annotation.category}
+                </p>
               )}
             </div>
 
@@ -280,7 +317,7 @@ export default function IssueTooltip({ annotation, children, onOpenSidePanel, no
         {children}
       </span>
 
-      {isMounted && createPortal(tooltipContent, document.body)}
+      {typeof document !== 'undefined' && createPortal(tooltipContent, document.body)}
     </>
   );
 }

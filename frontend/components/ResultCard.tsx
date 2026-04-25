@@ -3,6 +3,7 @@ import SeverityBadge, { Severity } from './SeverityBadge';
 export type Result = {
   phrase: string;
   severity: Severity;
+  category?: string;
   explanation: string;
   suggestion?: string;
   references?: Array<{ label: string; url: string }>;

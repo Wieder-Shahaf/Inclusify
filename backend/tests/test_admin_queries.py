@@ -21,16 +21,18 @@ async def test_frequency_trends_empty():
 @pytest.mark.asyncio
 async def test_frequency_trends_shape():
     rows = [
+        {"category": "Medicalization", "total_count": 4, "all_excerpts": ["m"]},
         {"category": "Biased", "total_count": 3, "all_excerpts": ["x", "x", "y"]},
         {"category": "Outdated Terminology", "total_count": 1, "all_excerpts": ["z"]},
     ]
     conn = _mock_conn(rows)
     result = await get_label_frequency_trends(conn, days=30)
-    assert len(result) == 2
-    assert result[0]["category"] == "Biased"
-    assert result[0]["count"] == 3
-    assert {"phrase": "x", "count": 2} in result[0]["top_phrases"]
-    assert {"phrase": "y", "count": 1} in result[0]["top_phrases"]
+    assert len(result) == 3
+    assert result[0]["category"] == "Medicalization"
+    assert result[1]["category"] == "Biased"
+    assert result[1]["count"] == 3
+    assert {"phrase": "x", "count": 2} in result[1]["top_phrases"]
+    assert {"phrase": "y", "count": 1} in result[1]["top_phrases"]
 
 
 @pytest.mark.asyncio

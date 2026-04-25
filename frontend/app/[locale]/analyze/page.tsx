@@ -5,12 +5,11 @@ import { useTranslations, useLocale } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import AnnotationSidePanel from '@/components/AnnotationSidePanel';
-import SeverityBadge from '@/components/SeverityBadge';
 import PaperUpload from '@/components/PaperUpload';
 import ProcessingAnimation from '@/components/ProcessingAnimation';
 import HealthWarningBanner from '@/components/HealthWarningBanner';
 import { Annotation } from '@/components/AnnotatedText';
-import DocumentViewer from '@/components/DocumentViewer';
+import DocumentViewer, { PdfNavHandle } from '@/components/DocumentViewer';
 import { analyzeText, uploadFile, healthCheck, modelHealthCheck, BboxAnnotation, PageSize } from '@/lib/api/client';
 import { exportReport } from '@/lib/exportReport';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,7 +17,7 @@ import { useLiveAnnouncer } from '@/contexts/LiveAnnouncerContext';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import {
   RotateCcw, FileText, ChevronLeft, ChevronRight, Scan, BarChart3, ShieldCheck,
-  Lock, Mail, Download, AlertCircle, CheckCircle2, TrendingUp, Lightbulb, ArrowRight,
+  Lock, Mail, Download, AlertCircle, CheckCircle2, Filter,
 } from 'lucide-react';
 import PrivateModeToggle from '@/components/PrivateModeToggle';
 import ContactModal from '@/components/ContactModal';
@@ -33,6 +32,7 @@ interface AnalysisData {
   results: Array<{
     phrase: string;
     severity: Severity;
+    category?: string;
     explanation: string;
     suggestion?: string;
     references?: Array<{ label: string; url: string }>;
@@ -60,20 +60,6 @@ function getScoreColor(score: number): string {
   return 'text-red-500';
 }
 
-function getScoreRingColor(score: number): string {
-  if (score >= 90) return '#22c55e';
-  if (score >= 70) return '#f59e0b';
-  if (score >= 50) return '#f97316';
-  return '#ef4444';
-}
-
-function getScoreBg(score: number): string {
-  if (score >= 90) return 'bg-green-500';
-  if (score >= 70) return 'bg-amber-500';
-  if (score >= 50) return 'bg-orange-500';
-  return 'bg-red-500';
-}
-
 export default function AnalyzePage() {
   const t = useTranslations('analyzer');
   const locale = useLocale();
@@ -87,6 +73,7 @@ export default function AnalyzePage() {
   const [fileName, setFileName] = useState('');
   const [analysis, setAnalysis] = useState<AnalysisData>(emptyAnalysis);
   const [activeFilters, setActiveFilters] = useState<Set<Severity>>(new Set());
+  const [activeTypeFilters, setActiveTypeFilters] = useState<Set<string>>(new Set());
   const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | null>(null);
   const [selectedResultIndex, setSelectedResultIndex] = useState<number | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
@@ -105,6 +92,10 @@ export default function AnalyzePage() {
   const [bboxAnnotations, setBboxAnnotations] = useState<BboxAnnotation[] | null>(null);
   const [pageSizes, setPageSizes] = useState<Record<string, PageSize> | null>(null);
   const [markdownText, setMarkdownText] = useState<string | null>(null);
+  const pdfViewerRef = useRef<PdfNavHandle | null>(null);
+  const [pdfNumPages, setPdfNumPages] = useState(0);
+  const [pdfCurrentPage, setPdfCurrentPage] = useState(1);
+  const [pdfSearchTerm, setPdfSearchTerm] = useState('');
 
   useEffect(() => {
     const checkHealth = async () => {
@@ -254,14 +245,31 @@ export default function AnalyzePage() {
           result.phrase.toLowerCase().includes(a.label.toLowerCase()),
       );
 
+    setSelectedResultIndex(index);
     if (!annotation) return;
 
-    setSelectedResultIndex(index);
-    setSelectedAnnotation(annotation);
-    setSidePanelOpen(true);
     const el = document.getElementById(`ann-${annotation.start}`);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, [analysis.annotations]);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.style.transition = 'box-shadow 0.3s';
+      el.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.6)';
+      el.style.borderRadius = '4px';
+      setTimeout(() => { el.style.boxShadow = ''; el.style.borderRadius = ''; }, 1500);
+    } else if (docInputType === 'pdf') {
+      const found = pdfViewerRef.current?.handleSearch(annotation.label);
+      const found2 = !found && result.phrase.toLowerCase() !== annotation.label.toLowerCase()
+        ? pdfViewerRef.current?.handleSearch(result.phrase)
+        : found;
+      // Last resort: estimate the page from the character-offset ratio and scroll there.
+      // Catches phrases on pages whose text layers haven't been processed yet.
+      if (!found2 && pdfNumPages > 0 && analysis.text.length > 0) {
+        const estimatedPage = Math.max(1, Math.ceil(
+          (annotation.start / analysis.text.length) * pdfNumPages,
+        ));
+        pdfViewerRef.current?.scrollToPage(estimatedPage);
+      }
+    }
+  }, [analysis.annotations, analysis.text, docInputType, pdfNumPages]);
 
   const handleAnnotationClick = useCallback((annotation: Annotation) => {
     setSelectedAnnotation(annotation);
@@ -272,10 +280,6 @@ export default function AnalyzePage() {
     if (idx !== -1) setSelectedResultIndex(idx);
   }, [analysis.results]);
 
-  const handleExport = useCallback(() => {
-    exportReport(analysis, { fileName, locale });
-  }, [analysis, fileName, locale]);
-
   const toggleFilter = useCallback((sev: Severity) => {
     setActiveFilters(prev => {
       const next = new Set(prev);
@@ -284,9 +288,13 @@ export default function AnalyzePage() {
     });
   }, []);
 
-  const filteredResults = activeFilters.size === 0
-    ? analysis.results
-    : analysis.results.filter(r => activeFilters.has(r.severity));
+  const toggleTypeFilter = useCallback((cat: string) => {
+    setActiveTypeFilters(prev => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat); else next.add(cat);
+      return next;
+    });
+  }, []);
 
   useKeyboardNavigation({
     containerRef: issuesListRef,
@@ -297,15 +305,7 @@ export default function AnalyzePage() {
     },
   });
 
-  const totalIssues =
-    analysis.counts.outdated +
-    analysis.counts.biased +
-    analysis.counts.potentially_offensive +
-    analysis.counts.factually_incorrect;
   const wordCount = analysis.text.split(/\s+/).filter(Boolean).length;
-  const score = analysis.summary.score;
-  const circumference = 2 * Math.PI * 36;
-
   const categoryConfig = {
     outdated: {
       label: t('summaryCard.outdated'),
@@ -321,9 +321,9 @@ export default function AnalyzePage() {
     },
     potentially_offensive: {
       label: t('summaryCard.potentially_offensive'),
-      bar: 'bg-rose-500',
-      dot: 'bg-rose-400',
-      text: 'text-rose-600 dark:text-rose-400',
+      bar: 'bg-orange-500',
+      dot: 'bg-orange-400',
+      text: 'text-orange-600 dark:text-orange-400',
     },
     factually_incorrect: {
       label: t('summaryCard.factually_incorrect'),
@@ -333,7 +333,95 @@ export default function AnalyzePage() {
     },
   } as const;
 
-  const maxCount = Math.max(...Object.values(analysis.counts), 1);
+  const llmCategoryConfig: Record<string, { label: string; pill: string }> = {
+    'Medicalization':       { label: t('llmCategoryMedicalization'),      pill: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300' },
+    'Generalization':       { label: t('llmCategoryGeneralization'),       pill: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300' },
+    'Demeaning Terminology':{ label: t('llmCategoryDemeaning'),            pill: 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300' },
+  };
+
+  const severityBorderColor: Record<Severity, string> = {
+    outdated: '#0ea5e9',
+    biased: '#f59e0b',
+    potentially_offensive: '#f97316',
+    factually_incorrect: '#ef4444',
+  };
+
+  const severityOrder: Record<Severity, number> = {
+    factually_incorrect: 0,
+    potentially_offensive: 1,
+    biased: 2,
+    outdated: 3,
+  };
+  const severityPriority: Severity[] = ['factually_incorrect', 'potentially_offensive', 'biased', 'outdated'];
+
+  const getResultConfidence = (result: AnalysisData['results'][0]) =>
+    (analysis.annotations.find(
+      (a) => a.label.toLowerCase() === result.phrase.toLowerCase(),
+    ) ??
+    analysis.annotations.find(
+      (a) =>
+        a.label.toLowerCase().includes(result.phrase.toLowerCase()) ||
+        result.phrase.toLowerCase().includes(a.label.toLowerCase()),
+    ))?.confidence;
+
+  const confidenceFiltered = analysis.results.filter(r => {
+    const conf = getResultConfidence(r);
+    if (conf == null) return true;
+    return conf >= 0.30 && conf <= 0.85;
+  });
+
+  const filteredCounts: Record<Severity, number> = {
+    outdated: 0, biased: 0, potentially_offensive: 0, factually_incorrect: 0,
+  };
+  for (const r of confidenceFiltered) filteredCounts[r.severity]++;
+
+  const totalIssues =
+    filteredCounts.outdated +
+    filteredCounts.biased +
+    filteredCounts.potentially_offensive +
+    filteredCounts.factually_incorrect;
+
+  const filteredResults = confidenceFiltered
+    .filter(r => activeFilters.size === 0 || activeFilters.has(r.severity))
+    .filter(r => activeTypeFilters.size === 0 || (r.category != null && activeTypeFilters.has(r.category)))
+    .sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
+
+  const maxCount = Math.max(...Object.values(filteredCounts), 1);
+
+  // Only show highlights in the document viewer for phrases that passed confidence filtering
+  const visiblePhrases = new Set(confidenceFiltered.map(r => r.phrase.toLowerCase()));
+  const visibleAnnotations = analysis.annotations.filter(ann =>
+    visiblePhrases.has(ann.label.toLowerCase()),
+  );
+
+  const handleExport = () => {
+    exportReport(analysis, {
+      fileName,
+      locale,
+      filteredResults,
+      visibleAnnotations,
+      displayScore: score,
+      displayCounts: filteredCounts,
+      recommendations: analysis.summary.recommendations,
+    });
+  };
+
+  // Recompute score from confidence-filtered counts so it's consistent with the displayed findings.
+  const weights = { outdated: 1, biased: 2, factually_incorrect: 3, potentially_offensive: 4 } as const;
+  const totalWeighted =
+    filteredCounts.outdated * weights.outdated +
+    filteredCounts.biased * weights.biased +
+    filteredCounts.factually_incorrect * weights.factually_incorrect +
+    filteredCounts.potentially_offensive * weights.potentially_offensive;
+  const score = Math.max(
+    0,
+    Math.round(
+      100
+      - Math.sqrt(totalWeighted) * 6
+      - (totalWeighted / Math.max(wordCount / 100, 1)) * 1.5,
+    ),
+  );
+
   const scoreLabel =
     score >= 90
       ? t('summaryCard.excellent')
@@ -490,7 +578,7 @@ export default function AnalyzePage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="h-[calc(100vh-140px)] flex flex-col px-4 py-4"
+              className="h-[calc(100vh-140px)] flex flex-col py-4"
             >
               {/* Header row */}
               <div className="flex flex-wrap items-center justify-between gap-3 mb-4 flex-shrink-0">
@@ -519,28 +607,48 @@ export default function AnalyzePage() {
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={handleReset}
-                  className="btn-ghost px-3 py-2 rounded-lg text-sm flex items-center gap-2"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  {t('analyzeAnother')}
-                </button>
+                <div className="flex items-center gap-2">
+                  <motion.button
+                    onClick={handleExport}
+                    className="btn-ghost px-3 py-2 rounded-lg text-sm flex items-center gap-2 hover:border-pride-purple/40 hover:bg-pride-purple/5"
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                  >
+                    <Download className="w-4 h-4" />
+                    <span className="font-medium hidden sm:inline">{t('exportReport')}</span>
+                  </motion.button>
+                  <motion.button
+                    onClick={() => setContactOpen(true)}
+                    className="btn-ghost px-3 py-2 rounded-lg text-sm flex items-center gap-2 hover:border-pride-purple/40 hover:bg-pride-purple/5"
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                  >
+                    <Mail className="w-4 h-4" />
+                    <span className="font-medium hidden sm:inline">{t('contactUs')}</span>
+                  </motion.button>
+                  <button
+                    onClick={handleReset}
+                    className="btn-ghost px-3 py-2 rounded-lg text-sm flex items-center gap-2"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    <span className="hidden sm:inline">{t('analyzeAnother')}</span>
+                  </button>
+                </div>
               </div>
 
               {/* Two-column grid — inline style avoids Tailwind JIT scan issues with dynamic arbitrary values */}
               <div
                 className="flex-1 min-h-0 grid gap-4"
-                style={{ gridTemplateColumns: 'minmax(0, 1fr) 440px' }}
+                style={{ gridTemplateColumns: 'minmax(0, 1fr) 520px' }}
               >
                 {/* ── LEFT: Document Viewer ───────────────────────── */}
-                <div className="glass rounded-xl border overflow-hidden flex flex-col min-h-0 max-h-full">
+                <div className="glass rounded-xl border border-l-[3px] border-l-pride-purple overflow-hidden flex flex-col min-h-0 max-h-full">
                   {/* Panel header */}
                   <div className="px-4 py-3 border-b bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between flex-shrink-0">
                     <div className="flex items-center gap-2">
                       <FileText className="w-4 h-4 text-pride-purple" />
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                        {t('documentContent')}
+                        {t('documentPanel')}
                       </span>
                     </div>
                     <span className="text-xs text-slate-400">{t('hoverHint')}</span>
@@ -553,17 +661,47 @@ export default function AnalyzePage() {
                     dir={isHebrew ? 'rtl' : 'ltr'}
                   >
                     <DocumentViewer
+                      ref={pdfViewerRef}
                       inputType={docInputType}
                       text={analysis.text}
-                      annotations={analysis.annotations}
+                      annotations={visibleAnnotations}
                       uploadedFile={uploadedFile}
                       bboxAnnotations={bboxAnnotations}
                       pageSizes={pageSizes}
                       markdownText={markdownText}
                       onAnnotationClick={handleAnnotationClick}
                       isHebrew={isHebrew}
+                      onPdfNumPages={setPdfNumPages}
+                      onPdfPageChange={setPdfCurrentPage}
                     />
                   </div>
+
+                  {/* PDF nav bar */}
+                  {docInputType === 'pdf' && pdfNumPages > 0 && (
+                    <div className="px-3 py-1.5 border-t border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95 flex items-center gap-2 text-xs flex-shrink-0">
+                      <button onClick={() => pdfViewerRef.current?.scrollToPage(Math.max(1, pdfCurrentPage - 1))} disabled={pdfCurrentPage <= 1} className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 transition-colors">
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                      </button>
+                      <span className="text-slate-500 dark:text-slate-400 tabular-nums">
+                        Page {pdfCurrentPage} of {pdfNumPages}
+                      </span>
+                      <button onClick={() => pdfViewerRef.current?.scrollToPage(Math.min(pdfNumPages, pdfCurrentPage + 1))} disabled={pdfCurrentPage >= pdfNumPages} className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 transition-colors">
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                      <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 flex-shrink-0" />
+                      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                        <Download className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 hidden" />
+                        <input
+                          type="text"
+                          placeholder="Search in document…"
+                          value={pdfSearchTerm}
+                          onChange={(e) => setPdfSearchTerm(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') pdfViewerRef.current?.handleSearch(pdfSearchTerm); }}
+                          className="flex-1 min-w-0 text-xs px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:border-pride-purple placeholder:text-slate-300 dark:placeholder:text-slate-600"
+                        />
+                      </div>
+                    </div>
+                  )}
 
                   {/* Severity legend */}
                   <div className="px-4 py-2.5 border-t bg-slate-50/30 dark:bg-slate-800/30 flex flex-wrap gap-x-5 gap-y-1 flex-shrink-0">
@@ -580,41 +718,40 @@ export default function AnalyzePage() {
 
                 {/* ── RIGHT: Analysis Panel ───────────────────────── */}
                 <div
-                  className="flex flex-col gap-3 min-h-0 max-h-full overflow-y-auto pb-4"
+                  className="flex flex-col gap-2 min-h-0 max-h-full overflow-y-auto pb-4 border-l-[3px] border-l-pride-purple pl-2"
                   style={{ scrollBehavior: 'smooth' }}
                 >
+                  <div className="flex-shrink-0 pt-0.5 flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-pride-purple uppercase tracking-widest">
+                      {t('findingsPanel')}
+                    </span>
+                  </div>
                   {/* Score Card */}
                   <motion.div
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="glass rounded-xl border p-5 flex-shrink-0 overflow-hidden relative"
+                    className="glass rounded-lg border shadow-sm px-4 py-3.5 flex-shrink-0"
                   >
-                    {/* decorative glow */}
-                    <div className="absolute top-0 right-0 w-44 h-44 opacity-[0.07] pointer-events-none">
-                      <div className={cn('absolute inset-0 rounded-full blur-3xl', getScoreBg(score))} />
-                    </div>
-
-                    <div className="relative">
-                      <p className="text-[11px] uppercase tracking-widest text-slate-400 mb-3 font-medium">
+                    <div>
+                      <p className="text-[10px] uppercase text-slate-400 mb-2 font-semibold">
                         {t('summaryCard.score')}
                       </p>
 
-                      <div className="flex items-center justify-between gap-4">
-                        {/* Number + label */}
-                        <div>
-                          <div className="flex items-baseline gap-1.5">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="flex items-baseline gap-2">
                             <motion.span
-                              className={cn('text-6xl font-black tabular-nums leading-none', getScoreColor(score))}
+                              className={cn('text-5xl font-black tabular-nums leading-none', getScoreColor(score))}
                               initial={{ scale: 0.6, opacity: 0 }}
                               animate={{ scale: 1, opacity: 1 }}
                               transition={{ type: 'spring', stiffness: 180, damping: 14, delay: 0.1 }}
                             >
                               {score}
                             </motion.span>
-                            <span className="text-slate-400 text-xl">/100</span>
+                            <span className="text-slate-400 text-lg">/100</span>
                           </div>
-                          <div className="flex items-center gap-1.5 mt-2">
+                          <div className="flex items-center gap-1.5 mt-1.5">
                             {score >= 70 ? (
                               <CheckCircle2 className={cn('w-4 h-4', getScoreColor(score))} />
                             ) : (
@@ -624,47 +761,38 @@ export default function AnalyzePage() {
                               {scoreLabel}
                             </span>
                           </div>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+                            {totalIssues} {t('scoreSummaryReview')}
+                          </p>
                         </div>
 
-                        {/* Ring progress */}
-                        <div className="relative w-24 h-24 flex-shrink-0">
-                          <svg className="w-full h-full -rotate-90" viewBox="0 0 96 96">
-                            <circle
-                              cx="48" cy="48" r="36"
-                              strokeWidth="8" fill="none"
-                              className="stroke-slate-100 dark:stroke-slate-800"
-                            />
-                            <motion.circle
-                              cx="48" cy="48" r="36"
-                              strokeWidth="8" fill="none"
-                              stroke={getScoreRingColor(score)}
-                              strokeLinecap="round"
-                              initial={{ strokeDasharray: `0 ${circumference}` }}
-                              animate={{ strokeDasharray: `${(score / 100) * circumference} ${circumference}` }}
-                              transition={{ duration: 1.2, ease: 'easeOut', delay: 0.2 }}
-                            />
-                          </svg>
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <span className={cn('text-base font-bold', getScoreColor(score))}>{score}%</span>
+                        <div className="flex flex-col gap-2 w-40 flex-shrink-0 border-l border-slate-200/70 dark:border-slate-700/70 pl-3">
+                          <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 px-2.5 py-2 min-h-[50px] flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-lg bg-pride-purple/10 flex items-center justify-center flex-shrink-0">
+                              <FileText className="w-4 h-4 text-pride-purple" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-2xl font-black text-slate-900 dark:text-white tabular-nums leading-none tracking-tight">
+                                {totalIssues}
+                              </p>
+                              <p className="text-[10px] text-slate-400 mt-0.5 leading-none whitespace-nowrap">
+                                {t('summaryCard.totalIssues')}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-
-                      {/* Stats row */}
-                      <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-[11px] text-slate-400 mb-0.5 uppercase tracking-wide">
-                            {t('summaryCard.totalIssues')}
-                          </p>
-                          <p className="text-2xl font-bold text-slate-800 dark:text-white">{totalIssues}</p>
-                        </div>
-                        <div>
-                          <p className="text-[11px] text-slate-400 mb-0.5 uppercase tracking-wide">
-                            {t('summaryCard.wordCount')}
-                          </p>
-                          <p className="text-2xl font-bold text-slate-800 dark:text-white">
-                            {wordCount.toLocaleString()}
-                          </p>
+                          <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 px-2.5 py-2 min-h-[50px] flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-lg bg-pride-purple/10 flex items-center justify-center flex-shrink-0">
+                              <span className="text-xs font-bold text-pride-purple">Aa</span>
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xl font-black text-slate-900 dark:text-white tabular-nums leading-none tracking-tight">
+                                {wordCount.toLocaleString()}
+                              </p>
+                              <p className="text-[10px] text-slate-400 mt-0.5 leading-none whitespace-nowrap">
+                                {t('summaryCard.wordCount')}
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -675,30 +803,31 @@ export default function AnalyzePage() {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.08 }}
-                    className="glass rounded-xl border p-4 flex-shrink-0"
+                    className="glass rounded-lg border shadow-sm p-4 flex-shrink-0"
                   >
                     <div className="flex items-center gap-2 mb-3">
                       <BarChart3 className="w-4 h-4 text-pride-purple" />
                       <h3 className="text-sm font-semibold">{t('summaryCard.categories')}</h3>
                     </div>
                     <div className="space-y-2.5">
-                      {(Object.keys(categoryConfig) as Severity[]).map((sev) => {
+                      {severityPriority.map((sev) => {
                         const cfg = categoryConfig[sev];
-                        const count = analysis.counts[sev];
-                        const pct = (count / maxCount) * 100;
+                        const count = filteredCounts[sev];
+                        const barPct = (count / maxCount) * 100;
+                        const sharePct = totalIssues > 0 ? Math.round((count / totalIssues) * 100) : 0;
                         return (
                           <div key={sev}>
                             <div className="flex items-center justify-between text-xs mb-1">
                               <span className={cn('font-medium', cfg.text)}>{cfg.label}</span>
                               <span className="font-bold text-slate-600 dark:text-slate-300 tabular-nums">
-                                {count}
+                                {count} · {sharePct}%
                               </span>
                             </div>
                             <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                               <motion.div
                                 className={cn('h-full rounded-full', cfg.bar)}
                                 initial={{ width: 0 }}
-                                animate={{ width: `${pct}%` }}
+                                animate={{ width: `${barPct}%` }}
                                 transition={{ duration: 0.6, delay: 0.15 }}
                               />
                             </div>
@@ -708,184 +837,208 @@ export default function AnalyzePage() {
                     </div>
                   </motion.div>
 
-                  {/* Issues list */}
+                  {/* Filter controls */}
                   <motion.div
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.14 }}
-                    className="glass rounded-xl border overflow-hidden flex-shrink-0"
+                    transition={{ duration: 0.4, delay: 0.12 }}
+                    className="glass rounded-lg border shadow-sm p-4 flex-shrink-0"
                   >
-                    <div className="px-4 py-3 border-b bg-slate-50/50 dark:bg-slate-800/50">
-                      <div className="flex items-center justify-between mb-2.5">
-                        <h3 className="text-sm font-semibold flex items-center gap-2">
-                          {t('issuesFound')}
-                          <span className="px-2 py-0.5 text-xs rounded-full bg-pride-purple/15 text-pride-purple font-bold">
-                            {filteredResults.length}
-                            {activeFilters.size > 0 && analysis.results.length !== filteredResults.length && (
-                              <span className="font-normal text-pride-purple/60"> / {analysis.results.length}</span>
-                            )}
-                          </span>
-                        </h3>
-                        {activeFilters.size > 0 && (
+                    <h3 className="text-sm font-semibold flex items-center gap-1.5 mb-3">
+                      <Filter className="w-3.5 h-3.5 text-pride-purple" />
+                      {t('filterFindings')}
+                    </h3>
+
+                    <div className="space-y-2.5">
+                      {/* Severity row */}
+                      <div className="space-y-1.5 min-w-0">
+                        <span className="block text-[11px] text-slate-400">
+                          {t('filterSeverity')}
+                        </span>
+                        <div className="flex flex-nowrap gap-1 overflow-x-auto pb-0.5">
                           <button
                             onClick={() => setActiveFilters(new Set())}
-                            className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                            className={cn(
+                              'h-7 px-2 rounded-lg text-[10px] font-semibold leading-none whitespace-nowrap border transition-all',
+                              activeFilters.size === 0
+                                ? 'bg-pride-purple text-white border-pride-purple'
+                                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-pride-purple/40',
+                            )}
                           >
-                            {t('filterClear') || 'Clear'}
+                            {t('filterAll')} {confidenceFiltered.length}
                           </button>
-                        )}
+                          {severityPriority.map((sev) => {
+                            const cfg = categoryConfig[sev];
+                            const active = activeFilters.has(sev);
+                            const count = filteredCounts[sev];
+                            return (
+                              <button
+                                key={sev}
+                                onClick={() => toggleFilter(sev)}
+                                disabled={count === 0}
+                                className={cn(
+                                  'h-7 px-2 rounded-lg text-[10px] font-semibold leading-none whitespace-nowrap border transition-all',
+                                  active
+                                    ? cn(cfg.text, 'bg-current/10 border-current')
+                                    : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300',
+                                  count === 0 && 'opacity-40 cursor-not-allowed',
+                                )}
+                              >
+                                {cfg.label} <span className="tabular-nums">{count}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {(Object.keys(categoryConfig) as Severity[]).map((sev) => {
-                          const cfg = categoryConfig[sev];
-                          const active = activeFilters.has(sev);
-                          const count = analysis.counts[sev];
-                          return (
-                            <button
-                              key={sev}
-                              onClick={() => toggleFilter(sev)}
-                              disabled={count === 0}
-                              className={cn(
-                                'flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border transition-all',
-                                active
-                                  ? 'border-current bg-current/10'
-                                  : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600',
-                                active && cfg.text,
-                                count === 0 && 'opacity-40 cursor-not-allowed',
-                              )}
-                            >
-                              <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', cfg.dot)} />
-                              {cfg.label}
-                              <span className="opacity-60 tabular-nums">{count}</span>
-                            </button>
-                          );
-                        })}
+
+                      {/* Bias Pattern row */}
+                      <div className="space-y-1.5 min-w-0">
+                        <span className="block text-[11px] text-slate-400">
+                          {t('filterBiasPattern')}
+                        </span>
+                        <div className="flex flex-nowrap gap-1 overflow-x-auto pb-0.5">
+                          <button
+                            onClick={() => setActiveTypeFilters(new Set())}
+                            className={cn(
+                              'h-7 px-2 rounded-lg text-[10px] font-semibold leading-none whitespace-nowrap border transition-all',
+                              activeTypeFilters.size === 0
+                                ? 'bg-pride-purple text-white border-pride-purple'
+                                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-pride-purple/40',
+                            )}
+                          >
+                            {t('filterAllPatterns')}
+                          </button>
+                          {Object.entries(llmCategoryConfig).map(([cat, lvl]) => {
+                            const active = activeTypeFilters.has(cat);
+                            const count = confidenceFiltered.filter(r => r.category === cat).length;
+                            return (
+                              <button
+                                key={cat}
+                                onClick={() => toggleTypeFilter(cat)}
+                                disabled={count === 0}
+                                className={cn(
+                                  'h-7 px-2 rounded-lg text-[10px] font-semibold leading-none whitespace-nowrap transition-all border',
+                                  active
+                                    ? cn(lvl.pill, 'border-current')
+                                    : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300',
+                                  count === 0 && 'opacity-40 cursor-not-allowed',
+                                )}
+                              >
+                                {lvl.label}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
 
-                    <div
-                      ref={issuesListRef}
-                      className="divide-y divide-slate-100 dark:divide-slate-800"
-                      role="list"
-                      aria-label={t('a11y.issuesList')}
-                    >
-                      {analysis.results.length === 0 ? (
-                        <div className="p-8 text-center">
-                          <div className="text-4xl mb-3">🎉</div>
-                          <p className="text-green-600 dark:text-green-400 font-semibold text-sm">
-                            {t('noIssuesFound')}
-                          </p>
-                          <p className="text-xs text-slate-500 mt-1">{t('noIssuesMessage')}</p>
-                        </div>
-                      ) : filteredResults.length === 0 ? (
-                        <div className="p-6 text-center">
-                          <p className="text-sm text-slate-500 dark:text-slate-400">
-                            {t('filterNoMatch') || 'No issues match the selected filters.'}
-                          </p>
-                        </div>
-                      ) : (
-                        filteredResults.map((result) => {
-                          const origIdx = analysis.results.indexOf(result);
-                          const cfg = categoryConfig[result.severity];
-                          return (
+                    <div className="mt-3 flex items-center justify-between gap-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 px-3 py-2 text-xs text-slate-500 dark:text-slate-400">
+                      <span>
+                        {t('filterScopeShowing', {
+                          shown: filteredResults.length,
+                          total: confidenceFiltered.length,
+                        })}
+                      </span>
+                      <button
+                        onClick={() => { setActiveFilters(new Set()); setActiveTypeFilters(new Set()); }}
+                        className="font-medium text-pride-purple hover:text-pride-pink transition-colors whitespace-nowrap flex-shrink-0"
+                      >
+                        {t('filterClear')}
+                      </button>
+                    </div>
+                  </motion.div>
+
+                  {/* Issues list — individual cards */}
+                  <div
+                    ref={issuesListRef}
+                    className="flex flex-col gap-2 flex-shrink-0"
+                    role="list"
+                    aria-label={t('a11y.issuesList')}
+                  >
+                    {analysis.results.length === 0 ? (
+                      <div className="p-8 text-center glass rounded-lg border shadow-sm">
+                        <div className="text-4xl mb-3">🎉</div>
+                        <p className="text-green-600 dark:text-green-400 font-semibold text-sm">
+                          {t('noIssuesFound')}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-1">{t('noIssuesMessage')}</p>
+                      </div>
+                    ) : filteredResults.length === 0 ? (
+                      <div className="p-6 text-center glass rounded-lg border shadow-sm">
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          {t('filterNoMatch')}
+                        </p>
+                      </div>
+                    ) : (
+                      filteredResults.map((result, displayIdx) => {
+                        const origIdx = analysis.results.indexOf(result);
+                        const cfg = categoryConfig[result.severity];
+                        return (
                           <motion.button
                             key={origIdx}
                             onClick={() => handleIssueClick(result, origIdx)}
                             className={cn(
-                              'w-full px-3 py-2.5 text-start transition-all border-l-[3px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pride-purple focus-visible:ring-inset',
+                              'w-full text-start rounded-lg border bg-white dark:bg-slate-900 shadow-sm',
+                              'border-l-[3px] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pride-purple',
                               selectedResultIndex === origIdx
-                                ? 'bg-pride-purple/5 dark:bg-pride-purple/10 border-l-pride-purple'
-                                : 'border-l-transparent hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-l-slate-200 dark:hover:border-l-slate-700'
+                                ? 'ring-1 ring-pride-purple/30 shadow-md'
+                                : 'hover:shadow-md'
                             )}
+                            style={{ borderLeftColor: severityBorderColor[result.severity] }}
                             role="listitem"
                             tabIndex={0}
                             initial={{ opacity: 0, x: isHebrew ? -10 : 10 }}
                             animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: origIdx * 0.04 }}
+                            transition={{ delay: displayIdx * 0.04 }}
                           >
-                            {/* Phrase + badge on one line */}
-                            <div className="flex items-center justify-between gap-2 mb-1">
-                              <div className="flex items-center gap-1.5 min-w-0">
-                                <span className={cn('w-2 h-2 rounded-full flex-shrink-0', cfg.dot)} />
-                                <p className="font-semibold text-sm text-slate-800 dark:text-white leading-snug truncate">
-                                  &ldquo;{result.phrase}&rdquo;
+                            <div className="px-3 py-2.5">
+                              {/* Number + phrase + badges */}
+                              <div className="flex items-start justify-between gap-2 mb-1.5">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span className="text-[10px] font-bold text-slate-300 dark:text-slate-600 flex-shrink-0 w-4 text-right tabular-nums">
+                                    {displayIdx + 1}
+                                  </span>
+                                  <p className="font-semibold text-sm text-slate-800 dark:text-white leading-snug truncate">
+                                    &ldquo;{result.phrase}&rdquo;
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-1.5 flex-shrink-0">
+                                  <span className={cn(
+                                    'flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-current',
+                                    cfg.text,
+                                  )}>
+                                    <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', cfg.dot)} />
+                                    {cfg.label}
+                                  </span>
+                                  {result.category && llmCategoryConfig[result.category] && (
+                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400">
+                                      {llmCategoryConfig[result.category].label}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Explanation */}
+                              {result.explanation && (
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed pl-6">
+                                  {result.explanation}
                                 </p>
-                              </div>
-                              <div className="flex-shrink-0">
-                                <SeverityBadge level={result.severity} />
-                              </div>
+                              )}
+
+                              {/* Suggested fix */}
+                              {result.suggestion && (
+                                <p className="text-[11px] mt-1 pl-6 leading-relaxed">
+                                  <span className="text-pride-purple font-medium italic">{t('suggestedFix')} </span>
+                                  <span className="text-slate-500 dark:text-slate-400 italic">{result.suggestion}</span>
+                                </p>
+                              )}
                             </div>
-
-                            {/* Explanation — 1 line, subtle */}
-                            {result.explanation && (
-                              <p className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1 leading-relaxed pl-3.5">
-                                {result.explanation}
-                              </p>
-                            )}
-
-                            {/* Suggestion preview */}
-                            {result.suggestion && (
-                              <div className="flex items-center gap-1 mt-1 pl-3.5 text-[11px] text-pride-purple/80 font-medium">
-                                <ArrowRight className="w-3 h-3 flex-shrink-0" />
-                                <span className="truncate">{result.suggestion}</span>
-                              </div>
-                            )}
                           </motion.button>
-                        );})
-                      )}
-                    </div>
-                  </motion.div>
-
-                  {/* Recommendations */}
-                  {analysis.summary.recommendations.length > 0 && totalIssues > 0 && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: 0.2 }}
-                      className="glass rounded-xl border p-4 flex-shrink-0"
-                    >
-                      <div className="flex items-center gap-2 mb-3">
-                        <Lightbulb className="w-4 h-4 text-pride-purple" />
-                        <h3 className="text-sm font-semibold">{t('summaryCard.recommendations')}</h3>
-                      </div>
-                      <ul className="space-y-2">
-                        {analysis.summary.recommendations.map((rec, idx) => (
-                          <motion.li
-                            key={idx}
-                            initial={{ opacity: 0, x: -8 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.2 + idx * 0.07 }}
-                            className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300"
-                          >
-                            <TrendingUp className="w-3.5 h-3.5 text-pride-purple flex-shrink-0 mt-0.5" />
-                            <span>{rec}</span>
-                          </motion.li>
-                        ))}
-                      </ul>
-                    </motion.div>
-                  )}
-
-                  {/* Action buttons */}
-                  <div className="flex gap-2 flex-shrink-0">
-                    <motion.button
-                      onClick={handleExport}
-                      className="flex-1 py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-pride-purple/40 hover:bg-pride-purple/5 transition-all flex items-center justify-center gap-2 text-slate-600 dark:text-slate-400 text-sm"
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
-                    >
-                      <Download className="w-4 h-4" />
-                      <span className="font-medium">{t('exportReport')}</span>
-                    </motion.button>
-                    <motion.button
-                      onClick={() => setContactOpen(true)}
-                      className="flex-1 py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-pride-purple/40 hover:bg-pride-purple/5 transition-all flex items-center justify-center gap-2 text-slate-600 dark:text-slate-400 text-sm"
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
-                    >
-                      <Mail className="w-4 h-4" />
-                      <span className="font-medium">{t('contactUs')}</span>
-                    </motion.button>
+                        );
+                      })
+                    )}
                   </div>
+
 
                   {/* Guest prompt */}
                   {!user && showGuestPrompt && (

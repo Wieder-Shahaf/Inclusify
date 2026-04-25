@@ -28,6 +28,7 @@ class AnalyticsResponse(BaseModel):
     active_users: int
     total_analyses: int
     documents_processed: int
+    total_findings: int = 0
 
 
 class UserItem(BaseModel):

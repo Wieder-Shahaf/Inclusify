@@ -82,9 +82,9 @@ export default async function LocaleLayout({ children, params }: Props) {
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
             <LiveAnnouncerProvider>
-              <div className="min-h-screen flex flex-col">
+              <div className="h-dvh flex flex-col overflow-hidden">
                 <Navbar />
-                <main className="container-px mx-auto max-w-screen-2xl flex-1 flex flex-col min-h-0">
+                <main className="container-px mx-auto max-w-screen-2xl flex-1 flex flex-col min-h-0 overflow-y-auto">
                   {children}
                 </main>
                 <Footer />

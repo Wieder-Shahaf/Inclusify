@@ -26,13 +26,15 @@ class TestAnalyticsSchema:
             total_users=100,
             active_users=42,
             total_analyses=500,
-            documents_processed=250
+            documents_processed=250,
+            total_findings=1200,
         )
 
         assert response.total_users == 100
         assert response.active_users == 42
         assert response.total_analyses == 500
         assert response.documents_processed == 250
+        assert response.total_findings == 1200
 
 
 class TestUsersListSchema:
@@ -139,7 +141,7 @@ class TestAnalyticsKPIs:
 
         # Mock connection
         mock_conn = AsyncMock()
-        mock_conn.fetchval = AsyncMock(side_effect=[100, 42, 500, 250])
+        mock_conn.fetchval = AsyncMock(side_effect=[100, 42, 500, 250, 1200])
 
         result = await get_analytics_kpis(mock_conn, days=30)
 
@@ -148,6 +150,7 @@ class TestAnalyticsKPIs:
         assert "active_users" in result
         assert "total_analyses" in result
         assert "documents_processed" in result
+        assert "total_findings" in result
         assert all(isinstance(v, int) for v in result.values())
 
     @pytest.mark.asyncio
@@ -165,7 +168,7 @@ class TestAnalyticsKPIs:
         # Verify fetchval was called with datetime cutoffs
         # The cutoff dates should differ based on days parameter
         calls = mock_conn.fetchval.call_args_list
-        assert len(calls) == 8  # 4 queries * 2 calls
+        assert len(calls) == 10  # 5 queries * 2 calls
 
 
 class TestUsersPaginated:
@@ -340,11 +343,13 @@ class TestAdminEndpointResponses:
         assert "active_users" in data
         assert "total_analyses" in data
         assert "documents_processed" in data
+        assert "total_findings" in data
         # All values should be integers
         assert isinstance(data["total_users"], int)
         assert isinstance(data["active_users"], int)
         assert isinstance(data["total_analyses"], int)
         assert isinstance(data["documents_processed"], int)
+        assert isinstance(data["total_findings"], int)
 
     @pytest.mark.asyncio
     async def test_users_response_matches_schema(self, test_client):

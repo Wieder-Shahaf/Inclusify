@@ -42,7 +42,8 @@ interface AdminDashboardProps {
     kpis: {
       totalAnalyses: string;
       activeUsers: string;
-      documentsProcessed: string;
+      totalUsers: string;
+      findingsFound: string;
     };
     sections: {
       recentActivity: string;
@@ -80,18 +81,18 @@ type TabKey = 'overview' | 'users' | 'model-performance' | 'feedback';
 // Skeleton loader for suspense fallback
 function DashboardSkeleton() {
   return (
-    <div className="py-4 px-2 space-y-4 animate-pulse">
-      <div className="flex items-center justify-between">
+    <div className="relative left-1/2 flex w-[calc(100vw-2rem)] -translate-x-1/2 flex-1 min-h-0 flex-col gap-3 py-3 animate-pulse sm:w-[calc(100vw-3rem)] lg:w-[calc(100vw-14.5rem)]">
+      <div className="flex shrink-0 items-center justify-between">
         <div>
           <div className="h-7 w-48 bg-slate-200 dark:bg-slate-700 rounded mb-2" />
           <div className="h-4 w-64 bg-slate-200 dark:bg-slate-700 rounded" />
         </div>
         <div className="h-10 w-32 bg-slate-200 dark:bg-slate-700 rounded" />
       </div>
-      <div className="h-10 w-full bg-slate-200 dark:bg-slate-700 rounded" />
+      <div className="h-11 w-full bg-slate-200 dark:bg-slate-700 rounded" />
       <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-28 bg-slate-200 dark:bg-slate-700 rounded-xl" />
+          <div key={i} className="h-16 bg-slate-200 dark:bg-slate-700 rounded-xl" />
         ))}
       </div>
     </div>
@@ -126,12 +127,12 @@ function AdminDashboardContent({ translations }: AdminDashboardProps) {
   ];
 
   return (
-    <div className="py-4 space-y-4">
+    <div className="relative left-1/2 flex w-[calc(100vw-2rem)] -translate-x-1/2 flex-1 min-h-0 flex-col gap-3 overflow-hidden py-3 sm:w-[calc(100vw-3rem)] lg:w-[calc(100vw-14.5rem)]">
       {/* Header with time range selector */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-            <BarChart3 className="w-6 h-6 text-pride-purple" />
+          <h1 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-pride-purple" />
             {translations.title}
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -152,46 +153,48 @@ function AdminDashboardContent({ translations }: AdminDashboardProps) {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex border-b border-slate-200 dark:border-slate-700">
+      <div className="grid h-11 shrink-0 grid-cols-4 border-b border-slate-200 dark:border-slate-700">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={cn(
-              'flex-1 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors text-center',
+              'h-11 min-w-0 px-2 text-center text-sm font-medium border-b-2 -mb-px transition-colors',
               activeTab === tab.key
                 ? 'border-pride-purple text-pride-purple'
                 : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
             )}
           >
-            {tab.label}
+            <span className="block truncate">{tab.label}</span>
           </button>
         ))}
       </div>
 
       {/* Tab Content */}
-      {activeTab === 'overview' && (
-        <OverviewTab
-          days={days}
-          translations={{
-            kpis: translations.kpis,
-            sections: translations.sections,
-            activity: translations.activity,
-          }}
-        />
-      )}
-      {activeTab === 'users' && (
-        <UsersTab translations={{ users: translations.users }} />
-      )}
-      {activeTab === 'model-performance' && (
-        <ModelPerformanceTab
-          days={days}
-          translations={translations.modelMetrics}
-        />
-      )}
-      {activeTab === 'feedback' && (
-        <FeedbackTab translations={translations.feedback} />
-      )}
+      <div className="min-h-0 flex-1 overflow-hidden">
+        {activeTab === 'overview' && (
+          <OverviewTab
+            days={days}
+            translations={{
+              kpis: translations.kpis,
+              sections: translations.sections,
+              activity: translations.activity,
+            }}
+          />
+        )}
+        {activeTab === 'users' && (
+          <UsersTab translations={{ users: translations.users }} />
+        )}
+        {activeTab === 'model-performance' && (
+          <ModelPerformanceTab
+            days={days}
+            translations={translations.modelMetrics}
+          />
+        )}
+        {activeTab === 'feedback' && (
+          <FeedbackTab translations={translations.feedback} />
+        )}
+      </div>
     </div>
   );
 }
