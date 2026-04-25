@@ -40,7 +40,7 @@ interface AnalysisSummaryProps {
 }
 
 const defaultTranslations: Translations = {
-  score: 'Inclusivity Score',
+  score: 'LGBTQ+ inclusivity score.',
   totalIssues: 'Total Issues',
   wordCount: 'Word Count',
   categories: 'Issues by Category',

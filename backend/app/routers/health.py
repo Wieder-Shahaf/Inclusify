@@ -9,6 +9,7 @@ Returns 200 if healthy, 503 if component unreachable.
 import os
 import asyncio
 from datetime import datetime
+from typing import Optional
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 import httpx
@@ -121,7 +122,7 @@ async def model_health_check():
     start = datetime.now()
     available = False
     model_name: str = settings.VLLM_MODEL_NAME
-    error: str | None = None
+    error: Optional[str] = None
 
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:

@@ -61,6 +61,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         <meta name="description" content="Inclusive Language Analyzer for academic texts" />
         <meta name="color-scheme" content="light dark" />
         <script
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
@@ -77,13 +78,13 @@ export default async function LocaleLayout({ children, params }: Props) {
           }}
         />
       </head>
-      <body className={`${oswald.variable} ${raleway.variable} ${notoSansHebrew.variable} min-h-dvh bg-hero-gradient transition-colors duration-300`}>
+      <body suppressHydrationWarning className={`${oswald.variable} ${raleway.variable} ${notoSansHebrew.variable} min-h-dvh bg-hero-gradient transition-colors duration-300`}>
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
             <LiveAnnouncerProvider>
               <div className="min-h-screen flex flex-col">
                 <Navbar />
-                <main className="container-px mx-auto max-w-7xl flex-1 flex flex-col min-h-0">
+                <main className="container-px mx-auto max-w-screen-2xl flex-1 flex flex-col min-h-0">
                   {children}
                 </main>
                 <Footer />

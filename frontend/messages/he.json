@@ -21,7 +21,23 @@
     "lastUpdated": "עודכן לאחרונה",
     "tabs": {
       "overview": "סקירה",
-      "users": "משתמשים"
+      "users": "משתמשים",
+      "modelPerformance": "ביצועי מודל",
+      "feedback": "משוב"
+    },
+    "modelMetrics": {
+      "kpis": {
+        "avgLatency": "זמן הסקה ממוצע",
+        "errorRate": "שיעור שגיאות LLM",
+        "fallbackRate": "שיעור נסיגה לחוקים",
+        "totalLlmCalls": "סה״כ קריאות LLM"
+      },
+      "modeBreakdown": {
+        "title": "פירוט מצב זיהוי",
+        "llm": "LLM בלבד",
+        "analyses": "ניתוחים בסך הכל"
+      },
+      "noData": "לא נרשמו ניתוחים בתקופה זו."
     },
     "timeRanges": {
       "today": "היום",
@@ -60,7 +76,7 @@
     "activity": {
       "analyzed": "נותח",
       "found": "נמצאו",
-      "issues": "בעיות"
+      "findings": "ממצאים"
     },
     "users": {
       "searchPlaceholder": "חיפוש לפי אימייל...",
@@ -77,6 +93,28 @@
     "languages": {
       "en": "אנגלית",
       "he": "עברית"
+    },
+    "frequencyTrends": {
+      "title": "מגמות תדירות תוויות",
+      "subtitle": "הקטגוריות המסומנות ביותר בתקופה הנבחרת",
+      "topPhrases": "ביטויים מובילים",
+      "noData": "לא נמצאו ממצאים בתקופה זו."
+    },
+    "feedback": {
+      "title": "משוב משתמשים",
+      "filterAll": "הכל",
+      "filterUp": "מועיל",
+      "filterDown": "זיהוי שגוי",
+      "colVote": "הצבעה",
+      "colFlaggedText": "טקסט מסומן",
+      "colSeverity": "חומרה",
+      "colUser": "משתמש",
+      "colDate": "תאריך",
+      "colComment": "הערה",
+      "noData": "טרם התקבל משוב.",
+      "helpful": "מועיל",
+      "falsePositive": "זיהוי שגוי",
+      "anonymous": "אנונימי"
     }
   },
   "home": {
@@ -169,8 +207,8 @@
       "uploadingDesc": "מעביר את הקובץ בצורה מאובטחת...",
       "parsing": "מעבד תוכן",
       "parsingDesc": "מחלץ טקסט מהמסמך...",
-      "analyzing": "מנתח שפה",
-      "analyzingDesc": "סורק דפוסי שפה מכלילה...",
+      "analyzing": "בודק שפה לא מכלילה...",
+      "analyzingDesc": "סורק שפה לא מכלילה כלפי קהילת הלהט״ב...",
       "generating": "מייצר תובנות",
       "generatingDesc": "מכין את הדוח המותאם אישית שלך...",
       "complete": "הניתוח הושלם",
@@ -178,8 +216,8 @@
       "takingLonger": "הניתוח לוקח יותר זמן מהרגיל..."
     },
     "summaryCard": {
-      "score": "ציון מכלילות",
-      "totalIssues": "סה״כ בעיות",
+      "score": "ציון מכלילות להט״ב+.",
+      "totalFindings": "סה״כ ממצאים",
       "wordCount": "מספר מילים",
       "categories": "בעיות לפי קטגוריה",
       "recommendations": "המלצות",
@@ -208,10 +246,15 @@
       "privacyFirstDesc": "המידע נשאר מאובטח"
     },
     "analyzeAnother": "ניתוח נוסף",
-    "issuesFound": "בעיות שנמצאו",
-    "issueFound": "בעיה נמצאה",
-    "issuesFoundPlural": "בעיות נמצאו",
-    "noIssuesFound": "לא נמצאו בעיות!",
+    "contactUs": "צור קשר",
+    "findingsFound": "ממצאים שנמצאו",
+    "findingFound": "ממצא נמצא",
+    "findingsFoundPlural": "ממצאים נמצאו",
+    "noFindingsFound": "לא נמצאו ממצאים!",
+    "filterClear": "נקה מסננים",
+    "filterBy": "קטגוריה:",
+    "filterSeverity": "חומרה:",
+    "filterNoMatch": "אין ממצאים התואמים את המסננים הנבחרים.",
     "noIssuesMessage": "הטקסט שלך מפגין שימוש בשפה מכלילה.",
     "documentContent": "תוכן המסמך",
     "hoverHint": "לחצו על טקסט מודגש לפרטים",
@@ -219,7 +262,10 @@
     "exportReport": "ייצוא דוח",
     "sampleFileName": "מסמך_אקדמי_לדוגמה.txt",
     "serviceUnavailable": "שירות הניתוח לא זמין זמנית. ניתן להמשיך לגלוש.",
-    "modelUnavailable": "מודל ה-AI לא זמין — הניתוח יתבצע על בסיס חוקים בלבד.",
+    "modelUnavailable": "מודל ה-AI לא זמין — כרגע לא ניתן לבצע ניתוח. עיינו במילון המונחים שלנו.",
+    "modelUnavailableLinkText": "עיינו במילון",
+    "llmDownResults": "שירות הניתוח אינו זמין כרגע. עיינו במילון לקבלת הכוונה.",
+    "llmDownResultsLink": "לפתיחת המילון",
     "basicAnalysisMode": "מצב ניתוח בסיסי",
     "basicAnalysisModeDesc": "ניתוח AI מתקדם לא זמין",
     "errors": {
@@ -242,8 +288,8 @@
     },
     "a11y": {
       "uploadStarted": "מעלה מסמך",
-      "analysisComplete": "הניתוח הושלם. נמצאו {count} בעיות.",
-      "issuesList": "רשימת בעיות שזוהו"
+      "analysisComplete": "הניתוח הושלם. נמצאו {count} ממצאים.",
+      "findingsList": "רשימת ממצאים שזוהו"
     }
   },
   "severity": {
@@ -304,6 +350,35 @@
       "generic": "משהו השתבש. נא לנסות שוב."
     }
   },
+  "profile": {
+    "title": "הפרופיל שלי",
+    "save": "שמור שינויים",
+    "saving": "שומר...",
+    "saveSuccess": "הפרופיל עודכן בהצלחה!",
+    "saveError": "שמירת הפרופיל נכשלה. נסה שוב.",
+    "fullName": "שם מלא",
+    "fullNamePlaceholder": "לדוג׳ ד״ר ישראל ישראלי",
+    "profession": "מקצוע / תפקיד",
+    "professionPlaceholder": "לדוג׳ חוקר/ת, מרצה",
+    "institution": "מוסד",
+    "institutionPlaceholder": "לדוג׳ אוניברסיטת תל אביב",
+    "setup": {
+      "title": "השלמת פרופיל",
+      "subtitle": "עזרו לנו להתאים אישית את החוויה שלכם.",
+      "fullName": "שם מלא",
+      "fullNamePlaceholder": "לדוג׳ ד״ר ישראל ישראלי",
+      "profession": "מקצוע / תפקיד",
+      "professionPlaceholder": "לדוג׳ חוקר/ת, מרצה",
+      "institution": "מוסד",
+      "institutionPlaceholder": "לדוג׳ אוניברסיטת תל אביב",
+      "save": "שמור פרופיל",
+      "saving": "שומר...",
+      "skip": "דלג בינתיים",
+      "success": "הפרופיל נשמר!",
+      "error": "שמירה נכשלה. נסה שוב.",
+      "required": "שדה חובה"
+    }
+  },
   "glossary": {
     "title": "מילון מונחי להט״ב+",
     "subtitle": "מדריך מקיף למונחי להט״ב+ לכתיבה אקדמית מכלילה. הגדרות ממקורות מוסמכים.",
@@ -320,5 +395,21 @@
     "sourcesDesc": "ההגדרות מקורן בארגוני להט״ב+ מובילים ומתעדכנות באופן קבוע כדי לשקף את הטרמינולוגיה וההבנה העדכניות.",
     "noResults": "לא נמצאו מונחים התואמים את החיפוש.",
     "relatedTerms": "קשור"
+  },
+  "contact": {
+    "button": "צרו קשר",
+    "title": "צרו קשר",
+    "subtitle": "שלחו הודעה או משוב לצוות Inclusify.",
+    "subject": "נושא",
+    "message": "הודעה",
+    "send": "שלח הודעה",
+    "sending": "שולח...",
+    "success": "ההודעה נשלחה!",
+    "error": "שליחה נכשלה. נסו שוב.",
+    "attachReport": "דוח הניתוח מצורף",
+    "nameLabel": "שם",
+    "emailLabel": "אימייל",
+    "institutionLabel": "מוסד",
+    "cancel": "ביטול"
   }
 }

@@ -5,18 +5,61 @@ Requirements: ADMIN-01 (analytics), ADMIN-02 (user/org management)
 
 All endpoints require site_admin role (403 for non-admins).
 """
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, Query, Request, HTTPException, status, WebSocket, WebSocketDisconnect
+from jose import jwt, JWTError
 
 from app.auth.deps import require_admin
+from app.core.config import settings
 from .schemas import (
     AnalyticsResponse,
     UsersListResponse,
-    ActivityResponse
+    ActivityResponse,
+    ModelMetricsResponse,
+    FrequencyTrendsResponse,
+    FeedbackListResponse,
 )
 from . import queries
 
 
+class AdminWSManager:
+    """Manages WebSocket connections for admin real-time updates."""
+
+    def __init__(self):
+        self.connections: list[WebSocket] = []
+
+    async def connect(self, ws: WebSocket):
+        await ws.accept()
+        self.connections.append(ws)
+
+    def disconnect(self, ws: WebSocket):
+        if ws in self.connections:
+            self.connections.remove(ws)
+
+    async def broadcast(self, message: dict):
+        dead = []
+        for ws in self.connections:
+            try:
+                await ws.send_json(message)
+            except Exception:
+                dead.append(ws)
+        for ws in dead:
+            if ws in self.connections:
+                self.connections.remove(ws)
+
+
+ws_manager = AdminWSManager()
+
 router = APIRouter()
+
+
+def _verify_db_pool(request: Request):
+    """Verify that DB pool is initialized, else raise 503."""
+    if not getattr(request.app.state, "db_pool", None):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database not available"
+        )
+    return request.app.state.db_pool
 
 
 @router.get("/analytics", response_model=AnalyticsResponse)
@@ -25,20 +68,8 @@ async def get_analytics(
     user: dict = Depends(require_admin),
     days: int = Query(default=30, ge=1, le=365, description="Time range in days")
 ):
-    """Get KPI metrics for admin dashboard.
-
-    Returns analytics for the specified time period:
-    - total_users: All users (all time)
-    - active_users: Users with at least 1 analysis in period
-    - total_analyses: Number of analysis runs in period
-    - documents_processed: Distinct documents with succeeded runs in period
-
-    Time range options: 7, 30, 90, 365 days (per CONTEXT.md).
-    Default: 30 days.
-
-    Requires: site_admin role
-    """
-    pool = request.app.state.db_pool
+    """Get KPI metrics for admin dashboard."""
+    pool = _verify_db_pool(request)
     async with pool.acquire() as conn:
         return await queries.get_analytics_kpis(conn, days)
 
@@ -49,18 +80,16 @@ async def list_users(
     user: dict = Depends(require_admin),
     page: int = Query(default=1, ge=1, description="Page number"),
     page_size: int = Query(default=20, ge=1, le=100, description="Items per page"),
-    search: str = Query(default=None, max_length=100, description="Email search filter")
+    search: str = Query(default=None, max_length=100, description="Email search filter"),
+    institution: str = Query(default=None, max_length=200, description="Filter by institution (partial match)"),
+    min_analyses: int = Query(default=None, ge=0, description="Filter users with at least N analyses"),
 ):
-    """Get paginated list of users with optional email search.
-
-    Returns users with: email, role, last_login_at, created_at.
-    View-only endpoint (no create/edit in v1).
-
-    Requires: site_admin role
-    """
-    pool = request.app.state.db_pool
+    """Get paginated list of users with optional filters."""
+    pool = _verify_db_pool(request)
     async with pool.acquire() as conn:
-        users, total = await queries.get_users_paginated(conn, page, page_size, search)
+        users, total = await queries.get_users_paginated(
+            conn, page, page_size, search, institution, min_analyses
+        )
         total_pages = (total + page_size - 1) // page_size if total > 0 else 0
         return {
             "users": users,
@@ -71,6 +100,31 @@ async def list_users(
         }
 
 
+@router.get("/model-metrics", response_model=ModelMetricsResponse)
+async def get_model_metrics(
+    request: Request,
+    user: dict = Depends(require_admin),
+    days: int = Query(default=30, ge=1, le=365, description="Time range in days")
+):
+    """Get vLLM model performance KPIs for admin dashboard."""
+    pool = _verify_db_pool(request)
+    async with pool.acquire() as conn:
+        return await queries.get_model_metrics_kpis(conn, days)
+
+
+@router.get("/frequency-trends", response_model=FrequencyTrendsResponse)
+async def get_frequency_trends(
+    request: Request,
+    user: dict = Depends(require_admin),
+    days: int = Query(default=30, ge=1, le=365, description="Time range in days"),
+):
+    """Get label frequency trends for admin dashboard."""
+    pool = _verify_db_pool(request)
+    async with pool.acquire() as conn:
+        trends = await queries.get_label_frequency_trends(conn, days)
+    return {"trends": trends, "days": days}
+
+
 @router.get("/activity", response_model=ActivityResponse)
 async def get_recent_activity(
     request: Request,
@@ -79,14 +133,8 @@ async def get_recent_activity(
     page_size: int = Query(default=20, ge=1, le=100, description="Items per page"),
     days: int = Query(default=30, ge=1, le=365, description="Time range in days")
 ):
-    """Get recent analysis activity for admin dashboard.
-
-    Returns activity with: user_email, document_name, started_at, status, issue_count.
-    Paginated with 20 items per page (per CONTEXT.md).
-
-    Requires: site_admin role
-    """
-    pool = request.app.state.db_pool
+    """Get recent analysis activity for admin dashboard."""
+    pool = _verify_db_pool(request)
     async with pool.acquire() as conn:
         activity, total = await queries.get_recent_activity(conn, page, page_size, days)
         total_pages = (total + page_size - 1) // page_size if total > 0 else 0
@@ -97,3 +145,76 @@ async def get_recent_activity(
             "page_size": page_size,
             "total_pages": total_pages
         }
+
+
+@router.get("/feedback", response_model=FeedbackListResponse)
+async def list_feedback(
+    request: Request,
+    user: dict = Depends(require_admin),
+    page: int = Query(default=1, ge=1, description="Page number"),
+    page_size: int = Query(default=20, ge=1, le=100, description="Items per page"),
+    vote: str = Query(default=None, description="Filter by vote: 'up' or 'down'"),
+):
+    """Get paginated list of user feedback votes on analysis flags.
+
+    Returns empty results gracefully when the DB schema hasn't been migrated yet
+    (new feedback columns may not exist in older deployments).
+    """
+    pool = _verify_db_pool(request)
+    try:
+        async with pool.acquire() as conn:
+            items, total, total_helpful, total_false_positive = await queries.get_feedback_paginated(
+                conn, page, page_size, vote_filter=vote
+            )
+            total_pages = (total + page_size - 1) // page_size if total > 0 else 0
+            return {
+                "items": items,
+                "total": total,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": total_pages,
+                "total_helpful": total_helpful,
+                "total_false_positive": total_false_positive,
+            }
+    except Exception:
+        import logging
+        logging.getLogger(__name__).warning(
+            "feedback query failed — DB schema may need migration"
+        )
+        return {
+            "items": [], "total": 0, "page": page,
+            "page_size": page_size, "total_pages": 0,
+            "total_helpful": 0, "total_false_positive": 0,
+        }
+
+
+@router.websocket("/ws")
+async def admin_ws(websocket: WebSocket, token: str = None):
+    """WebSocket endpoint for admin real-time updates.
+
+    Authenticates via JWT in query param (Depends() does not work in WS handlers).
+    Closes with 4001 on missing/invalid token, 4003 on non-admin role.
+    """
+    if not token:
+        await websocket.close(code=4001)
+        return
+    try:
+        payload = jwt.decode(
+            token,
+            settings.JWT_SECRET,
+            algorithms=["HS256"],
+            audience="fastapi-users:auth",
+        )
+    except JWTError:
+        await websocket.close(code=4001)
+        return
+    if payload.get("role") != "site_admin":
+        await websocket.close(code=4003)
+        return
+    await ws_manager.connect(websocket)
+    try:
+        while True:
+            # Keep-alive: ignore any messages from client
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        ws_manager.disconnect(websocket)

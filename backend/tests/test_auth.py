@@ -7,7 +7,7 @@ Uses SQLite in-memory database for isolation.
 import os
 
 # Override settings before importing app modules
-os.environ["JWT_SECRET"] = "test-secret-key-for-testing-only"
+os.environ["JWT_SECRET"] = "test-secret"
 os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///test_auth.db"
 
 import pytest
@@ -64,9 +64,13 @@ async def test_client(mock_db_pool, mock_redis):
     ), patch.object(connection_module, "create_pool", return_value=mock_db_pool):
         # Import app after patches are in place
         from app.main import app
-        from app.auth.users import create_db_and_tables
+        from app.auth.users import create_db_and_tables, engine
+        from app.db.models import Base
 
-        # Create tables before running tests
+        # Drop all auth tables first so each test starts with a clean DB,
+        # regardless of which SQLite file the cached engine is pointing at.
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.drop_all)
         await create_db_and_tables()
 
         app.state.db_pool = mock_db_pool
@@ -75,12 +79,6 @@ async def test_client(mock_db_pool, mock_redis):
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
             yield client
-
-    # Clean up test database
-    import os
-
-    if os.path.exists("test_auth.db"):
-        os.remove("test_auth.db")
 
 
 class TestAuthRegister:

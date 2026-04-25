@@ -8,17 +8,24 @@ import AnnotationSidePanel from '@/components/AnnotationSidePanel';
 import SeverityBadge from '@/components/SeverityBadge';
 import PaperUpload from '@/components/PaperUpload';
 import ProcessingAnimation from '@/components/ProcessingAnimation';
-import AnalysisSummary from '@/components/AnalysisSummary';
-import IssueTooltip from '@/components/IssueTooltip';
 import HealthWarningBanner from '@/components/HealthWarningBanner';
 import { Annotation } from '@/components/AnnotatedText';
-import { analyzeText, uploadFile, healthCheck, modelHealthCheck } from '@/lib/api/client';
+import DocumentViewer from '@/components/DocumentViewer';
+import { analyzeText, uploadFile, healthCheck, modelHealthCheck, BboxAnnotation, PageSize } from '@/lib/api/client';
+import { exportReport } from '@/lib/exportReport';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLiveAnnouncer } from '@/contexts/LiveAnnouncerContext';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
-import { RotateCcw, FileText, ChevronLeft, ChevronRight, Scan, BarChart3, ShieldCheck, Lock } from 'lucide-react';
+import {
+  RotateCcw, FileText, ChevronLeft, ChevronRight, Scan, BarChart3, ShieldCheck,
+  Lock, Mail, Download, AlertCircle, CheckCircle2, ArrowRight, Filter, X,
+} from 'lucide-react';
+import type { SeverityLevel } from '@/components/ResultCard';
 import PrivateModeToggle from '@/components/PrivateModeToggle';
+import ContactModal from '@/components/ContactModal';
+import { cn } from '@/lib/utils';
 
+type Severity = 'outdated' | 'biased' | 'potentially_offensive' | 'factually_incorrect';
 type ViewState = 'upload' | 'processing' | 'results';
 
 interface AnalysisData {
@@ -26,12 +33,13 @@ interface AnalysisData {
   annotations: Annotation[];
   results: Array<{
     phrase: string;
-    severity: 'outdated' | 'biased' | 'potentially_offensive' | 'factually_incorrect';
+    severity: Severity;
+    severityLevel?: SeverityLevel;
     explanation: string;
     suggestion?: string;
     references?: Array<{ label: string; url: string }>;
   }>;
-  counts: Record<'outdated' | 'biased' | 'potentially_offensive' | 'factually_incorrect', number>;
+  counts: Record<Severity, number>;
   summary: {
     totalIssues: number;
     score: number;
@@ -47,28 +55,61 @@ const emptyAnalysis: AnalysisData = {
   summary: { totalIssues: 0, score: 100, recommendations: [] },
 };
 
+function getScoreColor(score: number): string {
+  if (score >= 90) return 'text-green-500';
+  if (score >= 70) return 'text-amber-500';
+  if (score >= 50) return 'text-orange-500';
+  return 'text-red-500';
+}
+
+function getScoreRingColor(score: number): string {
+  if (score >= 90) return '#22c55e';
+  if (score >= 70) return '#f59e0b';
+  if (score >= 50) return '#f97316';
+  return '#ef4444';
+}
+
+function getScoreBg(score: number): string {
+  if (score >= 90) return 'bg-green-500';
+  if (score >= 70) return 'bg-amber-500';
+  if (score >= 50) return 'bg-orange-500';
+  return 'bg-red-500';
+}
+
 export default function AnalyzePage() {
   const t = useTranslations('analyzer');
   const locale = useLocale();
   const isHebrew = locale === 'he';
   const { user } = useAuth();
   const { announce } = useLiveAnnouncer();
-  const issuesListRef = useRef<HTMLDivElement>(null);
+  const findingsListRef = useRef<HTMLDivElement>(null);
+  const textPanelRef = useRef<HTMLDivElement>(null);
 
   const [viewState, setViewState] = useState<ViewState>('upload');
   const [fileName, setFileName] = useState('');
   const [analysis, setAnalysis] = useState<AnalysisData>(emptyAnalysis);
+  const [activeFilters, setActiveFilters] = useState<Set<Severity>>(new Set());
+  const [activeSeverityFilters, setActiveSeverityFilters] = useState<Set<SeverityLevel>>(new Set());
+  const [activeFinding, setActiveFinding] = useState<{ phrase: string; severity: Severity } | null>(null);
   const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | null>(null);
+  const [selectedResultIndex, setSelectedResultIndex] = useState<number | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [backendHealthy, setBackendHealthy] = useState<boolean | null>(null);
   const [modelAvailable, setModelAvailable] = useState<boolean | null>(null);
-  const [analysisMode, setAnalysisMode] = useState<'llm' | 'hybrid' | 'rules_only' | null>(null);
+  const [analysisMode, setAnalysisMode] = useState<'llm' | null>(null);
+  const [currentRunId, setCurrentRunId] = useState<string | undefined>();
   const [showGuestPrompt, setShowGuestPrompt] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [processingStage, setProcessingStage] = useState<'uploading' | 'parsing' | 'analyzing' | 'generating' | 'complete'>('uploading');
-  const [privateMode, setPrivateMode] = useState(false); // Default OFF per user decision
+  const [privateMode, setPrivateMode] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
+  // Document viewer state
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [docInputType, setDocInputType] = useState<'pdf' | 'docx' | 'pptx' | 'txt'>('txt');
+  const [bboxAnnotations, setBboxAnnotations] = useState<BboxAnnotation[] | null>(null);
+  const [pageSizes, setPageSizes] = useState<Record<string, PageSize> | null>(null);
+  const [markdownText, setMarkdownText] = useState<string | null>(null);
 
-  // Health check on mount with 30-second polling
   useEffect(() => {
     const checkHealth = async () => {
       const healthy = await healthCheck();
@@ -85,10 +126,8 @@ export default function AnalyzePage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Error handler that maps backend errors to user-friendly messages
   const handleApiError = useCallback((error: unknown) => {
     let message = t('errors.generic');
-
     if (error instanceof Error) {
       const errorText = error.message.toLowerCase();
       if (errorText.includes('password-protected') || errorText.includes('password')) {
@@ -103,47 +142,59 @@ export default function AnalyzePage() {
         message = t('errors.uploadFailed');
       }
     }
-
     setErrorMessage(message);
     setViewState('upload');
     announce(message, 'assertive');
   }, [t, announce]);
 
   const handleFileSelect = useCallback(async (file: File) => {
-    setErrorMessage(null);  // Clear any previous error
+    setErrorMessage(null);
     setFileName(file.name);
     setViewState('processing');
     announce(t('a11y.uploadStarted'));
 
-    // Real API path
     try {
       setProcessingStage('uploading');
-
-      // Upload and extract text
       const uploadResult = await uploadFile(file);
-
       setProcessingStage('analyzing');
 
-      // Analyze the extracted text
       const result = await analyzeText(uploadResult.text, {
         language: locale as 'en' | 'he' | 'auto',
-        privateMode: privateMode,
+        privateMode,
         useAuth: true,
+        fileMeta: {
+          filename: uploadResult.filename,
+          mimeType: uploadResult.mimeType,
+          inputType: uploadResult.inputType,
+          pageCount: uploadResult.pageCount,
+          title: uploadResult.title,
+          author: uploadResult.author,
+          detectedLanguage: uploadResult.detectedLanguage,
+          fileStorageRef: uploadResult.fileStorageRef,
+          chunks: uploadResult.chunks,
+        },
       });
 
       setProcessingStage('complete');
 
-      // Calculate score using severity weights (offensive > incorrect > biased > outdated)
       const weights = { outdated: 1, biased: 2, factually_incorrect: 3, potentially_offensive: 4 };
-      const wordCount = uploadResult.text.split(/\s+/).filter(Boolean).length;
+      const wc = uploadResult.text.split(/\s+/).filter(Boolean).length;
       const totalWeightedIssues =
         result.counts.outdated * weights.outdated +
         result.counts.biased * weights.biased +
         result.counts.factually_incorrect * weights.factually_incorrect +
         result.counts.potentially_offensive * weights.potentially_offensive;
-      const score = Math.max(0, Math.round(100 - (totalWeightedIssues / Math.max(wordCount, 1)) * 200));
+      // sqrt-based penalty so a handful of issues registers meaningfully regardless of doc length;
+      // small density term adds extra penalty for short docs with many issues.
+      const score = Math.max(
+        0,
+        Math.round(
+          100
+          - Math.sqrt(totalWeightedIssues) * 6
+          - (totalWeightedIssues / Math.max(wc / 100, 1)) * 1.5,
+        ),
+      );
 
-      // Generate recommendations based on issue counts
       const recommendations: string[] = [];
       if (result.counts.potentially_offensive > 0) recommendations.push(t('recommendations.potentially_offensive'));
       if (result.counts.factually_incorrect > 0) recommendations.push(t('recommendations.factually_incorrect'));
@@ -163,6 +214,13 @@ export default function AnalyzePage() {
         },
       });
       setAnalysisMode(result.analysisMode || null);
+      setCurrentRunId(result.runId);
+      // Store document viewer metadata
+      setUploadedFile(file);
+      setDocInputType(uploadResult.inputType);
+      setBboxAnnotations(uploadResult.bboxAnnotations ?? null);
+      setPageSizes(uploadResult.pageSizes ?? null);
+      setMarkdownText(uploadResult.markdownText ?? null);
       setViewState('results');
       announce(t('a11y.analysisComplete', { count: Object.values(result.counts).reduce((a, b) => a + b, 0) }));
     } catch (error) {
@@ -176,98 +234,145 @@ export default function AnalyzePage() {
     setFileName('');
     setAnalysis(emptyAnalysis);
     setSelectedAnnotation(null);
+    setSelectedResultIndex(null);
     setSidePanelOpen(false);
     setAnalysisMode(null);
     setErrorMessage(null);
     setProcessingStage('uploading');
     setShowGuestPrompt(true);
     setPrivateMode(false);
+    setUploadedFile(null);
+    setBboxAnnotations(null);
+    setPageSizes(null);
+    setMarkdownText(null);
   }, []);
 
-  const handleIssueClick = useCallback((result: AnalysisData['results'][0]) => {
-    const annotation = analysis.annotations.find(
-      (a) => a.label.toLowerCase() === result.phrase.toLowerCase()
-    );
-    if (annotation) {
-      setSelectedAnnotation(annotation);
-      setSidePanelOpen(true);
-    }
+  const handleIssueClick = useCallback((result: AnalysisData['results'][0], index: number) => {
+    const annotation =
+      analysis.annotations.find(
+        (a) => a.label.toLowerCase() === result.phrase.toLowerCase(),
+      ) ??
+      analysis.annotations.find(
+        (a) =>
+          a.label.toLowerCase().includes(result.phrase.toLowerCase()) ||
+          result.phrase.toLowerCase().includes(a.label.toLowerCase()),
+      );
+
+    setSelectedResultIndex(index);
+    setActiveFinding({ phrase: result.phrase, severity: result.severity });
+
+    if (!annotation) return;
+
+    setSelectedAnnotation(annotation);
+    setSidePanelOpen(true);
+    const el = document.getElementById(`ann-${annotation.start}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [analysis.annotations]);
 
   const handleAnnotationClick = useCallback((annotation: Annotation) => {
     setSelectedAnnotation(annotation);
     setSidePanelOpen(true);
+    const idx = analysis.results.findIndex(
+      (r) => r.phrase.toLowerCase() === annotation.label.toLowerCase()
+    );
+    if (idx !== -1) setSelectedResultIndex(idx);
+  }, [analysis.results]);
+
+  const handleExport = useCallback(() => {
+    exportReport(analysis, { fileName, locale });
+  }, [analysis, fileName, locale]);
+
+  const toggleFilter = useCallback((sev: Severity) => {
+    setActiveFilters(prev => {
+      const next = new Set(prev);
+      if (next.has(sev)) next.delete(sev); else next.add(sev);
+      return next;
+    });
   }, []);
 
-  // Keyboard navigation for issues list
+  const severityLevelOrder: Record<SeverityLevel, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+
+  const filteredResults = analysis.results
+    .filter(r => activeFilters.size === 0 || activeFilters.has(r.severity))
+    .filter(r => activeSeverityFilters.size === 0 || activeSeverityFilters.has(r.severityLevel ?? 'medium'))
+    .sort((a, b) => (severityLevelOrder[a.severityLevel ?? 'medium'] ?? 2) - (severityLevelOrder[b.severityLevel ?? 'medium'] ?? 2));
+
+  const toggleSeverityFilter = (sl: SeverityLevel) => {
+    setActiveSeverityFilters(prev => {
+      const next = new Set(prev);
+      if (next.has(sl)) next.delete(sl); else next.add(sl);
+      return next;
+    });
+  };
+
+  const severityLevelConfig: Record<SeverityLevel, { label: string; dot: string; text: string }> = {
+    low: { label: 'Low', dot: 'bg-sky-400', text: 'text-sky-600 dark:text-sky-400' },
+    medium: { label: 'Medium', dot: 'bg-amber-400', text: 'text-amber-600 dark:text-amber-400' },
+    high: { label: 'High', dot: 'bg-orange-400', text: 'text-orange-600 dark:text-orange-400' },
+    critical: { label: 'Critical', dot: 'bg-red-500', text: 'text-red-600 dark:text-red-400' },
+  };
+
+  const severityLevelCounts: Record<SeverityLevel, number> = { low: 0, medium: 0, high: 0, critical: 0 };
+  for (const r of analysis.results) {
+    const sl = r.severityLevel ?? 'medium';
+    severityLevelCounts[sl] = (severityLevelCounts[sl] ?? 0) + 1;
+  }
+
   useKeyboardNavigation({
-    containerRef: issuesListRef,
+    containerRef: findingsListRef,
     itemSelector: 'button[role="listitem"]',
     enabled: viewState === 'results' && analysis.results.length > 0,
     onSelect: (_, index) => {
-      if (analysis.results[index]) {
-        handleIssueClick(analysis.results[index]);
-      }
+      if (analysis.results[index]) handleIssueClick(analysis.results[index], index);
     },
   });
 
-  // Render highlighted text with tooltips
-  const renderHighlightedText = () => {
-    const { text, annotations } = analysis;
-    if (!text) return null;
-    if (annotations.length === 0) {
-      return <span className="whitespace-pre-wrap">{text}</span>;
-    }
-
-    const parts: Array<{ content: string; annotation?: Annotation }> = [];
-    let cursor = 0;
-
-    // Sort and filter overlapping annotations
-    const sorted = [...annotations].sort((a, b) => a.start - b.start);
-    const nonOverlapping: Annotation[] = [];
-    let lastEnd = -1;
-
-    for (const ann of sorted) {
-      if (ann.start >= lastEnd) {
-        nonOverlapping.push(ann);
-        lastEnd = ann.end;
-      }
-    }
-
-    for (const ann of nonOverlapping) {
-      if (ann.start > cursor) {
-        parts.push({ content: text.slice(cursor, ann.start) });
-      }
-      parts.push({ content: text.slice(ann.start, ann.end), annotation: ann });
-      cursor = ann.end;
-    }
-    if (cursor < text.length) {
-      parts.push({ content: text.slice(cursor) });
-    }
-
-    return (
-      <span className="whitespace-pre-wrap leading-relaxed">
-        {parts.map((part, idx) =>
-          part.annotation ? (
-            <IssueTooltip
-              key={idx}
-              annotation={part.annotation}
-              onOpenSidePanel={() => handleAnnotationClick(part.annotation!)}
-            >
-              {part.content}
-            </IssueTooltip>
-          ) : (
-            <span key={idx}>{part.content}</span>
-          )
-        )}
-      </span>
-    );
-  };
-
-  const totalIssues = analysis.counts.outdated + analysis.counts.biased + analysis.counts.potentially_offensive + analysis.counts.factually_incorrect;
+  const totalIssues =
+    analysis.counts.outdated +
+    analysis.counts.biased +
+    analysis.counts.potentially_offensive +
+    analysis.counts.factually_incorrect;
   const wordCount = analysis.text.split(/\s+/).filter(Boolean).length;
+  const score = analysis.summary.score;
+  const circumference = 2 * Math.PI * 36;
 
-  // Prepare translations for child components
+  const categoryConfig = {
+    outdated: {
+      label: t('summaryCard.outdated'),
+      bar: 'bg-sky-500',
+      dot: 'bg-sky-400',
+      text: 'text-sky-600 dark:text-sky-400',
+    },
+    biased: {
+      label: t('summaryCard.biased'),
+      bar: 'bg-amber-500',
+      dot: 'bg-amber-400',
+      text: 'text-amber-600 dark:text-amber-400',
+    },
+    potentially_offensive: {
+      label: t('summaryCard.potentially_offensive'),
+      bar: 'bg-rose-500',
+      dot: 'bg-rose-400',
+      text: 'text-rose-600 dark:text-rose-400',
+    },
+    factually_incorrect: {
+      label: t('summaryCard.factually_incorrect'),
+      bar: 'bg-red-500',
+      dot: 'bg-red-400',
+      text: 'text-red-600 dark:text-red-400',
+    },
+  } as const;
+
+  const maxCount = Math.max(...Object.values(analysis.counts), 1);
+  const scoreLabel =
+    score >= 90
+      ? t('summaryCard.excellent')
+      : score >= 70
+      ? t('summaryCard.good')
+      : score >= 50
+      ? t('summaryCard.needsImprovement')
+      : t('summaryCard.requiresAttention');
+
   const uploadTranslations = {
     title: t('uploadTitle'),
     description: t('uploadDesc'),
@@ -292,23 +397,6 @@ export default function AnalyzePage() {
     completeDesc: t('processing.completeDesc'),
   };
 
-  const summaryTranslations = {
-    score: t('summaryCard.score'),
-    totalIssues: t('summaryCard.totalIssues'),
-    wordCount: t('summaryCard.wordCount'),
-    categories: t('summaryCard.categories'),
-    recommendations: t('summaryCard.recommendations'),
-    excellent: t('summaryCard.excellent'),
-    good: t('summaryCard.good'),
-    needsImprovement: t('summaryCard.needsImprovement'),
-    requiresAttention: t('summaryCard.requiresAttention'),
-    outdated: t('summaryCard.outdated'),
-    biased: t('summaryCard.biased'),
-    potentially_offensive: t('summaryCard.potentially_offensive'),
-    factually_incorrect: t('summaryCard.factually_incorrect'),
-    exportReport: t('exportReport'),
-  };
-
   const features = [
     { icon: Scan, title: t('features.smartDetection'), desc: t('features.smartDetectionDesc') },
     { icon: BarChart3, title: t('features.detailedReports'), desc: t('features.detailedReportsDesc') },
@@ -326,11 +414,16 @@ export default function AnalyzePage() {
         <HealthWarningBanner
           message={t('modelUnavailable')}
           variant="info"
+          linkHref={`/${locale}/glossary`}
+          linkText={t('modelUnavailableLinkText')}
         />
       )}
+
+
       <div className="flex flex-col flex-1">
         <AnimatePresence mode="wait">
-          {/* Upload State */}
+
+          {/* ── Upload ─────────────────────────────────────────────── */}
           {viewState === 'upload' && (
             <motion.div
               key="upload"
@@ -340,7 +433,6 @@ export default function AnalyzePage() {
               transition={{ duration: 0.3 }}
               className="flex-1 flex flex-col justify-center max-w-4xl mx-auto w-full px-4 py-4"
             >
-              {/* Header */}
               <div className="text-center mb-4">
                 <motion.h1
                   className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-pride-purple to-pride-pink bg-clip-text text-transparent mb-2"
@@ -360,21 +452,12 @@ export default function AnalyzePage() {
                 </motion.p>
               </div>
 
-              {/* Private Mode Toggle */}
               <div className="mb-4 flex justify-center">
-                <PrivateModeToggle
-                  checked={privateMode}
-                  onCheckedChange={setPrivateMode}
-                />
+                <PrivateModeToggle checked={privateMode} onCheckedChange={setPrivateMode} />
               </div>
 
-              {/* Upload Component */}
-              <PaperUpload
-                onFileSelect={handleFileSelect}
-                translations={uploadTranslations}
-              />
+              <PaperUpload onFileSelect={handleFileSelect} translations={uploadTranslations} />
 
-              {/* Features */}
               <motion.div
                 className="mt-4 grid grid-cols-3 gap-3"
                 initial={{ opacity: 0, y: 20 }}
@@ -398,7 +481,6 @@ export default function AnalyzePage() {
                 })}
               </motion.div>
 
-              {/* Error Message */}
               {errorMessage && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -412,7 +494,7 @@ export default function AnalyzePage() {
             </motion.div>
           )}
 
-          {/* Processing State */}
+          {/* ── Processing ─────────────────────────────────────────── */}
           {viewState === 'processing' && (
             <motion.div
               key="processing"
@@ -430,7 +512,7 @@ export default function AnalyzePage() {
             </motion.div>
           )}
 
-          {/* Results State */}
+          {/* ── Results ────────────────────────────────────────────── */}
           {viewState === 'results' && (
             <motion.div
               key="results"
@@ -438,10 +520,10 @@ export default function AnalyzePage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="h-[calc(100vh-140px)] flex flex-col px-4 py-4"
+              className="h-[calc(100vh-140px)] flex flex-col py-4"
             >
-              {/* Results Header - Fixed */}
-              <div className="flex flex-wrap items-center justify-between gap-4 mb-4 flex-shrink-0">
+              {/* Header row */}
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-4 flex-shrink-0">
                 <div className="flex items-center gap-3">
                   <button
                     onClick={handleReset}
@@ -451,128 +533,403 @@ export default function AnalyzePage() {
                     <BackIcon className="w-5 h-5" />
                   </button>
                   <div>
-                    <h2 className="font-semibold text-lg text-slate-800 dark:text-white flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-pride-purple" />
-                      {fileName}
+                    <h2 className="font-semibold text-base text-slate-800 dark:text-white flex items-center gap-2 flex-wrap">
+                      <FileText className="w-4 h-4 text-pride-purple flex-shrink-0" />
+                      <span className="truncate max-w-[260px]">{fileName}</span>
                       {privateMode && (
-                        <span className="ml-2 flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-pride-purple/10 text-pride-purple">
+                        <span className="flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-pride-purple/10 text-pride-purple">
                           <Lock className="w-3 h-3" />
                           {t('privateMode.badge')}
                         </span>
                       )}
-                      {analysisMode === 'rules_only' && (
-                        <span
-                          className="ml-2 px-2 py-0.5 text-xs rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
-                          title={t('basicAnalysisModeDesc')}
-                        >
-                          {t('basicAnalysisMode')}
-                        </span>
-                      )}
+
                     </h2>
-                    <p className="text-sm text-slate-500">
-                      {totalIssues} {totalIssues === 1 ? t('issueFound') : t('issuesFoundPlural')}
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {totalIssues} {totalIssues === 1 ? t('findingFound') : t('findingsFoundPlural')}
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={handleReset}
-                  className="btn-ghost px-4 py-2 rounded-lg text-sm flex items-center gap-2"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  {t('analyzeAnother')}
-                </button>
+                <div className="flex items-center gap-2">
+                  <motion.button
+                    onClick={handleExport}
+                    className="btn-ghost px-3 py-2 rounded-lg text-sm flex items-center gap-1.5"
+                    whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+                  >
+                    <Download className="w-4 h-4" />
+                    <span className="hidden sm:inline">{t('exportReport')}</span>
+                  </motion.button>
+                  <motion.button
+                    onClick={() => setContactOpen(true)}
+                    className="btn-ghost px-3 py-2 rounded-lg text-sm flex items-center gap-1.5"
+                    whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+                  >
+                    <Mail className="w-4 h-4" />
+                    <span className="hidden sm:inline">{t('contactUs')}</span>
+                  </motion.button>
+                  <button
+                    onClick={handleReset}
+                    className="btn-ghost px-3 py-2 rounded-lg text-sm flex items-center gap-2"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    {t('analyzeAnother')}
+                  </button>
+                </div>
               </div>
 
-              {/* Main Content Grid - Flexible */}
-              <div className={`flex-1 min-h-0 grid gap-4 ${isHebrew ? 'lg:grid-cols-[380px,1fr]' : 'lg:grid-cols-[1fr,380px]'}`}>
-                {/* Text Panel with Highlights */}
-                <div className={`glass rounded-xl border overflow-hidden flex flex-col min-h-0 max-h-full ${isHebrew ? 'lg:order-2' : ''}`}>
+              {/* Two-column grid — inline style avoids Tailwind JIT scan issues with dynamic arbitrary values */}
+              <div
+                className="flex-1 min-h-0 grid gap-4"
+                style={{ gridTemplateColumns: 'minmax(0, 1fr) 440px' }}
+              >
+                {/* ── LEFT: Document Viewer ───────────────────────── */}
+                <div className="glass rounded-xl border overflow-hidden flex flex-col min-h-0 max-h-full">
+                  {/* Panel header */}
                   <div className="px-4 py-3 border-b bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between flex-shrink-0">
-                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
-                      {t('documentContent')}
-                    </span>
-                    <span className="text-xs text-slate-400">
-                      {t('hoverHint')}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-pride-purple" />
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                        Document
+                      </span>
+                    </div>
+                    <span className="text-xs text-slate-400">{t('hoverHint')}</span>
                   </div>
+
+                  {/* Scrollable document area */}
                   <div
-                    className="flex-1 p-6 overflow-y-auto text-sm text-slate-700 dark:text-slate-200 scroll-smooth min-h-0"
-                    style={{ scrollBehavior: 'smooth' }}
+                    ref={textPanelRef}
+                    className="flex-1 px-7 py-6 overflow-y-auto text-[0.9rem] text-slate-700 dark:text-slate-200 scroll-smooth min-h-0"
                     dir={isHebrew ? 'rtl' : 'ltr'}
                   >
-                    {renderHighlightedText()}
+                    <DocumentViewer
+                      inputType={docInputType}
+                      text={analysis.text}
+                      annotations={analysis.annotations}
+                      uploadedFile={uploadedFile}
+                      bboxAnnotations={bboxAnnotations}
+                      pageSizes={pageSizes}
+                      markdownText={markdownText}
+                      onAnnotationClick={handleAnnotationClick}
+                      isHebrew={isHebrew}
+                      activeFinding={activeFinding}
+                    />
+                  </div>
+
+                  {/* Severity legend */}
+                  <div className="px-4 py-2.5 border-t bg-slate-50/30 dark:bg-slate-800/30 flex flex-wrap gap-x-5 gap-y-1 flex-shrink-0">
+                    {(Object.keys(categoryConfig) as Severity[]).map((sev) => (
+                      <div key={sev} className="flex items-center gap-1.5">
+                        <span className={cn('w-2.5 h-2.5 rounded-full flex-shrink-0', categoryConfig[sev].dot)} />
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                          {categoryConfig[sev].label}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                {/* Right Panel: Summary + Issues - Scrollable */}
-                <div className={`flex flex-col gap-4 min-h-0 max-h-full overflow-y-auto scroll-smooth pb-4 ${isHebrew ? 'lg:order-1' : ''}`} style={{ scrollBehavior: 'smooth' }}>
-                  {/* Summary Card */}
-                  <AnalysisSummary
-                    counts={analysis.counts}
-                    score={analysis.summary.score}
-                    recommendations={analysis.summary.recommendations}
-                    wordCount={wordCount}
-                    translations={summaryTranslations}
-                  />
-
-                  {/* Issues List */}
-                  <div className="glass rounded-xl border overflow-hidden flex flex-col">
-                    <div className="px-4 py-3 border-b bg-slate-50/50 dark:bg-slate-800/50 flex-shrink-0">
-                      <h3 className="text-sm font-semibold flex items-center gap-2">
-                        {t('issuesFound')}
-                        <span className="px-2 py-0.5 text-xs rounded-full bg-pride-purple/20 text-pride-purple">
-                          {analysis.results.length}
-                        </span>
-                      </h3>
+                {/* ── RIGHT: Analysis Panel ───────────────────────── */}
+                <div
+                  className="flex flex-col gap-3 min-h-0 max-h-full overflow-y-auto pb-4 border-l border-pride-purple/20 pl-4"
+                  style={{ scrollBehavior: 'smooth' }}
+                >
+                  {/* Score Card */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="glass rounded-xl border p-5 flex-shrink-0 overflow-hidden relative"
+                  >
+                    {/* decorative glow */}
+                    <div className="absolute top-0 right-0 w-44 h-44 opacity-[0.07] pointer-events-none">
+                      <div className={cn('absolute inset-0 rounded-full blur-3xl', getScoreBg(score))} />
                     </div>
+
+                    <div className="relative">
+                      <p className="text-[11px] uppercase tracking-widest text-slate-400 mb-3 font-medium">
+                        {t('summaryCard.score')}
+                      </p>
+
+                      <div className="flex items-center justify-between gap-4">
+                        {/* Number + label */}
+                        <div>
+                          <div className="flex items-baseline gap-1.5">
+                            <motion.span
+                              className={cn('text-6xl font-black tabular-nums leading-none', getScoreColor(score))}
+                              initial={{ scale: 0.6, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              transition={{ type: 'spring', stiffness: 180, damping: 14, delay: 0.1 }}
+                            >
+                              {score}
+                            </motion.span>
+                            <span className="text-slate-400 text-xl">/100</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-2">
+                            {score >= 70 ? (
+                              <CheckCircle2 className={cn('w-4 h-4', getScoreColor(score))} />
+                            ) : (
+                              <AlertCircle className={cn('w-4 h-4', getScoreColor(score))} />
+                            )}
+                            <span className={cn('text-sm font-semibold', getScoreColor(score))}>
+                              {scoreLabel}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Ring progress */}
+                        <div className="relative w-24 h-24 flex-shrink-0">
+                          <svg className="w-full h-full -rotate-90" viewBox="0 0 96 96">
+                            <circle
+                              cx="48" cy="48" r="36"
+                              strokeWidth="8" fill="none"
+                              className="stroke-slate-100 dark:stroke-slate-800"
+                            />
+                            <motion.circle
+                              cx="48" cy="48" r="36"
+                              strokeWidth="8" fill="none"
+                              stroke={getScoreRingColor(score)}
+                              strokeLinecap="round"
+                              initial={{ strokeDasharray: `0 ${circumference}` }}
+                              animate={{ strokeDasharray: `${(score / 100) * circumference} ${circumference}` }}
+                              transition={{ duration: 1.2, ease: 'easeOut', delay: 0.2 }}
+                            />
+                          </svg>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className={cn('text-base font-bold', getScoreColor(score))}>{score}%</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Stats row */}
+                      <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-[11px] text-slate-400 mb-0.5 uppercase tracking-wide">
+                            {t('summaryCard.totalFindings')}
+                          </p>
+                          <p className="text-2xl font-bold text-slate-800 dark:text-white">{totalIssues}</p>
+                        </div>
+                        <div>
+                          <p className="text-[11px] text-slate-400 mb-0.5 uppercase tracking-wide">
+                            {t('summaryCard.wordCount')}
+                          </p>
+                          <p className="text-2xl font-bold text-slate-800 dark:text-white">
+                            {wordCount.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  {/* Category breakdown */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.08 }}
+                    className="glass rounded-xl border p-4 flex-shrink-0"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <BarChart3 className="w-4 h-4 text-pride-purple" />
+                      <h3 className="text-sm font-semibold">{t('summaryCard.categories')}</h3>
+                    </div>
+                    <div className="space-y-2.5">
+                      {(Object.keys(categoryConfig) as Severity[]).map((sev) => {
+                        const cfg = categoryConfig[sev];
+                        const count = analysis.counts[sev];
+                        const pct = (count / maxCount) * 100;
+                        return (
+                          <div key={sev}>
+                            <div className="flex items-center justify-between text-xs mb-1">
+                              <span className={cn('font-medium', cfg.text)}>{cfg.label}</span>
+                              <span className="font-bold text-slate-600 dark:text-slate-300 tabular-nums">
+                                {count}
+                              </span>
+                            </div>
+                            <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                              <motion.div
+                                className={cn('h-full rounded-full', cfg.bar)}
+                                initial={{ width: 0 }}
+                                animate={{ width: `${pct}%` }}
+                                transition={{ duration: 0.6, delay: 0.15 }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+
+                  {/* Findings list */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.14 }}
+                    className="glass rounded-xl border overflow-hidden flex-shrink-0"
+                  >
+                    <div className="px-4 py-3 border-b bg-slate-50/50 dark:bg-slate-800/50 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-semibold flex items-center gap-2">
+                          {t('findingsFound')}
+                          <span className="px-2 py-0.5 text-xs rounded-full bg-pride-purple/15 text-pride-purple font-bold">
+                            {filteredResults.length}
+                            {(activeFilters.size > 0 || activeSeverityFilters.size > 0) && analysis.results.length !== filteredResults.length && (
+                              <span className="font-normal text-pride-purple/60"> / {analysis.results.length}</span>
+                            )}
+                          </span>
+                        </h3>
+                        {(activeFilters.size > 0 || activeSeverityFilters.size > 0) && (
+                          <button
+                            onClick={() => { setActiveFilters(new Set()); setActiveSeverityFilters(new Set()); }}
+                            className="flex items-center gap-1 text-xs text-slate-400 hover:text-pride-purple transition-colors px-2 py-1 rounded-md hover:bg-pride-purple/10"
+                          >
+                            <X className="w-3 h-3" />
+                            {t('filterClear')}
+                          </button>
+                        )}
+                      </div>
+                      {/* Category filter */}
+                      <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center gap-1 text-[11px] font-medium text-slate-400 flex-shrink-0">
+                          <Filter className="w-3 h-3" />
+                          <span>{t('filterBy')}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {(Object.keys(categoryConfig) as Severity[]).map((sev) => {
+                            const cfg = categoryConfig[sev];
+                            const active = activeFilters.has(sev);
+                            const count = analysis.counts[sev];
+                            return (
+                              <button
+                                key={sev}
+                                onClick={() => toggleFilter(sev)}
+                                disabled={count === 0}
+                                className={cn(
+                                  'flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border transition-all',
+                                  active ? 'border-current bg-current/10' : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300',
+                                  active && cfg.text,
+                                  count === 0 && 'opacity-40 cursor-not-allowed',
+                                )}
+                              >
+                                <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', cfg.dot)} />
+                                {cfg.label}
+                                <span className="opacity-60 tabular-nums">{count}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      {/* Severity level filter */}
+                      <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700">
+                        <span className="text-[11px] font-medium text-slate-400 flex-shrink-0">{t('filterSeverity')}</span>
+                        <div className="flex flex-wrap gap-1">
+                          {(Object.keys(severityLevelConfig) as SeverityLevel[]).map((sl) => {
+                            const cfg = severityLevelConfig[sl];
+                            const active = activeSeverityFilters.has(sl);
+                            const count = severityLevelCounts[sl];
+                            return (
+                              <button
+                                key={sl}
+                                onClick={() => toggleSeverityFilter(sl)}
+                                disabled={count === 0}
+                                className={cn(
+                                  'flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border transition-all',
+                                  active ? 'border-current bg-current/10' : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300',
+                                  active && cfg.text,
+                                  count === 0 && 'opacity-40 cursor-not-allowed',
+                                )}
+                              >
+                                <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', cfg.dot)} />
+                                {cfg.label}
+                                <span className="opacity-60 tabular-nums">{count}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
                     <div
-                      ref={issuesListRef}
+                      ref={findingsListRef}
                       className="divide-y divide-slate-100 dark:divide-slate-800"
                       role="list"
-                      aria-label={t('a11y.issuesList')}
+                      aria-label={t('a11y.findingsList')}
                     >
                       {analysis.results.length === 0 ? (
+                        <div className="p-8 text-center">
+                          <div className="text-4xl mb-3">🎉</div>
+                          <p className="text-green-600 dark:text-green-400 font-semibold text-sm">
+                            {t('noFindingsFound')}
+                          </p>
+                          <p className="text-xs text-slate-500 mt-1">{t('noIssuesMessage')}</p>
+                        </div>
+                      ) : filteredResults.length === 0 ? (
                         <div className="p-6 text-center">
-                          <div className="text-3xl mb-2">🎉</div>
-                          <p className="text-green-600 dark:text-green-400 font-medium">{t('noIssuesFound')}</p>
-                          <p className="text-sm text-slate-500 mt-1">{t('noIssuesMessage')}</p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">
+                            {t('filterNoMatch')}
+                          </p>
                         </div>
                       ) : (
-                        analysis.results.map((result, i) => (
+                        filteredResults.map((result) => {
+                          const origIdx = analysis.results.indexOf(result);
+                          const cfg = categoryConfig[result.severity];
+                          const slCfg = result.severityLevel ? severityLevelConfig[result.severityLevel] : null;
+                          const isActive = activeFinding?.phrase === result.phrase;
+                          return (
                           <motion.button
-                            key={i}
-                            onClick={() => handleIssueClick(result)}
-                            className="w-full px-4 py-3 text-start hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pride-purple focus-visible:ring-inset"
+                            key={origIdx}
+                            onClick={() => handleIssueClick(result, origIdx)}
+                            className={cn(
+                              'w-full px-3 py-2.5 text-start transition-all border-l-[3px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pride-purple focus-visible:ring-inset',
+                              isActive || selectedResultIndex === origIdx
+                                ? 'bg-pride-purple/5 dark:bg-pride-purple/10 border-l-pride-purple'
+                                : 'border-l-transparent hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-l-slate-200 dark:hover:border-l-slate-700'
+                            )}
                             role="listitem"
                             tabIndex={0}
-                            initial={{ opacity: 0, x: isHebrew ? -20 : 20 }}
+                            initial={{ opacity: 0, x: isHebrew ? -10 : 10 }}
                             animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: i * 0.05 }}
+                            transition={{ delay: origIdx * 0.04 }}
                           >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-sm text-slate-800 dark:text-white truncate">
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <span className={cn('w-2 h-2 rounded-full flex-shrink-0', cfg.dot)} />
+                                <p className="font-semibold text-sm text-slate-800 dark:text-white leading-snug truncate">
                                   &ldquo;{result.phrase}&rdquo;
                                 </p>
-                                {result.suggestion && (
-                                  <p className="text-xs text-pride-purple mt-1 truncate">{isHebrew ? '←' : '→'} {result.suggestion}</p>
-                                )}
                               </div>
-                              <SeverityBadge level={result.severity} />
+                              <div className="flex items-center gap-1.5 flex-shrink-0">
+                                {slCfg && (
+                                  <span className={cn('flex items-center gap-1 text-[10px] font-medium', slCfg.text)}>
+                                    <span className={cn('w-1.5 h-1.5 rounded-full', slCfg.dot)} />
+                                    {slCfg.label}
+                                  </span>
+                                )}
+                                <SeverityBadge level={result.severity} />
+                              </div>
                             </div>
+                            {result.explanation && (
+                              <p className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1 leading-relaxed pl-3.5">
+                                {result.explanation}
+                              </p>
+                            )}
+                            {result.suggestion && (
+                              <div className="flex items-center gap-1 mt-1 pl-3.5 text-[11px] text-pride-purple/80 font-medium">
+                                <ArrowRight className="w-3 h-3 flex-shrink-0" />
+                                <span className="truncate">{result.suggestion}</span>
+                              </div>
+                            )}
                           </motion.button>
-                        ))
+                        );})
                       )}
                     </div>
-                  </div>
+                  </motion.div>
 
-                  {/* Guest Prompt - show after analysis for non-authenticated users */}
+
+                  {/* Guest prompt */}
                   {!user && showGuestPrompt && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3 }}
-                      className="p-4 bg-gradient-to-r from-pride-purple/10 to-pride-blue/10 rounded-lg border border-pride-purple/20"
+                      className="p-4 bg-gradient-to-r from-pride-purple/10 to-pride-blue/10 rounded-xl border border-pride-purple/20 flex-shrink-0"
                     >
                       <p className="text-sm text-slate-700 dark:text-slate-300 mb-3">
                         {t('guestPrompt.title')}
@@ -600,11 +957,20 @@ export default function AnalyzePage() {
         </AnimatePresence>
       </div>
 
-      {/* Side Panel for Issue Details */}
       <AnnotationSidePanel
         annotation={selectedAnnotation}
         open={sidePanelOpen}
         onOpenChange={setSidePanelOpen}
+        locale={locale}
+        isPrivate={privateMode}
+        runId={currentRunId}
+      />
+      <ContactModal
+        open={contactOpen}
+        onClose={() => setContactOpen(false)}
+        analysis={viewState === 'results' ? analysis : null}
+        fileName={fileName}
+        locale={locale}
       />
     </>
   );

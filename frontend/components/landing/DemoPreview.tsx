@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
 
 interface DemoPreviewProps {
@@ -28,7 +28,7 @@ const severityColors = {
   factually_incorrect: 'bg-red-200/80 dark:bg-red-900/60 border-b-2 border-red-500',
 };
 
-export default function DemoPreview({ isHebrew, translations }: DemoPreviewProps) {
+const DemoPreview = React.memo(function DemoPreview({ isHebrew, translations }: DemoPreviewProps) {
   const [activeHighlight, setActiveHighlight] = useState<number | null>(null);
 
   // Build highlights based on translations
@@ -201,4 +201,6 @@ export default function DemoPreview({ isHebrew, translations }: DemoPreviewProps
       </div>
     </section>
   );
-}
+});
+
+export default DemoPreview;

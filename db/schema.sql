@@ -19,6 +19,10 @@ CREATE TABLE users (
   is_superuser BOOLEAN NOT NULL DEFAULT FALSE,
   is_verified BOOLEAN NOT NULL DEFAULT FALSE,
 
+  full_name TEXT,
+  profession TEXT,
+  institution TEXT,
+
   locale TEXT DEFAULT 'he',
   consent_store_text BOOLEAN NOT NULL DEFAULT FALSE,
 
@@ -46,13 +50,17 @@ CREATE TABLE documents (
   document_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(user_id) ON DELETE SET NULL,
 
-  input_type TEXT NOT NULL CHECK (input_type IN ('paste','upload')),
+  input_type TEXT NOT NULL CHECK (input_type IN ('pdf', 'docx', 'pptx', 'txt')),
   language TEXT NOT NULL DEFAULT 'auto' CHECK (language IN ('he','en','auto')),
 
   private_mode BOOLEAN NOT NULL DEFAULT TRUE,
 
   original_filename TEXT,
   mime_type TEXT,
+  title TEXT,
+  author TEXT,
+  page_count INT CHECK (page_count IS NULL OR page_count >= 0),
+  detected_language TEXT CHECK (detected_language IS NULL OR detected_language IN ('he','en')),
 
   text_storage_ref TEXT,
   text_sha256 TEXT,
@@ -96,35 +104,6 @@ CREATE TABLE guideline_sources (
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- 7) Rules
-CREATE TABLE rules (
-  rule_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-  language TEXT NOT NULL CHECK (language IN ('he','en')),
-  name TEXT NOT NULL,
-  description TEXT,
-
-  category TEXT NOT NULL,
-  default_severity TEXT NOT NULL DEFAULT 'medium'
-    CHECK (default_severity IN ('low','medium','high')),
-
-  pattern_type TEXT NOT NULL CHECK (pattern_type IN ('regex','keyword','prompt','other')),
-  pattern_value TEXT NOT NULL,
-
-  example_bad TEXT,
-  example_good TEXT,
-
-  is_enabled BOOLEAN NOT NULL DEFAULT TRUE,
-
-  source_id UUID REFERENCES guideline_sources(source_id) ON DELETE SET NULL,
-
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX idx_rules_language ON rules(language);
-CREATE INDEX idx_rules_enabled ON rules(is_enabled);
-
 -- 8) Findings
 CREATE TABLE findings (
   finding_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -139,8 +118,6 @@ CREATE TABLE findings (
   confidence DOUBLE PRECISION CHECK (confidence IS NULL OR (confidence BETWEEN 0 AND 1)),
 
   explanation TEXT,
-  rule_id UUID REFERENCES rules(rule_id) ON DELETE SET NULL,
-
   excerpt_redacted TEXT,
 
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
@@ -205,12 +182,22 @@ CREATE INDEX idx_exports_run ON report_exports(run_id);
 CREATE TABLE feedback (
   feedback_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-  run_id UUID NOT NULL REFERENCES analysis_runs(run_id) ON DELETE CASCADE,
+  -- run_id and finding_id are nullable: feedback can be submitted for in-memory
+  -- analyses (private mode / DB not connected) where no run was persisted.
+  run_id UUID REFERENCES analysis_runs(run_id) ON DELETE CASCADE,
   finding_id UUID REFERENCES findings(finding_id) ON DELETE SET NULL,
   user_id UUID REFERENCES users(user_id) ON DELETE SET NULL,
 
   feedback_type TEXT NOT NULL
     CHECK (feedback_type IN ('helpful','false_positive','false_negative')),
+
+  -- Raw vote captured from the UI (up/down). feedback_type is the semantic label.
+  vote TEXT CHECK (vote IN ('up','down')),
+
+  flagged_text TEXT,
+  severity TEXT,
+  start_idx INT,
+  end_idx INT,
 
   comment TEXT,
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
@@ -251,6 +238,35 @@ CREATE TABLE audit_log (
 
 CREATE INDEX idx_audit_actor_time ON audit_log(actor_user_id, at);
 
+-- 15) Model Performance Metrics
+-- Stores per-request vLLM inference metrics for admin monitoring.
+-- Persisted for ALL analyses (including private_mode=True) — privacy mode
+-- protects text content, not aggregate timing data. run_id is omitted
+-- intentionally to keep this table fully decoupled from the documents/runs flow.
+CREATE TABLE model_metrics (
+  metric_id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  analysis_mode         TEXT NOT NULL
+    CHECK (analysis_mode IN ('llm')),
+
+  total_sentences       INT  NOT NULL DEFAULT 0,
+  llm_calls             INT  NOT NULL DEFAULT 0,
+  llm_successes         INT  NOT NULL DEFAULT 0,
+  llm_errors            INT  NOT NULL DEFAULT 0,
+  llm_timeouts          INT  NOT NULL DEFAULT 0,
+  circuit_breaker_trips INT  NOT NULL DEFAULT 0,
+
+  avg_latency_ms        FLOAT,
+  min_latency_ms        FLOAT,
+  max_latency_ms        FLOAT,
+
+  total_runtime_ms      INT,
+
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_model_metrics_created_at ON model_metrics(created_at DESC);
+
 -- Privacy constraint
 ALTER TABLE documents
 ADD CONSTRAINT chk_private_storage
@@ -271,10 +287,6 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_users_updated
 BEFORE UPDATE ON users
-FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-
-CREATE TRIGGER trg_rules_updated
-BEFORE UPDATE ON rules
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TRIGGER trg_glossary_updated

@@ -83,3 +83,27 @@ export async function resetPassword(token: string, password: string): Promise<vo
     throw new Error(error.detail || 'Password reset failed');
   }
 }
+
+export interface UserProfile {
+  full_name: string | null;
+  profession: string | null;
+  institution: string | null;
+}
+
+export async function getProfile(token: string): Promise<UserProfile> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/users/me/profile`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error('Failed to get profile');
+  return response.json();
+}
+
+export async function updateProfile(token: string, data: Partial<UserProfile>): Promise<UserProfile> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/users/me/profile`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error('Failed to update profile');
+  return response.json();
+}

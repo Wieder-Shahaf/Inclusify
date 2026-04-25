@@ -1,0 +1,165 @@
+'use client';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { BarChart3, ChevronDown, ChevronUp } from 'lucide-react';
+import { useTranslations, useLocale } from 'next-intl';
+import { useAdminFrequencyTrends } from '@/lib/api/admin';
+import SimpleBarChart from './SimpleBarChart';
+
+interface FrequencyTrendsCardProps {
+  days: number;
+}
+
+const WS_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/^http/, 'ws');
+
+export default function FrequencyTrendsCard({ days }: FrequencyTrendsCardProps) {
+  const t = useTranslations('admin.frequencyTrends');
+  const locale = useLocale();
+  const { data, isLoading, error, refresh } = useAdminFrequencyTrends(days);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [wsConnected, setWsConnected] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+
+    // TODO(security): The browser WebSocket API does not support custom headers on the
+    // initial handshake, so the JWT is passed as a URL query parameter. Tokens in URLs
+    // are logged by web servers, proxies, CDNs, and browser history. Medium-term fix:
+    // implement a /api/v1/admin/ws-ticket endpoint that issues a single-use, short-TTL
+    // ticket and pass that in the URL instead of the full long-lived JWT.
+    const ws = new WebSocket(`${WS_BASE_URL}/api/v1/admin/ws?token=${encodeURIComponent(token)}`);
+    ws.onopen = () => setWsConnected(true);
+    ws.onclose = (ev) => {
+      setWsConnected(false);
+      if (ev.code === 4001) {
+        window.location.href = `/${locale}/login`;
+      }
+    };
+    ws.onmessage = (ev) => {
+      try {
+        const msg = JSON.parse(ev.data);
+        if (msg.event === 'new_analysis') refresh();
+      } catch { /* ignore */ }
+    };
+    return () => { ws.close(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locale]);
+
+  const trends = data?.trends || [];
+  const isRtl = locale === 'he';
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="rounded-2xl border bg-white dark:bg-slate-900 p-6 shadow-sm"
+      style={{ width: '100%', minWidth: 0, boxSizing: 'border-box' }}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-pride-purple" />
+            {t('title')}
+            <span
+              className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-green-400 animate-pulse' : 'bg-slate-300'}`}
+              aria-label={wsConnected ? 'Live updates connected' : 'Live updates disconnected'}
+              role="status"
+            />
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{t('subtitle')}</p>
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="animate-pulse bg-slate-200 dark:bg-slate-700 rounded h-8" />
+          ))}
+        </div>
+      ) : error ? (
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400 text-sm">
+          Failed to load trends. Please try again.
+        </div>
+      ) : trends.length === 0 ? (
+        <div className="p-8 text-center text-slate-500 dark:text-slate-400">{t('noData')}</div>
+      ) : (
+        <>
+          <SimpleBarChart
+            data={trends.map((tr) => tr.count)}
+            labels={trends.map((tr) => tr.category)}
+          />
+
+          {/* Accordion list — must not expand card width */}
+          <div style={{ width: '100%', minWidth: 0, marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {trends.map((tr) => {
+              const isOpen = expanded === tr.category;
+              return (
+                <div
+                  key={tr.category}
+                  style={{ position: 'relative' }}
+                  className="border border-slate-200 dark:border-slate-700 rounded-lg"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setExpanded(isOpen ? null : tr.category)}
+                    aria-expanded={isOpen}
+                    dir={isRtl ? 'rtl' : 'ltr'}
+                    className="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm"
+                  >
+                    <span className="flex items-center gap-2 text-xs text-slate-500 shrink-0">
+                      {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      <span className="bg-slate-100 dark:bg-slate-800 rounded px-2 py-0.5">{tr.count}</span>
+                    </span>
+                    <span className="font-medium text-slate-700 dark:text-slate-200 truncate" style={{ textAlign: isRtl ? 'right' : 'left' }}>
+                      {tr.category}
+                    </span>
+                  </button>
+
+                  {/* Absolutely positioned — does NOT affect card width */}
+                  {isOpen && (
+                    <div
+                      className="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"
+                      style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        right: 0,
+                        zIndex: 20,
+                        overflowY: 'auto',
+                        maxHeight: '12rem',
+                        borderBottom: '1px solid',
+                        borderLeft: '1px solid',
+                        borderRight: '1px solid',
+                        borderColor: 'inherit',
+                        borderRadius: '0 0 8px 8px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                      }}
+                    >
+                      <ol dir={isRtl ? 'rtl' : 'ltr'} style={{ listStyle: 'none', margin: 0, padding: '4px 0' }}>
+                        {tr.top_phrases.map((tp, i) => (
+                          <li
+                            key={i}
+                            className="text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                            style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', alignItems: 'center', gap: '10px', padding: '5px 16px' }}
+                          >
+                            <span className="text-slate-400 dark:text-slate-500 tabular-nums shrink-0">{tp.count}&times;</span>
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              &ldquo;{tp.phrase}&rdquo;
+                            </span>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </motion.div>
+  );
+}

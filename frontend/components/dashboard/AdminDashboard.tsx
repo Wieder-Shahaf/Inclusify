@@ -4,8 +4,10 @@ import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ModelPerformanceTab from './ModelPerformanceTab';
 import OverviewTab from './OverviewTab';
 import UsersTab from './UsersTab';
+import FeedbackTab from './FeedbackTab';
 
 interface AdminDashboardProps {
   translations: {
@@ -14,6 +16,22 @@ interface AdminDashboardProps {
     tabs: {
       overview: string;
       users: string;
+      modelPerformance: string;
+      feedback: string;
+    };
+    modelMetrics: {
+      kpis: {
+        avgLatency: string;
+        errorRate: string;
+        fallbackRate: string;
+        totalLlmCalls: string;
+      };
+      modeBreakdown: {
+        title: string;
+        llm: string;
+        analyses: string;
+      };
+      noData: string;
     };
     timeRanges: {
       week: string;
@@ -32,16 +50,32 @@ interface AdminDashboardProps {
     };
     activity: {
       found: string;
-      issues: string;
+      findings: string;
     };
     users: {
       searchPlaceholder: string;
       noResults: string;
     };
+    feedback: {
+      title: string;
+      filterAll: string;
+      filterUp: string;
+      filterDown: string;
+      colVote: string;
+      colFlaggedText: string;
+      colSeverity: string;
+      colUser: string;
+      colDate: string;
+      colComment: string;
+      noData: string;
+      helpful: string;
+      falsePositive: string;
+      anonymous: string;
+    };
   };
 }
 
-type TabKey = 'overview' | 'users';
+type TabKey = 'overview' | 'users' | 'model-performance' | 'feedback';
 
 // Skeleton loader for suspense fallback
 function DashboardSkeleton() {
@@ -80,6 +114,8 @@ function AdminDashboardContent({ translations }: AdminDashboardProps) {
   const tabs: { key: TabKey; label: string }[] = [
     { key: 'overview', label: translations.tabs.overview },
     { key: 'users', label: translations.tabs.users },
+    { key: 'model-performance', label: translations.tabs.modelPerformance },
+    { key: 'feedback', label: translations.tabs.feedback },
   ];
 
   const timeRangeOptions = [
@@ -90,7 +126,7 @@ function AdminDashboardContent({ translations }: AdminDashboardProps) {
   ];
 
   return (
-    <div className="py-4 px-2 space-y-4">
+    <div className="py-4 space-y-4">
       {/* Header with time range selector */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -122,7 +158,7 @@ function AdminDashboardContent({ translations }: AdminDashboardProps) {
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={cn(
-              'px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors',
+              'flex-1 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors text-center',
               activeTab === tab.key
                 ? 'border-pride-purple text-pride-purple'
                 : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
@@ -146,6 +182,15 @@ function AdminDashboardContent({ translations }: AdminDashboardProps) {
       )}
       {activeTab === 'users' && (
         <UsersTab translations={{ users: translations.users }} />
+      )}
+      {activeTab === 'model-performance' && (
+        <ModelPerformanceTab
+          days={days}
+          translations={translations.modelMetrics}
+        />
+      )}
+      {activeTab === 'feedback' && (
+        <FeedbackTab translations={translations.feedback} />
       )}
     </div>
   );

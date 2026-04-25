@@ -21,7 +21,23 @@
     "lastUpdated": "Last updated",
     "tabs": {
       "overview": "Overview",
-      "users": "Users"
+      "users": "Users",
+      "modelPerformance": "Model Performance",
+      "feedback": "Feedback"
+    },
+    "modelMetrics": {
+      "kpis": {
+        "avgLatency": "Avg Inference Latency (s)",
+        "errorRate": "LLM Error Rate",
+        "fallbackRate": "Fallback Rate",
+        "totalLlmCalls": "Total LLM Calls"
+      },
+      "modeBreakdown": {
+        "title": "Detection Mode Breakdown",
+        "llm": "LLM Only",
+        "analyses": "total analyses"
+      },
+      "noData": "No analyses recorded in this period."
     },
     "timeRanges": {
       "today": "Today",
@@ -32,7 +48,7 @@
     },
     "kpi": {
       "totalAnalyses": "Total Analyses",
-      "issuesFound": "Issues Found",
+      "findingsFound": "Findings Found",
       "resolved": "Resolved",
       "avgScore": "Avg. Score",
       "activeUsers": "Active Users",
@@ -41,9 +57,9 @@
     },
     "scoreTrends": "Score Trends",
     "avgOverTime": "Average inclusivity score over time",
-    "issuesBreakdown": "Issues Breakdown",
+    "findingsBreakdown": "Findings Breakdown",
     "shareByCategory": "Share by category",
-    "issuesFoundShort": "Issues found",
+    "findingsFoundShort": "Findings found",
     "topTerms": "Top Terms Flagged",
     "topTermsDesc": "Most frequently flagged terms across all analyses",
     "recentActivity": "Recent Activity",
@@ -60,7 +76,7 @@
     "activity": {
       "analyzed": "analyzed",
       "found": "found",
-      "issues": "issues"
+      "findings": "findings"
     },
     "users": {
       "searchPlaceholder": "Search by email...",
@@ -77,6 +93,28 @@
     "languages": {
       "en": "English",
       "he": "Hebrew"
+    },
+    "frequencyTrends": {
+      "title": "Label Frequency Trends",
+      "subtitle": "Most flagged categories in the selected period",
+      "topPhrases": "Top phrases",
+      "noData": "No findings recorded in this period."
+    },
+    "feedback": {
+      "title": "User Feedback",
+      "filterAll": "All",
+      "filterUp": "Helpful",
+      "filterDown": "False Detection",
+      "colVote": "Vote",
+      "colFlaggedText": "Flagged Text",
+      "colSeverity": "Severity",
+      "colUser": "User",
+      "colDate": "Date",
+      "colComment": "Comment",
+      "noData": "No feedback submitted yet.",
+      "helpful": "Helpful",
+      "falsePositive": "False Detection",
+      "anonymous": "Anonymous"
     }
   },
   "home": {
@@ -169,8 +207,8 @@
       "uploadingDesc": "Securely transferring your file...",
       "parsing": "Parsing content",
       "parsingDesc": "Extracting text from document...",
-      "analyzing": "Analyzing language",
-      "analyzingDesc": "Scanning for inclusive language patterns...",
+      "analyzing": "Checking for non-inclusive writing...",
+      "analyzingDesc": "Scanning for LGBTQ+ non-inclusive language...",
       "generating": "Generating insights",
       "generatingDesc": "Preparing your personalized report...",
       "complete": "Analysis complete",
@@ -178,8 +216,8 @@
       "takingLonger": "Analysis is taking longer than usual..."
     },
     "summaryCard": {
-      "score": "Inclusivity Score",
-      "totalIssues": "Total Issues",
+      "score": "LGBTQ+ inclusivity score.",
+      "totalFindings": "Total Findings",
       "wordCount": "Word Count",
       "categories": "Issues by Category",
       "recommendations": "Recommendations",
@@ -208,10 +246,15 @@
       "privacyFirstDesc": "Data stays secure"
     },
     "analyzeAnother": "Analyze Another",
-    "issuesFound": "Issues Found",
-    "issueFound": "issue found",
-    "issuesFoundPlural": "issues found",
-    "noIssuesFound": "No issues found!",
+    "contactUs": "Contact Us",
+    "findingsFound": "Findings Found",
+    "findingFound": "finding found",
+    "findingsFoundPlural": "findings found",
+    "noFindingsFound": "No findings found!",
+    "filterClear": "Clear filters",
+    "filterBy": "Category:",
+    "filterSeverity": "Severity:",
+    "filterNoMatch": "No findings match the selected filters.",
     "noIssuesMessage": "Your text demonstrates inclusive language practices.",
     "documentContent": "Document Content",
     "hoverHint": "Click highlighted text for details",
@@ -219,7 +262,10 @@
     "exportReport": "Export Report",
     "sampleFileName": "sample_academic_paper.txt",
     "serviceUnavailable": "Analysis service temporarily unavailable. You can still browse.",
-    "modelUnavailable": "AI model offline — analysis will use rule-based detection only.",
+    "modelUnavailable": "AI model offline — no analysis available right now. Browse our glossary for guidance.",
+    "modelUnavailableLinkText": "Browse glossary",
+    "llmDownResults": "Analysis service is temporarily unavailable. Browse the glossary for guidance.",
+    "llmDownResultsLink": "Browse glossary",
     "basicAnalysisMode": "Basic analysis mode",
     "basicAnalysisModeDesc": "Advanced AI analysis unavailable",
     "errors": {
@@ -242,8 +288,8 @@
     },
     "a11y": {
       "uploadStarted": "Uploading document",
-      "analysisComplete": "Analysis complete. {count} issues found.",
-      "issuesList": "List of detected issues"
+      "analysisComplete": "Analysis complete. {count} findings found.",
+      "findingsList": "List of detected findings"
     }
   },
   "severity": {
@@ -304,6 +350,35 @@
       "generic": "Something went wrong. Please try again."
     }
   },
+  "profile": {
+    "title": "My Profile",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "saveSuccess": "Profile updated successfully!",
+    "saveError": "Failed to save profile. Please try again.",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "e.g. Dr. Jane Smith",
+    "profession": "Profession / Role",
+    "professionPlaceholder": "e.g. Researcher, Lecturer",
+    "institution": "Institution",
+    "institutionPlaceholder": "e.g. Tel Aviv University",
+    "setup": {
+      "title": "Complete your profile",
+      "subtitle": "Help us personalize your experience.",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "e.g. Dr. Jane Smith",
+      "profession": "Profession / Role",
+      "professionPlaceholder": "e.g. Researcher, Lecturer",
+      "institution": "Institution",
+      "institutionPlaceholder": "e.g. Tel Aviv University",
+      "save": "Save Profile",
+      "saving": "Saving...",
+      "skip": "Skip for now",
+      "success": "Profile saved!",
+      "error": "Failed to save. Try again.",
+      "required": "This field is required"
+    }
+  },
   "glossary": {
     "title": "LGBTQ+ Glossary",
     "subtitle": "A comprehensive guide to LGBTQ+ terminology for inclusive academic writing. Definitions sourced from leading advocacy organizations.",
@@ -320,5 +395,21 @@
     "sourcesDesc": "Definitions are sourced from leading LGBTQ+ advocacy organizations and are regularly updated to reflect current terminology and understanding.",
     "noResults": "No terms found matching your search.",
     "relatedTerms": "Related"
+  },
+  "contact": {
+    "button": "Contact Us",
+    "title": "Contact Us",
+    "subtitle": "Send a message or feedback to the Inclusify team.",
+    "subject": "Subject",
+    "message": "Message",
+    "send": "Send Message",
+    "sending": "Sending...",
+    "success": "Message sent!",
+    "error": "Failed to send. Please try again.",
+    "attachReport": "Analysis report attached",
+    "nameLabel": "Name",
+    "emailLabel": "Email",
+    "institutionLabel": "Institution",
+    "cancel": "Cancel"
   }
 }

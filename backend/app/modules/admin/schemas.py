@@ -31,20 +31,14 @@ class AnalyticsResponse(BaseModel):
 
 
 class UserItem(BaseModel):
-    """Single user item for users list.
-
-    Fields:
-        user_id: User UUID
-        email: User email address
-        role: User role (user, site_admin)
-        last_login_at: Last login timestamp (nullable)
-        created_at: Account creation timestamp
-    """
+    """Single user item for users list."""
     user_id: UUID
     email: str
     role: str
     last_login_at: Optional[datetime]
     created_at: datetime
+    analysis_count: int = 0
+    institution: Optional[str] = None
 
 
 class UsersListResponse(BaseModel):
@@ -98,3 +92,63 @@ class ActivityResponse(BaseModel):
     page: int
     page_size: int
     total_pages: int
+
+
+class ModelMetricsResponse(BaseModel):
+    """Aggregated vLLM model performance KPIs for admin dashboard.
+
+    All rates are percentages (0.0–100.0). Latency values are in milliseconds.
+    Fields are None when no LLM calls have occurred in the requested period.
+    """
+    total_analyses: int
+    total_llm_calls: int
+    total_errors: int
+    error_rate: float
+    fallback_rate: float
+    avg_latency_ms: Optional[float]
+    min_latency_ms: Optional[float]
+    max_latency_ms: Optional[float]
+    mode_llm: int
+
+
+class TopPhrase(BaseModel):
+    phrase: str
+    count: int
+
+
+class FrequencyTrendItem(BaseModel):
+    category: str
+    count: int
+    top_phrases: list[TopPhrase]
+
+
+class FrequencyTrendsResponse(BaseModel):
+    trends: list[FrequencyTrendItem]
+    days: int
+
+
+# ── Feedback schemas ──────────────────────────────────────────────────────────
+
+class FeedbackItem(BaseModel):
+    feedback_id: UUID
+    vote: Optional[str]
+    feedback_type: str
+    flagged_text: Optional[str]
+    severity: Optional[str]
+    start_idx: Optional[int]
+    end_idx: Optional[int]
+    comment: Optional[str]
+    created_at: datetime
+    user_email: str
+    finding_id: Optional[UUID]
+    run_id: Optional[UUID]
+
+
+class FeedbackListResponse(BaseModel):
+    items: list[FeedbackItem]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+    total_helpful: int = 0
+    total_false_positive: int = 0

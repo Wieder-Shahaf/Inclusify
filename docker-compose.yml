@@ -31,6 +31,39 @@ services:
       retries: 5
 
   # ============================================
+  # Redis (dev only — refresh token storage)
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    profiles:
+      - dev
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ============================================
+  # Azurite — local Azure Blob Storage emulator
+  # ============================================
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    profiles:
+      - dev
+    command: azurite-blob --blobHost 0.0.0.0 --blobPort 10000 --skipApiVersionCheck
+    ports:
+      - "10000:10000"
+    volumes:
+      - azurite_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:10000/devstoreaccount1 2>/dev/null; ret=$$?; [ $$ret -eq 0 ] || [ $$ret -eq 1 ] || [ $$ret -eq 8 ]"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ============================================
   # FastAPI Backend
   # ============================================
   backend:
@@ -51,6 +84,8 @@ services:
       - PGUSER=${PGUSER:-postgres}
       - PGPASSWORD=${PGPASSWORD:-devpassword}
       - PGSSL=${PGSSL:-}
+      # Redis
+      - REDIS_URL=redis://redis:6379
       # Authentication
       - JWT_SECRET=${JWT_SECRET:-}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
@@ -59,17 +94,32 @@ services:
       # Email
       - RESEND_API_KEY=${RESEND_API_KEY:-}
       - EMAIL_FROM=${EMAIL_FROM:-Inclusify <onboarding@resend.dev>}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
       # CORS
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000}
       # LLM inference service (transformers-based, not vLLM)
       - VLLM_URL=${VLLM_URL:-http://52.224.246.238:8001}
+      # Blob storage (Azurite locally, Azure Blob in prod)
+      - AZURE_STORAGE_CONNECTION_STRING=${AZURE_STORAGE_CONNECTION_STRING:-DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;}
+      - AZURE_STORAGE_CONTAINER=${AZURE_STORAGE_CONTAINER:-texts}
     ports:
       - "8000:8000"
     volumes:
       # Mount source for hot-reload in dev
       - ./backend:/app:cached
+      # Persist uploaded text files across container restarts
+      - ./backend/text_store:/app/text_store
     depends_on:
       postgres:
+        condition: service_healthy
+        required: false
+      redis:
+        condition: service_healthy
+        required: false
+      azurite:
         condition: service_healthy
         required: false
     healthcheck:
@@ -91,6 +141,9 @@ services:
       target: ${BUILD_TARGET:-development}
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      # Hot-reload file watching — required on Mac/WSL inside Docker
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
     ports:
       - "3000:3000"
     volumes:
@@ -104,3 +157,4 @@ services:
 
 volumes:
   postgres_data:
+  azurite_data:

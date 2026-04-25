@@ -1,3 +1,6 @@
+import os
+os.environ.setdefault("JWT_SECRET", "test-secret")
+
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport

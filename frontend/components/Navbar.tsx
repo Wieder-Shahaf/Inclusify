@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { usePathname } from 'next/navigation';
@@ -9,12 +10,15 @@ import ThemeToggle from './ThemeToggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserDropdown } from '@/components/auth/UserDropdown';
 import { cn } from '@/lib/utils';
+import ContactModal from '@/components/ContactModal';
 
 export default function Navbar() {
   const t = useTranslations('app');
   const locale = useLocale();
   const pathname = usePathname();
   const { user, isLoading } = useAuth();
+  const [contactOpen, setContactOpen] = useState(false);
+  const tc = useTranslations('contact');
 
   // Filter navLinks - hide admin for non-admins
   const navLinks = [
@@ -59,6 +63,14 @@ export default function Navbar() {
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
             <ThemeToggle />
+            <button
+              type="button"
+              onClick={() => setContactOpen(true)}
+              className="btn-ghost min-h-11 px-3 text-sm"
+              aria-haspopup="dialog"
+            >
+              {tc('button')}
+            </button>
             {!isLoading && (
               <>
                 {user ? (
@@ -84,6 +96,7 @@ export default function Navbar() {
           <div className="h-px bg-gradient-to-r from-transparent via-slate-200/60 to-transparent dark:via-slate-800/60" />
         )}
       </div>
+      <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} />
     </header>
   );
 }

@@ -62,50 +62,121 @@ async def get_users_paginated(
     conn: asyncpg.Connection,
     page: int = 1,
     page_size: int = 20,
-    email_search: Optional[str] = None
+    email_search: Optional[str] = None,
+    institution: Optional[str] = None,
+    min_analyses: Optional[int] = None,
 ) -> tuple[list[dict], int]:
-    """Get paginated user list with optional email search.
+    """Get paginated user list with optional filters.
 
-    Args:
-        conn: asyncpg database connection
-        page: Page number (1-indexed)
-        page_size: Number of items per page
-        email_search: Optional email substring to filter by (ILIKE)
-
-    Returns:
-        Tuple of (list of user dicts, total count)
+    Filters: email_search (ILIKE), institution (ILIKE, requires institution column),
+    min_analyses (users with >= N analysis_runs via their documents).
     """
     offset = (page - 1) * page_size
 
-    # Build WHERE clause for search
+    # Build dynamic WHERE conditions and parameter list
+    conditions = []
+    params: list = []
+
     if email_search:
-        # Get total count with search filter
-        total = await conn.fetchval(
-            "SELECT COUNT(*) FROM users WHERE email ILIKE $1",
-            f"%{email_search}%"
-        )
+        params.append(f"%{email_search}%")
+        conditions.append(f"u.email ILIKE ${len(params)}")
 
-        # Get page data with search filter
-        rows = await conn.fetch("""
-            SELECT user_id, email, role, last_login_at, created_at
-            FROM users
-            WHERE email ILIKE $1
-            ORDER BY created_at DESC
-            LIMIT $2 OFFSET $3
-        """, f"%{email_search}%", page_size, offset)
-    else:
-        # Get total count without filter
-        total = await conn.fetchval("SELECT COUNT(*) FROM users")
+    if institution:
+        params.append(f"%{institution}%")
+        conditions.append(f"u.institution ILIKE ${len(params)}")
 
-        # Get page data without filter
-        rows = await conn.fetch("""
-            SELECT user_id, email, role, last_login_at, created_at
-            FROM users
-            ORDER BY created_at DESC
-            LIMIT $1 OFFSET $2
-        """, page_size, offset)
+    where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
+    having_clause = ""
+    if min_analyses is not None and min_analyses > 0:
+        params.append(min_analyses)
+        having_clause = f"HAVING COUNT(ar.run_id) >= ${len(params)}"
+
+    base_query = f"""
+        SELECT
+            u.user_id,
+            u.email,
+            u.role,
+            u.last_login_at,
+            u.created_at,
+            u.institution,
+            COUNT(ar.run_id) AS analysis_count
+        FROM users u
+        LEFT JOIN documents d ON d.user_id = u.user_id
+        LEFT JOIN analysis_runs ar ON ar.document_id = d.document_id
+        {where_clause}
+        GROUP BY u.user_id, u.email, u.role, u.last_login_at, u.created_at, u.institution
+        {having_clause}
+    """
+
+    count_query = f"SELECT COUNT(*) FROM ({base_query}) AS sub"
+    total = await conn.fetchval(count_query, *params)
+
+    params_with_pagination = params + [page_size, offset]
+    limit_idx = len(params_with_pagination) - 1
+    offset_idx = len(params_with_pagination)
+    rows = await conn.fetch(
+        f"{base_query} ORDER BY u.created_at DESC LIMIT ${limit_idx} OFFSET ${offset_idx}",
+        *params_with_pagination,
+    )
 
     return [dict(r) for r in rows], total or 0
+
+
+async def get_model_metrics_kpis(conn: asyncpg.Connection, days: int) -> dict:
+    """Fetch aggregated vLLM model performance KPIs for admin dashboard.
+
+    Args:
+        conn: asyncpg database connection
+        days: Time range in days
+
+    Returns:
+        dict with keys:
+            - total_analyses: rows in model_metrics in period
+            - total_llm_calls: sum of all vLLM calls made
+            - total_errors: sum of all vLLM errors
+            - error_rate: llm errors / llm calls (0.0 if no calls)
+            - fallback_rate: analyses NOT in pure-llm mode / total (0.0 if none)
+            - avg_latency_ms: mean of per-request avg latency (None if no LLM calls)
+            - min_latency_ms: global minimum latency across all requests
+            - max_latency_ms: global maximum latency across all requests
+            - mode_llm: count of fully-LLM analyses
+            - mode_llm: count of LLM-only analyses
+    """
+    from datetime import datetime, timedelta
+    cutoff = datetime.utcnow() - timedelta(days=days)
+
+    row = await conn.fetchrow("""
+        SELECT
+            COUNT(*)                                         AS total_analyses,
+            COALESCE(SUM(llm_calls), 0)                      AS total_llm_calls,
+            COALESCE(SUM(llm_errors), 0)                     AS total_errors,
+            CASE WHEN SUM(llm_calls) > 0
+                 THEN ROUND((SUM(llm_errors)::FLOAT / SUM(llm_calls) * 100)::NUMERIC, 1)
+                 ELSE 0 END                                  AS error_rate,
+            CASE WHEN COUNT(*) > 0
+                 THEN ROUND((SUM(CASE WHEN analysis_mode != 'llm' THEN 1 ELSE 0 END)::FLOAT
+                             / COUNT(*) * 100)::NUMERIC, 1)
+                 ELSE 0 END                                  AS fallback_rate,
+            ROUND(AVG(avg_latency_ms)::NUMERIC, 1)           AS avg_latency_ms,
+            ROUND(MIN(min_latency_ms)::NUMERIC, 1)           AS min_latency_ms,
+            ROUND(MAX(max_latency_ms)::NUMERIC, 1)           AS max_latency_ms,
+            SUM(CASE WHEN analysis_mode = 'llm' THEN 1 ELSE 0 END) AS mode_llm
+        FROM model_metrics
+        WHERE created_at >= $1
+    """, cutoff)
+
+    return {
+        "total_analyses":  int(row["total_analyses"] or 0),
+        "total_llm_calls": int(row["total_llm_calls"] or 0),
+        "total_errors":    int(row["total_errors"] or 0),
+        "error_rate":      float(row["error_rate"] or 0.0),
+        "fallback_rate":   float(row["fallback_rate"] or 0.0),
+        "avg_latency_ms":  float(row["avg_latency_ms"]) if row["avg_latency_ms"] is not None else None,
+        "min_latency_ms":  float(row["min_latency_ms"]) if row["min_latency_ms"] is not None else None,
+        "max_latency_ms":  float(row["max_latency_ms"]) if row["max_latency_ms"] is not None else None,
+        "mode_llm":        int(row["mode_llm"] or 0),
+    }
 
 
 async def get_recent_activity(
@@ -152,3 +223,142 @@ async def get_recent_activity(
     """, cutoff, page_size, offset)
 
     return [dict(r) for r in rows], total or 0
+
+
+async def get_label_frequency_trends(conn: asyncpg.Connection, days: int) -> list[dict]:
+    """Fetch label frequency trends for admin dashboard.
+
+    Groups findings by category over the last `days` window, returning
+    count per category and the top-5 most frequent excerpt_redacted values.
+
+    Args:
+        conn: asyncpg database connection
+        days: Time range in days
+
+    Returns:
+        list of dicts: [{category, count, top_phrases: [{phrase, count}, ...]}]
+    """
+    from datetime import datetime, timedelta
+    from collections import Counter
+
+    cutoff = datetime.utcnow() - timedelta(days=days)
+    # Hebrew → English category normalization
+    _HE_TO_EN: dict[str, str] = {
+        'מוטה': 'Biased',
+        'שגוי עובדתית': 'Factually Incorrect',
+        'סיבתיות כוזבת': 'False Causality',
+        'פתולוגיזציה היסטורית': 'Historical Pathologization',
+        'ביטול זהות': 'Identity Invalidation',
+        'דקדוק שגוי': 'Incorrect Grammar',
+        'מידע רפואי שגוי': 'Medical Misinformation',
+        'מונח מיושן': 'Outdated Terminology',
+        'פוגעני פוטנציאלי': 'Potentially Offensive',
+        'סטיגמה חברתית': 'Social Stigma',
+        'השתקת שיח': 'Tone Policing',
+    }
+
+    rows = await conn.fetch("""
+        SELECT f.category,
+               COUNT(*) AS total_count,
+               ARRAY_AGG(f.excerpt_redacted) AS all_excerpts
+        FROM findings f
+        JOIN analysis_runs ar ON f.run_id = ar.run_id
+        WHERE ar.started_at >= $1
+          AND f.excerpt_redacted IS NOT NULL
+        GROUP BY f.category
+        ORDER BY total_count DESC
+    """, cutoff)
+
+    _VALID_CATEGORIES = {
+        'Historical Pathologization',
+        'Factually Incorrect',
+        'Biased',
+        'Potentially Offensive',
+        'Outdated Terminology',
+    }
+
+    # Merge Hebrew and English rows for the same canonical category
+    merged: dict[str, dict] = {}
+    for row in rows:
+        canonical = _HE_TO_EN.get(row['category'], row['category'])
+        if canonical not in _VALID_CATEGORIES:
+            continue
+        if canonical not in merged:
+            merged[canonical] = {'count': 0, 'excerpts': []}
+        merged[canonical]['count'] += int(row['total_count'])
+        merged[canonical]['excerpts'].extend(e for e in row['all_excerpts'] if e)
+
+    result = []
+    for category, data in sorted(merged.items(), key=lambda x: -x[1]['count']):
+        phrase_counts = Counter(data['excerpts'])
+        top5 = [{'phrase': p, 'count': c} for p, c in phrase_counts.most_common(5)]
+        result.append({
+            'category': category,
+            'count': data['count'],
+            'top_phrases': top5,
+        })
+    return result
+
+
+# ── Feedback ──────────────────────────────────────────────────────────────────
+
+async def get_feedback_paginated(
+    conn: asyncpg.Connection,
+    page: int = 1,
+    page_size: int = 20,
+    vote_filter: Optional[str] = None,   # 'up' | 'down' | None
+) -> tuple[list[dict], int, int, int]:
+    """Return (rows, total_filtered, total_helpful_all, total_false_positive_all)."""
+    offset = (page - 1) * page_size
+
+    conditions: list[str] = []
+    params: list = []
+
+    if vote_filter in ("up", "down"):
+        params.append(vote_filter)
+        conditions.append(f"fb.vote = ${len(params)}")
+
+    where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
+    # Count matching rows (respects filter)
+    total = await conn.fetchval(
+        f"SELECT COUNT(*) FROM feedback fb {where}", *params
+    )
+
+    # Overall totals (ignores filter) — for KPI cards
+    summary_row = await conn.fetchrow(
+        """
+        SELECT
+            COUNT(*) FILTER (WHERE vote = 'up')   AS total_helpful,
+            COUNT(*) FILTER (WHERE vote = 'down')  AS total_false_positive
+        FROM feedback
+        """
+    )
+    total_helpful        = int(summary_row["total_helpful"] or 0)
+    total_false_positive = int(summary_row["total_false_positive"] or 0)
+
+    params_paged = params + [page_size, offset]
+    rows = await conn.fetch(
+        f"""
+        SELECT
+            fb.feedback_id,
+            fb.vote,
+            fb.feedback_type,
+            fb.flagged_text,
+            fb.severity,
+            fb.start_idx,
+            fb.end_idx,
+            fb.comment,
+            fb.created_at,
+            fb.finding_id,
+            fb.run_id,
+            COALESCE(u.email, 'anonymous') AS user_email
+        FROM feedback fb
+        LEFT JOIN users u ON fb.user_id = u.user_id
+        {where}
+        ORDER BY fb.created_at DESC
+        LIMIT ${len(params_paged) - 1} OFFSET ${len(params_paged)}
+        """,
+        *params_paged,
+    )
+    return [dict(r) for r in rows], total or 0, total_helpful, total_false_positive

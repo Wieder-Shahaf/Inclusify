@@ -1,0 +1,3 @@
+[tool.ruff.lint.per-file-ignores]
+# logging.basicConfig() must run before other imports to capture import-time logs
+"app/main.py" = ["E402"]

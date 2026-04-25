@@ -1,9 +1,11 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import HeroSection from '@/components/landing/HeroSection';
-import DemoPreview from '@/components/landing/DemoPreview';
-import HowItWorks from '@/components/landing/HowItWorks';
-import FeaturesGrid from '@/components/landing/FeaturesGrid';
-import CTASection from '@/components/landing/CTASection';
+import dynamic from 'next/dynamic';
+
+const DemoPreview = dynamic(() => import('@/components/landing/DemoPreview'));
+const HowItWorks = dynamic(() => import('@/components/landing/HowItWorks'));
+const FeaturesGrid = dynamic(() => import('@/components/landing/FeaturesGrid'));
+const CTASection = dynamic(() => import('@/components/landing/CTASection'));
 
 type Props = {
   params: Promise<{ locale: string }>;

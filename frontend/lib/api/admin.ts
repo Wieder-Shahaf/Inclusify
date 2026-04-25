@@ -63,10 +63,19 @@ export function useAdminKPIs(days: number) {
   return { kpis: data, isLoading, error, refresh: mutate };
 }
 
-export function useAdminUsers(page: number, pageSize: number = 20, search?: string) {
-  const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
+export function useAdminUsers(
+  page: number,
+  pageSize: number = 20,
+  search?: string,
+  institution?: string,
+  minAnalyses?: number,
+) {
+  const params = new URLSearchParams({ page: String(page), page_size: String(pageSize) });
+  if (search) params.set('search', search);
+  if (institution) params.set('institution', institution);
+  if (minAnalyses !== undefined && minAnalyses > 0) params.set('min_analyses', String(minAnalyses));
   const { data, error, isLoading, mutate } = useSWR<UsersListResponse>(
-    `${API_BASE_URL}/api/v1/admin/users?page=${page}&page_size=${pageSize}${searchParam}`,
+    `${API_BASE_URL}/api/v1/admin/users?${params.toString()}`,
     fetcher,
     { revalidateOnFocus: false }
   );
@@ -78,6 +87,90 @@ export function useAdminActivity(page: number, pageSize: number = 20, days: numb
     `${API_BASE_URL}/api/v1/admin/activity?page=${page}&page_size=${pageSize}&days=${days}`,
     fetcher,
     { revalidateOnFocus: false }
+  );
+  return { data, isLoading, error, refresh: mutate };
+}
+
+export interface ModelMetricsResponse {
+  total_analyses: number;
+  total_llm_calls: number;
+  total_errors: number;
+  error_rate: number;
+  fallback_rate: number;
+  avg_latency_ms: number | null;
+  min_latency_ms: number | null;
+  max_latency_ms: number | null;
+  mode_llm: number;
+}
+
+export function useModelMetrics(days: number) {
+  const { data, error, isLoading, mutate } = useSWR<ModelMetricsResponse>(
+    `${API_BASE_URL}/api/v1/admin/model-metrics?days=${days}`,
+    fetcher,
+    { revalidateOnFocus: false, dedupingInterval: 60000 }
+  );
+  return { data, isLoading, error, refresh: mutate };
+}
+
+export interface TopPhrase { phrase: string; count: number; }
+export interface FrequencyTrendItem {
+  category: string;
+  count: number;
+  top_phrases: TopPhrase[];
+}
+export interface FrequencyTrendsResponse {
+  trends: FrequencyTrendItem[];
+  days: number;
+}
+
+export function useAdminFrequencyTrends(days: number) {
+  const { data, error, isLoading, mutate } = useSWR<FrequencyTrendsResponse>(
+    `${API_BASE_URL}/api/v1/admin/frequency-trends?days=${days}`,
+    fetcher,
+    { revalidateOnFocus: false, dedupingInterval: 60000 }
+  );
+  return { data, isLoading, error, refresh: mutate };
+}
+
+// ── Feedback ──────────────────────────────────────────────────────────────────
+
+export interface FeedbackItem {
+  feedback_id: string;
+  vote: 'up' | 'down' | null;
+  feedback_type: string;
+  flagged_text: string | null;
+  severity: string | null;
+  start_idx: number | null;
+  end_idx: number | null;
+  comment: string | null;
+  created_at: string;
+  user_email: string;
+  finding_id: string | null;
+  run_id: string | null;
+}
+
+export interface FeedbackListResponse {
+  items: FeedbackItem[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  total_helpful: number;
+  total_false_positive: number;
+}
+
+export function useAdminFeedback(
+  page: number,
+  pageSize: number = 20,
+  voteFilter?: 'up' | 'down',
+) {
+  const params = new URLSearchParams({ page: String(page), page_size: String(pageSize) });
+  if (voteFilter) params.set('vote', voteFilter);
+
+  const { data, error, isLoading, mutate } = useSWR<FeedbackListResponse>(
+    `${API_BASE_URL}/api/v1/admin/feedback?${params.toString()}`,
+    fetcher,
+    { revalidateOnFocus: false },
   );
   return { data, isLoading, error, refresh: mutate };
 }

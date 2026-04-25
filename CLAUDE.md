@@ -10,7 +10,7 @@ downloadable reports.
 - Frontend: Next.js 16 (App Router), TypeScript, Tailwind v4, next-intl (HE/EN), Framer Motion, shadcn-style components
 - Backend: FastAPI (Python 3.11+), async, Pydantic v2, uvicorn
 - Database: PostgreSQL (schema in db/schema.sql, seed in db/seed.sql), asyncpg
-- ML Model: lightblue/suzume-llama-3-8B-multilingual, QLoRA fine-tuned
+- ML Model: Qwen/Qwen2.5-3B-Instruct, QLoRA fine-tuned
 - LoRA adapters: ml/LoRA_Adapters/
 - Inference: vLLM on Azure VM with T4 GPU (not yet integrated)
 - Document parsing: Docling (replacing PyMuPDF, validated in R&D)

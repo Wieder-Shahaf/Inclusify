@@ -185,9 +185,11 @@ class TestGoogleOAuthCallback:
             assert "access_token" in params
             token = params["access_token"][0]
 
-            # Decode and verify role claim
+            # Decode and verify role claim — use the actual cached settings secret,
+            # which may differ from JWT_SECRET env var if config was loaded earlier in the suite.
             from jose import jwt
-            payload = jwt.decode(token, "test-secret-key-for-testing-only", algorithms=["HS256"], audience="fastapi-users:auth")
+            from app.core.config import settings
+            payload = jwt.decode(token, settings.JWT_SECRET, algorithms=["HS256"], audience="fastapi-users:auth")
             assert "role" in payload
             assert payload["role"] == "user"
 

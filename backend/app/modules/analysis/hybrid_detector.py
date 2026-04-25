@@ -1,15 +1,19 @@
 """
-Hybrid detector for LGBTQ+ inclusive language analysis.
+LLM detector for LGBTQ+ inclusive language analysis.
 
-Combines LLM-based contextual analysis with rule-based term detection.
-LLM results are preferred for overlapping spans; rule-based serves as fallback.
+Uses LLM-based contextual analysis exclusively. When the LLM is unavailable
+(circuit breaker open or all sentences fail), returns empty results with
+analysis_mode='llm'.
 """
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING
+import re as _re
+from typing import TYPE_CHECKING, Optional
 
-from app.modules.analysis.llm_client import VLLMClient, map_severity
+from app.modules.analysis.call_metrics import CallMetrics
+from app.modules.analysis.circuit_breaker import vllm_breaker
+from app.modules.analysis.llm_client import VLLMClient, map_severity, extract_chunk_issues
 from app.modules.analysis.sentence_splitter import split_with_offsets
 
 if TYPE_CHECKING:
@@ -17,82 +21,125 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-
-def calculate_overlap(issue1: "Issue", issue2: "Issue") -> float:
+def _find_references_start(text: str) -> int:
     """
-    Calculate the overlap ratio between two issues based on character positions.
-
-    Args:
-        issue1: First issue with start/end positions
-        issue2: Second issue with start/end positions
-
-    Returns:
-        Overlap ratio from 0.0 (no overlap) to 1.0 (full overlap).
-        Ratio is calculated as overlap_chars / min(len1, len2).
+    Return the char offset where the references/bibliography section begins,
+    or len(text) if no such section is found. Uses the LAST match so that
+    inline mentions of the word 'references' don't trigger early cutoff.
     """
-    # Calculate overlap range
-    overlap_start = max(issue1.start, issue2.start)
-    overlap_end = min(issue1.end, issue2.end)
-    overlap_chars = max(0, overlap_end - overlap_start)
-
-    # Calculate lengths
-    len1 = issue1.end - issue1.start
-    len2 = issue2.end - issue2.start
-
-    if min(len1, len2) == 0:
-        return 0.0
-
-    return overlap_chars / min(len1, len2)
+    pattern = _re.compile(
+        r'(?:^|\n)[ \t]*'
+        r'(?:REFERENCES|References|BIBLIOGRAPHY|Bibliography|'
+        r'Works\s+Cited|WORKS\s+CITED|Literature\s+Cited|LITERATURE\s+CITED)'
+        r'[ \t]*(?:\n|$)',
+        _re.MULTILINE,
+    )
+    matches = list(pattern.finditer(text))
+    if not matches:
+        return len(text)
+    return matches[-1].start()
 
 
-def merge_results(
-    llm_issues: list["Issue"],
-    rule_issues: list["Issue"],
-    overlap_threshold: float = 0.5
-) -> list["Issue"]:
+# Terms that ARE the recommended inclusive vocabulary per APA/GLAAD —
+# flagging them as problematic is always a false positive.
+_SAFE_PHRASES: frozenset[str] = frozenset({
+    "sexual orientation",
+    "gender identity",
+    "gender expression",
+    "lgbtq+",
+})
+
+
+def _deduplicate_issues(issues: list) -> list:
     """
-    Merge LLM and rule-based detection results, preferring LLM for overlapping spans.
-
-    Args:
-        llm_issues: Issues detected by LLM analysis
-        rule_issues: Issues detected by rule-based matching
-        overlap_threshold: Minimum overlap ratio to consider duplicates (default 0.5)
-
-    Returns:
-        Merged list of issues, sorted by start position.
-        LLM issues are always included; rule issues only if not overlapping with LLM.
+    Remove duplicate LLM issues within a single run:
+    1. Identical phrase (case-insensitive) → keep highest-confidence entry.
+    2. Span fully contained within an already-kept span → drop the inner one.
     """
-    # Start with all LLM issues
-    merged = list(llm_issues)
+    if not issues:
+        return issues
 
-    # Add rule issues only if they don't overlap significantly with LLM issues
-    for rule_issue in rule_issues:
-        overlaps_with_llm = False
-        for llm_issue in llm_issues:
-            if calculate_overlap(rule_issue, llm_issue) >= overlap_threshold:
-                overlaps_with_llm = True
-                break
+    # Step 1: per-phrase dedup — keep highest confidence
+    by_phrase: dict[str, object] = {}
+    no_phrase: list = []
+    for iss in issues:
+        if not iss.phrase:
+            no_phrase.append(iss)
+            continue
+        key = iss.phrase.strip().lower()
+        prev = by_phrase.get(key)
+        if prev is None or (iss.confidence or 0.0) > (prev.confidence or 0.0):
+            by_phrase[key] = iss
 
-        if not overlaps_with_llm:
-            merged.append(rule_issue)
+    candidates = list(by_phrase.values()) + no_phrase
 
-    # Sort by start position
-    merged.sort(key=lambda x: x.start)
+    # Step 2: span containment dedup — sort by confidence desc, drop dominated spans
+    result: list = []
+    for iss in sorted(candidates, key=lambda i: (i.confidence or 0.0), reverse=True):
+        if any(kept.start <= iss.start and iss.end <= kept.end for kept in result):
+            continue
+        result.append(iss)
 
-    return merged
+    return result
+
+
+def _locate_chunks(full_text: str, chunks: list[str]) -> list[tuple[str, int, int]]:
+    """
+    Find character offsets of HybridChunker chunks within the analysis text.
+    Falls back progressively: exact → skip heading line → whitespace-normalized.
+    Chunks that still fail (e.g. table cells, bibliography) are silently skipped.
+    """
+    result = []
+    skipped = 0
+    search_start = 0
+
+    _ws_norm = _re.compile(r'\s+')
+    full_text_normalized = _ws_norm.sub(' ', full_text)
+
+    for raw in chunks:
+        stripped = raw.strip()
+        if not stripped:
+            continue
+
+        # 1. Exact match
+        idx = full_text.find(stripped, search_start)
+
+        # 2. Skip first line (heading context prepended by chunker)
+        if idx == -1:
+            lines = [ln for ln in stripped.split('\n') if ln.strip()]
+            if len(lines) > 1:
+                content = '\n'.join(lines[1:]).strip()
+                idx = full_text.find(content, search_start)
+                if idx != -1:
+                    stripped = content
+
+        # 3. Whitespace-normalized match (recovers double-space / tab differences)
+        if idx == -1:
+            norm_chunk = _ws_norm.sub(' ', stripped)
+            norm_idx = full_text_normalized.find(norm_chunk, search_start)
+            if norm_idx != -1:
+                orig_idx = full_text.find(norm_chunk[0], search_start)
+                if orig_idx != -1:
+                    idx = orig_idx
+                    stripped = full_text[orig_idx: orig_idx + len(norm_chunk)]
+
+        if idx != -1:
+            result.append((stripped, idx, idx + len(stripped)))
+            search_start = idx + len(stripped)
+        else:
+            skipped += 1
+            logger.debug("HybridChunker chunk not located, skipping: %.60r", stripped)
+
+    if skipped:
+        logger.info(
+            "HybridChunker: %d/%d chunks located; %d skipped (likely tables/bibliography)",
+            len(result), len(result) + skipped, skipped,
+        )
+    return result
 
 
 def detect_language(text: str) -> str:
-    """
-    Detect language of text using simple heuristics.
-
-    Args:
-        text: Input text
-
-    Returns:
-        'he' if Hebrew characters detected, 'en' otherwise
-    """
-    # Check for Hebrew characters (Unicode range)
+    """Detect language: 'he' if Hebrew characters present, 'en' otherwise."""
     hebrew_chars = sum(1 for c in text if '\u0590' <= c <= '\u05FF')
     if hebrew_chars > 0:
         return 'he'
@@ -100,101 +147,166 @@ def detect_language(text: str) -> str:
 
 
 class HybridDetector:
-    """
-    Hybrid detector combining LLM and rule-based analysis.
-
-    Uses LLM for contextual analysis of each sentence, falls back to rules on failure.
-    Tracks which method was used and reports mode in response.
-    """
+    """LLM detector for LGBTQ+ inclusive language analysis."""
 
     def __init__(self, vllm_client: VLLMClient = None):
-        """
-        Initialize hybrid detector.
-
-        Args:
-            vllm_client: Optional VLLMClient instance (creates default if not provided)
-        """
         self.client = vllm_client or VLLMClient()
 
     async def analyze(
         self,
         text: str,
-        language: str = "auto"
-    ) -> tuple[list["Issue"], str]:
+        language: str = "auto",
+        chunks: Optional[list[str]] = None,
+    ) -> tuple[list["Issue"], str, CallMetrics]:
         """
-        Analyze text for LGBTQ+ inclusive language issues.
-
-        Args:
-            text: Text to analyze
-            language: Language code ('en', 'he', 'auto'). Auto-detects if 'auto'.
+        Analyze text for LGBTQ+ inclusive language issues using LLM + DB rules.
 
         Returns:
-            Tuple of (issues_list, analysis_mode).
-            analysis_mode is 'llm', 'hybrid', or 'rules_only'.
+            Tuple of (issues_list, analysis_mode, call_metrics).
+            analysis_mode is 'llm' when at least one sentence was processed,
+            'llm' in all cases.
         """
-        # Import here to avoid circular import
-        from app.modules.analysis.router import Issue, detect_rule_based_issues
+        from app.modules.analysis.router import Issue
 
-        # Detect language if auto
         if language == "auto":
             language = detect_language(text)
 
-        # Split text into sentences with offsets
-        sentences = split_with_offsets(text, language)
+        if chunks:
+            sentences = _locate_chunks(text, chunks)
+            if not sentences:
+                logger.warning("HybridChunker offset location failed for all chunks, falling back to sentence splitter")
+                sentences = split_with_offsets(text, language)
+        else:
+            sentences = split_with_offsets(text, language)
+
+        # Skip chunks that fall entirely within the references/bibliography section —
+        # citation titles and author names generate high-volume false positives.
+        refs_start = _find_references_start(text)
+        if refs_start < len(text):
+            before = len(sentences)
+            sentences = [(s, st, en) for s, st, en in sentences if st < refs_start]
+            logger.info(
+                "References section detected at offset %d — dropped %d chunk(s)",
+                refs_start, before - len(sentences),
+            )
+
         logger.info(
-            "Hybrid detection started: text_length=%d language=%s sentences=%d",
-            len(text), language, len(sentences),
+            "LLM detection started: text_length=%d language=%s sentences=%d refs_start=%d",
+            len(text), language, len(sentences), refs_start,
         )
 
         llm_issues: list[Issue] = []
         llm_success_count = 0
         llm_failure_count = 0
+        call_metrics = CallMetrics(total_sentences=len(sentences))
 
-        # Process sentences in PARALLEL with asyncio.gather
         async def analyze_one(sentence: str, start_offset: int, end_offset: int):
-            result = await self.client.analyze_sentence(sentence)
+            # Skip immediately if circuit is already open — no point queuing.
+            if vllm_breaker.current_state == "open":
+                return None, sentence, start_offset, end_offset
+            result = await self.client.analyze_sentence(sentence, metrics=call_metrics)
             return (result, sentence, start_offset, end_offset)
 
-        # Run all analyses concurrently
         tasks = [analyze_one(s, start, end) for s, start, end in sentences]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+        # Overall safety cap: 3 min for the entire analysis regardless of document size.
+        try:
+            results = await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=180)
+        except asyncio.TimeoutError:
+            logger.warning("Analysis hit overall 180s timeout — returning partial results")
+            results = []
 
         for item in results:
             if isinstance(item, Exception):
                 llm_failure_count += 1
                 continue
 
-            result, sentence, start_offset, end_offset = item
+            result, chunk, start_offset, end_offset = item
 
             if result is not None:
                 llm_success_count += 1
 
-                # Map severity and create issue if not "Correct"
-                severity = map_severity(result.get("severity", ""))
-                if severity is not None:
-                    # Safely extract string fields (handle nan/None)
-                    category = result.get("category", "LLM Detected")
-                    if not isinstance(category, str) or category != category:  # nan check
+                for issue_data in extract_chunk_issues(result):
+                    severity = map_severity(issue_data.get("severity", ""))
+                    if severity is None:
+                        continue
+
+                    # Drop hallucinated issues where the phrase has no LGBTQ+ signal.
+                    phrase_lower = (issue_data.get("phrase") or "").lower().strip()
+                    _LGBTQ_SIGNALS = {
+                        "gay", "lesbian", "bisexual", "transgender", "trans", "queer",
+                        "nonbinary", "non-binary", "lgbtq", "lgbt", "homosexual",
+                        "heterosexual", "cisgender", "cis", "gender", "sexual",
+                        "orientation", "identity", "dysphoria", "same-sex", "lifestyle",
+                        "passing", "transitioning", "pronoun", "assigned", "deviant",
+                        "pervert", "trann", "sodomit", "conversion", "reparative",
+                    }
+                    if phrase_lower and not any(sig in phrase_lower for sig in _LGBTQ_SIGNALS):
+                        logger.debug("Dropping off-topic LLM issue: phrase=%r", phrase_lower)
+                        continue
+
+                    # Drop false positives on APA/GLAAD-recommended inclusive terms.
+                    if phrase_lower in _SAFE_PHRASES:
+                        logger.debug("Dropping safe-phrase false positive: %r", phrase_lower)
+                        continue
+
+                    category = issue_data.get("category", "LLM Detected")
+                    if not isinstance(category, str):
                         category = "LLM Detected"
-                    explanation = result.get("explanation", "")
-                    if not isinstance(explanation, str) or explanation != explanation:
+                    explanation = issue_data.get("explanation", "")
+                    if not isinstance(explanation, str):
                         explanation = ""
 
-                    # Extract and clamp confidence to [0.0, 1.0]
-                    confidence_raw = result.get("confidence")
-                    if isinstance(confidence_raw, (int, float)) and confidence_raw == confidence_raw:
-                        confidence = max(0.0, min(1.0, float(confidence_raw)))
-                    else:
-                        confidence = None
+                    suggestion = issue_data.get("suggestion")
+                    if not isinstance(suggestion, str) or not suggestion.strip() or suggestion.strip().lower() == "null":
+                        if vllm_breaker.current_state != "open":
+                            suggestion = await self.client.get_suggestion(
+                                chunk, severity, category, metrics=call_metrics
+                            )
+                        else:
+                            suggestion = None
+                    # Drop suggestions that are identical to the flagged phrase —
+                    # these are truncated/degenerate model outputs with no value.
+                    phrase_for_cmp = issue_data.get("phrase") or ""
+                    if suggestion and phrase_for_cmp and suggestion.strip() == phrase_for_cmp.strip():
+                        suggestion = None
+
+                    inclusive_sentence = issue_data.get("inclusive_sentence")
+                    if not isinstance(inclusive_sentence, str) or not inclusive_sentence.strip() or inclusive_sentence.strip().lower() == "null":
+                        inclusive_sentence = None
+
+                    phrase = issue_data.get("phrase")
+                    if not isinstance(phrase, str) or not phrase.strip() or phrase.strip().lower() == "null":
+                        phrase = None
+
+                    # Narrow offsets to the phrase span within the chunk.
+                    # Fall back to full chunk span when phrase is absent or not locatable.
+                    actual_start = start_offset
+                    actual_end = end_offset
+                    if phrase:
+                        phrase_idx = chunk.find(phrase)
+                        if phrase_idx == -1:
+                            phrase_idx = chunk.lower().find(phrase.lower())
+                        if phrase_idx != -1:
+                            actual_start = start_offset + phrase_idx
+                            actual_end = actual_start + len(phrase)
+
+                    confidence_raw = issue_data.get("confidence")
+                    confidence = (
+                        max(0.0, min(1.0, float(confidence_raw)))
+                        if isinstance(confidence_raw, (int, float)) and confidence_raw == confidence_raw
+                        else None
+                    )
 
                     issue = Issue(
-                        flagged_text=sentence,
+                        flagged_text=chunk,
                         severity=severity,
                         type=category,
                         description=explanation,
-                        suggestion=None,
-                        start=start_offset,
-                        end=end_offset,
+                        suggestion=suggestion,
+                        inclusive_sentence=inclusive_sentence,
+                        phrase=phrase,
+                        start=actual_start,
+                        end=actual_end,
                         confidence=confidence,
                     )
                     llm_issues.append(issue)
@@ -202,36 +314,27 @@ class HybridDetector:
                 llm_failure_count += 1
 
         logger.info(
-            "LLM analysis completed: sentences=%d llm_success=%d llm_failure=%d llm_issues=%d",
+            "LLM analysis completed: sentences=%d success=%d failure=%d issues=%d",
             len(sentences), llm_success_count, llm_failure_count, len(llm_issues),
         )
 
-        # Run rule-based detection on full text
-        rule_issues = detect_rule_based_issues(text)
-        logger.info("Rule-based detection returned: rule_issues=%d", len(rule_issues))
+        if llm_success_count == 0:
+            logger.warning("LLM unavailable for all sentences — returning empty results")
+        mode = "llm"
 
-        # Merge results (LLM preferred for overlapping spans)
-        merged_issues = merge_results(llm_issues, rule_issues)
-        logger.info(
-            "Merge completed: llm_issues=%d rule_issues=%d merged_total=%d",
-            len(llm_issues), len(rule_issues), len(merged_issues),
-        )
+        # Drop issues with no usable confidence score.
+        before_conf = len(llm_issues)
+        llm_issues = [i for i in llm_issues if i.confidence is not None and i.confidence > 0]
+        if len(llm_issues) < before_conf:
+            logger.info("Confidence filter removed %d issue(s) with null/zero confidence", before_conf - len(llm_issues))
 
-        # Determine analysis mode
-        total_sentences = len(sentences)
-        if total_sentences == 0:
-            mode = "rules_only"
-        elif llm_failure_count == 0:
-            mode = "llm"
-        elif llm_success_count == 0:
-            mode = "rules_only"
-        else:
-            mode = "hybrid"
+        # Deduplicate LLM issues (same phrase, overlapping spans).
+        before_dedup = len(llm_issues)
+        llm_issues = _deduplicate_issues(llm_issues)
+        if len(llm_issues) < before_dedup:
+            logger.info("Dedup removed %d duplicate issue(s)", before_dedup - len(llm_issues))
 
-        if mode == "rules_only" and total_sentences > 0:
-            logger.warning("LLM unavailable for all sentences — falling back to rules_only mode")
-
-        return merged_issues, mode
+        return llm_issues, mode, call_metrics
 
 
-__all__ = ["HybridDetector", "calculate_overlap", "merge_results", "detect_language"]
+__all__ = ["HybridDetector", "detect_language", "CallMetrics"]
