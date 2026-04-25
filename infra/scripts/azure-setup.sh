@@ -9,7 +9,7 @@ set -euo pipefail
 RESOURCE_GROUP="${RESOURCE_GROUP:-Group07}"
 LOCATION="${LOCATION:-eastus}"
 ACR_NAME="${ACR_NAME:-inclusifyacr}"
-PG_SERVER="${PG_SERVER:-inclusify-db}"
+PG_SERVER="${PG_SERVER:-inclusify-postgres}"
 PG_USER="${PG_USER:-inclusifyadmin}"
 PG_DATABASE="${PG_DATABASE:-inclusify}"
 

@@ -15,8 +15,8 @@ IMAGE_TAG="${IMAGE_TAG:-latest}"
 BACKEND_APP="${BACKEND_APP:-inclusify-backend}"
 FRONTEND_APP="${FRONTEND_APP:-inclusify-frontend}"
 
-# Database configuration
-PG_SERVER="${PG_SERVER:-inclusify-db}"
+# Database — production server name in Group07
+PG_SERVER="${PG_SERVER:-inclusify-postgres}"
 PG_USER="${PG_USER:-inclusifyadmin}"
 PG_DATABASE="${PG_DATABASE:-inclusify}"
 
@@ -24,16 +24,44 @@ PG_DATABASE="${PG_DATABASE:-inclusify}"
 VLLM_PRIVATE_IP="${VLLM_PRIVATE_IP:-10.0.0.4}"
 VLLM_PORT="${VLLM_PORT:-8001}"
 
+# Azure Blob Storage — production account is inclusifystorage
+# Get conn string: az storage account show-connection-string -g Group07 -n inclusifystorage -o tsv
+AZURE_STORAGE_CONN_STR="${AZURE_STORAGE_CONN_STR:-}"
+AZURE_STORAGE_CONTAINER="${AZURE_STORAGE_CONTAINER:-texts}"
+
+# Email
+SMTP_USER="${SMTP_USER:-inclusify.support@gmail.com}"
+RESEND_API_KEY="${RESEND_API_KEY:-}"
+SMTP_PASSWORD="${SMTP_PASSWORD:-}"
+
+# Google OAuth
+GOOGLE_CLIENT_ID="${GOOGLE_CLIENT_ID:-}"
+GOOGLE_CLIENT_SECRET="${GOOGLE_CLIENT_SECRET:-}"
+
+# vLLM model name as served by the vLLM instance
+VLLM_MODEL_NAME="${VLLM_MODEL_NAME:-/home/azureuser/models/Qwen2.5-3B-Instruct}"
+
 # Check for required secrets
 if [ -z "${PG_PASSWORD:-}" ]; then
   echo "Error: PG_PASSWORD environment variable required"
-  echo "Usage: PG_PASSWORD=<password> JWT_SECRET=<secret> ./infra/scripts/azure-deploy.sh"
+  echo "Usage: PG_PASSWORD=<password> JWT_SECRET=<secret> AZURE_STORAGE_CONN_STR=<conn> ./infra/scripts/azure-deploy.sh"
   exit 1
 fi
 
 if [ -z "${JWT_SECRET:-}" ]; then
   echo "Error: JWT_SECRET environment variable required"
   echo "Generate with: openssl rand -base64 32"
+  exit 1
+fi
+
+if [ -z "${AZURE_STORAGE_CONN_STR:-}" ]; then
+  echo "Error: AZURE_STORAGE_CONN_STR required for inclusifystorage"
+  echo "Get it: az storage account show-connection-string -g Group07 -n inclusifystorage -o tsv"
+  exit 1
+fi
+
+if [ -z "${GOOGLE_CLIENT_ID:-}" ] || [ -z "${GOOGLE_CLIENT_SECRET:-}" ]; then
+  echo "Error: GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET required for OAuth"
   exit 1
 fi
 
@@ -91,11 +119,16 @@ echo "[4/7] Deploying backend Container App..."
 if app_exists "$BACKEND_APP"; then
   echo "  Backend app exists, updating..."
 
-  # Update secrets
+  # Update secrets (storage conn string stored as secret to avoid key exposure in env)
   az containerapp secret set \
     --name "$BACKEND_APP" \
     --resource-group "$RESOURCE_GROUP" \
-    --secrets "db-password=$PG_PASSWORD" "jwt-secret=$JWT_SECRET" \
+    --secrets \
+      "db-password=$PG_PASSWORD" \
+      "jwt-secret=$JWT_SECRET" \
+      "google-client-id=$GOOGLE_CLIENT_ID" \
+      "google-client-secret=$GOOGLE_CLIENT_SECRET" \
+      "azure-storage-conn-str=$AZURE_STORAGE_CONN_STR" \
     --output none
 
   # Update image and environment
@@ -111,7 +144,15 @@ if app_exists "$BACKEND_APP"; then
       "PGPASSWORD=secretref:db-password" \
       "PGSSL=require" \
       "JWT_SECRET=secretref:jwt-secret" \
+      "GOOGLE_CLIENT_ID=secretref:google-client-id" \
+      "GOOGLE_CLIENT_SECRET=secretref:google-client-secret" \
+      "AZURE_STORAGE_CONNECTION_STRING=secretref:azure-storage-conn-str" \
+      "AZURE_STORAGE_CONTAINER=$AZURE_STORAGE_CONTAINER" \
       "VLLM_URL=http://${VLLM_PRIVATE_IP}:${VLLM_PORT}" \
+      "VLLM_MODEL_NAME=$VLLM_MODEL_NAME" \
+      "RESEND_API_KEY=$RESEND_API_KEY" \
+      "SMTP_USER=$SMTP_USER" \
+      "SMTP_PASSWORD=$SMTP_PASSWORD" \
     --output none
 else
   echo "  Creating new backend app..."
@@ -125,7 +166,12 @@ else
     --ingress external \
     --min-replicas 1 \
     --max-replicas 3 \
-    --secrets "db-password=$PG_PASSWORD" "jwt-secret=$JWT_SECRET" \
+    --secrets \
+      "db-password=$PG_PASSWORD" \
+      "jwt-secret=$JWT_SECRET" \
+      "google-client-id=$GOOGLE_CLIENT_ID" \
+      "google-client-secret=$GOOGLE_CLIENT_SECRET" \
+      "azure-storage-conn-str=$AZURE_STORAGE_CONN_STR" \
     --env-vars \
       "PGHOST=${PG_SERVER}.postgres.database.azure.com" \
       "PGPORT=5432" \
@@ -134,7 +180,15 @@ else
       "PGPASSWORD=secretref:db-password" \
       "PGSSL=require" \
       "JWT_SECRET=secretref:jwt-secret" \
+      "GOOGLE_CLIENT_ID=secretref:google-client-id" \
+      "GOOGLE_CLIENT_SECRET=secretref:google-client-secret" \
+      "AZURE_STORAGE_CONNECTION_STRING=secretref:azure-storage-conn-str" \
+      "AZURE_STORAGE_CONTAINER=$AZURE_STORAGE_CONTAINER" \
       "VLLM_URL=http://${VLLM_PRIVATE_IP}:${VLLM_PORT}" \
+      "VLLM_MODEL_NAME=$VLLM_MODEL_NAME" \
+      "RESEND_API_KEY=$RESEND_API_KEY" \
+      "SMTP_USER=$SMTP_USER" \
+      "SMTP_PASSWORD=$SMTP_PASSWORD" \
     --output none
 fi
 
@@ -234,8 +288,9 @@ echo "  az containerapp logs show -n $BACKEND_APP -g $RESOURCE_GROUP --follow"
 echo "  az containerapp logs show -n $FRONTEND_APP -g $RESOURCE_GROUP --follow"
 echo ""
 echo "Configuration:"
-echo "  - Backend connects to PostgreSQL at ${PG_SERVER}.postgres.database.azure.com"
-echo "  - Backend connects to vLLM at http://${VLLM_PRIVATE_IP}:${VLLM_PORT}"
-echo "  - CORS configured for https://${FRONTEND_FQDN}"
-echo "  - Secrets stored in Container Apps secrets (db-password, jwt-secret)"
+echo "  - PostgreSQL:   ${PG_SERVER}.postgres.database.azure.com / db=${PG_DATABASE}"
+echo "  - Blob storage: inclusifystorage / container=${AZURE_STORAGE_CONTAINER}"
+echo "  - vLLM:         http://${VLLM_PRIVATE_IP}:${VLLM_PORT} (model=${VLLM_MODEL_NAME})"
+echo "  - CORS:         https://${FRONTEND_FQDN}"
+echo "  - Secrets:      db-password, jwt-secret, google-client-id/secret, azure-storage-conn-str"
 echo ""
