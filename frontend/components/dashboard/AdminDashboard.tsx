@@ -50,7 +50,7 @@ interface AdminDashboardProps {
     };
     activity: {
       found: string;
-      issues: string;
+      findings: string;
     };
     users: {
       searchPlaceholder: string;
