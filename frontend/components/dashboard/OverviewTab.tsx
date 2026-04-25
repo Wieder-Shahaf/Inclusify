@@ -28,7 +28,7 @@ interface OverviewTabProps {
     };
     activity: {
       found: string;
-      issues: string;
+      findings: string;
     };
   };
 }
@@ -184,7 +184,7 @@ export default function OverviewTab({ days, translations }: OverviewTabProps) {
                     <th className="py-2 pr-4 font-medium">Document</th>
                     <th className="py-2 pr-4 font-medium">Date</th>
                     <th className="py-2 pr-4 font-medium">Status</th>
-                    <th className="py-2 font-medium">Issues</th>
+                    <th className="py-2 font-medium">Findings</th>
                   </tr>
                 </thead>
                 <tbody>

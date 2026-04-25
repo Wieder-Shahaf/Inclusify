@@ -54,7 +54,7 @@ export default async function AdminPage({ params }: Props) {
     },
     activity: {
       found: t('admin.activity.found'),
-      issues: t('admin.activity.issues'),
+      findings: t('admin.activity.findings'),
     },
     users: {
       searchPlaceholder: t('admin.users.searchPlaceholder'),

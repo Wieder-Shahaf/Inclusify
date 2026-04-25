@@ -35,7 +35,7 @@ const defaultTranslations: Translations = {
   parsing: 'Parsing content',
   parsingDesc: 'Extracting text from document...',
   analyzing: 'Checking for non-inclusive writing...',
-  analyzingDesc: 'Scanning for LGBTQ+ inclusive language...',
+  analyzingDesc: 'Scanning for LGBTQ+ non-inclusive language...',
   generating: 'Generating insights',
   generatingDesc: 'Preparing your personalized report...',
   complete: 'Analysis complete',

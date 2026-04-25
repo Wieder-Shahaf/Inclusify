@@ -76,7 +76,7 @@
     "activity": {
       "analyzed": "נותח",
       "found": "נמצאו",
-      "issues": "בעיות"
+      "findings": "ממצאים"
     },
     "users": {
       "searchPlaceholder": "חיפוש לפי אימייל...",
@@ -208,7 +208,7 @@
       "parsing": "מעבד תוכן",
       "parsingDesc": "מחלץ טקסט מהמסמך...",
       "analyzing": "בודק שפה לא מכלילה...",
-      "analyzingDesc": "סורק שפה מכלילה כלפי קהילת הלהט״ב...",
+      "analyzingDesc": "סורק שפה לא מכלילה כלפי קהילת הלהט״ב...",
       "generating": "מייצר תובנות",
       "generatingDesc": "מכין את הדוח המותאם אישית שלך...",
       "complete": "הניתוח הושלם",
@@ -217,7 +217,7 @@
     },
     "summaryCard": {
       "score": "ציון מכלילות להט״ב+.",
-      "totalIssues": "סה״כ בעיות",
+      "totalFindings": "סה״כ ממצאים",
       "wordCount": "מספר מילים",
       "categories": "בעיות לפי קטגוריה",
       "recommendations": "המלצות",
@@ -247,10 +247,14 @@
     },
     "analyzeAnother": "ניתוח נוסף",
     "contactUs": "צור קשר",
-    "issuesFound": "בעיות שנמצאו",
-    "issueFound": "בעיה נמצאה",
-    "issuesFoundPlural": "בעיות נמצאו",
-    "noIssuesFound": "לא נמצאו בעיות!",
+    "findingsFound": "ממצאים שנמצאו",
+    "findingFound": "ממצא נמצא",
+    "findingsFoundPlural": "ממצאים נמצאו",
+    "noFindingsFound": "לא נמצאו ממצאים!",
+    "filterClear": "נקה מסננים",
+    "filterBy": "קטגוריה:",
+    "filterSeverity": "חומרה:",
+    "filterNoMatch": "אין ממצאים התואמים את המסננים הנבחרים.",
     "noIssuesMessage": "הטקסט שלך מפגין שימוש בשפה מכלילה.",
     "documentContent": "תוכן המסמך",
     "hoverHint": "לחצו על טקסט מודגש לפרטים",
@@ -284,8 +288,8 @@
     },
     "a11y": {
       "uploadStarted": "מעלה מסמך",
-      "analysisComplete": "הניתוח הושלם. נמצאו {count} בעיות.",
-      "issuesList": "רשימת בעיות שזוהו"
+      "analysisComplete": "הניתוח הושלם. נמצאו {count} ממצאים.",
+      "findingsList": "רשימת ממצאים שזוהו"
     }
   },
   "severity": {

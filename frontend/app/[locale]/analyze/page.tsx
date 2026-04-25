@@ -18,8 +18,9 @@ import { useLiveAnnouncer } from '@/contexts/LiveAnnouncerContext';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import {
   RotateCcw, FileText, ChevronLeft, ChevronRight, Scan, BarChart3, ShieldCheck,
-  Lock, Mail, Download, AlertCircle, CheckCircle2, TrendingUp, Lightbulb, ArrowRight,
+  Lock, Mail, Download, AlertCircle, CheckCircle2, ArrowRight, Filter, X,
 } from 'lucide-react';
+import type { SeverityLevel } from '@/components/ResultCard';
 import PrivateModeToggle from '@/components/PrivateModeToggle';
 import ContactModal from '@/components/ContactModal';
 import { cn } from '@/lib/utils';
@@ -33,6 +34,7 @@ interface AnalysisData {
   results: Array<{
     phrase: string;
     severity: Severity;
+    severityLevel?: SeverityLevel;
     explanation: string;
     suggestion?: string;
     references?: Array<{ label: string; url: string }>;
@@ -80,13 +82,15 @@ export default function AnalyzePage() {
   const isHebrew = locale === 'he';
   const { user } = useAuth();
   const { announce } = useLiveAnnouncer();
-  const issuesListRef = useRef<HTMLDivElement>(null);
+  const findingsListRef = useRef<HTMLDivElement>(null);
   const textPanelRef = useRef<HTMLDivElement>(null);
 
   const [viewState, setViewState] = useState<ViewState>('upload');
   const [fileName, setFileName] = useState('');
   const [analysis, setAnalysis] = useState<AnalysisData>(emptyAnalysis);
   const [activeFilters, setActiveFilters] = useState<Set<Severity>>(new Set());
+  const [activeSeverityFilters, setActiveSeverityFilters] = useState<Set<SeverityLevel>>(new Set());
+  const [activeFinding, setActiveFinding] = useState<{ phrase: string; severity: Severity } | null>(null);
   const [selectedAnnotation, setSelectedAnnotation] = useState<Annotation | null>(null);
   const [selectedResultIndex, setSelectedResultIndex] = useState<number | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
@@ -254,9 +258,11 @@ export default function AnalyzePage() {
           result.phrase.toLowerCase().includes(a.label.toLowerCase()),
       );
 
+    setSelectedResultIndex(index);
+    setActiveFinding({ phrase: result.phrase, severity: result.severity });
+
     if (!annotation) return;
 
-    setSelectedResultIndex(index);
     setSelectedAnnotation(annotation);
     setSidePanelOpen(true);
     const el = document.getElementById(`ann-${annotation.start}`);
@@ -284,12 +290,36 @@ export default function AnalyzePage() {
     });
   }, []);
 
-  const filteredResults = activeFilters.size === 0
-    ? analysis.results
-    : analysis.results.filter(r => activeFilters.has(r.severity));
+  const severityLevelOrder: Record<SeverityLevel, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+
+  const filteredResults = analysis.results
+    .filter(r => activeFilters.size === 0 || activeFilters.has(r.severity))
+    .filter(r => activeSeverityFilters.size === 0 || activeSeverityFilters.has(r.severityLevel ?? 'medium'))
+    .sort((a, b) => (severityLevelOrder[a.severityLevel ?? 'medium'] ?? 2) - (severityLevelOrder[b.severityLevel ?? 'medium'] ?? 2));
+
+  const toggleSeverityFilter = (sl: SeverityLevel) => {
+    setActiveSeverityFilters(prev => {
+      const next = new Set(prev);
+      if (next.has(sl)) next.delete(sl); else next.add(sl);
+      return next;
+    });
+  };
+
+  const severityLevelConfig: Record<SeverityLevel, { label: string; dot: string; text: string }> = {
+    low: { label: 'Low', dot: 'bg-sky-400', text: 'text-sky-600 dark:text-sky-400' },
+    medium: { label: 'Medium', dot: 'bg-amber-400', text: 'text-amber-600 dark:text-amber-400' },
+    high: { label: 'High', dot: 'bg-orange-400', text: 'text-orange-600 dark:text-orange-400' },
+    critical: { label: 'Critical', dot: 'bg-red-500', text: 'text-red-600 dark:text-red-400' },
+  };
+
+  const severityLevelCounts: Record<SeverityLevel, number> = { low: 0, medium: 0, high: 0, critical: 0 };
+  for (const r of analysis.results) {
+    const sl = r.severityLevel ?? 'medium';
+    severityLevelCounts[sl] = (severityLevelCounts[sl] ?? 0) + 1;
+  }
 
   useKeyboardNavigation({
-    containerRef: issuesListRef,
+    containerRef: findingsListRef,
     itemSelector: 'button[role="listitem"]',
     enabled: viewState === 'results' && analysis.results.length > 0,
     onSelect: (_, index) => {
@@ -490,7 +520,7 @@ export default function AnalyzePage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="h-[calc(100vh-140px)] flex flex-col px-4 py-4"
+              className="h-[calc(100vh-140px)] flex flex-col py-4"
             >
               {/* Header row */}
               <div className="flex flex-wrap items-center justify-between gap-3 mb-4 flex-shrink-0">
@@ -515,17 +545,35 @@ export default function AnalyzePage() {
 
                     </h2>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      {totalIssues} {totalIssues === 1 ? t('issueFound') : t('issuesFoundPlural')}
+                      {totalIssues} {totalIssues === 1 ? t('findingFound') : t('findingsFoundPlural')}
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={handleReset}
-                  className="btn-ghost px-3 py-2 rounded-lg text-sm flex items-center gap-2"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  {t('analyzeAnother')}
-                </button>
+                <div className="flex items-center gap-2">
+                  <motion.button
+                    onClick={handleExport}
+                    className="btn-ghost px-3 py-2 rounded-lg text-sm flex items-center gap-1.5"
+                    whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+                  >
+                    <Download className="w-4 h-4" />
+                    <span className="hidden sm:inline">{t('exportReport')}</span>
+                  </motion.button>
+                  <motion.button
+                    onClick={() => setContactOpen(true)}
+                    className="btn-ghost px-3 py-2 rounded-lg text-sm flex items-center gap-1.5"
+                    whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+                  >
+                    <Mail className="w-4 h-4" />
+                    <span className="hidden sm:inline">{t('contactUs')}</span>
+                  </motion.button>
+                  <button
+                    onClick={handleReset}
+                    className="btn-ghost px-3 py-2 rounded-lg text-sm flex items-center gap-2"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    {t('analyzeAnother')}
+                  </button>
+                </div>
               </div>
 
               {/* Two-column grid — inline style avoids Tailwind JIT scan issues with dynamic arbitrary values */}
@@ -540,7 +588,7 @@ export default function AnalyzePage() {
                     <div className="flex items-center gap-2">
                       <FileText className="w-4 h-4 text-pride-purple" />
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                        {t('documentContent')}
+                        Document
                       </span>
                     </div>
                     <span className="text-xs text-slate-400">{t('hoverHint')}</span>
@@ -562,6 +610,7 @@ export default function AnalyzePage() {
                       markdownText={markdownText}
                       onAnnotationClick={handleAnnotationClick}
                       isHebrew={isHebrew}
+                      activeFinding={activeFinding}
                     />
                   </div>
 
@@ -580,7 +629,7 @@ export default function AnalyzePage() {
 
                 {/* ── RIGHT: Analysis Panel ───────────────────────── */}
                 <div
-                  className="flex flex-col gap-3 min-h-0 max-h-full overflow-y-auto pb-4"
+                  className="flex flex-col gap-3 min-h-0 max-h-full overflow-y-auto pb-4 border-l border-pride-purple/20 pl-4"
                   style={{ scrollBehavior: 'smooth' }}
                 >
                   {/* Score Card */}
@@ -654,7 +703,7 @@ export default function AnalyzePage() {
                       <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-4">
                         <div>
                           <p className="text-[11px] text-slate-400 mb-0.5 uppercase tracking-wide">
-                            {t('summaryCard.totalIssues')}
+                            {t('summaryCard.totalFindings')}
                           </p>
                           <p className="text-2xl font-bold text-slate-800 dark:text-white">{totalIssues}</p>
                         </div>
@@ -708,92 +757,128 @@ export default function AnalyzePage() {
                     </div>
                   </motion.div>
 
-                  {/* Issues list */}
+                  {/* Findings list */}
                   <motion.div
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.14 }}
                     className="glass rounded-xl border overflow-hidden flex-shrink-0"
                   >
-                    <div className="px-4 py-3 border-b bg-slate-50/50 dark:bg-slate-800/50">
-                      <div className="flex items-center justify-between mb-2.5">
+                    <div className="px-4 py-3 border-b bg-slate-50/50 dark:bg-slate-800/50 space-y-2">
+                      <div className="flex items-center justify-between">
                         <h3 className="text-sm font-semibold flex items-center gap-2">
-                          {t('issuesFound')}
+                          {t('findingsFound')}
                           <span className="px-2 py-0.5 text-xs rounded-full bg-pride-purple/15 text-pride-purple font-bold">
                             {filteredResults.length}
-                            {activeFilters.size > 0 && analysis.results.length !== filteredResults.length && (
+                            {(activeFilters.size > 0 || activeSeverityFilters.size > 0) && analysis.results.length !== filteredResults.length && (
                               <span className="font-normal text-pride-purple/60"> / {analysis.results.length}</span>
                             )}
                           </span>
                         </h3>
-                        {activeFilters.size > 0 && (
+                        {(activeFilters.size > 0 || activeSeverityFilters.size > 0) && (
                           <button
-                            onClick={() => setActiveFilters(new Set())}
-                            className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                            onClick={() => { setActiveFilters(new Set()); setActiveSeverityFilters(new Set()); }}
+                            className="flex items-center gap-1 text-xs text-slate-400 hover:text-pride-purple transition-colors px-2 py-1 rounded-md hover:bg-pride-purple/10"
                           >
-                            {t('filterClear') || 'Clear'}
+                            <X className="w-3 h-3" />
+                            {t('filterClear')}
                           </button>
                         )}
                       </div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {(Object.keys(categoryConfig) as Severity[]).map((sev) => {
-                          const cfg = categoryConfig[sev];
-                          const active = activeFilters.has(sev);
-                          const count = analysis.counts[sev];
-                          return (
-                            <button
-                              key={sev}
-                              onClick={() => toggleFilter(sev)}
-                              disabled={count === 0}
-                              className={cn(
-                                'flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border transition-all',
-                                active
-                                  ? 'border-current bg-current/10'
-                                  : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600',
-                                active && cfg.text,
-                                count === 0 && 'opacity-40 cursor-not-allowed',
-                              )}
-                            >
-                              <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', cfg.dot)} />
-                              {cfg.label}
-                              <span className="opacity-60 tabular-nums">{count}</span>
-                            </button>
-                          );
-                        })}
+                      {/* Category filter */}
+                      <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center gap-1 text-[11px] font-medium text-slate-400 flex-shrink-0">
+                          <Filter className="w-3 h-3" />
+                          <span>{t('filterBy')}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {(Object.keys(categoryConfig) as Severity[]).map((sev) => {
+                            const cfg = categoryConfig[sev];
+                            const active = activeFilters.has(sev);
+                            const count = analysis.counts[sev];
+                            return (
+                              <button
+                                key={sev}
+                                onClick={() => toggleFilter(sev)}
+                                disabled={count === 0}
+                                className={cn(
+                                  'flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border transition-all',
+                                  active ? 'border-current bg-current/10' : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300',
+                                  active && cfg.text,
+                                  count === 0 && 'opacity-40 cursor-not-allowed',
+                                )}
+                              >
+                                <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', cfg.dot)} />
+                                {cfg.label}
+                                <span className="opacity-60 tabular-nums">{count}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      {/* Severity level filter */}
+                      <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700">
+                        <span className="text-[11px] font-medium text-slate-400 flex-shrink-0">{t('filterSeverity')}</span>
+                        <div className="flex flex-wrap gap-1">
+                          {(Object.keys(severityLevelConfig) as SeverityLevel[]).map((sl) => {
+                            const cfg = severityLevelConfig[sl];
+                            const active = activeSeverityFilters.has(sl);
+                            const count = severityLevelCounts[sl];
+                            return (
+                              <button
+                                key={sl}
+                                onClick={() => toggleSeverityFilter(sl)}
+                                disabled={count === 0}
+                                className={cn(
+                                  'flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border transition-all',
+                                  active ? 'border-current bg-current/10' : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300',
+                                  active && cfg.text,
+                                  count === 0 && 'opacity-40 cursor-not-allowed',
+                                )}
+                              >
+                                <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', cfg.dot)} />
+                                {cfg.label}
+                                <span className="opacity-60 tabular-nums">{count}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
 
                     <div
-                      ref={issuesListRef}
+                      ref={findingsListRef}
                       className="divide-y divide-slate-100 dark:divide-slate-800"
                       role="list"
-                      aria-label={t('a11y.issuesList')}
+                      aria-label={t('a11y.findingsList')}
                     >
                       {analysis.results.length === 0 ? (
                         <div className="p-8 text-center">
                           <div className="text-4xl mb-3">🎉</div>
                           <p className="text-green-600 dark:text-green-400 font-semibold text-sm">
-                            {t('noIssuesFound')}
+                            {t('noFindingsFound')}
                           </p>
                           <p className="text-xs text-slate-500 mt-1">{t('noIssuesMessage')}</p>
                         </div>
                       ) : filteredResults.length === 0 ? (
                         <div className="p-6 text-center">
                           <p className="text-sm text-slate-500 dark:text-slate-400">
-                            {t('filterNoMatch') || 'No issues match the selected filters.'}
+                            {t('filterNoMatch')}
                           </p>
                         </div>
                       ) : (
                         filteredResults.map((result) => {
                           const origIdx = analysis.results.indexOf(result);
                           const cfg = categoryConfig[result.severity];
+                          const slCfg = result.severityLevel ? severityLevelConfig[result.severityLevel] : null;
+                          const isActive = activeFinding?.phrase === result.phrase;
                           return (
                           <motion.button
                             key={origIdx}
                             onClick={() => handleIssueClick(result, origIdx)}
                             className={cn(
                               'w-full px-3 py-2.5 text-start transition-all border-l-[3px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pride-purple focus-visible:ring-inset',
-                              selectedResultIndex === origIdx
+                              isActive || selectedResultIndex === origIdx
                                 ? 'bg-pride-purple/5 dark:bg-pride-purple/10 border-l-pride-purple'
                                 : 'border-l-transparent hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-l-slate-200 dark:hover:border-l-slate-700'
                             )}
@@ -803,7 +888,6 @@ export default function AnalyzePage() {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: origIdx * 0.04 }}
                           >
-                            {/* Phrase + badge on one line */}
                             <div className="flex items-center justify-between gap-2 mb-1">
                               <div className="flex items-center gap-1.5 min-w-0">
                                 <span className={cn('w-2 h-2 rounded-full flex-shrink-0', cfg.dot)} />
@@ -811,19 +895,21 @@ export default function AnalyzePage() {
                                   &ldquo;{result.phrase}&rdquo;
                                 </p>
                               </div>
-                              <div className="flex-shrink-0">
+                              <div className="flex items-center gap-1.5 flex-shrink-0">
+                                {slCfg && (
+                                  <span className={cn('flex items-center gap-1 text-[10px] font-medium', slCfg.text)}>
+                                    <span className={cn('w-1.5 h-1.5 rounded-full', slCfg.dot)} />
+                                    {slCfg.label}
+                                  </span>
+                                )}
                                 <SeverityBadge level={result.severity} />
                               </div>
                             </div>
-
-                            {/* Explanation — 1 line, subtle */}
                             {result.explanation && (
                               <p className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1 leading-relaxed pl-3.5">
                                 {result.explanation}
                               </p>
                             )}
-
-                            {/* Suggestion preview */}
                             {result.suggestion && (
                               <div className="flex items-center gap-1 mt-1 pl-3.5 text-[11px] text-pride-purple/80 font-medium">
                                 <ArrowRight className="w-3 h-3 flex-shrink-0" />
@@ -836,56 +922,6 @@ export default function AnalyzePage() {
                     </div>
                   </motion.div>
 
-                  {/* Recommendations */}
-                  {analysis.summary.recommendations.length > 0 && totalIssues > 0 && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: 0.2 }}
-                      className="glass rounded-xl border p-4 flex-shrink-0"
-                    >
-                      <div className="flex items-center gap-2 mb-3">
-                        <Lightbulb className="w-4 h-4 text-pride-purple" />
-                        <h3 className="text-sm font-semibold">{t('summaryCard.recommendations')}</h3>
-                      </div>
-                      <ul className="space-y-2">
-                        {analysis.summary.recommendations.map((rec, idx) => (
-                          <motion.li
-                            key={idx}
-                            initial={{ opacity: 0, x: -8 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.2 + idx * 0.07 }}
-                            className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300"
-                          >
-                            <TrendingUp className="w-3.5 h-3.5 text-pride-purple flex-shrink-0 mt-0.5" />
-                            <span>{rec}</span>
-                          </motion.li>
-                        ))}
-                      </ul>
-                    </motion.div>
-                  )}
-
-                  {/* Action buttons */}
-                  <div className="flex gap-2 flex-shrink-0">
-                    <motion.button
-                      onClick={handleExport}
-                      className="flex-1 py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-pride-purple/40 hover:bg-pride-purple/5 transition-all flex items-center justify-center gap-2 text-slate-600 dark:text-slate-400 text-sm"
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
-                    >
-                      <Download className="w-4 h-4" />
-                      <span className="font-medium">{t('exportReport')}</span>
-                    </motion.button>
-                    <motion.button
-                      onClick={() => setContactOpen(true)}
-                      className="flex-1 py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-pride-purple/40 hover:bg-pride-purple/5 transition-all flex items-center justify-center gap-2 text-slate-600 dark:text-slate-400 text-sm"
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
-                    >
-                      <Mail className="w-4 h-4" />
-                      <span className="font-medium">{t('contactUs')}</span>
-                    </motion.button>
-                  </div>
 
                   {/* Guest prompt */}
                   {!user && showGuestPrompt && (

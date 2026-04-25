@@ -1,8 +1,11 @@
 import SeverityBadge, { Severity } from './SeverityBadge';
 
+export type SeverityLevel = 'low' | 'medium' | 'high' | 'critical';
+
 export type Result = {
   phrase: string;
   severity: Severity;
+  severityLevel?: SeverityLevel;
   explanation: string;
   suggestion?: string;
   references?: Array<{ label: string; url: string }>;

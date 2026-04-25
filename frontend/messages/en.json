@@ -48,7 +48,7 @@
     },
     "kpi": {
       "totalAnalyses": "Total Analyses",
-      "issuesFound": "Issues Found",
+      "findingsFound": "Findings Found",
       "resolved": "Resolved",
       "avgScore": "Avg. Score",
       "activeUsers": "Active Users",
@@ -57,9 +57,9 @@
     },
     "scoreTrends": "Score Trends",
     "avgOverTime": "Average inclusivity score over time",
-    "issuesBreakdown": "Issues Breakdown",
+    "findingsBreakdown": "Findings Breakdown",
     "shareByCategory": "Share by category",
-    "issuesFoundShort": "Issues found",
+    "findingsFoundShort": "Findings found",
     "topTerms": "Top Terms Flagged",
     "topTermsDesc": "Most frequently flagged terms across all analyses",
     "recentActivity": "Recent Activity",
@@ -76,7 +76,7 @@
     "activity": {
       "analyzed": "analyzed",
       "found": "found",
-      "issues": "issues"
+      "findings": "findings"
     },
     "users": {
       "searchPlaceholder": "Search by email...",
@@ -208,7 +208,7 @@
       "parsing": "Parsing content",
       "parsingDesc": "Extracting text from document...",
       "analyzing": "Checking for non-inclusive writing...",
-      "analyzingDesc": "Scanning for LGBTQ+ inclusive language...",
+      "analyzingDesc": "Scanning for LGBTQ+ non-inclusive language...",
       "generating": "Generating insights",
       "generatingDesc": "Preparing your personalized report...",
       "complete": "Analysis complete",
@@ -217,7 +217,7 @@
     },
     "summaryCard": {
       "score": "LGBTQ+ inclusivity score.",
-      "totalIssues": "Total Issues",
+      "totalFindings": "Total Findings",
       "wordCount": "Word Count",
       "categories": "Issues by Category",
       "recommendations": "Recommendations",
@@ -247,10 +247,14 @@
     },
     "analyzeAnother": "Analyze Another",
     "contactUs": "Contact Us",
-    "issuesFound": "Issues Found",
-    "issueFound": "issue found",
-    "issuesFoundPlural": "issues found",
-    "noIssuesFound": "No issues found!",
+    "findingsFound": "Findings Found",
+    "findingFound": "finding found",
+    "findingsFoundPlural": "findings found",
+    "noFindingsFound": "No findings found!",
+    "filterClear": "Clear filters",
+    "filterBy": "Category:",
+    "filterSeverity": "Severity:",
+    "filterNoMatch": "No findings match the selected filters.",
     "noIssuesMessage": "Your text demonstrates inclusive language practices.",
     "documentContent": "Document Content",
     "hoverHint": "Click highlighted text for details",
@@ -284,8 +288,8 @@
     },
     "a11y": {
       "uploadStarted": "Uploading document",
-      "analysisComplete": "Analysis complete. {count} issues found.",
-      "issuesList": "List of detected issues"
+      "analysisComplete": "Analysis complete. {count} findings found.",
+      "findingsList": "List of detected findings"
     }
   },
   "severity": {

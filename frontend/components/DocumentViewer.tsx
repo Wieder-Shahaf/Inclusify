@@ -7,6 +7,8 @@ import remarkGfm from 'remark-gfm';
 import IssueTooltip from './IssueTooltip';
 import { Annotation } from './AnnotatedText';
 import type { BboxAnnotation, PageSize } from '@/lib/api/client';
+import type { Severity } from './SeverityBadge';
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import 'react-pdf/dist/Page/TextLayer.css';
 
 // ── react-pdf: loaded lazily to avoid SSR errors ────────────────────────────
@@ -232,21 +234,89 @@ function MarkdownViewer({
 // ── PDF viewer with text-layer phrase injection ──────────────────────────────
 const PDF_RENDER_WIDTH = 680;
 
+const HIGHLIGHT_COLORS: Record<Severity, string> = {
+  outdated: 'background:rgba(186,230,253,0.85);border-bottom:2px solid #0ea5e9;border-radius:2px;',
+  biased: 'background:rgba(253,230,138,0.85);border-bottom:2px solid #f59e0b;border-radius:2px;',
+  potentially_offensive: 'background:rgba(254,205,211,0.85);border-bottom:2px solid #f43f5e;border-radius:2px;',
+  factually_incorrect: 'background:rgba(254,202,202,0.85);border-bottom:2px solid #ef4444;border-radius:2px;',
+};
+
 function PdfViewer({
   file,
   annotations,
   onAnnotationClick,
+  activeFinding,
 }: {
   file: File;
   annotations: Annotation[];
   onAnnotationClick: (ann: Annotation) => void;
+  activeFinding?: { phrase: string; severity: Severity } | null;
 }) {
   const pdf = usePdfLib();
   const [numPages, setNumPages] = useState(0);
+  const [displayPage, setDisplayPage] = useState(1);
+  const [pageInput, setPageInput] = useState('1');
+  const [searchQuery, setSearchQuery] = useState('');
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [portals, setPortals] = useState<Array<{ el: HTMLElement; annotation: Annotation; rawPhrase: string }>>([]);
   const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const injectedPages = useRef<Set<number>>(new Set());
+  const prevHighlightRef = useRef<HTMLSpanElement | null>(null);
+
+  const scrollToPage = useCallback((pageNo: number) => {
+    const el = pageRefs.current.get(pageNo);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
+  const findAndHighlight = useCallback((phrase: string, severity: Severity) => {
+    // Remove previous highlight
+    if (prevHighlightRef.current) {
+      const prev = prevHighlightRef.current;
+      const parent = prev.parentNode;
+      if (parent) {
+        const textNode = document.createTextNode(prev.textContent ?? '');
+        parent.replaceChild(textNode, prev);
+      }
+      prevHighlightRef.current = null;
+    }
+    if (!phrase) return;
+    const lowerPhrase = phrase.toLowerCase();
+    const style = HIGHLIGHT_COLORS[severity] ?? HIGHLIGHT_COLORS.biased;
+
+    for (const [, pageEl] of pageRefs.current) {
+      const textLayer = pageEl.querySelector('.react-pdf__Page__textContent');
+      if (!textLayer) continue;
+      const walker = document.createTreeWalker(textLayer, NodeFilter.SHOW_TEXT);
+      let node: Node | null;
+      while ((node = walker.nextNode())) {
+        const text = node.nodeValue ?? '';
+        const pos = text.toLowerCase().indexOf(lowerPhrase);
+        if (pos === -1) continue;
+        const parent = node.parentNode;
+        if (!parent) continue;
+        const before = text.slice(0, pos);
+        const matched = text.slice(pos, pos + phrase.length);
+        const after = text.slice(pos + phrase.length);
+        const span = document.createElement('span');
+        span.setAttribute('style', style + 'cursor:pointer;');
+        span.textContent = matched;
+        node.nodeValue = before;
+        node.parentNode!.insertBefore(span, node.nextSibling);
+        if (after) node.parentNode!.insertBefore(document.createTextNode(after), span.nextSibling);
+        prevHighlightRef.current = span;
+        span.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeFinding) findAndHighlight(activeFinding.phrase, activeFinding.severity);
+  }, [activeFinding, findAndHighlight]);
+
+  const handleSearch = useCallback(() => {
+    if (searchQuery.trim()) findAndHighlight(searchQuery.trim(), 'biased');
+  }, [searchQuery, findAndHighlight]);
 
   const phrases = useMemo(
     () => annotations.map(ann => ({ phrase: ann.label, annotation: ann })),
@@ -327,7 +397,53 @@ function PdfViewer({
   const { Document, Page } = pdf;
 
   return (
-    <>
+    <div className="flex flex-col">
+      {/* Navigation toolbar */}
+      {numPages > 0 && (
+        <div className="sticky top-0 z-10 flex items-center gap-2 px-3 py-2 mb-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm text-xs">
+          <button
+            onClick={() => { const p = Math.max(1, displayPage - 1); setDisplayPage(p); setPageInput(String(p)); scrollToPage(p); }}
+            disabled={displayPage <= 1}
+            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <span className="text-slate-500">Page</span>
+          <input
+            type="number"
+            min={1}
+            max={numPages}
+            value={pageInput}
+            onChange={e => setPageInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                const p = Math.min(numPages, Math.max(1, parseInt(pageInput) || 1));
+                setDisplayPage(p); scrollToPage(p);
+              }
+            }}
+            className="w-12 text-center border border-slate-300 dark:border-slate-600 rounded px-1 py-0.5 bg-white dark:bg-slate-800 text-xs"
+          />
+          <span className="text-slate-500">of {numPages}</span>
+          <button
+            onClick={() => { const p = Math.min(numPages, displayPage + 1); setDisplayPage(p); setPageInput(String(p)); scrollToPage(p); }}
+            disabled={displayPage >= numPages}
+            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+          <div className="ml-auto flex items-center gap-1">
+            <Search className="w-3.5 h-3.5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search…"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSearch()}
+              className="w-28 border border-slate-300 dark:border-slate-600 rounded px-2 py-0.5 bg-white dark:bg-slate-800 text-xs placeholder:text-slate-400"
+            />
+          </div>
+        </div>
+      )}
       <Document
         file={fileUrl}
         onLoadSuccess={({ numPages: n }) => setNumPages(n)}
@@ -377,7 +493,7 @@ function PdfViewer({
           `pdf-portal-${idx}`,
         ),
       )}
-    </>
+    </div>
   );
 }
 
@@ -549,6 +665,7 @@ export interface DocumentViewerProps {
   markdownText: string | null;
   onAnnotationClick: (annotation: Annotation) => void;
   isHebrew: boolean;
+  activeFinding?: { phrase: string; severity: Severity } | null;
 }
 
 export default function DocumentViewer({
@@ -561,6 +678,7 @@ export default function DocumentViewer({
   markdownText,
   onAnnotationClick,
   isHebrew,
+  activeFinding,
 }: DocumentViewerProps) {
   if (inputType === 'pdf' && uploadedFile) {
     return (
@@ -568,6 +686,7 @@ export default function DocumentViewer({
         file={uploadedFile}
         annotations={annotations}
         onAnnotationClick={onAnnotationClick}
+        activeFinding={activeFinding}
       />
     );
   }

@@ -1,5 +1,5 @@
 import type { Annotation } from '@/components/AnnotatedText';
-import type { Result } from '@/components/ResultCard';
+import type { Result, SeverityLevel } from '@/components/ResultCard';
 import type { Severity } from '@/components/SeverityBadge';
 import { toast } from 'sonner';
 
@@ -127,8 +127,17 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
     factually_incorrect: 0,
   };
 
-  for (const issue of response.issues_found.filter(i => i.confidence != null && i.confidence > 0)) {
+  // Keep rule-based (null/0 confidence) + LLM findings in 30-85% band; discard outliers
+  const filteredIssues = response.issues_found.filter(i => {
+    if (i.confidence == null || i.confidence === 0) return true;
+    return i.confidence >= 30 && i.confidence <= 85;
+  });
+
+  for (const issue of filteredIssues) {
     const severity = mapSeverity(issue.severity || issue.type);
+    const severityLevel = (['low', 'medium', 'high', 'critical'].includes(issue.severity?.toLowerCase() ?? '')
+      ? issue.severity!.toLowerCase()
+      : 'medium') as SeverityLevel;
     // phrase: use the specific flagged phrase from the LLM; fall back to the
     // text slice (start/end), then flagged_text only as a last resort since
     // flagged_text is now the full chunk context, not the individual phrase.
@@ -146,6 +155,7 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
       results.push({
         phrase,
         severity,
+        severityLevel,
         explanation: issue.description,
         suggestion: issue.suggestion,
         references: [
