@@ -14,6 +14,7 @@ Resource Group: **Group07** | Region: **East US**
 | Backend Health | https://inclusify-backend.ashyriver-56608625.eastus.azurecontainerapps.io/health |
 | GPU VM (SSH) | ssh azureuser@52.224.246.238 |
 | PostgreSQL | inclusify-postgres.postgres.database.azure.com |
+| Blob Storage | https://inclusifystorage.blob.core.windows.net |
 | ACR | inclusifyacr.azurecr.io |
 
 ---
@@ -152,7 +153,49 @@ az acr build --registry inclusifyacr -g Group07 \
 
 ---
 
-## 5. Database Operations
+## 5. Blob Storage Operations
+
+Storage account `inclusifystorage` (Standard LRS, eastus) holds all original uploaded files and extracted text.
+
+### Check storage account
+```bash
+az storage account show --name inclusifystorage -g Group07 --query "{name:name,location:primaryLocation,status:statusOfPrimary}" -o table
+```
+
+### List files in the texts container
+```bash
+CONN_STR=$(az storage account show-connection-string --name inclusifystorage -g Group07 --query connectionString -o tsv)
+az storage blob list --container-name texts --connection-string "$CONN_STR" --query "[].{name:name,size:properties.contentLength}" -o table
+```
+
+### Download a specific file
+```bash
+CONN_STR=$(az storage account show-connection-string --name inclusifystorage -g Group07 --query connectionString -o tsv)
+az storage blob download \
+  --container-name texts \
+  --name "files/<sha256>.<ext>" \
+  --file ./downloaded_file \
+  --connection-string "$CONN_STR"
+```
+
+### File layout in the `texts` container
+| Path | Content |
+|------|---------|
+| `files/{sha256}.pdf` | Original uploaded PDF |
+| `files/{sha256}.docx` | Original uploaded DOCX |
+| `files/{sha256}.pptx` | Original uploaded PPTX |
+| `{sha256}.txt` | Extracted plain text |
+
+### Update connection string on backend (if storage key rotated)
+```bash
+CONN_STR=$(az storage account show-connection-string --name inclusifystorage -g Group07 --query connectionString -o tsv)
+az containerapp update --name inclusify-backend -g Group07 \
+  --set-env-vars "AZURE_STORAGE_CONNECTION_STRING=$CONN_STR"
+```
+
+---
+
+## 6. Database Operations
 
 ### Connect to PostgreSQL
 ```bash
@@ -205,7 +248,7 @@ PGPASSWORD='<password>' psql -h inclusify-postgres.postgres.database.azure.com -
 
 ---
 
-## 6. Environment Variables & Secrets
+## 7. Environment Variables & Secrets
 
 ### View all backend env vars
 ```bash
@@ -247,7 +290,7 @@ az containerapp update --name inclusify-backend -g Group07 \
 
 ---
 
-## 7. Troubleshooting
+## 8. Troubleshooting
 
 ### Backend returns 503 "Database not available"
 PostgreSQL is stopped. Start it:
@@ -291,7 +334,7 @@ gh run view <RUN_ID> --log-failed
 
 ---
 
-## 8. Cost Management
+## 9. Cost Management
 
 **Most expensive resources (stop when not in use):**
 

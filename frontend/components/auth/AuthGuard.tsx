@@ -33,9 +33,16 @@ export function AuthGuard({ children }: AdminGuardProps) {
 
 export function AdminGuard({ children }: AdminGuardProps) {
   const { user, isLoading } = useAuth();
+  const router = useRouter();
+  const locale = useLocale();
 
-  // Show nothing while checking auth state (prevents flash)
-  if (isLoading) {
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push(`/${locale}/login`);
+    }
+  }, [isLoading, user, router, locale]);
+
+  if (isLoading || !user) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pride-purple" />
@@ -43,8 +50,8 @@ export function AdminGuard({ children }: AdminGuardProps) {
     );
   }
 
-  // Per CONTEXT.md: 404 for non-admins, not redirect
-  if (!user || user.role !== 'site_admin') {
+  // Per CONTEXT.md: 404 for logged-in non-admins
+  if (user.role !== 'site_admin') {
     notFound();
   }
 
