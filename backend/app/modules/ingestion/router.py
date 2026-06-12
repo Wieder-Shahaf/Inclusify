@@ -8,7 +8,7 @@ import asyncio
 import hashlib
 import logging
 
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from app.modules.ingestion.service import parse_document_async
 from app.modules.ingestion.schemas import UploadResponse
 from app.core.blob_storage import upload_file_bytes as _blob_upload_file
@@ -34,11 +34,16 @@ ALLOWED_CONTENT_TYPES = {
 @router.post("/upload", response_model=UploadResponse)
 async def upload_document(
     file: UploadFile = File(...),
+    private_mode: bool = Form(False),
     # TODO: Re-enable auth once FastAPI Users schema matches DB
     # current_user: User = Depends(current_active_user)
 ):
     """
     Upload a document (PDF, DOCX, PPTX, TXT) and extract text using Docling.
+
+    When private_mode is true, the original file is NOT stored in blob
+    storage — extraction happens in memory only, honoring the product's
+    "no storage in private mode" promise.
     """
     filename = file.filename or "unknown.ext"
     logger.info("Upload started: filename=%s content_type=%s", filename, file.content_type)
@@ -71,8 +76,23 @@ async def upload_document(
         filename, result["page_count"], text_length,
     )
 
-    file_sha256 = hashlib.sha256(file_bytes).hexdigest()
-    file_storage_ref = await _blob_upload_file(file_sha256, filename, file_bytes)
+    # A "successful" parse with no text means the PDF has no text layer
+    # (scanned/photographed pages — OCR is disabled in the pipeline). Fail
+    # here with a clear message instead of letting /analyze 422 on empty text.
+    if not result["text"].strip():
+        logger.warning("No extractable text: filename=%s pages=%d — likely a scanned PDF", filename, result["page_count"])
+        raise HTTPException(
+            status_code=422,
+            detail="No extractable text found. This document appears to contain scanned images without a text layer.",
+        )
+
+    # Private mode: never persist the original file — the user asked for no storage.
+    if private_mode:
+        logger.info("Private mode upload: skipping blob storage for filename=%s", filename)
+        file_storage_ref = None
+    else:
+        file_sha256 = hashlib.sha256(file_bytes).hexdigest()
+        file_storage_ref = await _blob_upload_file(file_sha256, filename, file_bytes)
 
     return UploadResponse(
         filename=filename,

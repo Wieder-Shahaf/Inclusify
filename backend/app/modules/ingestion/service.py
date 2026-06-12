@@ -25,11 +25,20 @@ def _get_docling_converter():
     global _docling_converter
     if _docling_converter is None:
         from docling.document_converter import DocumentConverter, PdfFormatOption
-        from docling.datamodel.pipeline_options import PdfPipelineOptions
+        from docling.datamodel.pipeline_options import PdfPipelineOptions, TesseractCliOcrOptions
         from docling.datamodel.base_models import InputFormat
 
         pipeline_opts = PdfPipelineOptions()
-        pipeline_opts.do_ocr = False  
+        # OCR scanned pages with Tesseract (Hebrew + English). Docling's default
+        # engine (EasyOCR) has no Hebrew model, so it must not be used here.
+        # Native text layers are still extracted directly — OCR only runs on
+        # bitmap regions, so text-based PDFs pay almost nothing extra.
+        pipeline_opts.do_ocr = True
+        # force_full_page_ocr: scanned pages are one big image — without it,
+        # only small detected bitmap fragments get OCR'd (~0 text per page).
+        pipeline_opts.ocr_options = TesseractCliOcrOptions(
+            lang=["heb", "eng"], force_full_page_ocr=True
+        )
         pipeline_opts.do_table_structure = True
 
         _docling_converter = DocumentConverter(
