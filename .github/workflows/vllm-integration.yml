@@ -47,6 +47,7 @@ jobs:
         run: cd backend && python -m pytest tests/test_vllm_integration.py -v --tb=short
         env:
           VLLM_URL: ${{ steps.resolve_url.outputs.vllm_url }}
+          VLLM_API_KEY: ${{ secrets.VLLM_API_KEY }}
           JWT_SECRET: "test-secret"
           PGHOST: ""
           PGPASSWORD: ""

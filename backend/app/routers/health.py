@@ -125,8 +125,11 @@ async def model_health_check():
     error: Optional[str] = None
 
     try:
+        auth_headers = (
+            {"Authorization": f"Bearer {settings.VLLM_API_KEY}"} if settings.VLLM_API_KEY else {}
+        )
         async with httpx.AsyncClient(timeout=5.0) as client:
-            resp = await client.get(f"{settings.VLLM_URL}/v1/models")
+            resp = await client.get(f"{settings.VLLM_URL}/v1/models", headers=auth_headers)
             resp.raise_for_status()
             models = resp.json().get("data", [])
             if models:

@@ -331,6 +331,13 @@ class VLLMClient:
         self.base_url = base_url or settings.VLLM_URL
         self.timeout = timeout or settings.VLLM_TIMEOUT
 
+    @staticmethod
+    def _auth_headers() -> dict:
+        """Authorization header for the vLLM server; empty when no key configured."""
+        if settings.VLLM_API_KEY:
+            return {"Authorization": f"Bearer {settings.VLLM_API_KEY}"}
+        return {}
+
     def _get_mock_response(self) -> dict:
         """Provide a simulated JSON response when vLLM is unreachable for load testing."""
         return {
@@ -423,6 +430,7 @@ class VLLMClient:
                 async with httpx.AsyncClient(timeout=self.timeout) as client:
                     response = await client.post(
                         f"{self.base_url}/v1/chat/completions",
+                        headers=self._auth_headers(),
                         json={
                             "model": settings.VLLM_MODEL_NAME,
                             "messages": [
@@ -460,6 +468,7 @@ class VLLMClient:
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.post(
                 f"{self.base_url}/v1/chat/completions",
+                headers=self._auth_headers(),
                 json={
                     "model": settings.VLLM_MODEL_NAME,
                     "messages": [

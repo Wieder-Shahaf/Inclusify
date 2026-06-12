@@ -44,6 +44,9 @@ class Settings(BaseSettings):
 
     # vLLM Configuration
     VLLM_URL: str = "http://localhost:8001"
+    # Bearer token for the vLLM server (--api-key). Empty = no Authorization
+    # header (e.g. local dev against an unauthenticated server).
+    VLLM_API_KEY: str = ""
     VLLM_TIMEOUT: float = 120.0
     VLLM_CIRCUIT_FAIL_MAX: int = 3
     VLLM_CIRCUIT_RESET_TIMEOUT: int = 60

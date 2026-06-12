@@ -101,7 +101,10 @@ services:
       # CORS
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000}
       # LLM inference service (transformers-based, not vLLM)
-      - VLLM_URL=${VLLM_URL:-http://52.224.246.238:8001}
+      # vLLM is VNet-only now; for local dev tunnel with: ssh -L 8001:localhost:8001 azureuser@<vm>
+      # (host.docker.internal reaches the tunnel on the host from inside the container)
+      - VLLM_URL=${VLLM_URL:-http://host.docker.internal:8001}
+      - VLLM_API_KEY=${VLLM_API_KEY:-}
       # Blob storage (Azurite locally, Azure Blob in prod)
       - AZURE_STORAGE_CONNECTION_STRING=${AZURE_STORAGE_CONNECTION_STRING:-DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;}
       - AZURE_STORAGE_CONTAINER=${AZURE_STORAGE_CONTAINER:-texts}
