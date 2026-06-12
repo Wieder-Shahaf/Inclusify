@@ -1,0 +1,5 @@
+biased - ורוד
+correct - ירוק
+factually incorrect - אדום
+outdated - כחול
+potentially offensive - צהוב
