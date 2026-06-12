@@ -249,6 +249,14 @@ export interface UploadResult extends FileMetadata {
   markdownText?: string | null;
 }
 
+// Thrown when the user deliberately cancels a running analysis (vs. a timeout)
+export class AnalysisCancelledError extends Error {
+  constructor() {
+    super('Analysis cancelled');
+    this.name = 'AnalysisCancelledError';
+  }
+}
+
 // Main API function
 export async function analyzeText(
   text: string,
@@ -257,12 +265,20 @@ export async function analyzeText(
     privateMode?: boolean;
     useAuth?: boolean;
     fileMeta?: FileMetadata;
+    /** External cancellation (e.g. user navigates away mid-analysis) */
+    signal?: AbortSignal;
   }
 ): Promise<AnalysisResult> {
   const fetchFn = options?.useAuth ? fetchWithAuth : fetch;
   const meta = options?.fileMeta;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 4 * 60 * 1000); // 4 min safety cap
+  // Relay external cancellation into the fetch's own controller
+  const onExternalAbort = () => controller.abort();
+  if (options?.signal) {
+    if (options.signal.aborted) controller.abort();
+    else options.signal.addEventListener('abort', onExternalAbort, { once: true });
+  }
 
   let response: Response;
   try {
@@ -289,11 +305,15 @@ export async function analyzeText(
     });
   } catch (err) {
     if (err instanceof Error && err.name === 'AbortError') {
+      if (options?.signal?.aborted) {
+        throw new AnalysisCancelledError();
+      }
       throw new Error('Analysis timed out. The server is taking too long — please try again.');
     }
     throw err;
   } finally {
     clearTimeout(timeoutId);
+    options?.signal?.removeEventListener('abort', onExternalAbort);
   }
 
   if (!response.ok) {
@@ -314,14 +334,23 @@ function _extToInputType(filename: string): FileMetadata['inputType'] {
 }
 
 // Upload file and get extracted text + all Docling metadata
-export async function uploadFile(file: File): Promise<UploadResult> {
+export async function uploadFile(file: File, signal?: AbortSignal): Promise<UploadResult> {
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetchWithAuth(`${API_BASE_URL}/api/v1/ingestion/upload`, {
-    method: 'POST',
-    body: formData,
-  });
+  let response: Response;
+  try {
+    response = await fetchWithAuth(`${API_BASE_URL}/api/v1/ingestion/upload`, {
+      method: 'POST',
+      body: formData,
+      signal,
+    });
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw new AnalysisCancelledError();
+    }
+    throw err;
+  }
 
   if (!response.ok) {
     const errorText = await response.text();

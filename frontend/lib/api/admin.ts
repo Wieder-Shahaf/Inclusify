@@ -135,6 +135,27 @@ export function useAdminFrequencyTrends(days: number) {
   return { data, isLoading, error, refresh: mutate };
 }
 
+// ── Role management ───────────────────────────────────────────────────────────
+
+export async function updateUserRole(
+  userId: string,
+  role: 'user' | 'site_admin',
+): Promise<{ user_id: string; email: string; role: string }> {
+  const response = await fetchWithAuth(
+    `${API_BASE_URL}/api/v1/admin/users/${userId}/role`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role }),
+    },
+  );
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Failed to update role: ${response.status} - ${text}`);
+  }
+  return response.json();
+}
+
 // ── Feedback ──────────────────────────────────────────────────────────────────
 
 export interface FeedbackItem {

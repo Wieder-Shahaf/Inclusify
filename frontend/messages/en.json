@@ -4,7 +4,7 @@
     "tagline": "Detect and improve LGBTQ+ inclusive language in academic writing.",
     "cta": "Start Analyzing",
     "glossary": "Glossary",
-    "admin": "Admin",
+    "admin": "Dashboard",
     "analyze": "Analyze",
     "privateMode": "Private mode",
     "settings": "Settings",
@@ -15,7 +15,7 @@
     "myAnalyses": "My Analyses"
   },
   "admin": {
-    "title": "Analytics Dashboard",
+    "title": "Dashboard",
     "subtitle": "Monitor platform usage and inclusion quality",
     "refresh": "Refresh",
     "lastUpdated": "Last updated",
@@ -309,6 +309,18 @@
       "uploadStarted": "Uploading document",
       "analysisComplete": "Analysis complete. {count} findings found.",
       "issuesList": "List of detected findings"
+    },
+    "inputTabUpload": "Upload a file",
+    "inputTabPaste": "Paste text",
+    "pasteTitle": "Paste Your Text",
+    "pasteDesc": "Paste academic text below to analyze it directly — no file needed",
+    "pastedTextName": "Pasted text",
+    "textTooShort": "Please enter at least 20 characters of text to analyze",
+    "leaveWarning": {
+      "title": "Analysis in progress",
+      "message": "Leaving this page will cancel the running analysis. Are you sure you want to leave?",
+      "stay": "Stay on page",
+      "leave": "Leave & cancel"
     }
   },
   "severity": {

@@ -7,9 +7,14 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
+  ShieldPlus,
+  ShieldMinus,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { useAdminUsers } from '@/lib/api/admin';
+import { useAdminUsers, updateUserRole } from '@/lib/api/admin';
+import { useAuth } from '@/contexts/AuthContext';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 interface UsersTabProps {
   translations: {
@@ -27,6 +32,12 @@ function SkeletonLoader({ className }: { className?: string }) {
   );
 }
 
+interface PendingRoleChange {
+  userId: string;
+  email: string;
+  newRole: 'user' | 'site_admin';
+}
+
 export default function UsersTab({ translations }: UsersTabProps) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -34,13 +45,35 @@ export default function UsersTab({ translations }: UsersTabProps) {
   const [institutionInput, setInstitutionInput] = useState('');
   const [institution, setInstitution] = useState('');
   const [minAnalyses, setMinAnalyses] = useState<number | undefined>(undefined);
-  const { data, isLoading, error } = useAdminUsers(page, 5, search || undefined, institution || undefined, minAnalyses);
+  const { data, isLoading, error, refresh } = useAdminUsers(page, 5, search || undefined, institution || undefined, minAnalyses);
+  const { user: currentUser } = useAuth();
+  const [pendingRoleChange, setPendingRoleChange] = useState<PendingRoleChange | null>(null);
+  const [roleUpdating, setRoleUpdating] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setSearch(searchInput);
     setInstitution(institutionInput);
     setPage(1);
+  };
+
+  const handleConfirmRoleChange = async () => {
+    if (!pendingRoleChange || roleUpdating) return;
+    setRoleUpdating(true);
+    try {
+      await updateUserRole(pendingRoleChange.userId, pendingRoleChange.newRole);
+      toast.success(
+        pendingRoleChange.newRole === 'site_admin'
+          ? `${pendingRoleChange.email} is now an admin`
+          : `${pendingRoleChange.email} is no longer an admin`,
+      );
+      refresh();
+    } catch {
+      toast.error('Failed to update role. Please try again.');
+    } finally {
+      setRoleUpdating(false);
+      setPendingRoleChange(null);
+    }
   };
 
   return (
@@ -122,6 +155,7 @@ export default function UsersTab({ translations }: UsersTabProps) {
                   <th className="px-4 py-3 w-28">Analyses</th>
                   <th className="px-4 py-3 w-36">Last Login</th>
                   <th className="px-4 py-3 w-36">Created</th>
+                  <th className="px-4 py-3 w-44">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
@@ -160,6 +194,27 @@ export default function UsersTab({ translations }: UsersTabProps) {
                     <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
                       {new Date(user.created_at).toLocaleDateString()}
                     </td>
+                    <td className="px-4 py-3">
+                      {user.user_id === currentUser?.id ? (
+                        <span className="text-xs italic text-slate-300 dark:text-slate-600">You</span>
+                      ) : user.role === 'site_admin' ? (
+                        <button
+                          onClick={() => setPendingRoleChange({ userId: user.user_id, email: user.email, newRole: 'user' })}
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-red-300 hover:text-red-500 dark:hover:border-red-800 transition-colors"
+                        >
+                          <ShieldMinus className="w-3.5 h-3.5" />
+                          Remove Admin
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setPendingRoleChange({ userId: user.user_id, email: user.email, newRole: 'site_admin' })}
+                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border border-purple-200 dark:border-purple-800 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors"
+                        >
+                          <ShieldPlus className="w-3.5 h-3.5" />
+                          Promote to Admin
+                        </button>
+                      )}
+                    </td>
                   </motion.tr>
                 ))}
               </tbody>
@@ -192,6 +247,21 @@ export default function UsersTab({ translations }: UsersTabProps) {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={pendingRoleChange !== null}
+        title={pendingRoleChange?.newRole === 'site_admin' ? 'Promote to Admin?' : 'Remove admin role?'}
+        description={
+          pendingRoleChange?.newRole === 'site_admin'
+            ? `${pendingRoleChange?.email ?? ''} will get full access to the dashboard, user management, and analytics. The change takes effect on their next login.`
+            : `${pendingRoleChange?.email ?? ''} will lose access to the dashboard. The change takes effect on their next login.`
+        }
+        confirmLabel={pendingRoleChange?.newRole === 'site_admin' ? 'Promote' : 'Remove Admin'}
+        cancelLabel="Cancel"
+        variant={pendingRoleChange?.newRole === 'site_admin' ? 'default' : 'danger'}
+        onConfirm={handleConfirmRoleChange}
+        onCancel={() => { if (!roleUpdating) setPendingRoleChange(null); }}
+      />
     </div>
   );
 }

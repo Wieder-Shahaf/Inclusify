@@ -15,6 +15,7 @@ import {
   FileText, Clock, AlertTriangle, TrendingUp, History, Loader2,
   BookOpen, Globe, Trash2, X, ChevronDown, ChevronUp, CheckCircle2, ChevronLeft, ChevronRight,
 } from 'lucide-react';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
@@ -421,6 +422,8 @@ export default function HistoryPage() {
   const totalPages = Math.ceil(total / PAGE_SIZE);
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
 
+  const [pendingDelete, setPendingDelete] = useState<HistoryEntry | null>(null);
+
   const handleDelete = useCallback(async (runId: string) => {
     try {
       await deleteAnalysis(runId);
@@ -430,6 +433,13 @@ export default function HistoryPage() {
       // silent — entry stays in list
     }
   }, []);
+
+  const confirmDelete = useCallback(() => {
+    if (pendingDelete) {
+      handleDelete(pendingDelete.run_id);
+      setPendingDelete(null);
+    }
+  }, [pendingDelete, handleDelete]);
 
   const avgScore = analyses.length
     ? Math.round(analyses.reduce((s, a) => s + computeScore(a.findings_count), 0) / analyses.length)
@@ -467,6 +477,19 @@ export default function HistoryPage() {
           onClose={() => setActiveRunId(null)}
         />
       )}
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title={isHe ? 'למחוק את הניתוח?' : 'Delete this analysis?'}
+        description={isHe
+          ? 'הניתוח וכל הממצאים שלו יוסרו מההיסטוריה שלך. לא ניתן לבטל פעולה זו.'
+          : 'The analysis and all of its findings will be removed from your history. This action cannot be undone.'}
+        confirmLabel={isHe ? 'מחק' : 'Delete'}
+        cancelLabel={isHe ? 'ביטול' : 'Cancel'}
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
 
       <div className="flex-1 max-w-4xl mx-auto w-full px-4 py-8" dir={isHe ? 'rtl' : 'ltr'}>
         {/* Header */}
@@ -564,7 +587,7 @@ export default function HistoryPage() {
                 entry={entry}
                 locale={locale}
                 onView={() => setActiveRunId(entry.run_id)}
-                onDelete={() => handleDelete(entry.run_id)}
+                onDelete={() => setPendingDelete(entry)}
               />
             ))}
             {totalPages > 1 && (

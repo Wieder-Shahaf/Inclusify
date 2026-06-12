@@ -20,11 +20,12 @@ export default function Navbar() {
   const [contactOpen, setContactOpen] = useState(false);
   const tc = useTranslations('contact');
 
-  // Filter navLinks - hide admin for non-admins
+  // Filter navLinks - hide dashboard for non-admins.
+  // The analyze entry point lives only in the top-right CTA button — no
+  // duplicate "Analyze" link on the left.
   const navLinks = [
-    { href: `/${locale}/analyze`, key: 'analyze' },
     { href: `/${locale}/glossary`, key: 'glossary' },
-    // Only show admin link if user is site_admin
+    // Only show dashboard link if user is site_admin
     ...(user?.role === 'site_admin' ? [{ href: `/${locale}/admin`, key: 'admin' }] : []),
   ];
 
@@ -86,7 +87,7 @@ export default function Navbar() {
               </>
             )}
             {!pathname.includes('/analyze') && (
-              <Link href={`/${locale}/analyze`} className="btn-primary hidden sm:inline-flex">
+              <Link href={`/${locale}/analyze`} className="btn-primary inline-flex">
                 {t('cta')}
               </Link>
             )}

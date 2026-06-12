@@ -4,20 +4,23 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import AnnotationSidePanel from '@/components/AnnotationSidePanel';
 import PaperUpload from '@/components/PaperUpload';
 import ProcessingAnimation from '@/components/ProcessingAnimation';
 import HealthWarningBanner from '@/components/HealthWarningBanner';
 import { Annotation } from '@/components/AnnotatedText';
 import DocumentViewer, { PdfNavHandle } from '@/components/DocumentViewer';
-import { analyzeText, uploadFile, healthCheck, modelHealthCheck, BboxAnnotation, PageSize } from '@/lib/api/client';
+import { analyzeText, uploadFile, healthCheck, modelHealthCheck, AnalysisCancelledError, BboxAnnotation, PageSize, AnalysisResult } from '@/lib/api/client';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import { exportReport } from '@/lib/exportReport';
+import { computeInclusivityScore } from '@/lib/score';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLiveAnnouncer } from '@/contexts/LiveAnnouncerContext';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import {
   RotateCcw, FileText, ChevronLeft, ChevronRight, Scan, BarChart3, ShieldCheck,
-  Lock, Mail, Download, AlertCircle, CheckCircle2, Filter,
+  Lock, Mail, Download, AlertCircle, CheckCircle2, Filter, Type,
 } from 'lucide-react';
 import PrivateModeToggle from '@/components/PrivateModeToggle';
 import ContactModal from '@/components/ContactModal';
@@ -69,8 +72,15 @@ export default function AnalyzePage() {
   const issuesListRef = useRef<HTMLDivElement>(null);
   const textPanelRef = useRef<HTMLDivElement>(null);
 
+  const router = useRouter();
   const [viewState, setViewState] = useState<ViewState>('upload');
   const [fileName, setFileName] = useState('');
+  const [inputMode, setInputMode] = useState<'upload' | 'paste'>('upload');
+  const [pastedText, setPastedText] = useState('');
+  // Navigation guard: href the user tried to navigate to while analysis was running
+  const [pendingNavHref, setPendingNavHref] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const cancelledRef = useRef(false);
   const [analysis, setAnalysis] = useState<AnalysisData>(emptyAnalysis);
   const [activeFilters, setActiveFilters] = useState<Set<Severity>>(new Set());
   const [activeTypeFilters, setActiveTypeFilters] = useState<Set<string>>(new Set());
@@ -134,21 +144,55 @@ export default function AnalyzePage() {
     announce(message, 'assertive');
   }, [t, announce]);
 
+  // Shared post-analysis step: compute score + recommendations and switch to results
+  const finishAnalysis = useCallback((text: string, result: AnalysisResult) => {
+    const wc = text.split(/\s+/).filter(Boolean).length;
+    const score = computeInclusivityScore(result.counts, wc);
+
+    const recommendations: string[] = [];
+    if (result.counts.potentially_offensive > 0) recommendations.push(t('recommendations.potentially_offensive'));
+    if (result.counts.factually_incorrect > 0) recommendations.push(t('recommendations.factually_incorrect'));
+    if (result.counts.biased > 0) recommendations.push(t('recommendations.biased'));
+    if (result.counts.outdated > 0) recommendations.push(t('recommendations.outdated'));
+    if (recommendations.length === 0) recommendations.push(t('recommendations.excellent'));
+
+    setAnalysis({
+      text,
+      annotations: result.annotations,
+      results: result.results,
+      counts: result.counts,
+      summary: {
+        totalIssues: Object.values(result.counts).reduce((a, b) => a + b, 0),
+        score,
+        recommendations,
+      },
+    });
+    setAnalysisMode(result.analysisMode || null);
+    setCurrentRunId(result.runId);
+    setViewState('results');
+    announce(t('a11y.analysisComplete', { count: Object.values(result.counts).reduce((a, b) => a + b, 0) }));
+  }, [t, announce]);
+
   const handleFileSelect = useCallback(async (file: File) => {
     setErrorMessage(null);
     setFileName(file.name);
     setViewState('processing');
     announce(t('a11y.uploadStarted'));
 
+    cancelledRef.current = false;
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     try {
       setProcessingStage('uploading');
-      const uploadResult = await uploadFile(file);
+      const uploadResult = await uploadFile(file, controller.signal);
       setProcessingStage('analyzing');
 
       const result = await analyzeText(uploadResult.text, {
         language: locale as 'en' | 'he' | 'auto',
         privateMode,
         useAuth: true,
+        signal: controller.signal,
         fileMeta: {
           filename: uploadResult.filename,
           mimeType: uploadResult.mimeType,
@@ -164,61 +208,94 @@ export default function AnalyzePage() {
 
       setProcessingStage('complete');
 
-      const weights = { outdated: 1, biased: 2, factually_incorrect: 3, potentially_offensive: 4 };
-      const wc = uploadResult.text.split(/\s+/).filter(Boolean).length;
-      const totalWeightedIssues =
-        result.counts.outdated * weights.outdated +
-        result.counts.biased * weights.biased +
-        result.counts.factually_incorrect * weights.factually_incorrect +
-        result.counts.potentially_offensive * weights.potentially_offensive;
-      // sqrt-based penalty so a handful of issues registers meaningfully regardless of doc length;
-      // small density term adds extra penalty for short docs with many issues.
-      const score = Math.max(
-        0,
-        Math.round(
-          100
-          - Math.sqrt(totalWeightedIssues) * 6
-          - (totalWeightedIssues / Math.max(wc / 100, 1)) * 1.5,
-        ),
-      );
-
-      const recommendations: string[] = [];
-      if (result.counts.potentially_offensive > 0) recommendations.push(t('recommendations.potentially_offensive'));
-      if (result.counts.factually_incorrect > 0) recommendations.push(t('recommendations.factually_incorrect'));
-      if (result.counts.biased > 0) recommendations.push(t('recommendations.biased'));
-      if (result.counts.outdated > 0) recommendations.push(t('recommendations.outdated'));
-      if (recommendations.length === 0) recommendations.push(t('recommendations.excellent'));
-
-      setAnalysis({
-        text: uploadResult.text,
-        annotations: result.annotations,
-        results: result.results,
-        counts: result.counts,
-        summary: {
-          totalIssues: Object.values(result.counts).reduce((a, b) => a + b, 0),
-          score,
-          recommendations,
-        },
-      });
-      setAnalysisMode(result.analysisMode || null);
-      setCurrentRunId(result.runId);
       // Store document viewer metadata
       setUploadedFile(file);
       setDocInputType(uploadResult.inputType);
       setBboxAnnotations(uploadResult.bboxAnnotations ?? null);
       setPageSizes(uploadResult.pageSizes ?? null);
       setMarkdownText(uploadResult.markdownText ?? null);
-      setViewState('results');
-      announce(t('a11y.analysisComplete', { count: Object.values(result.counts).reduce((a, b) => a + b, 0) }));
+      finishAnalysis(uploadResult.text, result);
     } catch (error) {
+      if (error instanceof AnalysisCancelledError || cancelledRef.current) return;
       console.error('Analysis failed:', error);
       handleApiError(error);
     }
-  }, [locale, t, handleApiError, privateMode, announce]);
+  }, [locale, t, handleApiError, privateMode, announce, finishAnalysis]);
+
+  // Direct text input: feeds the same analysis pipeline but skips the
+  // upload/extraction step entirely — the raw text goes straight to /analyze.
+  const handleAnalyzeRawText = useCallback(async () => {
+    const text = pastedText.trim();
+    if (text.length < 20) {
+      setErrorMessage(t('textTooShort'));
+      return;
+    }
+    setErrorMessage(null);
+    setFileName(t('pastedTextName'));
+    setViewState('processing');
+    setProcessingStage('analyzing');
+    announce(t('a11y.uploadStarted'));
+
+    cancelledRef.current = false;
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    try {
+      const result = await analyzeText(text, {
+        language: locale as 'en' | 'he' | 'auto',
+        privateMode,
+        useAuth: true,
+        signal: controller.signal,
+      });
+
+      setProcessingStage('complete');
+
+      // Plain-text viewer: no file, no PDF overlays
+      setUploadedFile(null);
+      setDocInputType('txt');
+      setBboxAnnotations(null);
+      setPageSizes(null);
+      setMarkdownText(null);
+      finishAnalysis(text, result);
+    } catch (error) {
+      if (error instanceof AnalysisCancelledError || cancelledRef.current) return;
+      console.error('Analysis failed:', error);
+      handleApiError(error);
+    }
+  }, [pastedText, locale, t, handleApiError, privateMode, announce, finishAnalysis]);
+
+  // Warn before leaving while an analysis is running, and intercept in-app
+  // link navigation so we can cancel the job gracefully before leaving.
+  useEffect(() => {
+    if (viewState !== 'processing') return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    const handleClickCapture = (e: MouseEvent) => {
+      const anchor = (e.target as HTMLElement).closest?.('a[href]') as HTMLAnchorElement | null;
+      if (!anchor) return;
+      const href = anchor.getAttribute('href');
+      if (!href || href.startsWith('#')) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || anchor.target === '_blank') return;
+      e.preventDefault();
+      e.stopPropagation();
+      setPendingNavHref(href);
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('click', handleClickCapture, true);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('click', handleClickCapture, true);
+    };
+  }, [viewState]);
 
   const handleReset = useCallback(() => {
     setViewState('upload');
     setFileName('');
+    setPastedText('');
     setAnalysis(emptyAnalysis);
     setSelectedAnnotation(null);
     setSelectedResultIndex(null);
@@ -233,6 +310,17 @@ export default function AnalyzePage() {
     setPageSizes(null);
     setMarkdownText(null);
   }, []);
+
+  // User confirmed leaving mid-analysis: abort the in-flight request
+  // (the backend treats the disconnect as a cancelled run) and navigate.
+  const confirmLeave = useCallback(() => {
+    const href = pendingNavHref;
+    cancelledRef.current = true;
+    abortRef.current?.abort();
+    setPendingNavHref(null);
+    handleReset();
+    if (href) router.push(href);
+  }, [pendingNavHref, handleReset, router]);
 
   const handleIssueClick = useCallback((result: AnalysisData['results'][0], index: number) => {
     const annotation =
@@ -386,8 +474,6 @@ export default function AnalyzePage() {
     .filter(r => activeTypeFilters.size === 0 || (r.category != null && activeTypeFilters.has(r.category)))
     .sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
 
-  const maxCount = Math.max(...Object.values(filteredCounts), 1);
-
   // Only show highlights in the document viewer for phrases that passed confidence filtering
   const visiblePhrases = new Set(confidenceFiltered.map(r => r.phrase.toLowerCase()));
   const visibleAnnotations = analysis.annotations.filter(ann =>
@@ -407,20 +493,7 @@ export default function AnalyzePage() {
   };
 
   // Recompute score from confidence-filtered counts so it's consistent with the displayed findings.
-  const weights = { outdated: 1, biased: 2, factually_incorrect: 3, potentially_offensive: 4 } as const;
-  const totalWeighted =
-    filteredCounts.outdated * weights.outdated +
-    filteredCounts.biased * weights.biased +
-    filteredCounts.factually_incorrect * weights.factually_incorrect +
-    filteredCounts.potentially_offensive * weights.potentially_offensive;
-  const score = Math.max(
-    0,
-    Math.round(
-      100
-      - Math.sqrt(totalWeighted) * 6
-      - (totalWeighted / Math.max(wordCount / 100, 1)) * 1.5,
-    ),
-  );
+  const score = computeInclusivityScore(filteredCounts, wordCount);
 
   const scoreLabel =
     score >= 90
@@ -514,7 +587,87 @@ export default function AnalyzePage() {
                 <PrivateModeToggle checked={privateMode} onCheckedChange={setPrivateMode} />
               </div>
 
-              <PaperUpload onFileSelect={handleFileSelect} translations={uploadTranslations} />
+              {/* Input mode: upload a document or paste raw text */}
+              <div className="mb-4 flex justify-center">
+                <div
+                  className="inline-flex rounded-xl border border-slate-200 dark:border-slate-700 p-1 bg-white/60 dark:bg-slate-900/60"
+                  role="tablist"
+                  aria-label={t('uploadTitle')}
+                >
+                  <button
+                    role="tab"
+                    aria-selected={inputMode === 'upload'}
+                    onClick={() => setInputMode('upload')}
+                    className={cn(
+                      'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                      inputMode === 'upload'
+                        ? 'bg-pride-purple text-white shadow-sm'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200',
+                    )}
+                  >
+                    <FileText className="w-4 h-4" />
+                    {t('inputTabUpload')}
+                  </button>
+                  <button
+                    role="tab"
+                    aria-selected={inputMode === 'paste'}
+                    onClick={() => setInputMode('paste')}
+                    className={cn(
+                      'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                      inputMode === 'paste'
+                        ? 'bg-pride-purple text-white shadow-sm'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200',
+                    )}
+                  >
+                    <Type className="w-4 h-4" />
+                    {t('inputTabPaste')}
+                  </button>
+                </div>
+              </div>
+
+              {inputMode === 'upload' ? (
+                <PaperUpload onFileSelect={handleFileSelect} translations={uploadTranslations} />
+              ) : (
+                <div className="w-full max-w-4xl mx-auto">
+                  <div className="rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-gradient-to-br from-slate-50/80 to-white/60 dark:from-slate-900/80 dark:to-slate-800/60 p-4 sm:p-6">
+                    <h3 className="text-base font-semibold text-slate-800 dark:text-white mb-1">
+                      {t('pasteTitle')}
+                    </h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+                      {t('pasteDesc')}
+                    </p>
+                    <textarea
+                      value={pastedText}
+                      onChange={(e) => setPastedText(e.target.value)}
+                      rows={10}
+                      // dir="auto" falls back to LTR while empty, rendering the
+                      // Hebrew placeholder wrong — follow the locale until there
+                      // is content, then let the content decide.
+                      dir={pastedText.trim() ? 'auto' : isHebrew ? 'rtl' : 'ltr'}
+                      placeholder={t('placeholder')}
+                      className="w-full resize-y rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:border-pride-purple focus:ring-2 focus:ring-pride-purple/20 placeholder:text-slate-300 dark:placeholder:text-slate-600"
+                      aria-label={t('pasteTitle')}
+                    />
+                    {/* rtl:flex-row-reverse keeps the analyze button on the right in Hebrew */}
+                    <div className="flex items-center justify-between mt-3 rtl:flex-row-reverse">
+                      <span className="text-xs text-slate-400 tabular-nums">
+                        {t('summaryCard.wordCount')}
+                        {': '}
+                        {pastedText.trim() ? pastedText.trim().split(/\s+/).filter(Boolean).length.toLocaleString() : 0}
+                      </span>
+                      <motion.button
+                        onClick={handleAnalyzeRawText}
+                        disabled={pastedText.trim().length < 20}
+                        className="btn-primary py-3 px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        {t('analyzeBtn')}
+                      </motion.button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <motion.div
                 className="mt-4 grid grid-cols-3 gap-3"
@@ -813,8 +966,8 @@ export default function AnalyzePage() {
                       {severityPriority.map((sev) => {
                         const cfg = categoryConfig[sev];
                         const count = filteredCounts[sev];
-                        const barPct = (count / maxCount) * 100;
                         const sharePct = totalIssues > 0 ? Math.round((count / totalIssues) * 100) : 0;
+                        const barPct = sharePct;
                         return (
                           <div key={sev}>
                             <div className="flex items-center justify-between text-xs mb-1">
@@ -1088,6 +1241,16 @@ export default function AnalyzePage() {
         analysis={viewState === 'results' ? analysis : null}
         fileName={fileName}
         locale={locale}
+      />
+      <ConfirmDialog
+        open={pendingNavHref !== null}
+        title={t('leaveWarning.title')}
+        description={t('leaveWarning.message')}
+        confirmLabel={t('leaveWarning.leave')}
+        cancelLabel={t('leaveWarning.stay')}
+        variant="danger"
+        onConfirm={confirmLeave}
+        onCancel={() => setPendingNavHref(null)}
       />
     </>
   );

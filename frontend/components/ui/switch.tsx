@@ -22,7 +22,10 @@ const Switch = React.forwardRef<
     <SwitchPrimitives.Thumb
       className={cn(
         'pointer-events-none block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform',
-        'data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0'
+        // In RTL the thumb's resting position is the right edge of the track, so
+        // the checked state must translate left or it escapes onto the label.
+        'data-[state=unchecked]:translate-x-0',
+        'data-[state=checked]:translate-x-4 rtl:data-[state=checked]:-translate-x-4'
       )}
     />
   </SwitchPrimitives.Root>
