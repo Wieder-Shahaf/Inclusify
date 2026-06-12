@@ -19,6 +19,31 @@ from app.modules.analysis.sentence_splitter import split_with_offsets
 if TYPE_CHECKING:
     from app.modules.analysis.router import Issue
 
+
+# Scripts that should never appear in output for an English/Hebrew product —
+# the small base model occasionally code-switches into CJK on Hebrew passages.
+_FOREIGN_SCRIPT_RE = _re.compile(
+    r"[一-鿿぀-ヿ가-힯Ѐ-ӿ]"  # CJK, kana, hangul, cyrillic
+)
+
+
+def _repair_phrase(chunk: str, phrase: str) -> Optional[str]:
+    """Map a near-miss model phrase back onto an exact chunk substring.
+
+    The model sometimes returns a phrase with a character dropped or altered
+    (e.g. "פרעת זהות מגדרית" for "הפרעת זהות מגדרית"), which breaks exact
+    substring matching and the text offsets downstream. Returns the longest
+    aligned chunk substring when it covers most of the phrase, else None.
+    """
+    import difflib
+
+    matcher = difflib.SequenceMatcher(None, chunk, phrase, autojunk=False)
+    match = matcher.find_longest_match(0, len(chunk), 0, len(phrase))
+    if match.size >= 4 and match.size >= int(len(phrase) * 0.6):
+        candidate = chunk[match.a:match.a + match.size].strip()
+        return candidate or None
+    return None
+
 logger = logging.getLogger(__name__)
 
 def _find_references_start(text: str) -> int:
@@ -239,6 +264,12 @@ class HybridDetector:
                         "orientation", "identity", "dysphoria", "same-sex", "lifestyle",
                         "passing", "transitioning", "pronoun", "assigned", "deviant",
                         "pervert", "trann", "sodomit", "conversion", "reparative",
+                        # Hebrew stems — without these every Hebrew finding was
+                        # discarded as a "hallucination" and Hebrew always scored 100.
+                        "הומו", "לסבי", "ביסקסואל", "דו-מיני", "טרנס", "להט",
+                        "קוויר", "מגדר", "מיני", "נטייה", "זהות", "דיספוריה",
+                        "א-בינארי", "אל-מגדר", "סטרייט", "הטרו", "סיסג'נדר",
+                        "חד-מיני", "המרה", "סטיי", "סוטה", "פרוורט", "אורח חיים",
                     }
                     if phrase_lower and not any(sig in phrase_lower for sig in _LGBTQ_SIGNALS):
                         logger.debug("Dropping off-topic LLM issue: phrase=%r", phrase_lower)
@@ -255,8 +286,16 @@ class HybridDetector:
                     explanation = issue_data.get("explanation", "")
                     if not isinstance(explanation, str):
                         explanation = ""
+                    # Code-switched garbage (e.g. CJK inside a Hebrew explanation)
+                    # is worse than no explanation at all.
+                    if _FOREIGN_SCRIPT_RE.search(explanation):
+                        logger.debug("Dropping explanation with foreign script: %r", explanation[:80])
+                        explanation = ""
 
                     suggestion = issue_data.get("suggestion")
+                    if isinstance(suggestion, str) and _FOREIGN_SCRIPT_RE.search(suggestion):
+                        logger.debug("Dropping suggestion with foreign script: %r", suggestion[:80])
+                        suggestion = None
                     if not isinstance(suggestion, str) or not suggestion.strip() or suggestion.strip().lower() == "null":
                         if vllm_breaker.current_state != "open":
                             suggestion = await self.client.get_suggestion(
@@ -269,6 +308,9 @@ class HybridDetector:
                     phrase_for_cmp = issue_data.get("phrase") or ""
                     if suggestion and phrase_for_cmp and suggestion.strip() == phrase_for_cmp.strip():
                         suggestion = None
+                    # Regenerated suggestions can code-switch too — same guard.
+                    if suggestion and _FOREIGN_SCRIPT_RE.search(suggestion):
+                        suggestion = None
 
                     inclusive_sentence = issue_data.get("inclusive_sentence")
                     if not isinstance(inclusive_sentence, str) or not inclusive_sentence.strip() or inclusive_sentence.strip().lower() == "null":
@@ -277,6 +319,14 @@ class HybridDetector:
                     phrase = issue_data.get("phrase")
                     if not isinstance(phrase, str) or not phrase.strip() or phrase.strip().lower() == "null":
                         phrase = None
+
+                    # Repair near-miss phrases (dropped/altered characters) back
+                    # to an exact chunk substring so offsets and highlights work.
+                    if phrase and phrase not in chunk and phrase.lower() not in chunk.lower():
+                        repaired = _repair_phrase(chunk, phrase)
+                        if repaired:
+                            logger.debug("Repaired model phrase %r -> %r", phrase, repaired)
+                            phrase = repaired
 
                     # Narrow offsets to the phrase span within the chunk.
                     # Fall back to full chunk span when phrase is absent or not locatable.

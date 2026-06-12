@@ -73,12 +73,19 @@ RULES:
 - "phrase" MUST be an exact copy of text from the input passage — never paraphrase or modify it
 - If multiple distinct phrases are problematic, include one entry per phrase
 - When in doubt, do NOT flag — only flag phrases with clear, well-established LGBTQ+ language problems
+- LANGUAGE: Write "explanation" and "suggestion" in the SAME language as the passage — a Hebrew passage gets a Hebrew explanation and a Hebrew suggestion. NEVER mix languages or use any third language. The "category" and "severity" values must ALWAYS be the exact English strings listed above, regardless of the passage language.
 
 EXAMPLE:
 Passage: "Research on homosexuals showed that gender identity disorder was widespread, confirming earlier claims that the homosexual lifestyle leads to psychological instability."
 
 Output:
-{"issues":[{"phrase":"homosexuals","category":"Demeaning Terminology","severity":"Outdated","explanation":"'Homosexuals' is a dehumanizing clinical noun; APA and GLAAD recommend person-first language. Use 'gay and lesbian people' instead.","suggestion":"gay and lesbian people"},{"phrase":"gender identity disorder","category":"Medicalization","severity":"Outdated","explanation":"Removed from DSM-5 (2013) and relocated out of mental disorders in ICD-11 (2022); the term falsely frames transgender identity as a pathology.","suggestion":"gender dysphoria"},{"phrase":"homosexual lifestyle","category":"Demeaning Terminology","severity":"Biased","explanation":"'Lifestyle' frames sexual orientation as a deliberate behavioral choice, directly contradicting scientific consensus. GLAAD explicitly flags this phrase.","suggestion":"sexual orientation"}]}"""
+{"issues":[{"phrase":"homosexuals","category":"Demeaning Terminology","severity":"Outdated","explanation":"'Homosexuals' is a dehumanizing clinical noun; APA and GLAAD recommend person-first language. Use 'gay and lesbian people' instead.","suggestion":"gay and lesbian people"},{"phrase":"gender identity disorder","category":"Medicalization","severity":"Outdated","explanation":"Removed from DSM-5 (2013) and relocated out of mental disorders in ICD-11 (2022); the term falsely frames transgender identity as a pathology.","suggestion":"gender dysphoria"},{"phrase":"homosexual lifestyle","category":"Demeaning Terminology","severity":"Biased","explanation":"'Lifestyle' frames sexual orientation as a deliberate behavioral choice, directly contradicting scientific consensus. GLAAD explicitly flags this phrase.","suggestion":"sexual orientation"}]}
+
+HEBREW EXAMPLE (same task — note: "explanation" and "suggestion" in Hebrew, "category" and "severity" stay in English):
+Passage: "גברים טרנסג'נדרים הם ביטויים של אי-התאמה מגדרית בתוך הזהות המגדרית המוקצית להם."
+
+Output:
+{"issues":[{"phrase":"ביטויים של אי-התאמה מגדרית","category":"Medicalization","severity":"Factually Incorrect","explanation":"ניסוח זה מגדיר גברים טרנסג'נדרים כתסמין של אי-התאמה ולא כבני אדם בעלי זהות מגדרית תקפה. ה-ICD-11 (2022) הוציא אי-התאמה מגדרית מסיווג ההפרעות הנפשיות, וזהות טרנסג'נדרית אינה ביטוי של מצב קליני.","suggestion":"גברים טרנסג'נדרים הם גברים שזהותם המגדרית שונה מהמין שהוקצה להם בלידה"}]}"""
 
 
 # Severity mapping from LLM output to API severity levels
@@ -87,6 +94,14 @@ SEVERITY_MAP = {
     "Biased": "biased",
     "Potentially Offensive": "potentially_offensive",
     "Factually Incorrect": "factually_incorrect",
+    # Hebrew fallbacks — despite the prompt requiring English labels, the model
+    # occasionally answers with Hebrew labels on Hebrew passages. Don't drop those.
+    "מיושן": "outdated",
+    "מונח מיושן": "outdated",
+    "מוטה": "biased",
+    "פוגעני פוטנציאלי": "potentially_offensive",
+    "עלול לפגוע": "potentially_offensive",
+    "שגוי עובדתית": "factually_incorrect",
 }
 
 
@@ -475,7 +490,11 @@ class VLLMClient:
                         {"role": "system", "content": SYSTEM_PROMPT},
                         {"role": "user", "content": f'Analyze this passage for LGBTQ+ inclusive language compliance:\n"{sentence}"'}
                     ],
-                    "max_tokens": 2000,
+                    # Context is 4096; the system prompt (incl. the Hebrew few-shot
+                    # example) is ~1.9k tokens, so 2000 output tokens overflowed on
+                    # longer chunks (HTTP 400). ~1400 covers any realistic issues
+                    # array while leaving ~2.7k tokens of input budget.
+                    "max_tokens": 1400,
                     "temperature": 0.1,
                     "logprobs": True,
                     "top_logprobs": 5,
