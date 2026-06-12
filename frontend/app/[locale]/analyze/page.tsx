@@ -15,6 +15,7 @@ import { analyzeText, uploadFile, healthCheck, modelHealthCheck, AnalysisCancell
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { exportReport } from '@/lib/exportReport';
 import { computeInclusivityScore } from '@/lib/score';
+import { registerNavigationGuard } from '@/lib/navigationGuard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLiveAnnouncer } from '@/contexts/LiveAnnouncerContext';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
@@ -77,8 +78,10 @@ export default function AnalyzePage() {
   const [fileName, setFileName] = useState('');
   const [inputMode, setInputMode] = useState<'upload' | 'paste'>('upload');
   const [pastedText, setPastedText] = useState('');
-  // Navigation guard: href the user tried to navigate to while analysis was running
-  const [pendingNavHref, setPendingNavHref] = useState<string | null>(null);
+  // Navigation guard: where the user tried to go while analysis was running —
+  // either an intercepted link (href) or a programmatic navigation (proceed),
+  // e.g. the language switcher.
+  const [pendingNav, setPendingNav] = useState<{ href?: string; proceed?: () => void } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const cancelledRef = useRef(false);
   const [analysis, setAnalysis] = useState<AnalysisData>(emptyAnalysis);
@@ -129,6 +132,8 @@ export default function AnalyzePage() {
       const errorText = error.message.toLowerCase();
       if (errorText.includes('password-protected') || errorText.includes('password')) {
         message = t('errors.passwordProtected');
+      } else if (errorText.includes('scanned') || errorText.includes('no extractable text')) {
+        message = t('errors.scannedPdf');
       } else if (errorText.includes('corrupted')) {
         message = t('errors.corruptedFile');
       } else if (errorText.includes('50 pages') || errorText.includes('page limit')) {
@@ -185,7 +190,7 @@ export default function AnalyzePage() {
 
     try {
       setProcessingStage('uploading');
-      const uploadResult = await uploadFile(file, controller.signal);
+      const uploadResult = await uploadFile(file, controller.signal, privateMode);
       setProcessingStage('analyzing');
 
       const result = await analyzeText(uploadResult.text, {
@@ -281,14 +286,18 @@ export default function AnalyzePage() {
       if (e.metaKey || e.ctrlKey || e.shiftKey || anchor.target === '_blank') return;
       e.preventDefault();
       e.stopPropagation();
-      setPendingNavHref(href);
+      setPendingNav({ href });
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     document.addEventListener('click', handleClickCapture, true);
+    // Programmatic navigation (router.push/replace from buttons, e.g. the
+    // language switcher) bypasses the click capture — guard it too.
+    const unregister = registerNavigationGuard((proceed) => setPendingNav({ proceed }));
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('click', handleClickCapture, true);
+      unregister();
     };
   }, [viewState]);
 
@@ -314,13 +323,14 @@ export default function AnalyzePage() {
   // User confirmed leaving mid-analysis: abort the in-flight request
   // (the backend treats the disconnect as a cancelled run) and navigate.
   const confirmLeave = useCallback(() => {
-    const href = pendingNavHref;
+    const target = pendingNav;
     cancelledRef.current = true;
     abortRef.current?.abort();
-    setPendingNavHref(null);
+    setPendingNav(null);
     handleReset();
-    if (href) router.push(href);
-  }, [pendingNavHref, handleReset, router]);
+    if (target?.href) router.push(target.href);
+    else target?.proceed?.();
+  }, [pendingNav, handleReset, router]);
 
   const handleIssueClick = useCallback((result: AnalysisData['results'][0], index: number) => {
     const annotation =
@@ -1243,14 +1253,14 @@ export default function AnalyzePage() {
         locale={locale}
       />
       <ConfirmDialog
-        open={pendingNavHref !== null}
+        open={pendingNav !== null}
         title={t('leaveWarning.title')}
         description={t('leaveWarning.message')}
         confirmLabel={t('leaveWarning.leave')}
         cancelLabel={t('leaveWarning.stay')}
         variant="danger"
         onConfirm={confirmLeave}
-        onCancel={() => setPendingNavHref(null)}
+        onCancel={() => setPendingNav(null)}
       />
     </>
   );

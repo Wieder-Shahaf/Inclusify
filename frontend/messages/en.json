@@ -293,7 +293,8 @@
       "corruptedFile": "The file appears to be corrupted. Please try a different file.",
       "tooManyPages": "This document exceeds the 50 page limit. Please try a shorter document.",
       "fileTooLarge": "This file exceeds the 50MB limit. Please try a smaller file.",
-      "uploadFailed": "Failed to upload file. Please try again."
+      "uploadFailed": "Failed to upload file. Please try again.",
+      "scannedPdf": "This document appears to be scanned — its pages are images without selectable text, so the text can't be read. Try a version of the file with selectable text."
     },
     "guestPrompt": {
       "title": "Create an account to save your analysis history",

@@ -4,6 +4,7 @@ import { useLocale } from 'next-intl';
 import { useRouter, usePathname } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { useTransition } from 'react';
+import { guardedNavigate } from '@/lib/navigationGuard';
 
 export default function LanguageSwitcher() {
   const locale = useLocale();
@@ -14,8 +15,12 @@ export default function LanguageSwitcher() {
   const switchLocale = (newLocale: 'en' | 'he') => {
     if (newLocale === locale) return;
 
-    startTransition(() => {
-      router.replace(pathname, { locale: newLocale });
+    // Locale change remounts the page — route it through the navigation
+    // guard so a running analysis can warn before being wiped.
+    guardedNavigate(() => {
+      startTransition(() => {
+        router.replace(pathname, { locale: newLocale });
+      });
     });
   };
 

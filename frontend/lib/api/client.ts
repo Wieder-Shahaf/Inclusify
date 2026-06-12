@@ -333,10 +333,16 @@ function _extToInputType(filename: string): FileMetadata['inputType'] {
   return 'txt';
 }
 
-// Upload file and get extracted text + all Docling metadata
-export async function uploadFile(file: File, signal?: AbortSignal): Promise<UploadResult> {
+// Upload file and get extracted text + all Docling metadata.
+// privateMode: the backend skips blob storage entirely for the original file.
+export async function uploadFile(
+  file: File,
+  signal?: AbortSignal,
+  privateMode?: boolean,
+): Promise<UploadResult> {
   const formData = new FormData();
   formData.append('file', file);
+  formData.append('private_mode', String(privateMode ?? false));
 
   let response: Response;
   try {
