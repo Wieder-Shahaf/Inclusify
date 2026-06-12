@@ -155,6 +155,62 @@ function labelsFor(locale?: string) {
   return locale === 'he' ? REPORT_LABELS.he : REPORT_LABELS.en;
 }
 
+// ── Hebrew / RTL support ──────────────────────────────────────────────────────
+// jsPDF's built-in fonts (helvetica/times) are Latin-1 encoded — Hebrew
+// codepoints can't be encoded and render as garbage. For any report containing
+// Hebrew we embed Alef (OFL licensed, covers Hebrew + Latin in one face) and
+// run Hebrew strings through jsPDF's bidi engine for correct visual order.
+const HEBREW_RE = /[֐-׿]/;
+
+function hasHebrew(text: string | undefined | null): boolean {
+  return !!text && HEBREW_RE.test(text);
+}
+
+// jsPDF text() options that reorder logical-order RTL text into visual order
+const RTL_TEXT_OPTS = {
+  isInputVisual: false,
+  isOutputVisual: true,
+  isInputRtl: true,
+  isOutputRtl: false,
+  isSymmetricSwapping: true, // mirror brackets/parens correctly in RTL runs
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rtlOpts(text: string, extra?: Record<string, any>): Record<string, any> | undefined {
+  if (!hasHebrew(text)) return extra;
+  return { ...(extra ?? {}), ...RTL_TEXT_OPTS };
+}
+
+const HEBREW_FONT = 'Alef';
+let hebrewFontCache: Promise<{ regular: string; bold: string } | null> | null = null;
+
+async function fetchFontBase64(url: string): Promise<string> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Font fetch failed: ${res.status}`);
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  let binary = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
+
+function loadHebrewFont(): Promise<{ regular: string; bold: string } | null> {
+  if (!hebrewFontCache) {
+    hebrewFontCache = Promise.all([
+      fetchFontBase64('/fonts/Alef-Regular.ttf'),
+      fetchFontBase64('/fonts/Alef-Bold.ttf'),
+    ])
+      .then(([regular, bold]) => ({ regular, bold }))
+      .catch(() => {
+        hebrewFontCache = null; // allow retry on next export
+        return null;
+      });
+  }
+  return hebrewFontCache;
+}
+
 function clampScore(score: number): number {
   return Math.max(0, Math.min(100, Math.round(Number.isFinite(score) ? score : 0)));
 }
@@ -238,9 +294,10 @@ function pillBadge(
   bg: [number, number, number],
   fg: [number, number, number],
   fontSize: number,
+  font: string = 'helvetica',
 ): number {
   doc.setFontSize(fontSize);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(font, 'normal');
   const tw  = textWidth(doc, text);
   const ph  = fontSize * 0.55;     // pill height relative to font
   const px  = 2.2;                 // horizontal inner padding
@@ -248,7 +305,7 @@ function pillBadge(
   const py  = y - ph * 0.82;
   fillPill(doc, x, py, pw, ph, bg);
   doc.setTextColor(...fg);
-  doc.text(text, x + px, y);
+  doc.text(text, x + px, y, rtlOpts(text));
   return pw + 1.5;                 // width + gap
 }
 
@@ -304,6 +361,36 @@ export async function exportReport(
   const displayScore = clampScore(options.displayScore ?? analysis.summary.score);
   const totalFindings = displayResults.length;
 
+  // Embed a Hebrew-capable font when any rendered string contains Hebrew —
+  // either the UI locale is Hebrew (labels) or the analyzed document is.
+  const containsHebrew =
+    options.locale === 'he' ||
+    hasHebrew(options.fileName) ||
+    displayResults.some(
+      (r) => hasHebrew(r.phrase) || hasHebrew(r.explanation) || hasHebrew(r.suggestion),
+    );
+
+  let hebrewReady = false;
+  if (containsHebrew) {
+    const fontData = await loadHebrewFont();
+    if (fontData) {
+      doc.addFileToVFS('Alef-Regular.ttf', fontData.regular);
+      doc.addFont('Alef-Regular.ttf', HEBREW_FONT, 'normal');
+      doc.addFileToVFS('Alef-Bold.ttf', fontData.bold);
+      doc.addFont('Alef-Bold.ttf', HEBREW_FONT, 'bold');
+      // Alef has no italic cut — alias it to regular so 'italic' doesn't throw
+      doc.addFont('Alef-Regular.ttf', HEBREW_FONT, 'italic');
+      hebrewReady = true;
+    }
+    // If the font fetch failed we still produce the report; Hebrew strings
+    // will be degraded, but the export itself never breaks.
+  }
+
+  // Pick the embedded Hebrew font for strings that contain Hebrew, otherwise
+  // keep the original built-in font so English reports are unchanged.
+  const fontFor = (text: string, fallback: string): string =>
+    hebrewReady && hasHebrew(text) ? HEBREW_FONT : fallback;
+
   // ── Page 1 background ────────────────────────────────────────────────────────
   drawPageBg(doc, pageWidth, pageHeight);
 
@@ -315,16 +402,16 @@ export async function exportReport(
   Y = 8;
 
   // ── Title row ─────────────────────────────────────────────────────────────────
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(fontFor(labels.title, 'helvetica'), 'bold');
   doc.setFontSize(17);
   doc.setTextColor(...PURPLE);
-  doc.text(labels.title, M, Y + 6);
+  doc.text(labels.title, M, Y + 6, rtlOpts(labels.title));
 
-  doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
   doc.setTextColor(...SLATE_LIGHT);
   const dateStr = `${options.fileName || labels.document} - ${new Date().toLocaleDateString('en-GB')}`;
-  doc.text(dateStr, pageWidth - M, Y + 6, { align: 'right' });
+  doc.setFont(fontFor(dateStr, 'helvetica'), 'normal');
+  doc.text(dateStr, pageWidth - M, Y + 6, rtlOpts(dateStr, { align: 'right' }));
 
   Y += 12;
 
@@ -341,10 +428,10 @@ export async function exportReport(
   const innerT = Y + 5;
 
   // Small caps label
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(fontFor(labels.score, 'helvetica'), 'normal');
   doc.setFontSize(6.5);
   doc.setTextColor(...SLATE_LIGHT);
-  doc.text(labels.score, innerL, innerT + 4);
+  doc.text(labels.score, innerL, innerT + 4, rtlOpts(labels.score));
 
   // Large score number
   doc.setFont('helvetica', 'bold');
@@ -360,15 +447,15 @@ export async function exportReport(
   doc.text('/100', innerL + bigNumW + 1.5, innerT + 17);
 
   // Status and short interpretation
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(fontFor(scoreLabel, 'helvetica'), 'bold');
   doc.setFontSize(9);
   doc.setTextColor(...scoreColor);
-  doc.text(scoreLabel, innerL, innerT + 25);
-  doc.setFont('helvetica', 'normal');
+  doc.text(scoreLabel, innerL, innerT + 25, rtlOpts(scoreLabel));
   doc.setFontSize(7);
   doc.setTextColor(...SLATE);
   const summaryText = `${totalFindings} ${labels.findingsRequireReview}`;
-  doc.text(summaryText, innerL, innerT + 31);
+  doc.setFont(fontFor(summaryText, 'helvetica'), 'normal');
+  doc.text(summaryText, innerL, innerT + 31, rtlOpts(summaryText));
 
   // Compact stat blocks on the right: no duplicate score visualization
   const statItems = [
@@ -382,10 +469,10 @@ export async function exportReport(
     const sx = statStartX + i * (statBlockW + statGap);
     doc.setFillColor(248, 250, 252);
     doc.rect(sx, Y + 11, statBlockW, 18, 'F');
-    doc.setFont('helvetica', 'normal');
+    doc.setFont(fontFor(s.label, 'helvetica'), 'normal');
     doc.setFontSize(6.5);
     doc.setTextColor(...SLATE_LIGHT);
-    doc.text(s.label, sx + 3, Y + 17);
+    doc.text(s.label, sx + 3, Y + 17, rtlOpts(s.label));
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
     doc.setTextColor(15, 23, 42);
@@ -400,14 +487,13 @@ export async function exportReport(
   const cbInnerL = M + 6;
   const cbInnerT = Y + 5;
 
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(fontFor(labels.findingsByCategory, 'helvetica'), 'bold');
   doc.setFontSize(9);
   doc.setTextColor(15, 23, 42);
-  doc.text(labels.findingsByCategory, cbInnerL, cbInnerT + 4);
+  doc.text(labels.findingsByCategory, cbInnerL, cbInnerT + 4, rtlOpts(labels.findingsByCategory));
 
   const severities: Severity[] = ['factually_incorrect', 'potentially_offensive', 'biased', 'outdated'];
   // Count from the filtered set so bars match exactly what is shown on the page
-  const maxCount = Math.max(...Object.values(displayCounts), 1);
   const totalCountForPct = Math.max(Object.values(displayCounts).reduce((sum, count) => sum + count, 0), 1);
   const barAreaW = CW - 12 - 48 - 21; // subtract label + count/percent + padding
 
@@ -416,13 +502,15 @@ export async function exportReport(
     const cols     = SEVERITY_COLOR[sev];
     const count    = displayCounts[sev] ?? 0;
     const pct      = Math.round((count / totalCountForPct) * 100);
-    const barFill  = (count / maxCount) * barAreaW;
+    // Bar length must match the printed percentage (share of total findings) —
+    // scaling to the largest category drew a full bar next to e.g. "45%".
+    const barFill  = (count / totalCountForPct) * barAreaW;
 
     // Severity label
-    doc.setFont('helvetica', 'bold');
+    doc.setFont(fontFor(labels.severity[sev], 'helvetica'), 'bold');
     doc.setFontSize(8);
     doc.setTextColor(...cols.label);
-    doc.text(labels.severity[sev], cbInnerL, rowY + 3.2);
+    doc.text(labels.severity[sev], cbInnerL, rowY + 3.2, rtlOpts(labels.severity[sev]));
 
     // Track background
     const bx = cbInnerL + 50;
@@ -445,10 +533,10 @@ export async function exportReport(
   Y += 52 + 6;
 
   // ── Section header: Findings ─────────────────────────────────────────────────
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(fontFor(labels.findings, 'helvetica'), 'bold');
   doc.setFontSize(11);
   doc.setTextColor(...PURPLE);
-  doc.text(labels.findings, M, Y);
+  doc.text(labels.findings, M, Y, rtlOpts(labels.findings));
 
   // Count badge
   const countBadgeX = M + textWidth(doc, labels.findings) + 3;
@@ -473,33 +561,43 @@ export async function exportReport(
     doc.rect(0, 0, pageWidth, 1.5, 'F');
 
     // Running header
-    doc.setFont('helvetica', 'bold');
+    doc.setFont(fontFor(labels.continued, 'helvetica'), 'bold');
     doc.setFontSize(8);
     doc.setTextColor(...PURPLE);
-    doc.text(labels.continued, M, 8);
+    doc.text(labels.continued, M, 8, rtlOpts(labels.continued));
 
     Y = 14;
   }
 
   if (displayResults.length === 0) {
     drawCard(doc, M, Y, CW, 20);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont(fontFor(labels.noFindings, 'helvetica'), 'normal');
     doc.setFontSize(9);
     doc.setTextColor(...SLATE);
-    doc.text(labels.noFindings, M + 6, Y + 12);
+    if (hasHebrew(labels.noFindings)) {
+      doc.text(labels.noFindings, M + CW - 6, Y + 12, rtlOpts(labels.noFindings, { align: 'right' }));
+    } else {
+      doc.text(labels.noFindings, M + 6, Y + 12);
+    }
     Y += 24;
   }
 
   for (const [idx, result] of displayResults.entries()) {
     const cols = SEVERITY_COLOR[result.severity] ?? SEVERITY_COLOR.outdated;
 
-    // Compute card height
-    doc.setFont('times', 'normal');
+    // Compute card height (measure with the same font used to render)
+    const expText  = result.explanation || '';
+    const suggText = result.suggestion ? `${labels.suggestedFix} ${result.suggestion}` : '';
+    const expRtl   = hasHebrew(expText);
+    const suggRtl  = hasHebrew(suggText);
+    doc.setFont(fontFor(expText, 'times'), 'normal');
     doc.setFontSize(8.5);
-    const expLines  = splitLines(doc, result.explanation || '', textW);
-    const suggLines = result.suggestion
-      ? splitLines(doc, `${labels.suggestedFix} ${result.suggestion}`, textW)
-      : [];
+    const expLines = splitLines(doc, expText, textW);
+    let suggLines: string[] = [];
+    if (suggText) {
+      doc.setFont(fontFor(suggText, 'times'), 'italic');
+      suggLines = splitLines(doc, suggText, textW);
+    }
 
     const cardH =
       innerPad             // top padding
@@ -533,48 +631,60 @@ export async function exportReport(
     const BADGE_PX = 2.2; // inner horizontal padding used in pillBadge
     function measurePill(text: string): number {
       doc.setFontSize(BADGE_FS);
+      doc.setFont(fontFor(text, 'helvetica'), 'normal');
       return textWidth(doc, text) + BADGE_PX * 2;
     }
     let rightEdge = M + CW - 4;
     const sevText = labels.severity[result.severity];
     const sevPW   = measurePill(sevText);
-    pillBadge(doc, rightEdge - sevPW, phraseY, sevText, cols.pill_bg, cols.pill_fg, BADGE_FS);
+    pillBadge(doc, rightEdge - sevPW, phraseY, sevText, cols.pill_bg, cols.pill_fg, BADGE_FS, fontFor(sevText, 'helvetica'));
     rightEdge -= sevPW + 3;
     if (result.category) {
       const catCols = LLM_CAT_COLOR[result.category];
       if (catCols) {
         const catText = labels.category[result.category as keyof typeof labels.category] ?? result.category;
         const catPW = measurePill(catText);
-        pillBadge(doc, rightEdge - catPW, phraseY, catText, catCols.pill_bg, catCols.pill_fg, BADGE_FS);
+        pillBadge(doc, rightEdge - catPW, phraseY, catText, catCols.pill_bg, catCols.pill_fg, BADGE_FS, fontFor(catText, 'helvetica'));
         rightEdge -= catPW + 3;
       }
     }
 
+    const phraseDisplay = `"${result.phrase}"`;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
     const idxW = textWidth(doc, `#${idx + 1}`) + 2;
-    doc.setFont('helvetica', 'bold');
+    doc.setFont(fontFor(phraseDisplay, 'helvetica'), 'bold');
     doc.setFontSize(9.5);
     doc.setTextColor(15, 23, 42);
-    const phraseDisplay = `"${result.phrase}"`;
     const phraseMaxW = Math.max(24, rightEdge - (textStartX + idxW) - 2);
-    doc.text(ellipsizeToWidth(doc, phraseDisplay, phraseMaxW), textStartX + idxW, phraseY);
+    const phraseFit = ellipsizeToWidth(doc, phraseDisplay, phraseMaxW);
+    doc.text(phraseFit, textStartX + idxW, phraseY, rtlOpts(phraseFit));
 
-    // Explanation (Times — elegant, formal)
+    // Explanation (Times — elegant, formal; Hebrew renders right-aligned)
     const expY = phraseY + 3.5;
-    doc.setFont('times', 'normal');
+    doc.setFont(fontFor(expText, 'times'), 'normal');
     doc.setFontSize(8.5);
     doc.setTextColor(...SLATE);
     expLines.forEach((line, li) => {
-      doc.text(line, textStartX, expY + li * 4.5);
+      if (expRtl) {
+        doc.text(line, textStartX + textW, expY + li * 4.5, rtlOpts(line, { align: 'right' }));
+      } else {
+        doc.text(line, textStartX, expY + li * 4.5);
+      }
     });
 
     // Suggested fix
     if (suggLines.length > 0) {
       const sugY = expY + expLines.length * 4.5 + 3;
-      doc.setFont('times', 'italic');
+      doc.setFont(fontFor(suggText, 'times'), 'italic');
       doc.setFontSize(8.5);
       doc.setTextColor(...PURPLE_LIGHT);
       suggLines.forEach((line, li) => {
-        doc.text(line, textStartX, sugY + li * 4.5);
+        if (suggRtl) {
+          doc.text(line, textStartX + textW, sugY + li * 4.5, rtlOpts(line, { align: 'right' }));
+        } else {
+          doc.text(line, textStartX, sugY + li * 4.5);
+        }
       });
     }
 
@@ -587,14 +697,19 @@ export async function exportReport(
   for (let p = 1; p <= totalPages; p++) {
     doc.setPage(p);
     doc.setFontSize(7);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont(fontFor(labels.watermark, 'helvetica'), 'normal');
     doc.setTextColor(...SLATE_LIGHT);
-    doc.text(labels.watermark, pageWidth / 2, pageHeight - 5, { align: 'center' });
+    doc.text(labels.watermark, pageWidth / 2, pageHeight - 5, rtlOpts(labels.watermark, { align: 'center' }));
+    doc.setFont('helvetica', 'normal');
     doc.text(`${p} / ${totalPages}`, pageWidth - M, pageHeight - 5, { align: 'right' });
   }
 
   // ── Output ────────────────────────────────────────────────────────────────────
   if (options.returnBase64) return doc.output('datauristring');
-  const safe = (options.fileName || 'analysis').replace(/[^a-z0-9_\-]/gi, '_');
+  // Keep Unicode letters (e.g. Hebrew filenames) — only strip filesystem-unsafe chars
+  const safe = (options.fileName || 'analysis')
+    .replace(/\.[a-z0-9]+$/i, '')
+    .replace(/[^\p{L}\p{N}_\-]+/gu, '_')
+    .replace(/^_+|_+$/g, '') || 'analysis';
   doc.save(`${safe}_inclusify_report.pdf`);
 }
