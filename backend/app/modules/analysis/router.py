@@ -293,9 +293,16 @@ async def analyze_text(
         len(issues), analysis_mode, elapsed,
     )
 
+    # If the client aborted the request mid-analysis (e.g. the navigation guard
+    # cancelled the job), treat the run as cancelled: skip persistence so no
+    # orphaned run shows up in history. Metrics are still recorded below.
+    client_disconnected = await request.is_disconnected()
+    if client_disconnected:
+        logger.info("Client disconnected during analysis — run treated as cancelled, skipping persistence")
+
     persisted_run_id: Optional[str] = None
     # Persist full results to DB only when private_mode is off
-    if not private_mode:
+    if not private_mode and not client_disconnected:
         if current_user is None:
             logger.warning(
                 "Analysis saved as GUEST (user_id=NULL) — run will NOT appear in history. "

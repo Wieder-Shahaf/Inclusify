@@ -10,7 +10,7 @@ Defines response models for:
 - Recent activity with issue counts
 """
 from pydantic import BaseModel
-from typing import Optional
+from typing import Literal, Optional
 from datetime import datetime
 from uuid import UUID
 
@@ -153,3 +153,21 @@ class FeedbackListResponse(BaseModel):
     total_pages: int
     total_helpful: int = 0
     total_false_positive: int = 0
+
+
+# ── Role management schemas ───────────────────────────────────────────────────
+
+class RoleUpdateRequest(BaseModel):
+    """Request body for changing a user's role.
+
+    Only 'user' and 'site_admin' are assignable — must match the
+    users.role CHECK constraint in db/schema.sql.
+    """
+    role: Literal["user", "site_admin"]
+
+
+class RoleUpdateResponse(BaseModel):
+    """Updated user returned after a role change."""
+    user_id: UUID
+    email: str
+    role: str

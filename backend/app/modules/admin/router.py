@@ -5,6 +5,8 @@ Requirements: ADMIN-01 (analytics), ADMIN-02 (user/org management)
 
 All endpoints require site_admin role (403 for non-admins).
 """
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, Query, Request, HTTPException, status, WebSocket, WebSocketDisconnect
 from jose import jwt, JWTError
 
@@ -17,6 +19,8 @@ from .schemas import (
     ModelMetricsResponse,
     FrequencyTrendsResponse,
     FeedbackListResponse,
+    RoleUpdateRequest,
+    RoleUpdateResponse,
 )
 from . import queries
 
@@ -98,6 +102,37 @@ async def list_users(
             "page_size": page_size,
             "total_pages": total_pages
         }
+
+
+@router.patch("/users/{user_id}/role", response_model=RoleUpdateResponse)
+async def update_user_role(
+    user_id: UUID,
+    body: RoleUpdateRequest,
+    request: Request,
+    user: dict = Depends(require_admin),
+):
+    """Change a user's role (promote to site_admin or demote to user).
+
+    Admins cannot change their own role — prevents accidentally locking
+    the last admin out of the dashboard.
+
+    Note: roles are embedded in JWT claims at login, so the affected user
+    sees their new permissions on their next login / token refresh.
+    """
+    if str(user_id) == str(user.get("sub")):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You cannot change your own role",
+        )
+    pool = _verify_db_pool(request)
+    async with pool.acquire() as conn:
+        updated = await queries.update_user_role(conn, str(user_id), body.role)
+    if updated is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+    return updated
 
 
 @router.get("/model-metrics", response_model=ModelMetricsResponse)

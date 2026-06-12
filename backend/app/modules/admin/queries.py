@@ -132,6 +132,21 @@ async def get_users_paginated(
     return [dict(r) for r in rows], total or 0
 
 
+async def update_user_role(
+    conn: asyncpg.Connection,
+    user_id: str,
+    role: str,
+) -> Optional[dict]:
+    """Update a user's role. Returns the updated user dict, or None if not found."""
+    row = await conn.fetchrow("""
+        UPDATE users
+        SET role = $2, updated_at = NOW()
+        WHERE user_id = $1
+        RETURNING user_id, email, role
+    """, user_id, role)
+    return dict(row) if row else None
+
+
 async def get_model_metrics_kpis(conn: asyncpg.Connection, days: int) -> dict:
     """Fetch aggregated vLLM model performance KPIs for admin dashboard.
 
