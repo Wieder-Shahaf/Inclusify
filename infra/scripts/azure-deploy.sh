@@ -131,6 +131,13 @@ if app_exists "$BACKEND_APP"; then
       "azure-storage-conn-str=$AZURE_STORAGE_CONN_STR" \
     --output none
 
+  # Extend ingress request timeout to maximum allowed (240s) so long analyses don't get cut
+  az containerapp ingress update \
+    --name "$BACKEND_APP" \
+    --resource-group "$RESOURCE_GROUP" \
+    --request-timeout-seconds 240 \
+    --output none 2>/dev/null || true
+
   # Update image and environment
   az containerapp update \
     --name "$BACKEND_APP" \
@@ -164,6 +171,7 @@ else
     --registry-server "${ACR_NAME}.azurecr.io" \
     --target-port 8000 \
     --ingress external \
+    --request-timeout-seconds 240 \
     --min-replicas 1 \
     --max-replicas 3 \
     --secrets \

@@ -49,3 +49,6 @@ env.team
 # Claude Code / AI tooling
 .agents/
 skills-lock.json
+
+# Course submission/instruction files (not part of the codebase)
+Project Submmisions and Instractions Files/
