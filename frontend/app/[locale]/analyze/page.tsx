@@ -81,7 +81,7 @@ export default function AnalyzePage() {
   // Navigation guard: where the user tried to go while analysis was running —
   // either an intercepted link (href) or a programmatic navigation (proceed),
   // e.g. the language switcher.
-  const [pendingNav, setPendingNav] = useState<{ href?: string; proceed?: () => void } | null>(null);
+  const [pendingNav, setPendingNav] = useState<{ href?: string; proceed?: () => void; source: 'processing' | 'results' } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const cancelledRef = useRef(false);
   const [analysis, setAnalysis] = useState<AnalysisData>(emptyAnalysis);
@@ -269,10 +269,13 @@ export default function AnalyzePage() {
     }
   }, [pastedText, locale, t, handleApiError, privateMode, announce, finishAnalysis]);
 
-  // Warn before leaving while an analysis is running, and intercept in-app
-  // link navigation so we can cancel the job gracefully before leaving.
+  // Guard in-app navigation during analysis (processing) and after results are shown.
+  // During processing: also block tab/window close via beforeunload.
+  // During results: only intercept in-app link clicks and programmatic navigation
+  // (e.g. the language switcher) so we can confirm before wiping the results.
   useEffect(() => {
-    if (viewState !== 'processing') return;
+    if (viewState !== 'processing' && viewState !== 'results') return;
+    const source = viewState as 'processing' | 'results';
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
@@ -286,16 +289,16 @@ export default function AnalyzePage() {
       if (e.metaKey || e.ctrlKey || e.shiftKey || anchor.target === '_blank') return;
       e.preventDefault();
       e.stopPropagation();
-      setPendingNav({ href });
+      setPendingNav({ href, source });
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    if (source === 'processing') window.addEventListener('beforeunload', handleBeforeUnload);
     document.addEventListener('click', handleClickCapture, true);
     // Programmatic navigation (router.push/replace from buttons, e.g. the
     // language switcher) bypasses the click capture — guard it too.
-    const unregister = registerNavigationGuard((proceed) => setPendingNav({ proceed }));
+    const unregister = registerNavigationGuard((proceed) => setPendingNav({ proceed, source }));
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      if (source === 'processing') window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('click', handleClickCapture, true);
       unregister();
     };
@@ -320,27 +323,39 @@ export default function AnalyzePage() {
     setMarkdownText(null);
   }, []);
 
-  // User confirmed leaving mid-analysis: abort the in-flight request
-  // (the backend treats the disconnect as a cancelled run) and navigate.
+  // User confirmed leaving: abort the in-flight request if still processing,
+  // then reset state and navigate.
   const confirmLeave = useCallback(() => {
     const target = pendingNav;
-    cancelledRef.current = true;
-    abortRef.current?.abort();
+    if (target?.source === 'processing') {
+      cancelledRef.current = true;
+      abortRef.current?.abort();
+    }
     setPendingNav(null);
     handleReset();
     if (target?.href) router.push(target.href);
     else target?.proceed?.();
   }, [pendingNav, handleReset, router]);
 
+  // Shared normalizer: NFC + case-fold + collapse all Unicode whitespace variants.
+  // Ensures Hebrew phrases (no case) and phrases with NBSP/directional marks still match.
+  const normStr = useCallback((s: string) =>
+    s.normalize('NFC').toLowerCase()
+     .replace(/[\s ​‌‍‎‏﻿]+/g, ' ')
+     .trim()
+  , []);
+
   const handleIssueClick = useCallback((result: AnalysisData['results'][0], index: number) => {
+    const normPhrase = normStr(result.phrase);
+    // Use index directly — analysis.annotations[i] is the 1:1 match for analysis.results[i].
+    // This correctly handles duplicate phrases where phrase-only lookup would always find the first.
     const annotation =
-      analysis.annotations.find(
-        (a) => a.label.toLowerCase() === result.phrase.toLowerCase(),
-      ) ??
+      analysis.annotations[index] ??
+      analysis.annotations.find((a) => normStr(a.label) === normPhrase) ??
       analysis.annotations.find(
         (a) =>
-          a.label.toLowerCase().includes(result.phrase.toLowerCase()) ||
-          result.phrase.toLowerCase().includes(a.label.toLowerCase()),
+          normStr(a.label).includes(normPhrase) ||
+          normPhrase.includes(normStr(a.label)),
       );
 
     setSelectedResultIndex(index);
@@ -355,7 +370,7 @@ export default function AnalyzePage() {
       setTimeout(() => { el.style.boxShadow = ''; el.style.borderRadius = ''; }, 1500);
     } else if (docInputType === 'pdf') {
       const found = pdfViewerRef.current?.handleSearch(annotation.label);
-      const found2 = !found && result.phrase.toLowerCase() !== annotation.label.toLowerCase()
+      const found2 = !found && normStr(result.phrase) !== normStr(annotation.label)
         ? pdfViewerRef.current?.handleSearch(result.phrase)
         : found;
       // Last resort: estimate the page from the character-offset ratio and scroll there.
@@ -367,16 +382,51 @@ export default function AnalyzePage() {
         pdfViewerRef.current?.scrollToPage(estimatedPage);
       }
     }
-  }, [analysis.annotations, analysis.text, docInputType, pdfNumPages]);
+  }, [analysis.annotations, analysis.text, docInputType, pdfNumPages, normStr]);
 
   const handleAnnotationClick = useCallback((annotation: Annotation) => {
     setSelectedAnnotation(annotation);
     setSidePanelOpen(true);
-    const idx = analysis.results.findIndex(
-      (r) => r.phrase.toLowerCase() === annotation.label.toLowerCase()
+    const normLabel = normStr(annotation.label);
+    // Exact match first — when multiple results share the same sentence, includes
+    // would match the wrong (longer) result before the right (exact) one.
+    let idx = analysis.results.findIndex((r) => normStr(r.phrase) === normLabel);
+    if (idx === -1) {
+      idx = analysis.results.findIndex(
+        (r) => normStr(r.phrase).includes(normLabel) || normLabel.includes(normStr(r.phrase)),
+      );
+    }
+    if (idx !== -1) {
+      setSelectedResultIndex(idx);
+      // Scroll the matching issue card into view in the right panel.
+      requestAnimationFrame(() => {
+        const card = document.querySelector(`[data-result-idx="${idx}"]`);
+        card?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    }
+  }, [analysis.results, normStr]);
+
+  // Called when the user clicks/pins an annotation in the document viewer.
+  // Scrolls the matching finding card into view WITHOUT opening the side panel overlay.
+  const handleAnnotationPin = useCallback((annotation: Annotation) => {
+    // Match by start offset + label — correctly handles duplicate phrases that share
+    // the same text but appear at different positions in the document.
+    let idx = analysis.annotations.findIndex(
+      (a) => a.start === annotation.start && normStr(a.label) === normStr(annotation.label),
     );
-    if (idx !== -1) setSelectedResultIndex(idx);
-  }, [analysis.results]);
+    if (idx === -1) {
+      // Fallback: phrase-only match (covers cases where start offsets differ slightly)
+      const normLabel = normStr(annotation.label);
+      idx = analysis.annotations.findIndex((a) => normStr(a.label) === normLabel);
+    }
+    if (idx !== -1) {
+      setSelectedResultIndex(idx);
+      requestAnimationFrame(() => {
+        const card = document.querySelector(`[data-result-idx="${idx}"]`);
+        card?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    }
+  }, [analysis.annotations, normStr]);
 
   const toggleFilter = useCallback((sev: Severity) => {
     setActiveFilters(prev => {
@@ -452,15 +502,15 @@ export default function AnalyzePage() {
   };
   const severityPriority: Severity[] = ['factually_incorrect', 'potentially_offensive', 'biased', 'outdated'];
 
-  const getResultConfidence = (result: AnalysisData['results'][0]) =>
-    (analysis.annotations.find(
-      (a) => a.label.toLowerCase() === result.phrase.toLowerCase(),
-    ) ??
-    analysis.annotations.find(
-      (a) =>
-        a.label.toLowerCase().includes(result.phrase.toLowerCase()) ||
-        result.phrase.toLowerCase().includes(a.label.toLowerCase()),
-    ))?.confidence;
+  const getResultConfidence = (result: AnalysisData['results'][0]) => {
+    const np = normStr(result.phrase);
+    return (
+      analysis.annotations.find((a) => normStr(a.label) === np) ??
+      analysis.annotations.find(
+        (a) => normStr(a.label).includes(np) || np.includes(normStr(a.label)),
+      )
+    )?.confidence;
+  };
 
   const confidenceFiltered = analysis.results.filter(r => {
     const conf = getResultConfidence(r);
@@ -799,13 +849,16 @@ export default function AnalyzePage() {
                 </div>
               </div>
 
-              {/* Two-column grid — inline style avoids Tailwind JIT scan issues with dynamic arbitrary values */}
+              {/* Two-column layout. Document is always the visual-RIGHT panel,
+                   Findings always the visual-LEFT panel (fixed 520 px).
+                   In RTL the CSS flex row already places Document on the right;
+                   in LTR we use row-reverse so the visual order is the same. */}
               <div
-                className="flex-1 min-h-0 grid gap-4"
-                style={{ gridTemplateColumns: 'minmax(0, 1fr) 520px' }}
+                className="flex-1 min-h-0 flex gap-4"
+                style={{ flexDirection: isHebrew ? 'row' : 'row-reverse' }}
               >
-                {/* ── LEFT: Document Viewer ───────────────────────── */}
-                <div className="glass rounded-xl border border-l-[3px] border-l-pride-purple overflow-hidden flex flex-col min-h-0 max-h-full">
+                {/* ── Document Viewer — always visual RIGHT ───────── */}
+                <div className="glass rounded-xl border border-l-[3px] border-l-pride-purple overflow-hidden flex flex-col min-h-0 max-h-full flex-1 min-w-0">
                   {/* Panel header */}
                   <div className="px-4 py-3 border-b bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between flex-shrink-0">
                     <div className="flex items-center gap-2">
@@ -833,6 +886,7 @@ export default function AnalyzePage() {
                       pageSizes={pageSizes}
                       markdownText={markdownText}
                       onAnnotationClick={handleAnnotationClick}
+                      onAnnotationPin={handleAnnotationPin}
                       isHebrew={isHebrew}
                       onPdfNumPages={setPdfNumPages}
                       onPdfPageChange={setPdfCurrentPage}
@@ -879,10 +933,10 @@ export default function AnalyzePage() {
                   </div>
                 </div>
 
-                {/* ── RIGHT: Analysis Panel ───────────────────────── */}
+                {/* ── Findings Panel — always visual LEFT ─────────── */}
                 <div
-                  className="flex flex-col gap-2 min-h-0 max-h-full overflow-y-auto pb-4 border-l-[3px] border-l-pride-purple pl-2"
-                  style={{ scrollBehavior: 'smooth' }}
+                  className="flex flex-col gap-2 min-h-0 max-h-full overflow-y-auto pb-4 border-l-[3px] border-l-pride-purple pl-2 flex-shrink-0"
+                  style={{ scrollBehavior: 'smooth', width: '520px' }}
                 >
                   <div className="flex-shrink-0 pt-0.5 flex items-center justify-between">
                     <span className="text-[11px] font-bold text-pride-purple uppercase tracking-widest">
@@ -1139,6 +1193,7 @@ export default function AnalyzePage() {
                         return (
                           <motion.button
                             key={origIdx}
+                            data-result-idx={origIdx}
                             onClick={() => handleIssueClick(result, origIdx)}
                             className={cn(
                               'w-full text-start rounded-lg border bg-white dark:bg-slate-900 shadow-sm',
@@ -1254,11 +1309,11 @@ export default function AnalyzePage() {
       />
       <ConfirmDialog
         open={pendingNav !== null}
-        title={t('leaveWarning.title')}
-        description={t('leaveWarning.message')}
-        confirmLabel={t('leaveWarning.leave')}
-        cancelLabel={t('leaveWarning.stay')}
-        variant="danger"
+        title={pendingNav?.source === 'results' ? t('switchLangWarning.title') : t('leaveWarning.title')}
+        description={pendingNav?.source === 'results' ? t('switchLangWarning.message') : t('leaveWarning.message')}
+        confirmLabel={pendingNav?.source === 'results' ? t('switchLangWarning.leave') : t('leaveWarning.leave')}
+        cancelLabel={pendingNav?.source === 'results' ? t('switchLangWarning.stay') : t('leaveWarning.stay')}
+        variant={pendingNav?.source === 'results' ? 'default' : 'danger'}
         onConfirm={confirmLeave}
         onCancel={() => setPendingNav(null)}
       />

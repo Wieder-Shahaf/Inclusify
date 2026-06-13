@@ -32,10 +32,12 @@ function AnnotatedPlainText({
   text,
   annotations,
   onAnnotationClick,
+  onAnnotationPin,
 }: {
   text: string;
   annotations: Annotation[];
   onAnnotationClick: (ann: Annotation) => void;
+  onAnnotationPin?: (ann: Annotation) => void;
 }) {
   if (!text) return null;
 
@@ -66,6 +68,7 @@ function AnnotatedPlainText({
             <IssueTooltip
               annotation={part.annotation}
               onOpenSidePanel={() => onAnnotationClick(part.annotation!)}
+              onAnnotationPin={onAnnotationPin ? () => onAnnotationPin(part.annotation!) : undefined}
             >
               {part.content}
             </IssueTooltip>
@@ -84,6 +87,7 @@ function annotateString(
   phrases: Array<{ phrase: string; annotation: Annotation }>,
   onAnnotationClick: (ann: Annotation) => void,
   keyPrefix: string,
+  onAnnotationPin?: (ann: Annotation) => void,
 ): React.ReactNode[] {
   if (!phrases.length) return [<span key={keyPrefix}>{text}</span>];
 
@@ -91,11 +95,18 @@ function annotateString(
   let remaining = text;
   let offset = 0;
 
+  // 1:1 normalization: each special-whitespace char maps to one regular space,
+  // so indexOf positions in the normalized string remain valid in the original.
+  const normStr = (s: string) =>
+    s.toLowerCase()
+     .replace(/[ ​‌‍‎‏﻿]/g, ' ');
+
   while (remaining.length > 0) {
     let earliest: { index: number; length: number; annotation: Annotation } | null = null;
+    const normRemaining = normStr(remaining);
     for (const { phrase, annotation } of phrases) {
       if (!phrase) continue;
-      const idx = remaining.toLowerCase().indexOf(phrase.toLowerCase());
+      const idx = normRemaining.indexOf(normStr(phrase));
       if (idx !== -1 && (earliest === null || idx < earliest.index)) {
         earliest = { index: idx, length: phrase.length, annotation };
       }
@@ -116,7 +127,11 @@ function annotateString(
     const ann = earliest.annotation;
     nodes.push(
       <span key={`${keyPrefix}-a${offset + earliest.index}`} id={`ann-${ann.start}`}>
-        <IssueTooltip annotation={ann} onOpenSidePanel={() => onAnnotationClick(ann)}>
+        <IssueTooltip
+          annotation={ann}
+          onOpenSidePanel={() => onAnnotationClick(ann)}
+          onAnnotationPin={onAnnotationPin ? () => onAnnotationPin(ann) : undefined}
+        >
           {matched}
         </IssueTooltip>
       </span>,
@@ -134,11 +149,13 @@ function MarkdownViewer({
   markdownText,
   annotations,
   onAnnotationClick,
+  onAnnotationPin,
   isHebrew,
 }: {
   markdownText: string;
   annotations: Annotation[];
   onAnnotationClick: (ann: Annotation) => void;
+  onAnnotationPin?: (ann: Annotation) => void;
   isHebrew: boolean;
 }) {
   const phrases = useMemo(
@@ -149,18 +166,18 @@ function MarkdownViewer({
   const annotate = useCallback(
     (children: React.ReactNode, key: string): React.ReactNode => {
       if (typeof children === 'string') {
-        return annotateString(children, phrases, onAnnotationClick, key);
+        return annotateString(children, phrases, onAnnotationClick, key, onAnnotationPin);
       }
       if (Array.isArray(children)) {
         return children.flatMap((child, i) =>
           typeof child === 'string'
-            ? annotateString(child, phrases, onAnnotationClick, `${key}-${i}`)
+            ? annotateString(child, phrases, onAnnotationClick, `${key}-${i}`, onAnnotationPin)
             : [child],
         );
       }
       return children;
     },
-    [phrases, onAnnotationClick],
+    [phrases, onAnnotationClick, onAnnotationPin],
   );
 
   const components = useMemo(
@@ -251,9 +268,10 @@ const PdfViewer = forwardRef<PdfNavHandle, {
   file: File;
   annotations: Annotation[];
   onAnnotationClick: (ann: Annotation) => void;
+  onAnnotationPin?: (ann: Annotation) => void;
   onNumPagesChange?: (n: number) => void;
   onPageChange?: (n: number) => void;
-}>(function PdfViewer({ file, annotations, onAnnotationClick, onNumPagesChange, onPageChange }, ref) {
+}>(function PdfViewer({ file, annotations, onAnnotationClick, onAnnotationPin, onNumPagesChange, onPageChange }, ref) {
   const pdf = usePdfLib();
   const [numPages, setNumPages] = useState(0);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
@@ -274,13 +292,18 @@ const PdfViewer = forwardRef<PdfNavHandle, {
 
   const handleSearch = useCallback((term: string): boolean => {
     if (!term.trim()) return false;
-    // Normalize whitespace so Docling-extracted phrases match PDF.js-rendered text
-    // (PDF.js may use non-breaking spaces, ligatures, or different spacing).
-    const normalize = (s: string) => s.toLowerCase().replace(/[\s ]+/g, ' ').trim();
+    // Normalize for PDF.js: NFC + collapse all Unicode whitespace variants
+    // (NBSP, ZWSP, ZWNJ, ZWJ, LRM, RLM, BOM) so Docling and PDF.js representations match.
+    const normalize = (s: string) =>
+      s.normalize('NFC').toLowerCase()
+       .replace(/[\s ​‌‍‎‏﻿]+/g, ' ')
+       .trim();
     const normTerm = normalize(term);
 
-    // Annotation overlay anchor: scroll directly to the highlight element
-    const ann = annotations.find(a => normalize(a.label).includes(normTerm));
+    // Annotation overlay anchor: exact match first so that when multiple annotations
+    // share the same sentence, we always land on the right overlay element.
+    const ann = annotations.find(a => normalize(a.label) === normTerm)
+      ?? annotations.find(a => normalize(a.label).includes(normTerm));
     if (ann) {
       const el = document.getElementById(`ann-${ann.start}`);
       if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); return true; }
@@ -291,9 +314,9 @@ const PdfViewer = forwardRef<PdfNavHandle, {
       if (normalize(pageText).includes(normTerm)) { scrollToPage(pageNo); return true; }
     }
 
-    // Last resort: page with a matching overlay label
+    // Last resort: page with a matching overlay label (exact match to avoid wrong page)
     for (const [pageNo, overlays] of Array.from(pageOverlays.entries()).sort(([a], [b]) => a - b)) {
-      if (overlays.some(o => normalize(o.annotation.label).includes(normTerm))) {
+      if (overlays.some(o => normalize(o.annotation.label) === normTerm)) {
         scrollToPage(pageNo);
         return true;
       }
@@ -367,7 +390,11 @@ const PdfViewer = forwardRef<PdfNavHandle, {
           fullText += t;
         }
 
-        const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim();
+        // 1:1 normalization: spanMap positions are in fullText (original).
+        // Using 1:1 char replacement keeps positions aligned between fullText and lowerFull.
+        const normalize = (s: string) =>
+          s.toLowerCase()
+           .replace(/[ ​‌‍‎‏﻿]/g, ' ');
         const lowerFull = normalize(fullText);
         const pageRect = pageEl.getBoundingClientRect();
         const overlays: PdfOverlay[] = [];
@@ -482,6 +509,7 @@ const PdfViewer = forwardRef<PdfNavHandle, {
                     <IssueTooltip
                       annotation={overlay.annotation}
                       onOpenSidePanel={() => onAnnotationClick(overlay.annotation)}
+                      onAnnotationPin={onAnnotationPin ? () => onAnnotationPin(overlay.annotation) : undefined}
                       noHighlight
                     >
                       <div
@@ -526,24 +554,35 @@ interface PhraseMatch {
   rawPhrase: string;
 }
 
+/// Normalize for cross-source text matching.
+// 1:1 replacement (each special char -> single space) keeps string length identical
+// to the original, so indexOf() positions in the normalized string are valid
+// offsets into the original text. Do NOT collapse runs here.
+const normText = (s: string) =>
+  s.toLowerCase()
+   .replace(/[ ​‌‍‎‏﻿]/g, ' ');
+
 function findTextMatches(
   text: string,
   phrases: Array<{ phrase: string; annotation: Annotation }>,
 ): PhraseMatch[] {
-  const lower = text.toLowerCase();
+  const normFull = normText(text);
   const all: PhraseMatch[] = [];
   for (const { phrase, annotation } of phrases) {
     if (!phrase) continue;
-    const lp = phrase.toLowerCase();
+    const normPhrase = normText(phrase);
+    if (!normPhrase) continue;
     let idx = 0;
     while (true) {
-      const pos = lower.indexOf(lp, idx);
+      const pos = normFull.indexOf(normPhrase, idx);
       if (pos === -1) break;
-      all.push({ start: pos, end: pos + phrase.length, annotation, rawPhrase: text.slice(pos, pos + phrase.length) });
-      idx = pos + phrase.length;
+      // pos in normFull approximates pos in text for non-collapsing text.
+      const end = Math.min(pos + phrase.length, text.length);
+      all.push({ start: pos, end, annotation, rawPhrase: text.slice(pos, end) });
+      idx = pos + normPhrase.length;
     }
   }
-  all.sort((a, b) => a.start - b.start);
+    all.sort((a, b) => a.start - b.start);
   const result: PhraseMatch[] = [];
   let lastEnd = -1;
   for (const m of all) {
@@ -560,10 +599,12 @@ function DocxViewer({
   file,
   annotations,
   onAnnotationClick,
+  onAnnotationPin,
 }: {
   file: File;
   annotations: Annotation[];
   onAnnotationClick: (ann: Annotation) => void;
+  onAnnotationPin?: (ann: Annotation) => void;
 }) {
   const docx = useDocxLib();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -647,6 +688,7 @@ function DocxViewer({
           <IssueTooltip
             annotation={p.annotation}
             onOpenSidePanel={() => onAnnotationClick(p.annotation)}
+            onAnnotationPin={onAnnotationPin ? () => onAnnotationPin(p.annotation) : undefined}
           >
             {p.rawPhrase}
           </IssueTooltip>,
@@ -668,6 +710,8 @@ export interface DocumentViewerProps {
   pageSizes: Record<string, PageSize> | null;
   markdownText: string | null;
   onAnnotationClick: (annotation: Annotation) => void;
+  /** Called when the user clicks/pins an annotation — scroll to the matching finding card. */
+  onAnnotationPin?: (annotation: Annotation) => void;
   isHebrew: boolean;
   onPdfNumPages?: (n: number) => void;
   onPdfPageChange?: (n: number) => void;
@@ -682,6 +726,7 @@ const DocumentViewer = forwardRef<PdfNavHandle, DocumentViewerProps>(function Do
   pageSizes: _pageSizes,
   markdownText,
   onAnnotationClick,
+  onAnnotationPin,
   isHebrew,
   onPdfNumPages,
   onPdfPageChange,
@@ -693,6 +738,7 @@ const DocumentViewer = forwardRef<PdfNavHandle, DocumentViewerProps>(function Do
         file={uploadedFile}
         annotations={annotations}
         onAnnotationClick={onAnnotationClick}
+        onAnnotationPin={onAnnotationPin}
         onNumPagesChange={onPdfNumPages}
         onPageChange={onPdfPageChange}
       />
@@ -705,6 +751,7 @@ const DocumentViewer = forwardRef<PdfNavHandle, DocumentViewerProps>(function Do
         file={uploadedFile}
         annotations={annotations}
         onAnnotationClick={onAnnotationClick}
+        onAnnotationPin={onAnnotationPin}
       />
     );
   }
@@ -715,6 +762,7 @@ const DocumentViewer = forwardRef<PdfNavHandle, DocumentViewerProps>(function Do
         markdownText={markdownText}
         annotations={annotations}
         onAnnotationClick={onAnnotationClick}
+        onAnnotationPin={onAnnotationPin}
         isHebrew={isHebrew}
       />
     );
@@ -725,6 +773,7 @@ const DocumentViewer = forwardRef<PdfNavHandle, DocumentViewerProps>(function Do
       text={text}
       annotations={annotations}
       onAnnotationClick={onAnnotationClick}
+      onAnnotationPin={onAnnotationPin}
     />
   );
 });

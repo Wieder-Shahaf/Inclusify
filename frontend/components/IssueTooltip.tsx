@@ -17,6 +17,8 @@ interface IssueTooltipProps {
   annotation: Annotation;
   children: React.ReactNode;
   onOpenSidePanel: () => void;
+  /** Called when the user clicks/pins the annotation — used to scroll the matching finding card. */
+  onAnnotationPin?: () => void;
   /** Skip the default text-highlight classes — used when the child element provides its own visual (e.g. PDF bbox overlay). */
   noHighlight?: boolean;
 }
@@ -56,7 +58,7 @@ const severityConfig = {
   },
 };
 
-export default function IssueTooltip({ annotation, children, onOpenSidePanel, noHighlight = false }: IssueTooltipProps) {
+export default function IssueTooltip({ annotation, children, onOpenSidePanel, onAnnotationPin, noHighlight = false }: IssueTooltipProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0, arrowX: 144, showBelow: false });
@@ -186,6 +188,7 @@ export default function IssueTooltip({ annotation, children, onOpenSidePanel, no
     updatePosition();
     setIsPinned(true);
     setIsHovered(false);
+    onAnnotationPin?.();
   };
 
   const handleClose = () => {
