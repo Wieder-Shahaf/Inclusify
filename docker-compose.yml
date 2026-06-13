@@ -3,8 +3,13 @@
 #
 # Usage:
 #   Development: docker compose --profile dev up
-#   Production:  docker compose --profile prod up
-#   Build all:   docker compose build
+#   Production:  BUILD_TARGET=runtime docker compose --profile prod up
+#   Build dev:   docker compose build
+#   Build prod:  BUILD_TARGET=runtime docker compose build
+#
+# BUILD_TARGET selects the Dockerfile stage for both services. Default is
+# `development` (hot-reload, full deps). `runtime` builds the slim production
+# images: CPU-only backend (~2GB) and the Next.js standalone frontend (~250MB).
 
 services:
   # ============================================

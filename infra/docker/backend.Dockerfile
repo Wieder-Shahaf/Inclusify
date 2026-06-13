@@ -17,8 +17,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy requirements first for better caching
 COPY backend/requirements.txt .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+# Install everything in ONE resolution with the PyTorch CPU index as primary
+# and PyPI as fallback. Inference runs remotely over HTTP (VLLM_URL), so the
+# GPU/CUDA builds of torch + torchvision (which drag in ~3.5GB of nvidia/triton)
+# are dead weight here. With the CPU index primary, both torch and torchvision
+# resolve to their +cpu wheels (the +cpu local version outranks the PyPI CUDA
+# build), and everything else falls back to PyPI. A single pip install avoids
+# the --prefix "already satisfied" blind spot that previously let a CUDA
+# torchvision sneak back in on a second install.
+RUN pip install --no-cache-dir --prefix=/install \
+    --index-url https://download.pytorch.org/whl/cpu \
+    --extra-index-url https://pypi.org/simple \
+    -r requirements.txt
 
 # ============================================
 # Stage 2: Development - Hot-reload enabled
@@ -67,9 +77,13 @@ RUN groupadd --gid 1000 appuser \
     && useradd --uid 1000 --gid 1000 --shell /bin/bash --create-home appuser \
     && chown -R appuser:appuser /app
 
+# Install dev/test dependencies (base deps already present from builder; pip
+# only adds the extra test tooling). Kept out of the runtime stage.
+COPY backend/requirements-dev.txt backend/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements-dev.txt
+
 # Copy application code
 COPY --chown=appuser:appuser backend/app ./app
-COPY --chown=appuser:appuser backend/requirements.txt .
 
 USER appuser
 

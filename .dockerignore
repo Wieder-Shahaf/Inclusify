@@ -31,6 +31,22 @@ Thumbs.db
 coverage/
 .pytest_cache/
 __pycache__/
+*.pyc
+htmlcov/
+.coverage
+.mypy_cache/
+.ruff_cache/
+
+# ML artifacts & training data (not needed in the API container)
+ml/
+data/
+*.safetensors
+*.gguf
+*.bin
+
+# Planning / build metadata
+.planning/
+*.egg-info/
 
 # Documentation
 *.md

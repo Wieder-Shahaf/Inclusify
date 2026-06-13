@@ -62,9 +62,9 @@ ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 RUN npm run build
 
 # ============================================
-# Stage 4: Runner - Production optimized
+# Stage 4: Runtime - Production optimized (standalone output)
 # ============================================
-FROM node:22-slim AS runner
+FROM node:22-slim AS runtime
 
 WORKDIR /app
 

@@ -37,7 +37,44 @@ Built as a final academic project at the Technion by a team of five, and deliver
 | **Backend** | FastAPI, Python 3.11, Pydantic v2, asyncpg |
 | **Database** | PostgreSQL 16 |
 | **ML/AI** | QLoRA fine-tuned Qwen2.5-3B-Instruct, vLLM, Docling |
-| **Infrastructure** | Microsoft Azure, Docker, GitHub Actions |
+| **Infrastructure** | Microsoft Azure, Docker (multi-stage builds), GitHub Actions |
+
+---
+
+## Local Development
+
+The full stack runs via Docker Compose — Postgres, Redis, an Azure Blob emulator (Azurite), the FastAPI backend, and the Next.js frontend.
+
+```bash
+# Start everything with hot-reload (backend :8000, frontend :3000)
+docker compose --profile dev up
+
+# Apply DB schema + seed (run once; auto-applied on first postgres start)
+psql -f db/schema.sql && psql -f db/seed.sql
+```
+
+Copy `.env.example` to `.env` and fill in secrets (JWT, Google OAuth, Resend, `VLLM_URL`) before starting.
+
+### Production images
+
+```bash
+# Build the slim production images
+BUILD_TARGET=runtime docker compose build
+```
+
+`BUILD_TARGET` selects the Dockerfile stage for both services. The default (`development`) ships hot-reload and full dependencies; `runtime` produces the optimized images:
+
+| Image | Dev | Prod (`runtime`) |
+|-------|-----|------------------|
+| backend | ~9.6 GB | **~2 GB** |
+| frontend | ~1.7 GB | **~250 MB** |
+
+The backend installs **CPU-only PyTorch**. Inference runs remotely over HTTP (`VLLM_URL` → vLLM on the Azure GPU VM), so the CUDA build of torch — pulled transitively by Docling — would add ~3.5 GB of `nvidia`/`triton` libraries that are never executed in this container. Do not "upgrade" to the default torch wheel.
+
+### Dependencies
+
+- `backend/requirements.txt` — runtime dependencies only (installed in the production image).
+- `backend/requirements-dev.txt` — adds test tooling (`pytest`, `pytest-asyncio`); installed only in the `development` stage. Use this for local testing: `pip install -r backend/requirements-dev.txt`.
 
 ---
 
