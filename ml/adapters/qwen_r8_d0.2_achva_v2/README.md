@@ -29,10 +29,9 @@ Supersedes `qwen_r8_d0.2` (v1.0.0). **Awaiting human approval — not promoted.*
 - Standalone PEFT adapter (`adapter_config.json` + `adapter_model.safetensors`), rank 8 ≤ 16,
   same base + target modules as v1.0.0 → loads on the production T4 (fp16, `--max-lora-rank 16`)
   unchanged. Verified by an fp16-base + adapter load smoke test (EN flagged, HE use-mention abstained).
-- **`adapter_model.safetensors` (58 MB) is NOT committed to git** (repo convention: 0 adapter
-  weights tracked). The trained weights live at
-  `/data/shahafw_home/inclusify_retrain/adapters_new/qwen_r8_d0.2_achva/` and in this working tree.
-  Copy them into this directory before deploying.
+- **`adapter_model.safetensors` (58 MB) is committed via Git LFS** (`.gitattributes` routes
+  `*.safetensors` to LFS). A fresh clone needs `git lfs pull` to materialize the weights.
+  A copy also lives at `/data/shahafw_home/inclusify_retrain/adapters_new/qwen_r8_d0.2_achva/`.
 
 ## Known limitations
 - **gold use-mention FP 0.607** — still over-flags ~60% of "Correct" spans in real academic prose

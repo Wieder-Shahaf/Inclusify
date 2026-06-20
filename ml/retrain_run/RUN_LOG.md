@@ -23,9 +23,8 @@ Both r8 and r16 passed; r8 chosen (better on the harder real-document eval, smal
 | HE explanations | translation-meta leakage | 0 CJK / 0 meta | contamination fixed |
 
 ### Deployment steps — for the human to run MANUALLY if approved (I did NOT run these)
-1. The trained weights (`adapter_model.safetensors`, 58 MB) are NOT in git. Copy them into the
-   packaged dir before deploying:
-   `cp /data/shahafw_home/inclusify_retrain/adapters_new/qwen_r8_d0.2_achva/adapter_model.safetensors ml/adapters/qwen_r8_d0.2_achva_v2/`
+1. Weights are committed via **Git LFS**. On the inference VM: `git pull && git lfs pull` to
+   materialize `ml/adapters/qwen_r8_d0.2_achva_v2/adapter_model.safetensors` (58 MB).
 2. `python ml/scripts/switch_adapter.py --list`
 3. `python ml/scripts/switch_adapter.py --adapter qwen_r8_d0.2_achva_v2 --dry-run`
 4. On the inference VM: `--adapter qwen_r8_d0.2_achva_v2 --restart-service`, then `curl /v1/models`.
@@ -44,7 +43,7 @@ Both r8 and r16 passed; r8 chosen (better on the harder real-document eval, smal
 - GPU: ~6.1 GPU-hours on one H100 (2 candidates × ~3.0h, GPU 1). Judge: ~16k remote Gemma calls (cached).
 - All heavy artifacts on `/data/shahafw_home/inclusify_retrain` — see EXTERNAL_PATHS.md; teardown =
   `rm -rf /data/shahafw_home/inclusify_retrain`.
-- Branch `retrain/achva-v2` committed locally (7 commits). **Not pushed** — say the word to push.
+- Branch `retrain/achva-v2` pushed to origin (weights via Git LFS).
 
 ---
 
