@@ -3,8 +3,51 @@
 > Running log of the Achva-v2 retrain per `ml/RETRAIN_PLAN.md`. Every command outcome,
 > metric, and deviation is recorded here. The human reads this to trust the result.
 
-## HANDOFF SUMMARY (filled at the final gate)
-_TBD — populated in Phase 5._
+## 🛑 HANDOFF SUMMARY (final gate — awaiting human decision)
+
+**Outcome: SUCCESS. A candidate passed all four go/no-go criteria.** Winner:
+`qwen_r8_d0.2_achva_v2` (v1.1.0), packaged at `ml/adapters/qwen_r8_d0.2_achva_v2/`.
+Both r8 and r16 passed; r8 chosen (better on the harder real-document eval, smaller rank).
+**Nothing was deployed. `active.json`, `vllm.service`, and `main` are untouched.**
+
+### Baseline → winner (frozen eval, production-format scoring)
+| metric | baseline v1.0.0 | winner | |
+|---|---|---|---|
+| use-mention FP (expert) | **1.000** | **0.118** | flags ~everything → ~12% |
+| use-mention FP (gold/real docs) | 1.000 | 0.607 | improved, still high |
+| expert accuracy | 0.077 | **0.833** | |
+| expert macro-F1 | 0.121 | 0.706 | |
+| EN macro-F1 (expert) | 0.142 | **0.795** | |
+| HE macro-F1 (expert) | 0.094 | **0.559** | ~6× |
+| Correct-class F1 (expert) | 0.00 | **0.93** | restraint learned |
+| HE explanations | translation-meta leakage | 0 CJK / 0 meta | contamination fixed |
+
+### Deployment steps — for the human to run MANUALLY if approved (I did NOT run these)
+1. The trained weights (`adapter_model.safetensors`, 58 MB) are NOT in git. Copy them into the
+   packaged dir before deploying:
+   `cp /data/shahafw_home/inclusify_retrain/adapters_new/qwen_r8_d0.2_achva/adapter_model.safetensors ml/adapters/qwen_r8_d0.2_achva_v2/`
+2. `python ml/scripts/switch_adapter.py --list`
+3. `python ml/scripts/switch_adapter.py --adapter qwen_r8_d0.2_achva_v2 --dry-run`
+4. On the inference VM: `--adapter qwen_r8_d0.2_achva_v2 --restart-service`, then `curl /v1/models`.
+5. Rollback if needed: `--adapter qwen_r8_d0.2` (v1.0.0 baseline kept intact).
+
+### Honest caveats
+- **gold use-mention FP 0.607**: on real academic prose the model still over-flags ~60% of
+  "Correct" spans (vs 12% on synthetic-style sentences). Biggest remaining weakness.
+- **Occasional foreign-token code-switching** in Hebrew explanations (stray non-Hebrew word).
+- **Outdated** weakly trained (113 rows after correct use-mention relabel) → weak Outdated recall.
+- **Relabel quality**: Gemma judge calibrated at 0.879 vs expert; prompt refined once after
+  inspecting disagreements (small N=58 → mild optimistic bias possible).
+- **Eval is ~190 sentences** — treat all deltas as directional, not precise.
+
+### Cost / time
+- GPU: ~6.1 GPU-hours on one H100 (2 candidates × ~3.0h, GPU 1). Judge: ~16k remote Gemma calls (cached).
+- All heavy artifacts on `/data/shahafw_home/inclusify_retrain` — see EXTERNAL_PATHS.md; teardown =
+  `rm -rf /data/shahafw_home/inclusify_retrain`.
+- Branch `retrain/achva-v2` committed locally (7 commits). **Not pushed** — say the word to push.
+
+---
+
 
 ---
 

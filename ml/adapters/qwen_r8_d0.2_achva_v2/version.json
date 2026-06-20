@@ -1,0 +1,33 @@
+{
+  "version": "1.1.0",
+  "adapter_name": "qwen_r8_d0.2_achva_v2",
+  "base_model": "Qwen2.5-3B-Instruct",
+  "training_date": "2026-06-20",
+  "lora_rank": 8,
+  "lora_alpha": 16,
+  "lora_dropout": 0.2,
+  "target_modules": ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+  "task_format": "production {\"issues\":[...]} (phrase/category/severity/explanation)",
+  "dataset": "achva_v2_curated_14k (use-mention relabeled + explanations regenerated)",
+  "data_manifest_sha256_16": "9ab79d6391775419",
+  "languages": ["en", "he"],
+  "eval": {
+    "set": "frozen expert_eval (78 strict) + gold_eval (65), production-format scoring",
+    "use_mention_fp_expert": 0.118,
+    "use_mention_fp_gold": 0.607,
+    "expert_accuracy": 0.833,
+    "expert_macro_f1": 0.706,
+    "en_macro_f1_expert": 0.795,
+    "he_macro_f1_expert": 0.559,
+    "gold_macro_f1": 0.221,
+    "baseline_deltas": {
+      "use_mention_fp_expert": "1.000 -> 0.118",
+      "expert_accuracy": "0.077 -> 0.833",
+      "en_f1": "0.142 -> 0.795",
+      "he_f1": "0.094 -> 0.559"
+    }
+  },
+  "supersedes": "qwen_r8_d0.2 (1.0.0)",
+  "status": "CANDIDATE — awaiting human approval; NOT deployed",
+  "notes": "Achva-v2 retrain. Fixes train/inference format mismatch + use-mention over-flagging + Hebrew explanation contamination. Known limits: gold use-mention FP still 0.607 on real prose; occasional foreign-token code-switch in HE; Outdated weakly trained. See ml/retrain_run/eval_report.md and RUN_LOG.md."
+}
