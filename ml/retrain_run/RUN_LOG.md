@@ -104,6 +104,16 @@ _TBD — populated in Phase 5._
   accum 4 (eff 32) + gradient checkpointing + `PYTORCH_CUDA_ALLOC_CONF=expandable_segments`.
   Stable at ~48GB VRAM, ~8.2s/step, ~2h40m/candidate (~5.3h for r8 + r16).
 - Candidates training on GPU 1: `qwen_r8_d0.2_achva` then `qwen_r16_d0.1_achva` → `/data/…/adapters_new`.
+- ✅ Both trained: r8 eval_loss 0.409 (train 0.278), r16 eval_loss 0.401 (train 0.241), ~3h each.
+
+### Phase 4 — evaluation  ✅ DONE  (see eval_report.md)
+- **Both candidates PASS all 4 go/no-go criteria. WINNER: `qwen_r8_d0.2_achva`** (better on the
+  harder gold/real-doc set; comparable on expert; smaller rank).
+- **Headline: use-mention FP 1.00 → 0.118 (expert) / 0.607 (gold); Correct-class F1 0.00 → 0.93;
+  expert acc 0.077 → 0.833; EN F1 0.14 → 0.80; HE F1 0.09 → 0.56.**
+- Criterion 4: HE explanations 0 CJK / 0 translation-meta over 12 samples (contamination fixed).
+- Caveats logged: gold FP still 0.607 (real prose harder); occasional foreign-token code-switch
+  in HE; Outdated essentially untrained (rare after correct relabel); eval ~190 sents (directional).
 
 ### Phase 1 — frozen eval (in progress)
 - [x] `expert_eval.jsonl` built (100 rows) + sha256 frozen. **Adjudication done by reading
