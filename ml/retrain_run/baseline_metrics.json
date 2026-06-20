@@ -1,0 +1,483 @@
+{
+  "adapter": "/data/shahafw_home/inclusify_retrain/baseline_adapter/qwen_r8_d0.2",
+  "label": "baseline_qwen_r8_d0.2",
+  "base_model": "/data/shahafw_home/inclusify_retrain/base_model/Qwen2.5-3B-Instruct",
+  "expert": {
+    "parse_fail": 1,
+    "overall": {
+      "n": 78,
+      "accuracy": 0.077,
+      "macro_f1": 0.121,
+      "per_label": {
+        "Correct": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 51
+        },
+        "Outdated": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "Biased": {
+          "precision": 0.25,
+          "recall": 0.071,
+          "f1": 0.111,
+          "support": 14
+        },
+        "Potentially Offensive": {
+          "precision": 0.154,
+          "recall": 0.25,
+          "f1": 0.19,
+          "support": 8
+        },
+        "Factually Incorrect": {
+          "precision": 0.107,
+          "recall": 0.6,
+          "f1": 0.182,
+          "support": 5
+        }
+      },
+      "confusion": {
+        "Correct": {
+          "Correct": 0,
+          "Outdated": 29,
+          "Biased": 1,
+          "Potentially Offensive": 8,
+          "Factually Incorrect": 13
+        },
+        "Outdated": {
+          "Correct": 0,
+          "Outdated": 0,
+          "Biased": 0,
+          "Potentially Offensive": 0,
+          "Factually Incorrect": 0
+        },
+        "Biased": {
+          "Correct": 0,
+          "Outdated": 3,
+          "Biased": 1,
+          "Potentially Offensive": 2,
+          "Factually Incorrect": 8
+        },
+        "Potentially Offensive": {
+          "Correct": 0,
+          "Outdated": 0,
+          "Biased": 2,
+          "Potentially Offensive": 2,
+          "Factually Incorrect": 4
+        },
+        "Factually Incorrect": {
+          "Correct": 0,
+          "Outdated": 1,
+          "Biased": 0,
+          "Potentially Offensive": 1,
+          "Factually Incorrect": 3
+        }
+      }
+    },
+    "en": {
+      "n": 39,
+      "accuracy": 0.103,
+      "macro_f1": 0.142,
+      "per_label": {
+        "Correct": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 23
+        },
+        "Outdated": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "Biased": {
+          "precision": 0.333,
+          "recall": 0.143,
+          "f1": 0.2,
+          "support": 7
+        },
+        "Potentially Offensive": {
+          "precision": 0.143,
+          "recall": 0.2,
+          "f1": 0.167,
+          "support": 5
+        },
+        "Factually Incorrect": {
+          "precision": 0.125,
+          "recall": 0.5,
+          "f1": 0.2,
+          "support": 4
+        }
+      },
+      "confusion": {
+        "Correct": {
+          "Correct": 0,
+          "Outdated": 11,
+          "Biased": 1,
+          "Potentially Offensive": 4,
+          "Factually Incorrect": 7
+        },
+        "Outdated": {
+          "Correct": 0,
+          "Outdated": 0,
+          "Biased": 0,
+          "Potentially Offensive": 0,
+          "Factually Incorrect": 0
+        },
+        "Biased": {
+          "Correct": 0,
+          "Outdated": 1,
+          "Biased": 1,
+          "Potentially Offensive": 1,
+          "Factually Incorrect": 4
+        },
+        "Potentially Offensive": {
+          "Correct": 0,
+          "Outdated": 0,
+          "Biased": 1,
+          "Potentially Offensive": 1,
+          "Factually Incorrect": 3
+        },
+        "Factually Incorrect": {
+          "Correct": 0,
+          "Outdated": 1,
+          "Biased": 0,
+          "Potentially Offensive": 1,
+          "Factually Incorrect": 2
+        }
+      }
+    },
+    "he": {
+      "n": 39,
+      "accuracy": 0.051,
+      "macro_f1": 0.094,
+      "per_label": {
+        "Correct": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 28
+        },
+        "Outdated": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "Biased": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 7
+        },
+        "Potentially Offensive": {
+          "precision": 0.167,
+          "recall": 0.333,
+          "f1": 0.222,
+          "support": 3
+        },
+        "Factually Incorrect": {
+          "precision": 0.083,
+          "recall": 1.0,
+          "f1": 0.154,
+          "support": 1
+        }
+      },
+      "confusion": {
+        "Correct": {
+          "Correct": 0,
+          "Outdated": 18,
+          "Biased": 0,
+          "Potentially Offensive": 4,
+          "Factually Incorrect": 6
+        },
+        "Outdated": {
+          "Correct": 0,
+          "Outdated": 0,
+          "Biased": 0,
+          "Potentially Offensive": 0,
+          "Factually Incorrect": 0
+        },
+        "Biased": {
+          "Correct": 0,
+          "Outdated": 2,
+          "Biased": 0,
+          "Potentially Offensive": 1,
+          "Factually Incorrect": 4
+        },
+        "Potentially Offensive": {
+          "Correct": 0,
+          "Outdated": 0,
+          "Biased": 1,
+          "Potentially Offensive": 1,
+          "Factually Incorrect": 1
+        },
+        "Factually Incorrect": {
+          "Correct": 0,
+          "Outdated": 0,
+          "Biased": 0,
+          "Potentially Offensive": 0,
+          "Factually Incorrect": 1
+        }
+      }
+    },
+    "use_mention_fp_overall": {
+      "n_correct": 51,
+      "flagged_as_violation": 51,
+      "fp_rate": 1.0
+    },
+    "use_mention_fp_en": {
+      "n_correct": 23,
+      "flagged_as_violation": 23,
+      "fp_rate": 1.0
+    },
+    "use_mention_fp_he": {
+      "n_correct": 28,
+      "flagged_as_violation": 28,
+      "fp_rate": 1.0
+    },
+    "n_context_dependent_excluded": 22
+  },
+  "gold": {
+    "parse_fail": 1,
+    "overall": {
+      "n": 65,
+      "accuracy": 0.062,
+      "macro_f1": 0.046,
+      "per_label": {
+        "Correct": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 28
+        },
+        "Outdated": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 9
+        },
+        "Biased": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 10
+        },
+        "Potentially Offensive": {
+          "precision": 0.143,
+          "recall": 0.091,
+          "f1": 0.111,
+          "support": 11
+        },
+        "Factually Incorrect": {
+          "precision": 0.068,
+          "recall": 0.429,
+          "f1": 0.118,
+          "support": 7
+        }
+      },
+      "confusion": {
+        "Correct": {
+          "Correct": 0,
+          "Outdated": 6,
+          "Biased": 0,
+          "Potentially Offensive": 4,
+          "Factually Incorrect": 18
+        },
+        "Outdated": {
+          "Correct": 0,
+          "Outdated": 0,
+          "Biased": 0,
+          "Potentially Offensive": 2,
+          "Factually Incorrect": 7
+        },
+        "Biased": {
+          "Correct": 0,
+          "Outdated": 3,
+          "Biased": 0,
+          "Potentially Offensive": 0,
+          "Factually Incorrect": 7
+        },
+        "Potentially Offensive": {
+          "Correct": 0,
+          "Outdated": 1,
+          "Biased": 0,
+          "Potentially Offensive": 1,
+          "Factually Incorrect": 9
+        },
+        "Factually Incorrect": {
+          "Correct": 1,
+          "Outdated": 3,
+          "Biased": 0,
+          "Potentially Offensive": 0,
+          "Factually Incorrect": 3
+        }
+      }
+    },
+    "en": {
+      "n": 55,
+      "accuracy": 0.018,
+      "macro_f1": 0.01,
+      "per_label": {
+        "Correct": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 28
+        },
+        "Outdated": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 8
+        },
+        "Biased": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 9
+        },
+        "Potentially Offensive": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 9
+        },
+        "Factually Incorrect": {
+          "precision": 0.024,
+          "recall": 1.0,
+          "f1": 0.048,
+          "support": 1
+        }
+      },
+      "confusion": {
+        "Correct": {
+          "Correct": 0,
+          "Outdated": 6,
+          "Biased": 0,
+          "Potentially Offensive": 4,
+          "Factually Incorrect": 18
+        },
+        "Outdated": {
+          "Correct": 0,
+          "Outdated": 0,
+          "Biased": 0,
+          "Potentially Offensive": 1,
+          "Factually Incorrect": 7
+        },
+        "Biased": {
+          "Correct": 0,
+          "Outdated": 2,
+          "Biased": 0,
+          "Potentially Offensive": 0,
+          "Factually Incorrect": 7
+        },
+        "Potentially Offensive": {
+          "Correct": 0,
+          "Outdated": 1,
+          "Biased": 0,
+          "Potentially Offensive": 0,
+          "Factually Incorrect": 8
+        },
+        "Factually Incorrect": {
+          "Correct": 0,
+          "Outdated": 0,
+          "Biased": 0,
+          "Potentially Offensive": 0,
+          "Factually Incorrect": 1
+        }
+      }
+    },
+    "he": {
+      "n": 10,
+      "accuracy": 0.3,
+      "macro_f1": 0.236,
+      "per_label": {
+        "Correct": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "Outdated": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 1
+        },
+        "Biased": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 1
+        },
+        "Potentially Offensive": {
+          "precision": 0.5,
+          "recall": 0.5,
+          "f1": 0.5,
+          "support": 2
+        },
+        "Factually Incorrect": {
+          "precision": 0.667,
+          "recall": 0.333,
+          "f1": 0.444,
+          "support": 6
+        }
+      },
+      "confusion": {
+        "Correct": {
+          "Correct": 0,
+          "Outdated": 0,
+          "Biased": 0,
+          "Potentially Offensive": 0,
+          "Factually Incorrect": 0
+        },
+        "Outdated": {
+          "Correct": 0,
+          "Outdated": 0,
+          "Biased": 0,
+          "Potentially Offensive": 1,
+          "Factually Incorrect": 0
+        },
+        "Biased": {
+          "Correct": 0,
+          "Outdated": 1,
+          "Biased": 0,
+          "Potentially Offensive": 0,
+          "Factually Incorrect": 0
+        },
+        "Potentially Offensive": {
+          "Correct": 0,
+          "Outdated": 0,
+          "Biased": 0,
+          "Potentially Offensive": 1,
+          "Factually Incorrect": 1
+        },
+        "Factually Incorrect": {
+          "Correct": 1,
+          "Outdated": 3,
+          "Biased": 0,
+          "Potentially Offensive": 0,
+          "Factually Incorrect": 2
+        }
+      }
+    },
+    "use_mention_fp_overall": {
+      "n_correct": 28,
+      "flagged_as_violation": 28,
+      "fp_rate": 1.0
+    },
+    "use_mention_fp_en": {
+      "n_correct": 28,
+      "flagged_as_violation": 28,
+      "fp_rate": 1.0
+    },
+    "use_mention_fp_he": null,
+    "n_context_dependent_excluded": 0
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "clear": 58,
+  "agreement": 0.879,
+  "flip_recall": 0.903,
+  "flip_precision": 0.875,
+  "tp": 28,
+  "fn": 3,
+  "fp": 4,
+  "tn": 23,
+  "errors": 0,
+  "context_rows": 22,
+  "context_flipped": 14,
+  "gate_pass": true
+}
