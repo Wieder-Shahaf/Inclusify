@@ -14,7 +14,10 @@ import os
 from dataclasses import dataclass, field
 from typing import List, Tuple
 
-from .config import CONFIG as _BASE  # reuse target_modules, seed, etc.
+# Values mirrored from the T4-era config.py (kept identical for adapter shape compat):
+_MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
+_TARGET_MODULES = ["q_proj", "k_proj", "v_proj", "o_proj", "up_proj", "down_proj", "gate_proj"]
+_SEED = 42
 
 # --- Repo root (this file is ml/training/config_h100.py) ---
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -32,14 +35,14 @@ LOG_DIR = os.path.join(EXT_ROOT, "logs")                   # tensorboard
 TRAIN_JSONL = os.path.join(EXT_ROOT, "curated_data", "train.jsonl")
 VAL_JSONL = os.path.join(EXT_ROOT, "curated_data", "val.jsonl")
 
-SEED = _BASE.random_state  # 42
+SEED = _SEED  # 42
 
 
 @dataclass
 class H100Config:
     # Model — local bf16 base, NO quantization (3B fits easily in 80GB)
     model_path: str = BASE_MODEL_PATH
-    model_name: str = _BASE.model_name  # "Qwen/Qwen2.5-3B-Instruct"
+    model_name: str = _MODEL_NAME  # "Qwen/Qwen2.5-3B-Instruct"
 
     # Precision: H100 does bf16 natively (T4 reason for disabling is gone)
     bf16: bool = True
@@ -57,7 +60,7 @@ class H100Config:
     # Batch — effective 32. Sequences are long (~2.4k tok: the ~1.9k-token production
     # system prompt sits in every example), so batch 8 + accum 4 + checkpointing keeps
     # VRAM safe on the 80GB H100.
-    per_device_train_batch_size: int = 8
+    per_device_train_batch_size: int = 8   # batch 16 OOMs at seq 2432 (20GB spike); 8 is stable ~54GB
     gradient_accumulation_steps: int = 4
     per_device_eval_batch_size: int = 8
     gradient_checkpointing: bool = True  # needed at this seq length
@@ -84,7 +87,7 @@ class H100Config:
     val_jsonl: str = VAL_JSONL
 
     # LoRA target modules — MUST match the current prod adapter (shape compat)
-    target_modules: List[str] = field(default_factory=lambda: list(_BASE.target_modules))
+    target_modules: List[str] = field(default_factory=lambda: list(_TARGET_MODULES))
 
 
 CONFIG_H100 = H100Config()

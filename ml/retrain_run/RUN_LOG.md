@@ -94,6 +94,17 @@ _TBD — populated in Phase 5._
   on `/data/…/curated_data` (~280MB, not git).
 ✅ **Phase 2 DONE.**
 
+### Phase 3 — training (in progress)
+- **GOTCHA 1:** `assistant_only_loss=True` failed — Qwen2.5's chat template lacks the
+  `{% generation %}` markers (my earlier check false-matched `add_generation_prompt`).
+  Switched to the runbook's documented fallback `DataCollatorForCompletionOnlyLM` with
+  response template `<|im_start|>assistant\n` (token ids [151644,77091,198]).
+- **MASK VERIFIED:** unmasked = 1.9% of tokens (only the assistant target scored). ✅
+- **GOTCHA 2:** batch 16 OOM'd (20GB spike on longest seq @ 2432). Reverted to batch 8 ×
+  accum 4 (eff 32) + gradient checkpointing + `PYTORCH_CUDA_ALLOC_CONF=expandable_segments`.
+  Stable at ~48GB VRAM, ~8.2s/step, ~2h40m/candidate (~5.3h for r8 + r16).
+- Candidates training on GPU 1: `qwen_r8_d0.2_achva` then `qwen_r16_d0.1_achva` → `/data/…/adapters_new`.
+
 ### Phase 1 — frozen eval (in progress)
 - [x] `expert_eval.jsonl` built (100 rows) + sha256 frozen. **Adjudication done by reading
   all 100 expert notes (encoded as a reviewed table in build_expert_eval.py), not regex,

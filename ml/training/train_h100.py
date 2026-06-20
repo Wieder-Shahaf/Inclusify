@@ -20,7 +20,11 @@ import torch
 from datasets import load_dataset
 from peft import LoraConfig
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from trl import SFTConfig, SFTTrainer
+from trl import SFTConfig, SFTTrainer, DataCollatorForCompletionOnlyLM
+
+# Qwen2.5's chat template lacks {% generation %} markers, so assistant_only_loss can't be
+# used. Mask the prompt with the assistant-header response template instead.
+RESPONSE_TEMPLATE = "<|im_start|>assistant\n"
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from config_h100 import CONFIG_H100 as C, GRID_H100, REPO_ROOT
@@ -74,7 +78,7 @@ def train_one(rank, alpha, dropout, train_ds, eval_ds, tok):
         optim=C.optim,
         max_seq_length=C.max_seq_length,
         packing=False,
-        assistant_only_loss=True,          # completion-only via {% generation %} markers
+        dataset_text_field="text",         # pre-rendered chat text; collator masks the prompt
         gradient_checkpointing=C.gradient_checkpointing,
         logging_steps=C.logging_steps,
         eval_strategy="steps", eval_steps=eval_steps,
@@ -83,8 +87,11 @@ def train_one(rank, alpha, dropout, train_ds, eval_ds, tok):
         report_to="tensorboard", logging_dir=os.path.join(C.log_dir, name),
         seed=C.seed, dataset_num_proc=8,
     )
+    collator = DataCollatorForCompletionOnlyLM(
+        response_template=tok.encode(RESPONSE_TEMPLATE, add_special_tokens=False), tokenizer=tok)
     trainer = SFTTrainer(model=model, args=args, train_dataset=train_ds,
-                         eval_dataset=eval_ds, peft_config=peft_cfg, processing_class=tok)
+                         eval_dataset=eval_ds, peft_config=peft_cfg, processing_class=tok,
+                         data_collator=collator)
     mask_frac = verify_mask(trainer, name)
 
     t0 = time.time()
@@ -121,9 +128,9 @@ def main():
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
     ds = load_dataset("json", data_files={"train": C.train_jsonl, "val": C.val_jsonl})
-    # keep only the conversational column
-    train_ds = ds["train"].select_columns(["messages"])
-    eval_ds = ds["val"].select_columns(["messages"])
+    # use the pre-rendered chat text; the collator handles prompt masking
+    train_ds = ds["train"].select_columns(["text"])
+    eval_ds = ds["val"].select_columns(["text"])
     print(f"train={len(train_ds)} val={len(eval_ds)}", flush=True)
 
     all_meta = []
