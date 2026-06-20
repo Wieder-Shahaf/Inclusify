@@ -1,0 +1,30 @@
+{
+  "raw": 19954,
+  "dropped_quality": 15,
+  "dropped_eval_leak": 100,
+  "dropped_dup": 3,
+  "after_clean_dedup": 19836,
+  "judged": 16010,
+  "flip_to_correct": 8942,
+  "kept_violation": 7047,
+  "judge_errors": 21,
+  "lang_warnings": 0,
+  "categories": {
+    "Generalization": 5482,
+    "Medicalization": 1543,
+    "Demeaning Terminology": 22
+  },
+  "final_rows": 19836,
+  "final_label_dist": {
+    "Correct": 12768,
+    "Factually Incorrect": 1750,
+    "Potentially Offensive": 2309,
+    "Biased": 2883,
+    "Outdated": 126
+  },
+  "final_lang_dist": {
+    "he": 9890,
+    "en": 9946
+  },
+  "final_correct_share": 0.644
+}

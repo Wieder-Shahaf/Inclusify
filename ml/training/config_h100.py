@@ -26,9 +26,11 @@ OUTPUT_DIR = os.path.join(EXT_ROOT, "adapters_new")        # final candidate ada
 CHECKPOINT_DIR = os.path.join(EXT_ROOT, "checkpoints")     # trainer intermediate checkpoints
 LOG_DIR = os.path.join(EXT_ROOT, "logs")                   # tensorboard
 
-# --- Curated, production-format training data (Phase 2 output, in-repo) ---
-TRAIN_JSONL = os.path.join(REPO_ROOT, "data", "curated", "train.jsonl")
-VAL_JSONL = os.path.join(REPO_ROOT, "data", "curated", "val.jsonl")
+# --- Curated, production-format training data (Phase 2 output) ---
+# Rendered JSONL repeats the ~1.9k-token system prompt in every example (~280MB total),
+# so it lives on /data, not in git. Regenerable from ml/data_curated/curated.jsonl.
+TRAIN_JSONL = os.path.join(EXT_ROOT, "curated_data", "train.jsonl")
+VAL_JSONL = os.path.join(EXT_ROOT, "curated_data", "val.jsonl")
 
 SEED = _BASE.random_state  # 42
 
@@ -52,14 +54,17 @@ class H100Config:
     lr_scheduler_type: str = "cosine"
     num_epochs: int = 3
 
-    # Batch — effective ~32-64; raise per_device if VRAM allows
-    per_device_train_batch_size: int = 16
-    gradient_accumulation_steps: int = 2
-    per_device_eval_batch_size: int = 32
-    gradient_checkpointing: bool = False  # have the memory; off for speed
+    # Batch — effective 32. Sequences are long (~2.4k tok: the ~1.9k-token production
+    # system prompt sits in every example), so batch 8 + accum 4 + checkpointing keeps
+    # VRAM safe on the 80GB H100.
+    per_device_train_batch_size: int = 8
+    gradient_accumulation_steps: int = 4
+    per_device_eval_batch_size: int = 8
+    gradient_checkpointing: bool = True  # needed at this seq length
 
-    # Sequence: prod system prompt (~1.9k tok) + passage exceeds 512; need room
-    max_seq_length: int = 1024
+    # Sequence: TRUE max formatted example is 2350 tokens (measured). 1024/2048 would
+    # truncate the assistant target. Set above the real max.
+    max_seq_length: int = 2432
 
     # Eval / logging / checkpointing
     logging_steps: int = 10

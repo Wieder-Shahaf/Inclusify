@@ -1,0 +1,20 @@
+{
+  "total": 14092,
+  "train": 12682,
+  "val": 1410,
+  "train_label_dist": {
+    "Potentially Offensive": 2068,
+    "Correct": 6341,
+    "Biased": 2586,
+    "Factually Incorrect": 1574,
+    "Outdated": 113
+  },
+  "train_lang_dist": {
+    "en": 6380,
+    "he": 6302
+  },
+  "correct_share_train": 0.5,
+  "tok_len_p50": 2147,
+  "tok_len_p95": 2242,
+  "tok_len_max_sampled": 2287
+}

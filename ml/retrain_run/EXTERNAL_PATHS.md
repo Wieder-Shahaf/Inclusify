@@ -21,6 +21,7 @@ rm -rf /data/shahafw_home/inclusify_retrain
 | `…/judge_cache/` | cached Gemma judge responses (relabel) | small |
 | `…/baseline_adapter/qwen_r8_d0.2/` | baseline weights recovered from git history (rollback/baseline) | ~57 MB |
 | `…/hf_home/` | HF cache (HF_HOME) | small |
+| `…/curated_data/` | rendered train.jsonl/val.jsonl (~280MB; system prompt per row) | ~280 MB |
 
 ## Artifacts kept IN the repo (committed, small — NOT deleted by teardown)
 - `ml/retrain_run/` — RUN_LOG.md, pip_freeze.txt, baseline_metrics.json, eval_report.md, this ledger

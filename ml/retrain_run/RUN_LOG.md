@@ -68,6 +68,32 @@ _TBD — populated in Phase 5._
 - [x] `config_h100.py` written.
 - [ ] Phase 0 committed (next).
 
+### Phase 2 — data curation & relabeling  ✅ DONE
+- **Bigger problem than runbook assumed:** explanation column is **~88% augmentation-meta in
+  BOTH languages** (EN "This variation maintains…" 88.3%; HE "שומר" 84%), not 46% Hebrew-only.
+  Severity labels are fine; explanations broadly unusable. **User-approved decisions:**
+  regenerate explanations via Gemma in the same judge pass; process full 20k at high concurrency.
+- **Gemma judge** (`google/gemma-4-26B-A4B-it`, reasoning on, remote 192.168.100.112:8222):
+  one call per violation row → keep/flip + category + clean explanation. Cached to `/data/judge_cache`.
+  - **Calibration GATE: 0.879 agreement** vs expert (recall 0.903, precision 0.875) ≥ 0.85 → **PASS.**
+    First pass was 0.828 (over-flipped hedged-attribution cases); added a general "hedged
+    propagation ≠ use-mention" rule → 0.879. Honest caveat: refined once after seeing
+    disagreements on the same 58 rows; principle is general, N small → directional.
+  - Added a language-script guard (one retry) after an EN sentence got a Hebrew explanation.
+- **Relabel result (16,010 violations judged):** 8,942 flip→Correct (55.8%), 7,047 kept, 21 errors.
+  - High flip rate is **semantically correct** (verified): source "Outdated" (4,018) was mostly
+    historical *descriptions* → collapsed to 126 genuine assertions. Regenerated explanations are
+    clean, correct-language, real (no meta-text). This is the core data-bug fix.
+  - **100 eval-leak rows removed** (expert set was drawn from this corpus) — leakage prevented.
+- **Balancing (Phase 2.5):** relabel left 64% Correct → subsampled to **50%** (match eval's ~50%).
+- **Final training set: 14,092 examples** (50% Correct), train 12,682 / val 1,410, en/he balanced.
+  Label dist (train): Correct 6,341, Biased 2,586, PO 2,068, FI 1,574, **Outdated 113 (limitation)**.
+- **Token length:** true max 2,350 → **`max_seq_length=2432`** (runbook's 1024 would have truncated
+  every assistant target). Adjusted batch 8 × accum 4 (eff 32) + gradient checkpointing for the long seqs.
+- Artifacts: `curated.jsonl` + `relabel_audit.csv` + `MANIFEST.md` in repo; rendered `train/val.jsonl`
+  on `/data/…/curated_data` (~280MB, not git).
+✅ **Phase 2 DONE.**
+
 ### Phase 1 — frozen eval (in progress)
 - [x] `expert_eval.jsonl` built (100 rows) + sha256 frozen. **Adjudication done by reading
   all 100 expert notes (encoded as a reviewed table in build_expert_eval.py), not regex,
