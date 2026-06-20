@@ -84,4 +84,25 @@ _TBD — populated in Phase 5._
   - **Kept as raw per-span truth.** Sentence-level collapse (Correct iff all spans Correct,
     else highest-severity violation) is done in `run_eval.py`, not baked into the frozen file.
   - Combined eval = 100 expert + 91 gold ≈ 191 sentences (small → deltas are directional).
-- [ ] `run_eval.py` (production-format scoring) + baseline metrics.
+- [x] `run_eval.py` written (production-format scoring; imports prod SYSTEM_PROMPT/SEVERITY_MAP
+  via AST, no backend deps). Gold spans collapsed to one verdict/sentence in the scorer.
+- [x] **Baseline measured** (current prod adapter `qwen_r8_d0.2`) → `baseline_metrics.json`.
+  - **GOTCHA:** the adapter weights were missing from the repo working tree (removed in commit
+    `5fa0bb8 "remove large binary"`; `.gitattributes` marks `*.safetensors` as LFS). Recovered
+    the real 57MB weights from git history `git cat-file -p 8a19e7d:…/adapter_model.safetensors`
+    → reconstructed full adapter at `/data/shahafw_home/inclusify_retrain/baseline_adapter/qwen_r8_d0.2`
+    (repo dir left untouched per runbook; weights kept off git).
+
+  | set | acc | macro-F1 | EN F1 | HE F1 | use-mention FP | parse_fail |
+  |---|---|---|---|---|---|---|
+  | expert (78 strict) | 0.077 | 0.121 | 0.142 | 0.094 | **1.00** | 1 |
+  | gold (65) | 0.062 | 0.046 | 0.010 | 0.236 | **1.00** | 1 |
+
+  - **The baseline predicted "Correct" exactly ONCE in 165 sentences.** It emits valid
+    `{"issues":[...]}` JSON (base in-context ability) but flags ~99% of everything — zero restraint.
+    Verified real via raw outputs: clean sentences flagged with absurd rationales; Hebrew outputs
+    leak translation-meta ("המשפט שומר על ההקשר…"). This is exactly the train/inference-format
+    mismatch + Hebrew contamination the retrain targets. **Baseline is honest, not a scoring bug.**
+  - Headline target for the retrain: drive use-mention FP from 1.00 → low, lift HE/EN F1.
+
+✅ **Phase 1 DONE.** Eval sets frozen (checksummed), baseline recorded. Files now read-only.

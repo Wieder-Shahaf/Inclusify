@@ -19,6 +19,8 @@ rm -rf /data/shahafw_home/inclusify_retrain
 | `…/adapters_new/` | candidate LoRA adapters (small) | ~tens of MB each |
 | `…/logs/` | TensorBoard logs | small |
 | `…/judge_cache/` | cached Gemma judge responses (relabel) | small |
+| `…/baseline_adapter/qwen_r8_d0.2/` | baseline weights recovered from git history (rollback/baseline) | ~57 MB |
+| `…/hf_home/` | HF cache (HF_HOME) | small |
 
 ## Artifacts kept IN the repo (committed, small — NOT deleted by teardown)
 - `ml/retrain_run/` — RUN_LOG.md, pip_freeze.txt, baseline_metrics.json, eval_report.md, this ledger
