@@ -78,5 +78,10 @@ _TBD — populated in Phase 5._
   - **HEADLINE: 31/80 (38.8%) of violation rows are use-mention FALSE POSITIVES that
     flip to Correct** — confirms (exceeds) the runbook's ~32% use-mention claim. 22 rows
     context-dependent → excluded from the strict accuracy metric, reported separately.
-- [ ] `gold_eval.jsonl` from highlighted DOCX/PDF.
+- [x] `gold_eval.jsonl` built from highlighted DOCX (Hebrew) + PDF (English) + sha256.
+  - 91 span records (deduped from 109): Correct 42, Biased 16, Outdated 13, PO 12, FI 8; 79 EN + 12 HE.
+  - 65 distinct sentences; 10 carry >1 label (phrase-level spans of different colors).
+  - **Kept as raw per-span truth.** Sentence-level collapse (Correct iff all spans Correct,
+    else highest-severity violation) is done in `run_eval.py`, not baked into the frozen file.
+  - Combined eval = 100 expert + 91 gold ≈ 191 sentences (small → deltas are directional).
 - [ ] `run_eval.py` (production-format scoring) + baseline metrics.
