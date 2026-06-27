@@ -69,9 +69,14 @@ class Settings(BaseSettings):
     MODEL_SCALE_TO_ZERO: bool = False
     MODEL_HEALTH_CACHE_TTL: float = 300.0  # seconds; live-probe path only
 
-    # Azure Blob Storage
-    AZURE_STORAGE_CONNECTION_STRING: str = ""
-    AZURE_STORAGE_CONTAINER: str = "texts"
+    # Object storage (S3-compatible: Cloudflare R2 in prod, MinIO in dev).
+    # Replaces the Azure Blob settings (docs/STACK-A-MIGRATION.md §2.1). Empty
+    # credentials => storage disabled: uploads become no-ops returning None.
+    S3_ENDPOINT_URL: str = ""       # R2: https://<ACCT_ID>.r2.cloudflarestorage.com · MinIO: http://minio:9000
+    S3_ACCESS_KEY_ID: str = ""
+    S3_SECRET_ACCESS_KEY: str = ""
+    S3_BUCKET: str = "texts"        # was AZURE_STORAGE_CONTAINER
+    S3_REGION: str = "auto"         # R2 expects "auto"; MinIO ignores it
 
     # Google OAuth Configuration
     GOOGLE_CLIENT_ID: str = ""
