@@ -39,13 +39,15 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
-          cache-dependency-path: backend/requirements.txt
+          cache-dependency-path: backend/requirements-dev.txt
 
       - name: Install dependencies
+        # requirements-dev.txt pulls in requirements.txt plus the test deps
+        # (pytest, pytest-asyncio, aiohttp, moto[s3]). moto is required or the
+        # S3 blob-storage tests importorskip and silently don't run.
         run: |
           cd backend
-          pip install -r requirements.txt
-          pip install pytest pytest-asyncio
+          pip install -r requirements-dev.txt
 
       - name: Run tests
         run: cd backend && python -m pytest tests/ -v --ignore=tests/test_vllm_deployment.py --ignore=tests/test_vllm_integration.py
