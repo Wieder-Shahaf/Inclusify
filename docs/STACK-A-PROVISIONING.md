@@ -26,6 +26,45 @@ openssl rand -hex 32   # -> VLLM_API_KEY value, used by both Modal and the backe
 
 ---
 
+## 0.5 Pre-flight — validate locally before you have accounts
+
+Every account-gated step can be rehearsed with a local stand-in, so failures are
+caught now rather than mid-cutover. All of these passed on 2026-06-27.
+
+**DB init** (rehearses the Railway `psql < schema.sql` step against a fresh DB):
+```bash
+docker compose exec -T postgres psql -U postgres -c "CREATE DATABASE rb_preflight;"
+docker compose exec -T postgres psql -U postgres -d rb_preflight -v ON_ERROR_STOP=1 < db/schema.sql
+docker compose exec -T postgres psql -U postgres -d rb_preflight -v ON_ERROR_STOP=1 < db/seed.sql
+docker compose exec -T postgres psql -U postgres -c "DROP DATABASE rb_preflight;"
+# -> 14 tables created + seeds inserted; ON_ERROR_STOP makes any SQL error fail loudly.
+```
+
+**Modal app** (validates the decorators/args — no Modal account or deploy needed):
+```bash
+pip install modal
+python -c "import importlib.util,pathlib; \
+ s=importlib.util.spec_from_file_location('m', pathlib.Path('infra/modal/vllm_app.py').resolve()); \
+ m=importlib.util.module_from_spec(s); s.loader.exec_module(m); print('OK', m.app.name)"
+# -> 'OK inclusify-vllm'. A wrong decorator arg (e.g. scaledown_window) throws HERE,
+#    long before `modal deploy`.
+```
+
+**Production Docker builds** (rehearses Railway's build — Railway builds these Dockerfiles directly):
+```bash
+docker build -f infra/docker/backend.Dockerfile --target runtime -t inclusify-backend:preflight .
+docker build -f infra/docker/frontend.Dockerfile \
+  --build-arg NEXT_PUBLIC_API_URL=https://<your-backend>.up.railway.app \
+  -t inclusify-frontend:preflight .
+# Confirm the Azure->S3 swap landed in the prod image (boto3 present, azure SDK gone):
+docker run --rm inclusify-backend:preflight python -c "import boto3; print(boto3.__version__)"
+# Confirm NEXT_PUBLIC_API_URL is inlined at BUILD time (this is why it must be a
+# Railway BUILD variable, not runtime) — the URL appears inside the compiled bundle:
+docker run --rm inclusify-frontend:preflight sh -c "grep -rl '<your-backend>.up.railway.app' .next/"
+```
+
+---
+
 ## 1. Modal — GPU layer (vLLM)
 
 The app is `infra/modal/vllm_app.py` (pinned to the VM-validated stack; serves the
@@ -96,7 +135,10 @@ railway add --database postgres    # managed Postgres 16
 railway add --database redis       # managed Redis
 # Backend + frontend: add as GitHub-repo services pointing at the two Dockerfiles
 #   backend  -> infra/docker/backend.Dockerfile   (target: runtime)
-#   frontend -> infra/docker/frontend.Dockerfile  (final stage; NO --target)
+#   frontend -> infra/docker/frontend.Dockerfile  (final stage is `runtime`; build
+#               with NO target. Do NOT set target `runner` — that stage does not
+#               exist; the legacy deploy.yml's `target: runner` is broken and dies
+#               at cutover.)
 ```
 
 Apply the DB schema once Postgres exists:
