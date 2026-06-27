@@ -75,6 +75,10 @@ services:
     profiles:
       - dev
       - prod
+    # Tag the image per build target so a dev image and a prod image never
+    # collide on the same name (avoids `up` silently reusing a stale image
+    # built for the other target).
+    image: inclusify-backend:${BUILD_TARGET:-development}
     build:
       context: .
       dockerfile: infra/docker/backend.Dockerfile
@@ -143,6 +147,10 @@ services:
     profiles:
       - dev
       - prod
+    # Tag the image per build target so a dev image and a prod image never
+    # collide on the same name (avoids `up` silently reusing a stale image
+    # built for the other target).
+    image: inclusify-frontend:${BUILD_TARGET:-development}
     build:
       context: .
       dockerfile: infra/docker/frontend.Dockerfile

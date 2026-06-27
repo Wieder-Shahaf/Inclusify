@@ -52,3 +52,8 @@ skills-lock.json
 
 # Course submission/instruction files (not part of the codebase)
 Project Submmisions and Instractions Files/
+
+# Local scratch / personal working files (not part of the codebase)
+docs/DELIVERABLES.md
+docs/poster-testing.html
+infra/scripts/azure-idle-postgres.sh

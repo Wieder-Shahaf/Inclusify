@@ -96,6 +96,12 @@ def serve():
 
 Operational parameters carry over 1:1 from `infra/azure/vllm-vm/vllm.service` (`--max-num-seqs 16` already matches `VLLM_MAX_CONCURRENT=16` in the backend). One-time setup: upload model weights + the `qwen_r8_d0.2` LoRA adapter to the Modal Volume. Expect **cold starts of roughly 30–60s** for a 3B FP16 model loaded from a Volume; the backend's `VLLM_TIMEOUT=120s` and circuit breaker (3 failures / 60s reset) tolerate this, but the **first request after idle may trip one breaker count** — consider bumping `VLLM_CIRCUIT_FAIL_MAX` to 5, or have the backend send a warm-up ping when an upload starts (the user then "pays" the cold start during the Docling parse, which already takes tens of seconds).
 
+**Pre-stage the weights for fast warm-up — and treat warm-up as billable, not just inference.** Bake the model weights into the **container image** (or keep them on the Modal Volume) so a cold start is a *local VRAM load* — **never** a runtime HuggingFace download. For the fastest warm-up, image-baked weights + Modal **memory-snapshots** (restore VRAM state instead of re-loading) push cold starts toward sub-second. This is a **cost** lever, not just UX: per Modal's cold-start docs the keep-warm/idle time is billed, and the boot/weight-load phase almost certainly bills too (GPU reserved during boot — verify; see §4.1). So minimise cold-start **duration** here (weights-in-image + snapshots) and **frequency** in §4.1 (`scaledown_window` + clustering).
+
+**GPU tier — now & future** (each model is its own Modal function; size per function, change `gpu=` in one line anytime — no migration cost, so don't over-provision ahead):
+- **Now — Qwen2.5-3B analysis (this app):** `gpu="T4"` (matches the Azure VM; ~6 GB weights fit; ~$0 inside the $30 credit at 50/day). Want snappier results while staying free? `gpu="L4"` ($0.80/h, 24 GB, BF16/FP8) is a ~2× speed-up still inside the credit; `A10` ($1.10/h) likewise. **A100/H100 are an overpay for a 3B at low volume** — idle keep-warm dominates the bill (§4.1), so a faster chip just pays ~3.6× to *wait*. Reserve them for sustained high throughput or much larger models.
+- **Future — the audit agent's reasoning model (P3, text-only; no vision/audio):** a **small reasoning Gemma**, run **co-located with Qwen-3B in one Modal function** — the agent fires on *every* analysis, so two separate scale-to-zero functions would double the cold-start + warm-idle overhead that dominates the bill (§4.1). (Scanned-PDF/image → text already happens upstream at the Docling/OCR layer, so the model only ever needs text.) Size by the Gemma you pick: **Gemma 3 1B** (~2 GB) co-resides with Qwen-3B on a single **`T4`** (stays ~$0 in credit, but 1B reasoning is weak); **Gemma 3 4B text-only** (~8 GB — the practical floor for real reasoning) + Qwen-3B overflows the T4's 16 GB → **`gpu="L4"`** (Ada, BF16; preferred for Gemma) or **`"A10"`** (24 GB). A100 only at Gemma 12B/27B. **Cost:** §4's ~$15/mo is the *current single-pass Qwen* path; the agent's ReAct + reflection loop is several LLM calls per document, so per-analysis GPU-seconds rise sharply — expect the agentic path to **exceed the $30 credit** (~$20–50/mo on L4, driven by reasoning-loop depth more than by GPU tier; **bound the loop**). If `classify_span` keeps using the fine-tuned Qwen LoRA (the validated baseline) while Gemma drives reasoning, both models stay resident — hence the co-location.
+
 > Note: a Modal deep-dive video was referenced in the task description but no link came through — the above is based on Modal's standard vLLM serving pattern (Volume-cached weights + `scaledown_window` + web_server).
 
 ### 2.5 Things that need **no** changes
@@ -125,12 +131,37 @@ Operational parameters carry over 1:1 from `infra/azure/vllm-vm/vllm.service` (`
 
 ---
 
-## 4. Cost reality check on the $5–15/mo projection
+## 4. Cost reality check — grounded for 50 analyses/day (~1,500/month)
 
-- **Modal**: $30/mo free credit covers ~50 T4-hours. With scale-to-zero and the health-poll fix, academic-project traffic plausibly stays inside free credit → **$0**, matching the projection. Without the health-poll fix, this blows up — that's the single biggest financial risk in the plan.
-- **Railway**: the $5 Hobby plan includes $5 of usage. Four always-on services (frontend + backend + Postgres + Redis) typically land at **$10–20/mo** of usage, not $5 — the backend image is heavy (Docling + torch) and idles around 0.5–1 GB RAM. Expect the top of your range, not the bottom. Mitigation: Railway's serverless/app-sleep for the frontend, and consider whether Redis is worth a service at all (refresh tokens already degrade gracefully; a Postgres-backed token store would drop one service).
-- **R2**: free tier (10 GB storage, free egress) is far above current usage → **$0**. ✅
-- **Realistic total: $10–20/mo**, $0–10 of which is avoidable with the sleep/Redis optimizations. Still roughly 85–90% below the current Azure footprint (B1ms Postgres + Container Apps + T4 VM ≈ $150+/mo when the VM runs).
+*Rates as published Jun 2026 (Railway Hobby · Modal Starter · Cloudflare R2). Assumptions stated inline — change them and the totals move. Per analysis: Docling parse (CPU, on Railway) + LLM on the Qwen2.5-3B LoRA (Modal T4); active GPU inference ≈ 20–60 s/doc, cold start ≈ 30–60 s, `scaledown_window = 300 s`.*
+
+### 4.1 Modal (GPU) — driven by warm-idle, not inference
+T4 = **$0.59/GPU-h**; the vLLM container also bills CPU ($0.0473/core-h) + memory ($0.0080/GiB-h) ⇒ ≈ **$0.75–0.90/h all-in**. Weights + LoRA (~6 GB) on a Volume sit inside the **1 TiB free** ⇒ $0. Cost is dominated by the 5-min keep-warm tail after each activity burst, so it swings with how clustered the 50 requests are:
+- **Clustered** (staff work in a few sessions/day): ~3–5 cold starts + 50× inference + a few 5-min tails ≈ **~25–30 GPU-h/mo**.
+- **Fully spread** (each request >5 min apart, so isolated): ≈ **~160 GPU-h/mo**.
+
+The **$30/mo Starter credit covers ~35–50 effective T4-h**, so clustered ⇒ **$0**; fully spread ⇒ ~$130 − $30 ≈ **~$100/mo**.
+
+**Warm-up is on the meter — not just inference.** Per Modal's [cold-start docs](https://modal.com/docs/guide/cold-start): you are *"billed for any resources used while the container is idle (e.g., GPU reservation or residual memory occupancy)"* — so the keep-warm tail above is billed. The **boot / weight-load** phase isn't stated explicitly by Modal but almost certainly bills too (the GPU is reserved during boot — the same condition they bill when idle); confirm via `billing@modal.com` or by measuring billed GPU-seconds on one cold invocation. Mitigate on both axes: cold-start **frequency** (clustering + `scaledown_window`) and **duration** (weights baked into the image + memory-snapshots — see §2.4). Corollary: **never** pin the GPU warm 24/7 (`min_containers≥1`, or a health-poll that does it by accident) — that converts the entire month into billed idle.
+
+⚠️ **The §2.3 health-poll trap overrides everything.** If the frontend's 30-s `modelHealthCheck()` keeps the container warm 24/7: 730 h × $0.59 = **~$430/mo on GPU alone** (~$600 all-in). This is the single biggest financial risk — **the §2.3 fix is mandatory**, not an optimization. Mismanaged, Modal alone costs more than the entire Azure stack you're leaving.
+
+### 4.2 Railway (backend + frontend + Postgres + Redis) — the real recurring cost
+Hobby = **$5/mo floor (incl. $5 usage)**, then billed on actual vCPU- + RAM-time (assume ≈ $10/GB-month memory, $20/vCPU-month — confirm current rates). At 50/day the load is light, so the bill ≈ the continuous RAM of four always-on services, and the **backend dominates** because `main.py` warm-loads Docling at startup (~1–1.5 GB resident): backend ~1.2 GB + frontend ~0.3 + Postgres ~0.2 + Redis ~0.05 ⇒ **~$12–20/mo** (≈ $15 typical); CPU mostly idle (bursts during parse). **Trim toward ~$5–10:** app-sleep the frontend; drop Redis (Postgres-backed refresh tokens already degrade gracefully → one fewer always-on service).
+
+### 4.3 Cloudflare R2 (object storage) — free at this scale
+Free tier: 10 GB-month, 1M Class A ops, 10M Class B ops, **egress free**. 1,500 analyses/mo ⇒ a few thousand Class A writes (vs 1M free), reads modest (vs 10M free), originals stored only when not in private mode (~1–2 MB each → a few GB before cleanup) ⇒ **$0/mo**. Even at 50 GB stored = $0.015 × 50 = **$0.75/mo**.
+
+### 4.4 Total (50 analyses/day)
+
+| Component | Realistic (clustered, health-poll fixed) | If mismanaged |
+|---|---|---|
+| **Modal T4** | **$0** (~25–30 GPU-h, inside the $30 credit) | ~$100/mo (traffic fully spread) · **~$430/mo (health-poll warm 24/7)** |
+| **Railway** (4 svcs) | **~$15/mo** (backend Docling RAM dominates) | trim to ~$5–10 (sleep frontend, drop Redis) |
+| **Cloudflare R2** | **$0** (inside free tier) | ~$0.75/mo at 50 GB stored |
+| **Total** | **≈ $15/month** | swings to **$100–430** only if Modal is mismanaged |
+
+**vs Azure** (B1ms Postgres + Container Apps + always-on T4 VM ≈ **$150+/mo** when the VM runs) ⇒ Stack A is **~90% cheaper at 50/day** — but essentially all the saving is the GPU going serverless, so it evaporates if the health poll keeps the container warm. **Recurring floor = Railway (~$15); Modal and R2 ride free tiers.**
 
 ---
 
