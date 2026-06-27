@@ -7,7 +7,7 @@
 
 ## 0. Migration status (living — update as steps land)
 
-Branch: `feature/stack-a-modal-vllm` · last updated **2026-06-27**.
+Branch: `feature/stack-a-modal-vllm` · last updated **2026-06-27**. Deploy steps (once accounts exist): **`docs/STACK-A-PROVISIONING.md`**.
 
 | Step | State | Notes |
 |---|---|---|
