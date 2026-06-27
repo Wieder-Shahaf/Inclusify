@@ -57,6 +57,18 @@ class Settings(BaseSettings):
     # When True, vLLM errors return a simulated response instead of None (for load testing only).
     VLLM_LOAD_TEST_MODE: bool = False
 
+    # Model health-check behaviour (see /api/v1/health/model and
+    # docs/STACK-A-MIGRATION.md §2.3). When the GPU layer is serverless and
+    # scales to zero (Modal), set MODEL_SCALE_TO_ZERO=True: the health endpoint
+    # must NOT probe vLLM, because any request wakes the GPU and bills idle time.
+    # In that mode availability is inferred from the circuit breaker (real
+    # analysis traffic) and the model is reported available so Modal cold-starts
+    # only on the first real request. On an always-on backend (Azure VM) keep the
+    # live probe but cache it for MODEL_HEALTH_CACHE_TTL seconds so many open
+    # analyze tabs can't turn a 30s poll into sustained load on vLLM.
+    MODEL_SCALE_TO_ZERO: bool = False
+    MODEL_HEALTH_CACHE_TTL: float = 300.0  # seconds; live-probe path only
+
     # Azure Blob Storage
     AZURE_STORAGE_CONNECTION_STRING: str = ""
     AZURE_STORAGE_CONTAINER: str = "texts"
