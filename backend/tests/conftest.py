@@ -1,5 +1,17 @@
 import os
+
+# Force test isolation onto an ephemeral SQLite DB BEFORE any app module is
+# imported. app.auth.users builds its SQLAlchemy engine from the lru_cached
+# settings.DATABASE_URL at import time, so this must run before app.core.config
+# is first imported (i.e. here, at the top of the root conftest). Otherwise, in a
+# full-suite run, the engine binds to the real Postgres (PG* env from compose)
+# and the auth/oauth/password fixtures' drop_all() runs against the live schema,
+# failing on its FK constraints (DependentObjectsStillExistError). The per-module
+# DATABASE_URL overrides in those test files are too late to matter once any test
+# has already imported the app. See memory: project_test_isolation_bug.
 os.environ.setdefault("JWT_SECRET", "test-secret")
+os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///./test_suite.db"
+os.environ["PGSSL"] = ""  # never hand ssl connect_args to the SQLite engine
 
 import pytest
 import pytest_asyncio
