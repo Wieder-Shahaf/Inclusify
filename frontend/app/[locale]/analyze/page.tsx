@@ -11,6 +11,7 @@ import ProcessingAnimation from '@/components/ProcessingAnimation';
 import HealthWarningBanner from '@/components/HealthWarningBanner';
 import { Annotation } from '@/components/AnnotatedText';
 import DocumentViewer, { PdfNavHandle } from '@/components/DocumentViewer';
+import MobileReport from '@/components/MobileReport';
 import { analyzeText, uploadFile, healthCheck, modelHealthCheck, AnalysisCancelledError, BboxAnnotation, PageSize, AnalysisResult } from '@/lib/api/client';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { exportReport } from '@/lib/exportReport';
@@ -19,6 +20,7 @@ import { registerNavigationGuard } from '@/lib/navigationGuard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLiveAnnouncer } from '@/contexts/LiveAnnouncerContext';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import {
   RotateCcw, FileText, ChevronLeft, ChevronRight, Scan, BarChart3, ShieldCheck,
   Lock, Mail, Download, AlertCircle, CheckCircle2, Filter, Type,
@@ -74,6 +76,10 @@ export default function AnalyzePage() {
   const textPanelRef = useRef<HTMLDivElement>(null);
 
   const router = useRouter();
+  // Phones render a single-column read-only report instead of the desktop
+  // two-column interactive view (no DocumentViewer / highlight tooltips).
+  // Initialized to false so server + first-paint match the desktop tree.
+  const isMobile = useIsMobile();
   const [viewState, setViewState] = useState<ViewState>('upload');
   const [fileName, setFileName] = useState('');
   const [inputMode, setInputMode] = useState<'upload' | 'paste'>('upload');
@@ -177,6 +183,19 @@ export default function AnalyzePage() {
     setViewState('results');
     announce(t('a11y.analysisComplete', { count: Object.values(result.counts).reduce((a, b) => a + b, 0) }));
   }, [t, announce]);
+
+  // Dev-only: `?demo=1` loads sample results so the results view (incl. the
+  // mobile report) can be previewed without a backend. Stripped in production.
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') return;
+    if (typeof window === 'undefined') return;
+    if (new URLSearchParams(window.location.search).get('demo') !== '1') return;
+    import('@/lib/demoAnalysis').then(({ buildDemoAnalysis, DEMO_FILE_NAME }) => {
+      const { text, result } = buildDemoAnalysis();
+      setFileName(DEMO_FILE_NAME);
+      finishAnalysis(text, result);
+    });
+  }, [finishAnalysis]);
 
   const handleFileSelect = useCallback(async (file: File) => {
     setErrorMessage(null);
@@ -368,6 +387,26 @@ export default function AnalyzePage() {
       }
     }
   }, [analysis.annotations, analysis.text, docInputType, pdfNumPages]);
+
+  // Mobile report has no document to scroll to — tapping a finding opens the
+  // detail side panel (full-width sheet) with the full explanation + references.
+  const handleMobileIssueClick = useCallback((result: AnalysisData['results'][0]) => {
+    const index = analysis.results.indexOf(result);
+    setSelectedResultIndex(index);
+    const annotation =
+      analysis.annotations.find(
+        (a) => a.label.toLowerCase() === result.phrase.toLowerCase(),
+      ) ??
+      analysis.annotations.find(
+        (a) =>
+          a.label.toLowerCase().includes(result.phrase.toLowerCase()) ||
+          result.phrase.toLowerCase().includes(a.label.toLowerCase()),
+      );
+    if (annotation) {
+      setSelectedAnnotation(annotation);
+      setSidePanelOpen(true);
+    }
+  }, [analysis.annotations, analysis.results]);
 
   const handleAnnotationClick = useCallback((annotation: Annotation) => {
     setSelectedAnnotation(annotation);
@@ -561,7 +600,7 @@ export default function AnalyzePage() {
       )}
 
 
-      <div className="flex flex-col flex-1">
+      <div className="flex flex-col flex-1 min-h-0">
         <AnimatePresence mode="wait">
 
           {/* ── Upload ─────────────────────────────────────────────── */}
@@ -734,14 +773,34 @@ export default function AnalyzePage() {
           )}
 
           {/* ── Results ────────────────────────────────────────────── */}
-          {viewState === 'results' && (
+          {viewState === 'results' && isMobile && (
+            <MobileReport
+              key="results"
+              fileName={fileName}
+              privateMode={privateMode}
+              score={score}
+              scoreLabel={scoreLabel}
+              totalIssues={totalIssues}
+              wordCount={wordCount}
+              results={filteredResults}
+              counts={filteredCounts}
+              recommendations={analysis.summary.recommendations}
+              hasAnyResults={analysis.results.length > 0}
+              onReset={handleReset}
+              onExport={handleExport}
+              onContact={() => setContactOpen(true)}
+              onIssueClick={handleMobileIssueClick}
+            />
+          )}
+
+          {viewState === 'results' && !isMobile && (
             <motion.div
               key="results"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="h-[calc(100vh-140px)] flex flex-col py-4"
+              className="flex-1 min-h-0 flex flex-col py-4"
             >
               {/* Header row */}
               <div className="flex flex-wrap items-center justify-between gap-3 mb-4 flex-shrink-0">

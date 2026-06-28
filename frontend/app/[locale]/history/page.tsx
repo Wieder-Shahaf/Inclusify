@@ -298,7 +298,7 @@ function AnalysisCard({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <p className="font-semibold text-slate-900 dark:text-slate-100 truncate leading-snug" title={label}>
+            <p className="min-w-0 font-semibold text-slate-900 dark:text-slate-100 truncate leading-snug" title={label}>
               {label}
             </p>
 

@@ -36,7 +36,10 @@ export function LoginForm({ locale }: { locale: string }) {
       await login(data.email, data.password);
       toast.success(t('loginSuccess'));
 
-      const returnUrl = searchParams.get('returnUrl') || `/${locale}`;
+      // Only honor same-origin relative paths — guards against open redirects
+      // via a crafted ?returnUrl=https://evil.com (or //evil.com).
+      const raw = searchParams.get('returnUrl');
+      const returnUrl = raw && raw.startsWith('/') && !raw.startsWith('//') ? raw : `/${locale}`;
       router.push(returnUrl);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('errors.generic'));
