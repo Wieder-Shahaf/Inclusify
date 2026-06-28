@@ -1,8 +1,8 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { notFound, useRouter } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { notFound } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useEffect, ReactNode } from 'react';
 
 interface AdminGuardProps {
@@ -11,14 +11,17 @@ interface AdminGuardProps {
 
 export function AuthGuard({ children }: AdminGuardProps) {
   const { user, isLoading } = useAuth();
+  // Locale-aware router: it applies the correct prefix per `as-needed`
+  // (no `/en`, `/he/...` for Hebrew) so we don't hardcode the locale.
   const router = useRouter();
-  const locale = useLocale();
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push(`/${locale}/login`);
+      // Preserve where the user was headed so login can return them there.
+      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+      router.push(`/login?returnUrl=${returnUrl}`);
     }
-  }, [isLoading, user, router, locale]);
+  }, [isLoading, user, router]);
 
   if (isLoading || !user) {
     return (

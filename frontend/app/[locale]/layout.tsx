@@ -1,3 +1,4 @@
+import type { Viewport } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -34,6 +35,12 @@ const notoSansHebrew = Noto_Sans_Hebrew({
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
 
 type Props = {
   children: React.ReactNode;
@@ -84,7 +91,7 @@ export default async function LocaleLayout({ children, params }: Props) {
             <LiveAnnouncerProvider>
               <div className="h-dvh flex flex-col overflow-hidden">
                 <Navbar />
-                <main className="container-px mx-auto max-w-screen-2xl flex-1 flex flex-col min-h-0 overflow-y-auto">
+                <main className="container-px mx-auto max-w-screen-2xl w-full min-w-0 flex-1 flex flex-col min-h-0 overflow-x-hidden overflow-y-auto">
                   {children}
                 </main>
                 <Footer />
