@@ -47,8 +47,11 @@ class Settings(BaseSettings):
     # Bearer token for the vLLM server (--api-key). Empty = no Authorization
     # header (e.g. local dev against an unauthenticated server).
     VLLM_API_KEY: str = ""
-    VLLM_TIMEOUT: float = 120.0
-    VLLM_CIRCUIT_FAIL_MAX: int = 3
+    # Modal cold start (torch.compile + CUDA-graph capture, cache lost on
+    # scale-to-zero) runs ~2-3 min, so the first request after idle needs a wide
+    # timeout and extra breaker headroom to avoid tripping on a healthy warmup.
+    VLLM_TIMEOUT: float = 240.0
+    VLLM_CIRCUIT_FAIL_MAX: int = 5
     VLLM_CIRCUIT_RESET_TIMEOUT: int = 60
     VLLM_MODEL_NAME: str = "inclusify"
     # Max concurrent GPU calls across ALL users. Must match --max-num-seqs in vllm.service.
