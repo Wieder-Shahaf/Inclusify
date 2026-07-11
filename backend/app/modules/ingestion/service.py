@@ -41,6 +41,35 @@ def _pdf_has_text_layer(reader) -> bool:
     return False
 
 
+def _lightweight_chunks(text: str, max_chars: int = 1500) -> list[str]:
+    """Group plain text into ~max_chars contiguous chunks on sentence/paragraph
+    boundaries — a cheap stand-in for HybridChunker when docling is skipped.
+
+    The analyzer makes ONE LLM call per chunk, so without chunking a big doc
+    becomes hundreds of per-sentence calls that blow the 180s cap. Chunks are
+    exact, in-order substrings of `text`, so hybrid_detector._locate_chunks
+    finds them by exact match."""
+    import re
+    if not text.strip():
+        return []
+    # Cut points: sentence-ending punctuation (Latin + Hebrew maqaf/sof pasuq)
+    # followed by space, or a paragraph break.
+    cuts = [m.end() for m in re.finditer(r'(?:[.!?׃׀…]["\')\]]?\s+|\n+)', text)]
+    if not cuts or cuts[-1] != len(text):
+        cuts.append(len(text))
+    chunks = []
+    start = 0
+    prev = 0
+    for c in cuts:
+        if c - start > max_chars and prev > start:
+            chunks.append(text[start:prev])
+            start = prev
+        prev = c
+    if start < len(text):
+        chunks.append(text[start:])
+    return [c for c in chunks if c.strip()]
+
+
 def _get_hybrid_chunker():
     global _hybrid_chunker
     if _hybrid_chunker is None:
@@ -220,14 +249,19 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
             reason = "not installed" if not _docling_available else "guard on (BLOCK_OCR_DOCUMENTS)"
             logger.info("Using lightweight parser for %s — docling %s", ext, reason)
             if ext == ".docx":
-                return _extract_docx_fallback(file_bytes)
+                result = _extract_docx_fallback(file_bytes)
             elif ext == ".pptx":
-                return _extract_pptx_fallback(file_bytes)
+                result = _extract_pptx_fallback(file_bytes)
             elif ext == ".pdf":
                 result = _extract_pdf_fallback(temp_path, file_bytes, max_pages)
-                return result
             else:
                 return {"error": f"Unsupported format {ext} (docling unavailable)"}
+            # Chunk the extracted text so analysis makes one LLM call per chunk
+            # (not per sentence) — HybridChunker needs docling, so use the cheap
+            # text chunker here.
+            if "error" not in result and result.get("text"):
+                result["chunks"] = _lightweight_chunks(result["text"])
+            return result
 
         _t0 = time.monotonic()
         logger.info("Docling conversion started: filename=%s ext=%s", filename, ext)

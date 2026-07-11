@@ -1,5 +1,9 @@
-"""Tests for the BLOCK_OCR_DOCUMENTS guard: text-layer detection."""
-from app.modules.ingestion.service import _pdf_has_text_layer, _ocr_blocked
+"""Tests for the BLOCK_OCR_DOCUMENTS guard: text-layer detection + chunking."""
+from app.modules.ingestion.service import (
+    _pdf_has_text_layer,
+    _ocr_blocked,
+    _lightweight_chunks,
+)
 
 
 class _FakePage:
@@ -43,3 +47,27 @@ def test_flag_off_by_default(monkeypatch):
     assert _ocr_blocked() is False
     monkeypatch.setenv("BLOCK_OCR_DOCUMENTS", "true")
     assert _ocr_blocked() is True
+
+
+def test_lightweight_chunks_empty():
+    assert _lightweight_chunks("") == []
+    assert _lightweight_chunks("   \n  ") == []
+
+
+def test_lightweight_chunks_are_inorder_substrings():
+    # Every chunk must be an exact substring found in order — that's what
+    # hybrid_detector._locate_chunks relies on for offset location.
+    text = ". ".join(f"Sentence number {i} with some filler words" for i in range(200)) + "."
+    chunks = _lightweight_chunks(text, max_chars=400)
+    assert len(chunks) > 1  # a long doc must actually split
+    search = 0
+    for c in chunks:
+        idx = text.find(c, search)
+        assert idx != -1, "chunk is not an in-order substring of the text"
+        search = idx + len(c)
+    # Chunks stay near the size bound (allowing one overshoot sentence).
+    assert all(len(c) <= 500 for c in chunks)
+
+
+def test_lightweight_chunks_short_text_single_chunk():
+    assert _lightweight_chunks("Just one short sentence.") == ["Just one short sentence."]
