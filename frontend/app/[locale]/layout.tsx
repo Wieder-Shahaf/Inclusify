@@ -64,7 +64,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <html lang={locale} dir={isRtl ? 'rtl' : 'ltr'} suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/Inclusify.png" />
+        {/* Favicon is auto-wired from app/icon.png + app/favicon.ico (Next.js convention) */}
         <meta name="description" content="Inclusive Language Analyzer for academic texts" />
         <meta name="color-scheme" content="light dark" />
         <script
