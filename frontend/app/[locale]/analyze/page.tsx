@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import AnnotationSidePanel from '@/components/AnnotationSidePanel';
 import PaperUpload from '@/components/PaperUpload';
 import ProcessingAnimation from '@/components/ProcessingAnimation';
@@ -182,12 +183,14 @@ export default function AnalyzePage() {
 
   const handleApiError = useCallback((error: unknown) => {
     let message = t('errors.generic');
+    let isScanned = false;
     if (error instanceof Error) {
       const errorText = error.message.toLowerCase();
       if (errorText.includes('password-protected') || errorText.includes('password')) {
         message = t('errors.passwordProtected');
       } else if (errorText.includes('scanned') || errorText.includes('no extractable text')) {
         message = t('errors.scannedPdf');
+        isScanned = true;
       } else if (errorText.includes('corrupted')) {
         message = t('errors.corruptedFile');
       } else if (errorText.includes('50 pages') || errorText.includes('page limit')) {
@@ -198,9 +201,15 @@ export default function AnalyzePage() {
         message = t('errors.uploadFailed');
       }
     }
-    setErrorMessage(message);
+    // Scanned/OCR-unsupported docs get a friendly popup (not the inline banner)
+    // and drop the user back on the upload view.
     setViewState('upload');
     announce(message, 'assertive');
+    if (isScanned) {
+      toast.error(message);
+    } else {
+      setErrorMessage(message);
+    }
   }, [t, announce]);
 
   // Shared post-analysis step: compute score + recommendations and switch to results

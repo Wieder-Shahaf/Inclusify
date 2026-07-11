@@ -10,8 +10,36 @@ from pypdf.errors import PdfReadError
 logger = logging.getLogger(__name__)
 
 MAX_PAGES = 50
-_docling_converter = None
+_docling_converters = {}
 _hybrid_chunker = None
+
+# Minimum chars of extractable text for a PDF to count as "has a text layer".
+# A scanned/photographed PDF yields ~0; a real text PDF yields hundreds+.
+_TEXT_LAYER_MIN_CHARS = 20
+
+
+def _ocr_blocked() -> bool:
+    """When BLOCK_OCR_DOCUMENTS is on, scanned PDFs (no text layer) are rejected
+    up front and the docling pipeline runs WITHOUT OCR — so no memory-heavy
+    full-page rasterization. Used on constrained hosts (Railway trial) where
+    full-page Hebrew OCR OOM-kills the container."""
+    return os.getenv("BLOCK_OCR_DOCUMENTS", "false").strip().lower() in ("1", "true", "yes", "on")
+
+
+def _pdf_has_text_layer(reader) -> bool:
+    """True if the PDF has an extractable text layer (i.e. does NOT need OCR).
+    Cheap pypdf check — no rendering, no torch — so it can gate the expensive
+    docling path before it ever loads."""
+    total = 0
+    for page in reader.pages:
+        try:
+            total += len((page.extract_text() or "").strip())
+        except Exception:
+            continue
+        if total >= _TEXT_LAYER_MIN_CHARS:
+            return True
+    return False
+
 
 def _get_hybrid_chunker():
     global _hybrid_chunker
@@ -21,9 +49,8 @@ def _get_hybrid_chunker():
         logger.info("Docling HybridChunker initialized")
     return _hybrid_chunker
 
-def _get_docling_converter():
-    global _docling_converter
-    if _docling_converter is None:
+def _get_docling_converter(use_ocr: bool = True):
+    if use_ocr not in _docling_converters:
         from docling.document_converter import DocumentConverter, PdfFormatOption
         from docling.datamodel.pipeline_options import PdfPipelineOptions, TesseractCliOcrOptions
         from docling.datamodel.base_models import InputFormat
@@ -31,23 +58,23 @@ def _get_docling_converter():
         pipeline_opts = PdfPipelineOptions()
         # OCR scanned pages with Tesseract (Hebrew + English). Docling's default
         # engine (EasyOCR) has no Hebrew model, so it must not be used here.
-        # Native text layers are still extracted directly — OCR only runs on
-        # bitmap regions, so text-based PDFs pay almost nothing extra.
-        pipeline_opts.do_ocr = True
-        # force_full_page_ocr: scanned pages are one big image — without it,
-        # only small detected bitmap fragments get OCR'd (~0 text per page).
-        pipeline_opts.ocr_options = TesseractCliOcrOptions(
-            lang=["heb", "eng"], force_full_page_ocr=True
-        )
+        pipeline_opts.do_ocr = use_ocr
+        if use_ocr:
+            # force_full_page_ocr: scanned pages are one big image — without it,
+            # only small detected bitmap fragments get OCR'd (~0 text per page).
+            # This is also the memory-heavy path (rasterizes every page).
+            pipeline_opts.ocr_options = TesseractCliOcrOptions(
+                lang=["heb", "eng"], force_full_page_ocr=True
+            )
         pipeline_opts.do_table_structure = True
 
-        _docling_converter = DocumentConverter(
+        _docling_converters[use_ocr] = DocumentConverter(
             format_options={
                 InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_opts),
             }
         )
-        logger.info("Docling converter initialized")
-    return _docling_converter
+        logger.info("Docling converter initialized (ocr=%s)", use_ocr)
+    return _docling_converters[use_ocr]
 
 def _extract_docx_fallback(file_bytes: bytes) -> dict:
     """Extract text from DOCX using python-docx when docling is unavailable."""
@@ -172,6 +199,12 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
                 logger.error("PDF corrupted: filename=%s", filename)
                 return {"error": "PDF appears corrupted"}
 
+            # Protection switch: on constrained hosts, reject scanned PDFs (no
+            # text layer → would need memory-heavy OCR) before docling loads.
+            if _ocr_blocked() and not _pdf_has_text_layer(reader):
+                logger.warning("OCR-required PDF rejected (BLOCK_OCR_DOCUMENTS on): filename=%s", filename)
+                return {"error": "This document appears to be scanned and has no extractable text layer (no OCR support)."}
+
 
         # Try docling first; fall back to lightweight parsers if not installed
         try:
@@ -194,7 +227,9 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
 
         _t0 = time.monotonic()
         logger.info("Docling conversion started: filename=%s ext=%s", filename, ext)
-        converter = _get_docling_converter()
+        # With the guard on we've already confirmed a text layer, so run docling
+        # WITHOUT OCR — skips full-page rasterization, the OOM source.
+        converter = _get_docling_converter(use_ocr=not _ocr_blocked())
         result = converter.convert(temp_path)
         logger.info("Docling conversion completed: filename=%s elapsed_s=%.3f", filename, time.monotonic() - _t0)
         doc_dict = result.document.export_to_dict()
@@ -373,6 +408,6 @@ async def warm_up_docling() -> None:
     """Pre-load Docling model weights at startup so the first upload is not slow."""
     loop = asyncio.get_running_loop()
     logger.info("Docling warm-up started — loading model weights")
-    await loop.run_in_executor(None, _get_docling_converter)
+    await loop.run_in_executor(None, lambda: _get_docling_converter(use_ocr=not _ocr_blocked()))
     await loop.run_in_executor(None, _get_hybrid_chunker)
     logger.info("Docling warm-up complete")
