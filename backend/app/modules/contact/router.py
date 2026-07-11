@@ -49,12 +49,17 @@ async def send_contact(
                 detail=f"PDF attachment exceeds {MAX_PDF_BYTES} bytes",
             )
 
-    pool = _pool(request)
-    async with pool.acquire() as conn:
-        rows = await conn.fetch(
-            "SELECT email FROM users WHERE role = 'site_admin'"
-        )
-    admin_emails = [r["email"] for r in rows if r["email"]]
+    # Recipients: explicit CONTACT_RECIPIENTS (comma-separated) wins; otherwise
+    # fall back to whoever holds site_admin so the form still works if unset.
+    recipients_env = os.getenv("CONTACT_RECIPIENTS", "")
+    admin_emails = [e.strip() for e in recipients_env.split(",") if e.strip()]
+    if not admin_emails:
+        pool = _pool(request)
+        async with pool.acquire() as conn:
+            rows = await conn.fetch(
+                "SELECT email FROM users WHERE role = 'site_admin'"
+            )
+        admin_emails = [r["email"] for r in rows if r["email"]]
     if not admin_emails:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

@@ -124,6 +124,7 @@ services:
       - SMTP_PASSWORD=${SMTP_PASSWORD:-}
       - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
       - SMTP_PORT=${SMTP_PORT:-587}
+      - CONTACT_RECIPIENTS=${CONTACT_RECIPIENTS:-}
       # CORS
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3100}
       # LLM inference service (transformers-based, not vLLM)

@@ -141,3 +141,21 @@ async def test_recipients_from_db_not_user_input(monkeypatch):
         recipients = smtp_instance.sendmail.call_args[0][1]
         assert recipients == ["legit-admin@x.com"]
         assert "attacker@evil.com" not in recipients
+
+
+@pytest.mark.asyncio
+async def test_contact_recipients_env_overrides_db(monkeypatch):
+    # site_admin in DB should be ignored when CONTACT_RECIPIENTS is set.
+    _install([{"email": "admin@x.com"}])
+    monkeypatch.setenv("SMTP_USER", "s@g.c")
+    monkeypatch.setenv("SMTP_PASSWORD", "pw")
+    monkeypatch.setenv("CONTACT_RECIPIENTS", "support@x.com , second@x.com")
+    with patch("app.modules.contact.router.smtplib.SMTP") as mock_smtp:
+        smtp_instance = MagicMock()
+        mock_smtp.return_value.__enter__.return_value = smtp_instance
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.post(
+                "/api/v1/contact", data={"subject": "s", "message": "m"}
+            )
+        assert resp.status_code == 200
+        assert smtp_instance.sendmail.call_args[0][1] == ["support@x.com", "second@x.com"]
