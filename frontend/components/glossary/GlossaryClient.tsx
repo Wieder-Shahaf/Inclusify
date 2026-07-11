@@ -102,7 +102,7 @@ export default function GlossaryClient({ terms, translations }: GlossaryClientPr
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-10"
         >
@@ -120,7 +120,7 @@ export default function GlossaryClient({ terms, translations }: GlossaryClientPr
 
         {/* Search and Filter */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="mb-8 space-y-4"
@@ -160,7 +160,7 @@ export default function GlossaryClient({ terms, translations }: GlossaryClientPr
 
         {/* Terms Grid */}
         <div className="grid gap-4 sm:grid-cols-2">
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence initial={false}>
             {filteredTerms.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -172,7 +172,7 @@ export default function GlossaryClient({ terms, translations }: GlossaryClientPr
                 <p className="text-slate-500 dark:text-slate-400">{translations.noResults}</p>
               </motion.div>
             ) : (
-              filteredTerms.map((term, idx) => {
+              filteredTerms.map((term) => {
                 const config = categoryConfig[term.category];
                 const Icon = config.icon;
                 const isExpanded = expandedTerm === term.term;
@@ -180,11 +180,10 @@ export default function GlossaryClient({ terms, translations }: GlossaryClientPr
                 return (
                   <motion.div
                     key={term.term}
-                    layout
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ delay: idx * 0.03 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
                     className={cn(
                       'rounded-2xl border p-5 transition-all cursor-pointer',
                       config.bgColor,
@@ -260,7 +259,7 @@ export default function GlossaryClient({ terms, translations }: GlossaryClientPr
 
         {/* Sources Section */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           className="mt-12 p-6 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800"

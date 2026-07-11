@@ -1,8 +1,5 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { type GlossaryTerm } from '@/components/glossary/GlossaryClient';
-import dynamic from 'next/dynamic';
-
-const GlossaryClient = dynamic(() => import('@/components/glossary/GlossaryClient'));
+import GlossaryClient, { type GlossaryTerm } from '@/components/glossary/GlossaryClient';
 
 // English glossary terms with accurate definitions from authoritative sources
 // Sources: HRC, PFLAG, The Trevor Project, GLAAD
