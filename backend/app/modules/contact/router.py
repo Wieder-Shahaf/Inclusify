@@ -129,6 +129,14 @@ async def send_contact(
                 json=payload,
             )
             resp.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        # Resend explains the real cause (unverified domain, restricted
+        # recipient, bad key) in the response body — log it, not just the status.
+        logger.error("Resend send failed: %s %s", exc.response.status_code, exc.response.text)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Message could not be sent. Please try again later.",
+        )
     except Exception as exc:
         logger.error("Resend send failed: %s", exc)
         raise HTTPException(
