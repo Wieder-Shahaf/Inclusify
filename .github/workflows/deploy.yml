@@ -1,16 +1,14 @@
 name: Build & Deploy
 
 # ⚠️ LEGACY — Azure/ACR build+push. Being retired in the Stack A migration
-# (Azure → Railway + Modal + R2). Railway auto-deploys backend/frontend from
-# GitHub on push, so the new stack needs no build-push workflow — there is
-# nothing to "replace" this with. Triggers are intentionally left unchanged
-# because this still builds the live Azure prod from `main`; remove this file at
-# cutover per docs/STACK-A-PROVISIONING.md §5. Do NOT wire AZURE_CREDENTIALS or
-# extend this further.
+# (Azure → Railway + Modal + R2). Railway now auto-deploys backend/frontend from
+# GitHub on push, so this is no longer the CD path.
+# The push:[main] trigger was REMOVED — it failed on every merge (no Azure creds)
+# and was pure noise. Now manual-only (workflow_dispatch) until this file is
+# deleted at cutover per docs/STACK-A-PROVISIONING.md §5. Do NOT wire
+# AZURE_CREDENTIALS or extend this further.
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 concurrency:
