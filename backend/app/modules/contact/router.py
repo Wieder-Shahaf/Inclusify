@@ -8,6 +8,8 @@ Gmail requires 2FA + App Password (not the account password).
 import logging
 import os
 import smtplib
+import time
+from collections import defaultdict
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
@@ -19,6 +21,24 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 MAX_PDF_BYTES = 5 * 1024 * 1024  # 5 MB DoS mitigation
+
+# Anti-spam: max 5 contact messages per IP per hour. Mirrors feedback router.
+# ponytail: in-memory + per-process — resets on restart, not shared across
+# replicas. Fine at current single-container scale; swap for Redis if we scale out.
+_rate_store: dict[str, list[float]] = defaultdict(list)
+_RATE_LIMIT = 5
+_RATE_WINDOW = 3600.0
+
+
+def _check_rate_limit(ip: str) -> None:
+    now = time.monotonic()
+    _rate_store[ip] = [t for t in _rate_store[ip] if now - t < _RATE_WINDOW]
+    if len(_rate_store[ip]) >= _RATE_LIMIT:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many messages. Please try again later.",
+        )
+    _rate_store[ip].append(now)
 
 
 def _pool(request: Request):
@@ -40,6 +60,9 @@ async def send_contact(
     sender_institution: str = Form(default=""),
     pdf_attachment: UploadFile = File(default=None),
 ):
+    client_ip = request.client.host if request.client else "unknown"
+    _check_rate_limit(client_ip)
+
     pdf_bytes = None
     if pdf_attachment is not None:
         pdf_bytes = await pdf_attachment.read()

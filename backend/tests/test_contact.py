@@ -5,6 +5,16 @@ from httpx import AsyncClient, ASGITransport
 from app.main import app
 
 
+@pytest.fixture(autouse=True)
+def _clean_contact_env(monkeypatch):
+    # Reset per-process rate-limit state and drop any CONTACT_RECIPIENTS
+    # leaking from a loaded .env so tests exercise the DB fallback by default.
+    from app.modules.contact import router as contact_router
+    contact_router._rate_store.clear()
+    monkeypatch.delenv("CONTACT_RECIPIENTS", raising=False)
+    yield
+
+
 class FakeAcquireCtx:
     def __init__(self, rows):
         self._rows = rows
@@ -159,3 +169,18 @@ async def test_contact_recipients_env_overrides_db(monkeypatch):
             )
         assert resp.status_code == 200
         assert smtp_instance.sendmail.call_args[0][1] == ["support@x.com", "second@x.com"]
+
+
+@pytest.mark.asyncio
+async def test_rate_limit_blocks_after_5_per_ip(monkeypatch):
+    _install([{"email": "a@x.com"}])
+    monkeypatch.setenv("SMTP_USER", "s@g.c")
+    monkeypatch.setenv("SMTP_PASSWORD", "pw")
+    with patch("app.modules.contact.router.smtplib.SMTP") as mock_smtp:
+        mock_smtp.return_value.__enter__.return_value = MagicMock()
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            for _ in range(5):
+                ok = await client.post("/api/v1/contact", data={"subject": "s", "message": "m"})
+                assert ok.status_code == 200
+            blocked = await client.post("/api/v1/contact", data={"subject": "s", "message": "m"})
+        assert blocked.status_code == 429
