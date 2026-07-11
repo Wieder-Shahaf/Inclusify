@@ -213,8 +213,12 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
         except ImportError:
             _docling_available = False
 
-        if not _docling_available:
-            logger.warning("Docling not installed — using fallback parser for %s", ext)
+        # Skip docling's memory-heavy vision pipeline entirely when the guard is
+        # on (constrained host) — scanned PDFs are already rejected above, so the
+        # remaining docs have a text layer that lightweight parsers read cheaply.
+        if not _docling_available or _ocr_blocked():
+            reason = "not installed" if not _docling_available else "guard on (BLOCK_OCR_DOCUMENTS)"
+            logger.info("Using lightweight parser for %s — docling %s", ext, reason)
             if ext == ".docx":
                 return _extract_docx_fallback(file_bytes)
             elif ext == ".pptx":
@@ -223,7 +227,7 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
                 result = _extract_pdf_fallback(temp_path, file_bytes, max_pages)
                 return result
             else:
-                return {"error": f"Unsupported format {ext} (docling not installed)"}
+                return {"error": f"Unsupported format {ext} (docling unavailable)"}
 
         _t0 = time.monotonic()
         logger.info("Docling conversion started: filename=%s ext=%s", filename, ext)
@@ -407,7 +411,12 @@ async def parse_document_async(file_bytes: bytes, filename: str) -> dict:
 async def warm_up_docling() -> None:
     """Pre-load Docling model weights at startup so the first upload is not slow."""
     loop = asyncio.get_running_loop()
+    # Guard on → lightweight parsers only, docling is never used at runtime, so
+    # don't load its weights (saves memory on the constrained host).
+    if _ocr_blocked():
+        logger.info("Docling warm-up skipped — BLOCK_OCR_DOCUMENTS on (lightweight parsers only)")
+        return
     logger.info("Docling warm-up started — loading model weights")
-    await loop.run_in_executor(None, lambda: _get_docling_converter(use_ocr=not _ocr_blocked()))
+    await loop.run_in_executor(None, lambda: _get_docling_converter(use_ocr=True))
     await loop.run_in_executor(None, _get_hybrid_chunker)
     logger.info("Docling warm-up complete")
