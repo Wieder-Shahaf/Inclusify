@@ -49,9 +49,13 @@ BASE_MODEL_DIR = "/models/Qwen2.5-3B-Instruct"  # baked into the image at build
 # The LoRA module name MUST equal the backend's settings.VLLM_MODEL_NAME
 # ("inclusify"); the backend sends it as the OpenAI `model` field on every call.
 ADAPTER_NAME = "inclusify"
-ADAPTER_LOCAL_DIR = (
-    Path(__file__).resolve().parents[2] / "ml" / "adapters" / "qwen_r8_d0.2_achva_v2"
-)
+# Only used locally at deploy time (add_local_dir below). Modal re-imports this
+# module inside the build container as /root/vllm_app.py, where parents[2] doesn't
+# exist — fall back to the file's dir so import doesn't crash there (the value is
+# never read in-container; the runtime uses ADAPTER_REMOTE_DIR).
+_here = Path(__file__).resolve()
+_repo_root = _here.parents[2] if len(_here.parents) > 2 else _here.parent
+ADAPTER_LOCAL_DIR = _repo_root / "ml" / "adapters" / "qwen_r8_d0.2_achva_v2"
 ADAPTER_REMOTE_DIR = "/adapters/qwen_r8_d0.2_achva_v2"
 
 VLLM_PORT = 8001  # same internal port as the VM (Modal still serves it over HTTPS)
