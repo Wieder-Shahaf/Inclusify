@@ -442,7 +442,8 @@ class VLLMClient:
                     f'Provide ONLY an inclusive, corrected rephrasing of this sentence. '
                     f'No explanation. No JSON. Just the rephrased sentence.'
                 )
-                async with httpx.AsyncClient(timeout=self.timeout) as client:
+                # follow_redirects: Modal 303 → polling URL on cold start (see _make_request).
+                async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
                     response = await client.post(
                         f"{self.base_url}/v1/chat/completions",
                         headers=self._auth_headers(),
@@ -480,7 +481,10 @@ class VLLMClient:
         logger.debug("vLLM request started: url=%s sentence_chars=%d", self.base_url, len(sentence))
         t0 = time.monotonic()
 
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
+        # follow_redirects: Modal serverless returns a 303 to a polling URL while
+        # the container cold-starts; without this the first request after
+        # scale-to-zero fails and the whole analysis returns 0 issues.
+        async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
             response = await client.post(
                 f"{self.base_url}/v1/chat/completions",
                 headers=self._auth_headers(),

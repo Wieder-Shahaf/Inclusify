@@ -262,6 +262,27 @@ class TestVLLMClient:
         assert result["severity"] == "Correct"
 
     @pytest.mark.asyncio
+    async def test_vllm_client_follows_redirects(self, mock_vllm_response):
+        """Regression: the httpx client MUST follow redirects. Modal serverless
+        returns a 303 to a polling URL while the container cold-starts; without
+        follow_redirects the first request after scale-to-zero fails and the
+        whole analysis silently returns 0 issues."""
+        from unittest.mock import AsyncMock, patch, MagicMock
+        from app.modules.analysis.llm_client import VLLMClient
+
+        mock_client_instance = AsyncMock()
+        mock_client_instance.post.return_value = mock_vllm_response
+
+        mock_client_class = MagicMock()
+        mock_client_class.return_value.__aenter__ = AsyncMock(return_value=mock_client_instance)
+        mock_client_class.return_value.__aexit__ = AsyncMock(return_value=None)
+
+        with patch('app.modules.analysis.llm_client.httpx.AsyncClient', mock_client_class):
+            await VLLMClient().analyze_sentence("Test sentence.")
+
+        assert mock_client_class.call_args.kwargs.get("follow_redirects") is True
+
+    @pytest.mark.asyncio
     async def test_vllm_client_timeout(self):
         """Client returns None on timeout."""
         from unittest.mock import AsyncMock, patch, MagicMock
