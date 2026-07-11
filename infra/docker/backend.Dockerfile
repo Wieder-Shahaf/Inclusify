@@ -105,7 +105,11 @@ ARG GIT_COMMIT
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     BUILD_TIME=${BUILD_TIME} \
-    GIT_COMMIT=${GIT_COMMIT}
+    GIT_COMMIT=${GIT_COMMIT} \
+    # Cache dirs for Docling/HF weights — baked below so startup needs no network
+    HF_HOME=/home/appuser/.cache/huggingface \
+    TORCH_HOME=/home/appuser/.cache/torch \
+    XDG_CACHE_HOME=/home/appuser/.cache
 
 WORKDIR /app
 
@@ -140,6 +144,17 @@ COPY --chown=appuser:appuser backend/app ./app
 COPY --chown=appuser:appuser backend/requirements.txt .
 
 USER appuser
+
+# Bake Docling/HF model weights into the image by running the real warm-up at
+# build time. Railway containers are ephemeral, so without this the HF cache is
+# empty on every boot and startup re-downloads all-MiniLM-L6-v2 unauthenticated
+# (rate-limit exposed, HF-availability dependent). This lands them in HF_HOME.
+RUN python -c "import asyncio; from app.modules.ingestion.service import warm_up_docling; asyncio.run(warm_up_docling())"
+
+# Weights are baked above — load them offline at runtime so startup never touches
+# the network. Set AFTER the warm-up RUN so the build itself can still download.
+ENV HF_HUB_OFFLINE=1 \
+    TRANSFORMERS_OFFLINE=1
 
 EXPOSE 8000
 
