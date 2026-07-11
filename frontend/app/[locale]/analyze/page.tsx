@@ -12,8 +12,7 @@ import HealthWarningBanner from '@/components/HealthWarningBanner';
 import { Annotation } from '@/components/AnnotatedText';
 import DocumentViewer, { PdfNavHandle } from '@/components/DocumentViewer';
 import MobileReport from '@/components/MobileReport';
-=======
-import { analyzeText, uploadFile, healthCheck, modelHealthCheck, AnalysisCancelledError, BboxAnnotation, PageSize, AnalysisResult } from '@/lib/api/client';
+import { analyzeText, uploadFile, healthCheck, modelHealthCheck, uploadReportPdf, AnalysisCancelledError, BboxAnnotation, PageSize, AnalysisResult } from '@/lib/api/client';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { exportReport, dataUriToPdfBlob } from '@/lib/exportReport';
 import { computeInclusivityScore } from '@/lib/score';
@@ -867,7 +866,7 @@ export default function AnalyzePage() {
               counts={filteredCounts}
               recommendations={analysis.summary.recommendations}
               hasAnyResults={analysis.results.length > 0}
-              onReset={handleReset}
+              onReset={requestReset}
               onExport={handleExport}
               onContact={() => setContactOpen(true)}
               onIssueClick={handleMobileIssueClick}
