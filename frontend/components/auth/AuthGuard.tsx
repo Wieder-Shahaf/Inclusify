@@ -36,9 +36,18 @@ export function AuthGuard({ children }: AdminGuardProps) {
 
 export function AdminGuard({ children }: AdminGuardProps) {
   const { user, isLoading } = useAuth();
+  const router = useRouter();
 
-  // Show nothing while checking auth state (prevents flash)
-  if (isLoading) {
+  useEffect(() => {
+    // Logged out (e.g. logging out while on the admin page) → landing page,
+    // not a 404. The 404 below is reserved for logged-in non-admins.
+    if (!isLoading && !user) {
+      router.push('/');
+    }
+  }, [isLoading, user, router]);
+
+  // Spinner while checking auth state or while redirecting a signed-out user.
+  if (isLoading || !user) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pride-purple" />
@@ -46,8 +55,8 @@ export function AdminGuard({ children }: AdminGuardProps) {
     );
   }
 
-  // Per CONTEXT.md: 404 for non-admins, not redirect
-  if (!user || user.role !== 'site_admin') {
+  // Per CONTEXT.md: 404 for logged-in non-admins (hide the route's existence).
+  if (user.role !== 'site_admin') {
     notFound();
   }
 
