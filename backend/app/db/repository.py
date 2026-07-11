@@ -239,6 +239,22 @@ async def get_run_details(conn: asyncpg.Connection, run_id, user_id) -> Optional
     return result
 
 
+async def run_owned_by_user(conn: asyncpg.Connection, run_id, user_id) -> bool:
+    """Lightweight ownership check (no findings fetch) for per-run resources."""
+    return bool(
+        await conn.fetchval(
+            """
+            SELECT 1
+            FROM analysis_runs ar
+            JOIN documents d ON ar.document_id = d.document_id
+            WHERE ar.run_id = $1 AND d.user_id = $2 AND d.deleted_at IS NULL
+            """,
+            run_id,
+            user_id,
+        )
+    )
+
+
 async def soft_delete_run(conn: asyncpg.Connection, run_id, user_id) -> bool:
     result = await conn.execute(
         """

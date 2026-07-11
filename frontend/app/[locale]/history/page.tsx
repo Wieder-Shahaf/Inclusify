@@ -6,15 +6,17 @@ import {
   getHistory,
   getAnalysisDetail,
   deleteAnalysis,
+  downloadReportPdf,
   type HistoryEntry,
   type HistoryKPIs,
   type AnalysisDetail,
   type FindingDetail,
 } from '@/lib/api/client';
 import {
-  FileText, Clock, AlertTriangle, TrendingUp, History, Loader2,
+  FileText, Clock, AlertTriangle, TrendingUp, History, Loader2, Download,
   BookOpen, Globe, Trash2, X, ChevronDown, ChevronUp, CheckCircle2, ChevronLeft, ChevronRight,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import ConfirmDialog from '@/components/ConfirmDialog';
 
 // ── helpers ────────────────────────────────────────────────────────────────
@@ -59,8 +61,10 @@ function severityColor(sev: string) {
 
 function formatDate(iso: string | null, locale: string): string {
   if (!iso) return locale === 'he' ? 'לא ידוע' : 'Unknown';
-  return new Date(iso).toLocaleDateString(locale === 'he' ? 'he-IL' : 'en-US', {
-    year: 'numeric', month: 'short', day: 'numeric',
+  // Include the time so a fresh analysis is visibly newer than earlier
+  // same-day runs (dates alone made new entries look stale).
+  return new Date(iso).toLocaleString(locale === 'he' ? 'he-IL' : 'en-US', {
+    year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
   });
 }
 
@@ -269,9 +273,9 @@ function DetailModal({ runId, locale, onClose }: { runId: string; locale: string
 // ── Analysis card ──────────────────────────────────────────────────────────
 
 function AnalysisCard({
-  entry, locale, onView, onDelete,
+  entry, locale, onView, onDelete, onDownload,
 }: {
-  entry: HistoryEntry; locale: string; onView: () => void; onDelete: () => void;
+  entry: HistoryEntry; locale: string; onView: () => void; onDelete: () => void; onDownload: () => void;
 }) {
   const score = computeScore(entry.findings_count);
   const label = docLabel(entry, locale);
@@ -304,6 +308,13 @@ function AnalysisCard({
 
             {/* Actions */}
             <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
+              <button
+                onClick={onDownload}
+                title={isHe ? 'הורדת דוח' : 'Download report'}
+                className="p-1.5 rounded-lg transition-colors text-slate-400 hover:text-pride-purple hover:bg-pride-purple/10"
+              >
+                <Download className="w-4 h-4" />
+              </button>
               <button
                 onClick={handleDelete}
                 title={isHe ? 'מחק' : 'Delete'}
@@ -440,6 +451,28 @@ export default function HistoryPage() {
       setPendingDelete(null);
     }
   }, [pendingDelete, handleDelete]);
+
+  // Reports are stored in blob storage per run (signed-in, non-private runs
+  // only) — older or private runs simply have no stored report to fetch.
+  const handleDownloadReport = useCallback(async (entry: HistoryEntry) => {
+    try {
+      const blob = await downloadReportPdf(entry.run_id);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const safe = docLabel(entry, locale)
+        .replace(/\.[a-z0-9]+$/i, '')
+        .replace(/[^\p{L}\p{N}_\-]+/gu, '_')
+        .replace(/^_+|_+$/g, '') || 'analysis';
+      a.href = url;
+      a.download = `${safe}_inclusify_report.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error(isHe
+        ? 'אין דוח שמור לניתוח זה'
+        : 'No stored report is available for this analysis');
+    }
+  }, [locale, isHe]);
 
   const avgScore = analyses.length
     ? Math.round(analyses.reduce((s, a) => s + computeScore(a.findings_count), 0) / analyses.length)
@@ -588,6 +621,7 @@ export default function HistoryPage() {
                 locale={locale}
                 onView={() => setActiveRunId(entry.run_id)}
                 onDelete={() => setPendingDelete(entry)}
+                onDownload={() => handleDownloadReport(entry)}
               />
             ))}
             {totalPages > 1 && (

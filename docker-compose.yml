@@ -51,22 +51,36 @@ services:
       retries: 5
 
   # ============================================
-  # Azurite — local Azure Blob Storage emulator
+  # MinIO — local S3-compatible storage (mirrors Cloudflare R2 in prod)
   # ============================================
-  azurite:
-    image: mcr.microsoft.com/azure-storage/azurite:latest
+  minio:
+    image: minio/minio:latest
     profiles:
       - dev
-    command: azurite-blob --blobHost 0.0.0.0 --blobPort 10000 --skipApiVersionCheck
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=${S3_ACCESS_KEY_ID:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${S3_SECRET_ACCESS_KEY:-minioadmin}
     ports:
-      - "10000:10000"
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # web console
     volumes:
-      - azurite_data:/data
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:10000/devstoreaccount1 2>/dev/null; ret=$$?; [ $$ret -eq 0 ] || [ $$ret -eq 1 ] || [ $$ret -eq 8 ]"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
+      - minio_data:/data
+
+  # One-shot: wait for MinIO, then create the bucket (idempotent). The backend's
+  # ensure_container() also self-heals the bucket, so this is belt-and-braces.
+  minio-init:
+    image: minio/mc:latest
+    profiles:
+      - dev
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 ${S3_ACCESS_KEY_ID:-minioadmin} ${S3_SECRET_ACCESS_KEY:-minioadmin}; do echo 'waiting for minio...'; sleep 1; done;
+      mc mb --ignore-existing local/${S3_BUCKET:-texts};
+      echo 'minio bucket ready: ${S3_BUCKET:-texts}';
+      "
 
   # ============================================
   # FastAPI Backend
@@ -114,9 +128,12 @@ services:
       # (host.docker.internal reaches the tunnel on the host from inside the container)
       - VLLM_URL=${VLLM_URL:-http://host.docker.internal:8001}
       - VLLM_API_KEY=${VLLM_API_KEY:-}
-      # Blob storage (Azurite locally, Azure Blob in prod)
-      - AZURE_STORAGE_CONNECTION_STRING=${AZURE_STORAGE_CONNECTION_STRING:-DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;}
-      - AZURE_STORAGE_CONTAINER=${AZURE_STORAGE_CONTAINER:-texts}
+      # Object storage — MinIO locally (S3-compatible), Cloudflare R2 in prod
+      - S3_ENDPOINT_URL=${S3_ENDPOINT_URL:-http://minio:9000}
+      - S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID:-minioadmin}
+      - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY:-minioadmin}
+      - S3_BUCKET=${S3_BUCKET:-texts}
+      - S3_REGION=${S3_REGION:-auto}
     ports:
       - "8000:8000"
     volumes:
@@ -131,8 +148,8 @@ services:
       redis:
         condition: service_healthy
         required: false
-      azurite:
-        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
         required: false
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/"]
@@ -173,4 +190,4 @@ services:
 
 volumes:
   postgres_data:
-  azurite_data:
+  minio_data:

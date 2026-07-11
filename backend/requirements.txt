@@ -26,5 +26,5 @@ pysbd>=0.3.4
 # Email
 resend>=2.0.0
 
-# Blob storage (runtime)
-azure-storage-blob>=12.19.0
+# Object storage (runtime) — S3-compatible: Cloudflare R2 (prod) / MinIO (dev)
+boto3>=1.34.0

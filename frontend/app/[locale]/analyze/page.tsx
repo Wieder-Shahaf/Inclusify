@@ -12,9 +12,9 @@ import HealthWarningBanner from '@/components/HealthWarningBanner';
 import { Annotation } from '@/components/AnnotatedText';
 import DocumentViewer, { PdfNavHandle } from '@/components/DocumentViewer';
 import MobileReport from '@/components/MobileReport';
-import { analyzeText, uploadFile, healthCheck, modelHealthCheck, AnalysisCancelledError, BboxAnnotation, PageSize, AnalysisResult } from '@/lib/api/client';
+import { analyzeText, uploadFile, healthCheck, modelHealthCheck, uploadReportPdf, AnalysisCancelledError, BboxAnnotation, PageSize, AnalysisResult } from '@/lib/api/client';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import { exportReport } from '@/lib/exportReport';
+import { exportReport, dataUriToPdfBlob } from '@/lib/exportReport';
 import { computeInclusivityScore } from '@/lib/score';
 import { registerNavigationGuard } from '@/lib/navigationGuard';
 import { useAuth } from '@/contexts/AuthContext';
@@ -66,6 +66,52 @@ function getScoreColor(score: number): string {
   return 'text-red-500';
 }
 
+const severityOrder: Record<Severity, number> = {
+  factually_incorrect: 0,
+  potentially_offensive: 1,
+  biased: 2,
+  outdated: 3,
+};
+
+function resultConfidence(annotations: Annotation[], result: AnalysisData['results'][0]) {
+  return (annotations.find(
+    (a) => a.label.toLowerCase() === result.phrase.toLowerCase(),
+  ) ??
+  annotations.find(
+    (a) =>
+      a.label.toLowerCase().includes(result.phrase.toLowerCase()) ||
+      result.phrase.toLowerCase().includes(a.label.toLowerCase()),
+  ))?.confidence;
+}
+
+// Report inputs as of analysis completion (no user filters applied yet) —
+// mirrors the render-time derivation so the auto-stored report matches what a
+// manual export right after completion would produce.
+function buildReportInputs(analysis: AnalysisData) {
+  const confidenceFiltered = analysis.results.filter(r => {
+    const conf = resultConfidence(analysis.annotations, r);
+    if (conf == null) return true;
+    return conf >= 0.30 && conf <= 0.85;
+  });
+  const counts: Record<Severity, number> = {
+    outdated: 0, biased: 0, potentially_offensive: 0, factually_incorrect: 0,
+  };
+  for (const r of confidenceFiltered) counts[r.severity]++;
+  const visiblePhrases = new Set(confidenceFiltered.map(r => r.phrase.toLowerCase()));
+  const visibleAnnotations = analysis.annotations.filter(ann =>
+    visiblePhrases.has(ann.label.toLowerCase()),
+  );
+  const wordCount = analysis.text.split(/\s+/).filter(Boolean).length;
+  return {
+    filteredResults: [...confidenceFiltered].sort(
+      (a, b) => severityOrder[a.severity] - severityOrder[b.severity],
+    ),
+    visibleAnnotations,
+    counts,
+    score: computeInclusivityScore(counts, wordCount),
+  };
+}
+
 export default function AnalyzePage() {
   const t = useTranslations('analyzer');
   const locale = useLocale();
@@ -90,6 +136,8 @@ export default function AnalyzePage() {
   const [pendingNav, setPendingNav] = useState<{ href?: string; proceed?: () => void } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const cancelledRef = useRef(false);
+  // Run ID whose report PDF was already uploaded to storage (dedupe guard)
+  const reportUploadedForRun = useRef<string | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisData>(emptyAnalysis);
   const [activeFilters, setActiveFilters] = useState<Set<Severity>>(new Set());
   const [activeTypeFilters, setActiveTypeFilters] = useState<Set<string>>(new Set());
@@ -288,10 +336,12 @@ export default function AnalyzePage() {
     }
   }, [pastedText, locale, t, handleApiError, privateMode, announce, finishAnalysis]);
 
-  // Warn before leaving while an analysis is running, and intercept in-app
-  // link navigation so we can cancel the job gracefully before leaving.
+  // Warn before leaving while an analysis is running (so we can cancel the job
+  // gracefully), and also when leaving the results view (in-memory results are
+  // discarded on navigation — signed-in users can still find them in My
+  // Analyses, guests/private-mode lose them entirely).
   useEffect(() => {
-    if (viewState !== 'processing') return;
+    if (viewState !== 'processing' && viewState !== 'results') return;
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
@@ -308,7 +358,11 @@ export default function AnalyzePage() {
       setPendingNav({ href });
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    // Browser-level unload prompt only while a job is actually running —
+    // prompting on tab close after completion would be noise.
+    if (viewState === 'processing') {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    }
     document.addEventListener('click', handleClickCapture, true);
     // Programmatic navigation (router.push/replace from buttons, e.g. the
     // language switcher) bypasses the click capture — guard it too.
@@ -325,6 +379,8 @@ export default function AnalyzePage() {
     setFileName('');
     setPastedText('');
     setAnalysis(emptyAnalysis);
+    setActiveFilters(new Set());
+    setActiveTypeFilters(new Set());
     setSelectedAnnotation(null);
     setSelectedResultIndex(null);
     setSidePanelOpen(false);
@@ -338,6 +394,14 @@ export default function AnalyzePage() {
     setPageSizes(null);
     setMarkdownText(null);
   }, []);
+
+  // In-page reset (back arrow / "Analyze another") from the results view goes
+  // through the same leave-confirmation dialog as navigation: confirming runs
+  // handleReset via confirmLeave, with no destination to navigate to.
+  const requestReset = useCallback(() => {
+    if (viewState === 'results') setPendingNav({});
+    else handleReset();
+  }, [viewState, handleReset]);
 
   // User confirmed leaving mid-analysis: abort the in-flight request
   // (the backend treats the disconnect as a cancelled run) and navigate.
@@ -483,26 +547,10 @@ export default function AnalyzePage() {
     factually_incorrect: '#ef4444',
   };
 
-  const severityOrder: Record<Severity, number> = {
-    factually_incorrect: 0,
-    potentially_offensive: 1,
-    biased: 2,
-    outdated: 3,
-  };
   const severityPriority: Severity[] = ['factually_incorrect', 'potentially_offensive', 'biased', 'outdated'];
 
-  const getResultConfidence = (result: AnalysisData['results'][0]) =>
-    (analysis.annotations.find(
-      (a) => a.label.toLowerCase() === result.phrase.toLowerCase(),
-    ) ??
-    analysis.annotations.find(
-      (a) =>
-        a.label.toLowerCase().includes(result.phrase.toLowerCase()) ||
-        result.phrase.toLowerCase().includes(a.label.toLowerCase()),
-    ))?.confidence;
-
   const confidenceFiltered = analysis.results.filter(r => {
-    const conf = getResultConfidence(r);
+    const conf = resultConfidence(analysis.annotations, r);
     if (conf == null) return true;
     return conf >= 0.30 && conf <= 0.85;
   });
@@ -543,6 +591,38 @@ export default function AnalyzePage() {
 
   // Recompute score from confidence-filtered counts so it's consistent with the displayed findings.
   const score = computeInclusivityScore(filteredCounts, wordCount);
+
+  // Whether this run was persisted to the user's history (drives the wording of
+  // the leave-results dialog: "find it in My Analyses" vs "results will be lost").
+  const savedToHistory = Boolean(user && !privateMode && currentRunId);
+
+  // Persist the generated report PDF for signed-in, non-private runs so it can
+  // be re-downloaded later from My Analyses. Best-effort: failures are silent —
+  // the user can always export locally from this view.
+  useEffect(() => {
+    if (viewState !== 'results' || !user || privateMode || !currentRunId) return;
+    if (reportUploadedForRun.current === currentRunId) return;
+    reportUploadedForRun.current = currentRunId;
+    (async () => {
+      try {
+        const inputs = buildReportInputs(analysis);
+        const dataUri = await exportReport(analysis, {
+          fileName,
+          locale,
+          returnBase64: true,
+          filteredResults: inputs.filteredResults,
+          visibleAnnotations: inputs.visibleAnnotations,
+          displayScore: inputs.score,
+          displayCounts: inputs.counts,
+          recommendations: analysis.summary.recommendations,
+        });
+        const pdf = dataUriToPdfBlob(dataUri);
+        if (pdf) await uploadReportPdf(currentRunId, pdf);
+      } catch {
+        // best-effort — report storage must never disturb the results view
+      }
+    })();
+  }, [viewState, currentRunId, user, privateMode, analysis, fileName, locale]);
 
   const scoreLabel =
     score >= 90
@@ -786,7 +866,7 @@ export default function AnalyzePage() {
               counts={filteredCounts}
               recommendations={analysis.summary.recommendations}
               hasAnyResults={analysis.results.length > 0}
-              onReset={handleReset}
+              onReset={requestReset}
               onExport={handleExport}
               onContact={() => setContactOpen(true)}
               onIssueClick={handleMobileIssueClick}
@@ -806,7 +886,7 @@ export default function AnalyzePage() {
               <div className="flex flex-wrap items-center justify-between gap-3 mb-4 flex-shrink-0">
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={handleReset}
+                    onClick={requestReset}
                     className="btn-ghost p-2 rounded-lg"
                     aria-label="Go back"
                   >
@@ -849,7 +929,7 @@ export default function AnalyzePage() {
                     <span className="font-medium hidden sm:inline">{t('contactUs')}</span>
                   </motion.button>
                   <button
-                    onClick={handleReset}
+                    onClick={requestReset}
                     className="btn-ghost px-3 py-2 rounded-lg text-sm flex items-center gap-2"
                   >
                     <RotateCcw className="w-4 h-4" />
@@ -1313,11 +1393,17 @@ export default function AnalyzePage() {
       />
       <ConfirmDialog
         open={pendingNav !== null}
-        title={t('leaveWarning.title')}
-        description={t('leaveWarning.message')}
-        confirmLabel={t('leaveWarning.leave')}
+        title={viewState === 'results' ? t('leaveResults.title') : t('leaveWarning.title')}
+        description={
+          viewState === 'results'
+            ? savedToHistory
+              ? t('leaveResults.messageSaved')
+              : t('leaveResults.messageUnsaved')
+            : t('leaveWarning.message')
+        }
+        confirmLabel={viewState === 'results' ? t('leaveResults.leave') : t('leaveWarning.leave')}
         cancelLabel={t('leaveWarning.stay')}
-        variant="danger"
+        variant={viewState === 'results' && savedToHistory ? 'default' : 'danger'}
         onConfirm={confirmLeave}
         onCancel={() => setPendingNav(null)}
       />

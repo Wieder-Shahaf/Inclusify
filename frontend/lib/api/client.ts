@@ -431,6 +431,28 @@ export interface AnalysisDetail extends HistoryEntry {
   findings: FindingDetail[];
 }
 
+// Store the generated report PDF server-side (blob storage) so signed-in
+// users can re-download it later from My Analyses.
+export async function uploadReportPdf(runId: string, pdf: Blob): Promise<void> {
+  const response = await fetchWithAuth(
+    `${API_BASE_URL}/api/v1/users/me/history/${runId}/report`,
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/pdf' },
+      body: pdf,
+    }
+  );
+  if (!response.ok) throw new Error(`Failed to store report: ${response.status}`);
+}
+
+export async function downloadReportPdf(runId: string): Promise<Blob> {
+  const response = await fetchWithAuth(
+    `${API_BASE_URL}/api/v1/users/me/history/${runId}/report`
+  );
+  if (!response.ok) throw new Error(`Report not available: ${response.status}`);
+  return response.blob();
+}
+
 export async function getAnalysisDetail(runId: string): Promise<AnalysisDetail> {
   const response = await fetchWithAuth(
     `${API_BASE_URL}/api/v1/users/me/history/${runId}`

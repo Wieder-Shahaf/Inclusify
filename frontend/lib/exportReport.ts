@@ -340,6 +340,16 @@ function drawCard(
   doc.rect(x, y, w, h, 'F');
 }
 
+// Convert exportReport's returnBase64 data-URI output into a PDF Blob
+// (shared by the contact-email attachment and the report-storage upload).
+export function dataUriToPdfBlob(dataUri: unknown): Blob | undefined {
+  if (typeof dataUri !== 'string' || !dataUri.includes(',')) return undefined;
+  const binary = atob(dataUri.split(',')[1]);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type: 'application/pdf' });
+}
+
 // ── Main export function ──────────────────────────────────────────────────────
 export async function exportReport(
   analysis:  AnalysisData,

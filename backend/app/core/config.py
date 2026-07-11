@@ -57,9 +57,26 @@ class Settings(BaseSettings):
     # When True, vLLM errors return a simulated response instead of None (for load testing only).
     VLLM_LOAD_TEST_MODE: bool = False
 
-    # Azure Blob Storage
-    AZURE_STORAGE_CONNECTION_STRING: str = ""
-    AZURE_STORAGE_CONTAINER: str = "texts"
+    # Model health-check behaviour (see /api/v1/health/model and
+    # docs/STACK-A-MIGRATION.md §2.3). When the GPU layer is serverless and
+    # scales to zero (Modal), set MODEL_SCALE_TO_ZERO=True: the health endpoint
+    # must NOT probe vLLM, because any request wakes the GPU and bills idle time.
+    # In that mode availability is inferred from the circuit breaker (real
+    # analysis traffic) and the model is reported available so Modal cold-starts
+    # only on the first real request. On an always-on backend (Azure VM) keep the
+    # live probe but cache it for MODEL_HEALTH_CACHE_TTL seconds so many open
+    # analyze tabs can't turn a 30s poll into sustained load on vLLM.
+    MODEL_SCALE_TO_ZERO: bool = False
+    MODEL_HEALTH_CACHE_TTL: float = 300.0  # seconds; live-probe path only
+
+    # Object storage (S3-compatible: Cloudflare R2 in prod, MinIO in dev).
+    # Replaces the Azure Blob settings (docs/STACK-A-MIGRATION.md §2.1). Empty
+    # credentials => storage disabled: uploads become no-ops returning None.
+    S3_ENDPOINT_URL: str = ""       # R2: https://<ACCT_ID>.r2.cloudflarestorage.com · MinIO: http://minio:9000
+    S3_ACCESS_KEY_ID: str = ""
+    S3_SECRET_ACCESS_KEY: str = ""
+    S3_BUCKET: str = "texts"        # was AZURE_STORAGE_CONTAINER
+    S3_REGION: str = "auto"         # R2 expects "auto"; MinIO ignores it
 
     # Google OAuth Configuration
     GOOGLE_CLIENT_ID: str = ""

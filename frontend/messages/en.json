@@ -325,6 +325,12 @@
       "message": "Leaving this page will cancel the running analysis. Are you sure you want to leave?",
       "stay": "Stay on page",
       "leave": "Leave & cancel"
+    },
+    "leaveResults": {
+      "title": "Leave your results?",
+      "messageSaved": "This results view will close. You can revisit this analysis anytime — and download its report — from the My Analyses page.",
+      "messageUnsaved": "This results view will close and the results will be lost. Sign in (without Private Mode) to keep your analyses in My Analyses.",
+      "leave": "Leave page"
     }
   },
   "severity": {
