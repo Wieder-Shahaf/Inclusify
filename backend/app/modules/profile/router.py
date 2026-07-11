@@ -1,13 +1,22 @@
 import uuid
+from datetime import datetime, timezone
+from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 
 from app.auth.deps import get_current_user_from_token
+from app.core import blob_storage
 from app.db import repository as repo
 from .schemas import ProfileRead, ProfileUpdate
 
 
 router = APIRouter()
+
+
+def _utc_iso(dt: Optional[datetime]) -> Optional[str]:
+    # DB timestamps are naive UTC (TIMESTAMP columns) — tag them as UTC so
+    # browsers don't parse the ISO string as local time.
+    return dt.replace(tzinfo=timezone.utc).isoformat() if dt else None
 
 
 def _pool(request: Request):
@@ -36,7 +45,7 @@ async def get_analysis_detail(
         "input_type": detail["input_type"],
         "language": detail["detected_language"] or detail["language"],
         "page_count": detail["page_count"],
-        "analyzed_at": detail["started_at"].isoformat() if detail["started_at"] else None,
+        "analyzed_at": _utc_iso(detail["started_at"]),
         "runtime_ms": detail["runtime_ms"],
         "status": detail["status"],
         "findings": [
@@ -68,6 +77,61 @@ async def delete_analysis(
         deleted = await repo.soft_delete_run(conn, run_id, user_id)
     if not deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Analysis not found")
+
+
+# Generated report PDFs live in blob storage at reports/{run_id}.pdf — the key
+# is derived from the run_id, so no DB column is needed to track them.
+_MAX_REPORT_BYTES = 10 * 1024 * 1024  # generated reports are well under 1 MB
+
+
+async def _require_owned_run(request: Request, run_id: uuid.UUID, user: dict) -> None:
+    pool = _pool(request)
+    user_id = uuid.UUID(user["sub"])
+    async with pool.acquire() as conn:
+        owned = await repo.run_owned_by_user(conn, run_id, user_id)
+    if not owned:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Analysis not found")
+
+
+@router.put("/me/history/{run_id}/report", status_code=204)
+async def upload_analysis_report(
+    run_id: uuid.UUID,
+    request: Request,
+    user: dict = Depends(get_current_user_from_token),
+):
+    """Store the client-generated report PDF so it can be re-downloaded later."""
+    await _require_owned_run(request, run_id, user)
+
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > _MAX_REPORT_BYTES:
+        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="Report too large")
+    body = await request.body()
+    if len(body) > _MAX_REPORT_BYTES:
+        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="Report too large")
+    if not body.startswith(b"%PDF"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Body must be a PDF")
+
+    stored = await blob_storage.upload_report(str(run_id), body)
+    if stored is None:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Storage unavailable")
+
+
+@router.get("/me/history/{run_id}/report")
+async def download_analysis_report(
+    run_id: uuid.UUID,
+    request: Request,
+    user: dict = Depends(get_current_user_from_token),
+):
+    await _require_owned_run(request, run_id, user)
+
+    data = await blob_storage.download_report(str(run_id))
+    if data is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not available")
+    return Response(
+        content=data,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="inclusify_report_{run_id}.pdf"'},
+    )
 
 
 @router.get("/me/profile", response_model=ProfileRead)
@@ -144,7 +208,7 @@ async def get_history(
             "input_type": a["input_type"],
             "language": a["detected_language"] or a["language"],
             "page_count": a["page_count"],
-            "analyzed_at": a["started_at"].isoformat() if a["started_at"] else None,
+            "analyzed_at": _utc_iso(a["started_at"]),
             "runtime_ms": a["runtime_ms"],
             "findings_count": int(a["findings_count"]),
             "findings_low": int(a["findings_low"]),

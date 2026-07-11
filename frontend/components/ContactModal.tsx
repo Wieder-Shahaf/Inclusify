@@ -11,7 +11,7 @@ import { motion } from 'framer-motion';
 import { X, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { sendContactMessage } from '@/lib/api/contact';
-import { exportReport } from '@/lib/exportReport';
+import { exportReport, dataUriToPdfBlob } from '@/lib/exportReport';
 import type { Annotation } from '@/components/AnnotatedText';
 import type { Severity } from '@/components/SeverityBadge';
 
@@ -74,13 +74,7 @@ export default function ContactModal({ open, onClose, analysis, fileName, locale
           locale,
           returnBase64: true,
         });
-        if (typeof dataUri === 'string' && dataUri.includes(',')) {
-          const base64 = dataUri.split(',')[1];
-          const binary = atob(base64);
-          const bytes = new Uint8Array(binary.length);
-          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-          pdfBlob = new Blob([bytes], { type: 'application/pdf' });
-        }
+        pdfBlob = dataUriToPdfBlob(dataUri);
       }
       await sendContactMessage({
         subject: data.subject,

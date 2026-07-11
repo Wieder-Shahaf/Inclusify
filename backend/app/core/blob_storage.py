@@ -124,3 +124,54 @@ async def upload_file_bytes(sha256: str, filename: str, data: bytes) -> Optional
     except Exception as e:
         logger.warning("Blob file upload failed for %s: %s", sha256, e)
         return None
+
+
+def _report_key(run_id: str) -> str:
+    return f"reports/{run_id}.pdf"
+
+
+def _upload_report_sync(run_id: str, data: bytes) -> str:
+    client = _get_client()
+    key = _report_key(run_id)
+    # Overwrite allowed: re-uploading a report for the same run replaces it.
+    client.put_object(
+        Bucket=settings.S3_BUCKET,
+        Key=key,
+        Body=data,
+        ContentType="application/pdf",
+    )
+    logger.info("Report uploaded to S3: %s size_bytes=%d", key, len(data))
+    return f"blob://{settings.S3_BUCKET}/{key}"
+
+
+async def upload_report(run_id: str, data: bytes) -> Optional[str]:
+    if not _s3_enabled():
+        return None
+    try:
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(None, _upload_report_sync, run_id, data)
+    except Exception as e:
+        logger.warning("Report upload failed for run %s: %s", run_id, e)
+        return None
+
+
+def _download_report_sync(run_id: str) -> Optional[bytes]:
+    from botocore.exceptions import ClientError
+
+    client = _get_client()
+    try:
+        obj = client.get_object(Bucket=settings.S3_BUCKET, Key=_report_key(run_id))
+        return obj["Body"].read()
+    except ClientError:
+        return None
+
+
+async def download_report(run_id: str) -> Optional[bytes]:
+    if not _s3_enabled():
+        return None
+    try:
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(None, _download_report_sync, run_id)
+    except Exception as e:
+        logger.warning("Report download failed for run %s: %s", run_id, e)
+        return None
