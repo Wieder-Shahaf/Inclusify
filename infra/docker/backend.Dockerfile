@@ -145,11 +145,14 @@ COPY --chown=appuser:appuser backend/requirements.txt .
 
 USER appuser
 
-# Bake Docling/HF model weights into the image by running the real warm-up at
-# build time. Railway containers are ephemeral, so without this the HF cache is
-# empty on every boot and startup re-downloads all-MiniLM-L6-v2 unauthenticated
-# (rate-limit exposed, HF-availability dependent). This lands them in HF_HOME.
-RUN python -c "import asyncio; from app.modules.ingestion.service import warm_up_docling; asyncio.run(warm_up_docling())"
+# Bake Docling/HF model weights into the image. Railway containers are
+# ephemeral, so without this every boot re-downloads from HF. Docling loads its
+# layout/table vision models LAZILY on the first real .convert() — merely
+# constructing the converter does NOT cache them — so we convert a throwaway
+# one-page PDF here to force every model (MiniLM tokenizer, docling-layout-heron,
+# TableFormer) into HF_HOME. This must stay a real conversion, not just object
+# construction, or HF_HUB_OFFLINE=1 below breaks the first upload in prod.
+RUN python -c "import tempfile; from pypdf import PdfWriter; from app.modules.ingestion.service import _get_docling_converter, _get_hybrid_chunker; w=PdfWriter(); w.add_blank_page(width=595, height=842); p=tempfile.mktemp(suffix='.pdf'); f=open(p,'wb'); w.write(f); f.close(); _get_docling_converter().convert(p); _get_hybrid_chunker(); print('Docling build warm-up conversion OK')"
 
 # Weights are baked above — load them offline at runtime so startup never touches
 # the network. Set AFTER the warm-up RUN so the build itself can still download.
