@@ -77,14 +77,16 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <LanguageSwitcher />
             <ThemeToggle />
-            <button
-              type="button"
-              onClick={() => setContactOpen(true)}
-              className="btn-ghost min-h-11 px-3 text-sm"
-              aria-haspopup="dialog"
-            >
-              {tc('button')}
-            </button>
+            {!isLoading && user && (
+              <button
+                type="button"
+                onClick={() => setContactOpen(true)}
+                className="btn-ghost min-h-11 px-3 text-sm"
+                aria-haspopup="dialog"
+              >
+                {tc('button')}
+              </button>
+            )}
             {!isLoading && (
               <>
                 {user ? (
@@ -141,14 +143,16 @@ export default function Navbar() {
               );
             })}
 
-            <button
-              type="button"
-              onClick={() => { setMenuOpen(false); setContactOpen(true); }}
-              className="text-start px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
-              aria-haspopup="dialog"
-            >
-              {tc('button')}
-            </button>
+            {!isLoading && user && (
+              <button
+                type="button"
+                onClick={() => { setMenuOpen(false); setContactOpen(true); }}
+                className="text-start px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
+                aria-haspopup="dialog"
+              >
+                {tc('button')}
+              </button>
+            )}
 
             {!isLoading && !user && (
               <Link
