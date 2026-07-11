@@ -451,6 +451,7 @@
     "nameLabel": "שם",
     "emailLabel": "אימייל",
     "institutionLabel": "מוסד",
-    "cancel": "ביטול"
+    "cancel": "ביטול",
+    "signInRequired": "יש להתחבר כדי לפנות אלינו."
   }
 }

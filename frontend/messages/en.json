@@ -451,6 +451,7 @@
     "nameLabel": "Name",
     "emailLabel": "Email",
     "institutionLabel": "Institution",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "signInRequired": "Please sign in to contact us."
   }
 }

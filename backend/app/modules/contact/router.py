@@ -1,21 +1,22 @@
-"""Contact form router - sends email to site admins via smtplib.
+"""Contact form router - sends email to site admins via the Resend HTTP API.
 
-No auth required: both authenticated and guest users may contact.
-SMTP config via env vars: SMTP_HOST (default smtp.gmail.com),
-SMTP_PORT (default 587, STARTTLS), SMTP_USER, SMTP_PASSWORD.
-Gmail requires 2FA + App Password (not the account password).
+Auth required: guests cannot contact. The sender identity (email, name,
+institution) is taken from the authenticated user, not from client input.
+Config via env vars: RESEND_API_KEY (required), RESEND_FROM (sender, must be a
+Resend-verified domain; defaults to onboarding@resend.dev for testing).
+SMTP is not used: Railway blocks outbound SMTP ports, so mail goes over HTTPS.
 """
+import base64
 import logging
 import os
-import smtplib
 import time
 from collections import defaultdict
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.base import MIMEBase
-from email import encoders
 
-from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile, status
+import httpx
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
+
+from app.auth.users import current_active_user
+from app.db.models import User
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -55,13 +56,16 @@ async def send_contact(
     request: Request,
     subject: str = Form(..., min_length=1, max_length=300),
     message: str = Form(..., min_length=1, max_length=5000),
-    sender_name: str = Form(default=""),
-    sender_email: str = Form(default=""),
-    sender_institution: str = Form(default=""),
     pdf_attachment: UploadFile = File(default=None),
+    current_user: User = Depends(current_active_user),
 ):
-    client_ip = request.client.host if request.client else "unknown"
-    _check_rate_limit(client_ip)
+    # Sender identity comes from the authenticated user, never client input.
+    sender_name = current_user.full_name or ""
+    sender_email = current_user.email
+    sender_institution = current_user.institution or ""
+
+    # Rate-limit per user (falls back to IP if the client is somehow unknown).
+    _check_rate_limit(str(current_user.id))
 
     pdf_bytes = None
     if pdf_attachment is not None:
@@ -89,44 +93,44 @@ async def send_contact(
             detail="No admin recipients configured",
         )
 
-    smtp_user = os.getenv("SMTP_USER")
-    smtp_password = os.getenv("SMTP_PASSWORD")
-    smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
-    smtp_port = int(os.getenv("SMTP_PORT", "587"))
-    if not smtp_user or not smtp_password:
+    api_key = os.getenv("RESEND_API_KEY")
+    if not api_key:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="SMTP credentials not configured",
+            detail="Email API key not configured",
         )
+    from_addr = os.getenv("RESEND_FROM", "Inclusify <onboarding@resend.dev>")
 
-    msg = MIMEMultipart()
-    msg["From"] = smtp_user
-    msg["To"] = ", ".join(admin_emails)
-    msg["Subject"] = f"[Inclusify Contact] {subject}"
     body_text = (
         f"From: {sender_name or '(guest)'} <{sender_email or '(no email)'}>\n"
         f"Institution: {sender_institution or '(not provided)'}\n\n"
         f"{message}"
     )
-    msg.attach(MIMEText(body_text, "plain", "utf-8"))
-
+    payload = {
+        "from": from_addr,
+        "to": admin_emails,
+        "subject": f"[Inclusify Contact] {subject}",
+        "text": body_text,
+    }
+    # Let admins hit Reply and reach the sender directly, not the shared inbox.
+    if sender_email:
+        payload["reply_to"] = sender_email
     if pdf_bytes:
-        part = MIMEBase("application", "octet-stream")
-        part.set_payload(pdf_bytes)
-        encoders.encode_base64(part)
-        part.add_header(
-            "Content-Disposition",
-            'attachment; filename="analysis_report.pdf"',
-        )
-        msg.attach(part)
+        payload["attachments"] = [{
+            "filename": "analysis_report.pdf",
+            "content": base64.b64encode(pdf_bytes).decode("ascii"),
+        }]
 
     try:
-        with smtplib.SMTP(smtp_host, smtp_port) as server:
-            server.starttls()
-            server.login(smtp_user, smtp_password)
-            server.sendmail(smtp_user, admin_emails, msg.as_string())
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(
+                "https://api.resend.com/emails",
+                headers={"Authorization": f"Bearer {api_key}"},
+                json=payload,
+            )
+            resp.raise_for_status()
     except Exception as exc:
-        logger.error("SMTP send failed: %s", exc)
+        logger.error("Resend send failed: %s", exc)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Message could not be sent. Please try again later.",

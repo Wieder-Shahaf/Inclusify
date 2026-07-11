@@ -52,7 +52,7 @@ type FormData = z.infer<typeof schema>;
 
 export default function ContactModal({ open, onClose, analysis, fileName, locale }: ContactModalProps) {
   const t = useTranslations('contact');
-  const { user } = useAuth();
+  const { user, getToken } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -65,6 +65,11 @@ export default function ContactModal({ open, onClose, analysis, fileName, locale
   });
 
   const onSubmit = async (data: FormData) => {
+    const token = getToken();
+    if (!token) {
+      toast.error(t('signInRequired'));
+      return;
+    }
     setIsSubmitting(true);
     try {
       let pdfBlob: Blob | undefined;
@@ -79,9 +84,7 @@ export default function ContactModal({ open, onClose, analysis, fileName, locale
       await sendContactMessage({
         subject: data.subject,
         message: data.message,
-        senderName: user?.full_name || '',
-        senderEmail: user?.email || '',
-        senderInstitution: user?.institution || '',
+        token,
         pdfBlob,
       });
       toast.success(t('success'));
@@ -155,6 +158,7 @@ export default function ContactModal({ open, onClose, analysis, fileName, locale
               </div>
             )}
 
+            {user ? (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
@@ -201,6 +205,14 @@ export default function ContactModal({ open, onClose, analysis, fileName, locale
                 </button>
               </div>
             </form>
+            ) : (
+              <div className="py-4 text-center space-y-4">
+                <p className="text-sm text-slate-600 dark:text-slate-300">{t('signInRequired')}</p>
+                <button type="button" onClick={onClose} className="btn-primary w-full">
+                  {t('cancel')}
+                </button>
+              </div>
+            )}
           </motion.div>
         </Dialog.Content>
       </Dialog.Portal>
