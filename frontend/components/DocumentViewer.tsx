@@ -308,12 +308,14 @@ const PdfViewer = forwardRef<PdfNavHandle, {
   useEffect(() => { onNumPagesChange?.(numPages); }, [numPages, onNumPagesChange]);
   useEffect(() => { onPageChange?.(currentPage); }, [currentPage, onPageChange]);
 
+  // The object URL must be created in effect SETUP (not a state initializer):
+  // StrictMode's cleanup/setup cycle revokes it on the simulated unmount, and
+  // only a setup re-run creates a fresh one. PdfViewer is keyed on the file,
+  // so all other per-document state resets by remount.
   useEffect(() => {
     const url = URL.createObjectURL(file);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- see comment above
     setFileUrl(url);
-    setRenderedPages(new Set());
-    pageRefs.current.clear();
-    pageTextIndex.current.clear();
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
@@ -618,6 +620,9 @@ const DocumentViewer = forwardRef<PdfNavHandle, DocumentViewerProps>(function Do
     return (
       <PdfViewer
         ref={ref}
+        // Remount per file: all per-document state (object URL, rendered pages,
+        // page refs, text index) resets by construction.
+        key={`${uploadedFile.name}-${uploadedFile.size}-${uploadedFile.lastModified}`}
         file={uploadedFile}
         annotations={annotations}
         bboxAnnotations={bboxAnnotations}
