@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 interface HeroSectionProps {
   locale: string;
@@ -71,17 +71,6 @@ export default function HeroSection({ locale, isHebrew, translations }: HeroSect
       </div>
 
       <div className="max-w-5xl mx-auto text-center pt-8 pb-12 px-4">
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-pride-purple/10 border border-pride-purple/20 mb-6"
-        >
-          <Sparkles className="w-4 h-4 text-pride-purple" />
-          <span className="text-sm font-medium text-pride-purple">{translations.badge}</span>
-        </motion.div>
-
         {/* Main Headline */}
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
