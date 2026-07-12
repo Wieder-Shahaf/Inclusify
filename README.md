@@ -39,18 +39,6 @@ _▶️ **[Watch the full 50-second walkthrough](docs/media/inclusify-demo.mp4)*
 
 ---
 
-## Tech Stack
-
-| Layer | Technologies |
-|-------|-------------|
-| **Frontend** | Next.js 16 (App Router), TypeScript, Tailwind v4, Framer Motion, next-intl |
-| **Backend** | FastAPI, Python 3.11, Pydantic v2, asyncpg |
-| **Database** | PostgreSQL 16 |
-| **ML/AI** | QLoRA fine-tuned Qwen2.5-3B-Instruct, vLLM, Docling |
-| **Infrastructure** | Microsoft Azure, Docker (multi-stage builds), GitHub Actions |
-
----
-
 ## Local Development
 
 The full stack runs via Docker Compose — Postgres, Redis, an Azure Blob emulator (Azurite), the FastAPI backend, and the Next.js frontend.
