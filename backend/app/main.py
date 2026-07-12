@@ -1,11 +1,63 @@
 import logging
+import logging.config
 import os
 from contextlib import asynccontextmanager
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(levelname)s [%(name)s] %(message)s",
-)
+
+class _MaxLevelFilter(logging.Filter):
+    """Pass only records BELOW a ceiling. Lets the stdout handler take
+    INFO/DEBUG while stderr takes WARNING+ — Railway tags stdout as 'info' and
+    stderr as 'error', so splitting the streams is what makes its severity
+    filter mean anything (previously basicConfig sent everything to stderr, so
+    every INFO line showed as an error)."""
+
+    def __init__(self, ceiling: int):
+        super().__init__()
+        self.ceiling = ceiling
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        return record.levelno < self.ceiling
+
+
+def _configure_logging() -> None:
+    """Level-split logging so monitoring is meaningful. LOG_LEVEL env overrides
+    the INFO default (set DEBUG on Railway to trace a live issue, no code change)."""
+    level = os.getenv("LOG_LEVEL", "INFO").upper()
+    logging.config.dictConfig({
+        "version": 1,
+        "disable_existing_loggers": False,
+        "filters": {"below_warning": {"()": _MaxLevelFilter, "ceiling": logging.WARNING}},
+        "formatters": {
+            "standard": {
+                "format": "%(asctime)s %(levelname)s [%(name)s] %(message)s",
+                "datefmt": "%Y-%m-%dT%H:%M:%S%z",
+            }
+        },
+        "handlers": {
+            "stdout": {
+                "class": "logging.StreamHandler",
+                "stream": "ext://sys.stdout",
+                "formatter": "standard",
+                "filters": ["below_warning"],
+            },
+            "stderr": {
+                "class": "logging.StreamHandler",
+                "stream": "ext://sys.stderr",
+                "formatter": "standard",
+                "level": "WARNING",
+            },
+        },
+        "root": {"level": level, "handlers": ["stdout", "stderr"]},
+        # uvicorn installs its own stderr handlers; redirect them through ours so
+        # access + startup lines split by level and share the format too.
+        "loggers": {
+            name: {"handlers": ["stdout", "stderr"], "level": level, "propagate": False}
+            for name in ("uvicorn", "uvicorn.error", "uvicorn.access")
+        },
+    })
+
+
+_configure_logging()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
