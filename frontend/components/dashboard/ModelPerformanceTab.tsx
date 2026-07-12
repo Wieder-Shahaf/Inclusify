@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cpu, AlertTriangle, GitBranch, Timer, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -26,33 +27,52 @@ function SkeletonLoader({ className }: { className?: string }) {
 
 function Tooltip({ text }: { text: string }) {
   const [visible, setVisible] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
+  // Anchor via a body portal + fixed positioning so the tooltip escapes the
+  // dashboard's overflow-hidden layers (cards, tab pane) that otherwise clip it
+  // — an absolutely-positioned tooltip was cut off on both mobile and desktop.
+  const show = () => {
+    const r = btnRef.current?.getBoundingClientRect();
+    if (r) setPos({ top: r.top, left: r.left + r.width / 2 });
+    setVisible(true);
+  };
+  const hide = () => setVisible(false);
+
   return (
-    <span className="relative inline-flex items-center">
+    <span className="inline-flex items-center">
       <button
+        ref={btnRef}
         type="button"
-        onMouseEnter={() => setVisible(true)}
-        onMouseLeave={() => setVisible(false)}
-        onFocus={() => setVisible(true)}
-        onBlur={() => setVisible(false)}
+        onMouseEnter={show}
+        onMouseLeave={hide}
+        onFocus={show}
+        onBlur={hide}
         className="text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400 transition-colors"
         aria-label="More information"
       >
         <Info className="w-3.5 h-3.5" />
       </button>
-      <AnimatePresence>
-        {visible && (
-          <motion.div
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 4 }}
-            transition={{ duration: 0.15 }}
-            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-52 rounded-lg bg-slate-800 dark:bg-slate-700 text-white text-xs px-3 py-2 shadow-lg pointer-events-none"
-          >
-            {text}
-            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800 dark:border-t-slate-700" />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {visible && pos && (
+            <motion.div
+              role="tooltip"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 4 }}
+              transition={{ duration: 0.15 }}
+              style={{ position: 'fixed', top: pos.top - 8, left: pos.left, transform: 'translate(-50%, -100%)' }}
+              className="z-[100] w-52 rounded-lg bg-slate-800 dark:bg-slate-700 text-white text-xs px-3 py-2 shadow-lg pointer-events-none"
+            >
+              {text}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800 dark:border-t-slate-700" />
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </span>
   );
 }
@@ -88,7 +108,7 @@ function KpiCard({
       initial={{ opacity: 0, scale: 0.9, y: 20 }}
       animate={isLoading ? { opacity: 0, scale: 0.9, y: 20 } : { opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="flex flex-col gap-3 overflow-hidden rounded-xl border bg-white p-4 shadow-sm dark:bg-slate-900"
+      className="flex flex-col gap-3 rounded-xl border bg-white p-4 shadow-sm dark:bg-slate-900"
     >
       {isLoading ? (
         <div className="space-y-3">
@@ -125,7 +145,7 @@ export default function ModelPerformanceTab({ days, translations }: ModelPerform
     val != null ? `${val.toLocaleString()}${suffix}` : '—';
 
   return (
-    <div className="flex h-full min-w-0 flex-col gap-3 overflow-hidden">
+    <div className="flex min-w-0 flex-col gap-3 lg:h-full lg:overflow-hidden">
       {/* KPI Cards */}
       <div className="grid shrink-0 gap-3 grid-cols-2 lg:grid-cols-4">
         <KpiCard
