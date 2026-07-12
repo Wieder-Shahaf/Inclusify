@@ -66,8 +66,6 @@ The backend installs **CPU-only PyTorch**. Inference runs remotely over HTTP (`V
 
 ---
 
-## Screenshots
-
 ### Analysis Results
 The document on the left, severity-graded findings and an LGBTQ+ inclusivity score on the right.
 ![Analysis Results](docs/screenshots/analysis.png)
