@@ -68,7 +68,7 @@ function KpiCard({
       initial={{ opacity: 0, scale: 0.9, y: 20 }}
       animate={isLoading ? { opacity: 0, scale: 0.9, y: 20 } : { opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="flex h-16 items-center gap-3 overflow-hidden rounded-xl border bg-white px-3 py-2 shadow-sm dark:bg-slate-900"
+      className="flex min-h-16 items-center gap-3 overflow-hidden rounded-xl border bg-white px-3 py-2 shadow-sm dark:bg-slate-900"
     >
       {isLoading ? (
         <>
@@ -90,7 +90,7 @@ function KpiCard({
               </p>
               {detail && <p className="truncate text-[11px] font-medium text-green-600 dark:text-green-400">{detail}</p>}
             </div>
-            <p className="mt-1 truncate text-xs font-medium leading-none text-slate-500 dark:text-slate-400">{label}</p>
+            <p className="mt-1 text-xs font-medium leading-tight text-slate-500 dark:text-slate-400 lg:truncate">{label}</p>
           </div>
         </>
       )}
@@ -104,7 +104,7 @@ export default function OverviewTab({ days, translations }: OverviewTabProps) {
   const { data: activityData, isLoading: activityLoading, error: activityError } = useAdminActivity(activityPage, 5, days);
 
   return (
-    <div className="flex h-full min-w-0 flex-col gap-3 overflow-hidden">
+    <div className="flex min-w-0 flex-col gap-3 lg:h-full lg:overflow-hidden">
 
       {/* KPI row — full width, 4 columns */}
       <div className="grid shrink-0 gap-3 grid-cols-2 lg:grid-cols-4">
@@ -146,7 +146,7 @@ export default function OverviewTab({ days, translations }: OverviewTabProps) {
       )}
 
       {/* Two-column layout: Activity (left) + Trends (right) */}
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[3fr_2fr] min-w-0">
+      <div className="grid grid-cols-1 gap-3 min-w-0 lg:min-h-0 lg:flex-1 lg:grid-cols-[3fr_2fr]">
 
         {/* Left: Recent Activity */}
         <div className="flex min-h-0 min-w-0 flex-col rounded-xl border bg-white p-4 shadow-sm dark:bg-slate-900">
@@ -163,7 +163,7 @@ export default function OverviewTab({ days, translations }: OverviewTabProps) {
           </div>
 
           {activityLoading ? (
-            <div className="min-h-0 flex-1 space-y-2 overflow-hidden">
+            <div className="space-y-2 lg:min-h-0 lg:flex-1 lg:overflow-hidden">
               {[1, 2, 3, 4, 5].map((i) => (
                 <div key={i} className="flex items-center gap-3 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50">
                   <SkeletonLoader className="w-8 h-8 rounded-lg" />
@@ -184,7 +184,7 @@ export default function OverviewTab({ days, translations }: OverviewTabProps) {
               No recent activity
             </div>
           ) : (
-            <div className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden">
+            <div className="overflow-x-auto lg:min-h-0 lg:flex-1 lg:overflow-y-hidden">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">

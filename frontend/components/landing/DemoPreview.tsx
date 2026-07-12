@@ -68,6 +68,27 @@ const DemoPreview = React.memo(function DemoPreview({ isHebrew, translations }: 
     return () => clearInterval(interval);
   }, [highlights.length]);
 
+  // Shared suggestion-card body — used by both the desktop floating tooltip and
+  // the mobile in-card panel so the markup isn't duplicated.
+  const renderSuggestion = (h: (typeof highlights)[number]) => (
+    <>
+      <div className="flex items-center gap-2 mb-3">
+        <span
+          className={`w-2.5 h-2.5 rounded-full ${
+            h.severity === 'outdated' ? 'bg-sky-500' : 'bg-amber-500'
+          }`}
+        />
+        <span className="text-sm font-semibold uppercase text-slate-500">
+          {h.severityLabel}
+        </span>
+      </div>
+      <div className="flex items-start gap-2">
+        <ArrowRight className={`w-5 h-5 text-pride-purple flex-shrink-0 mt-0.5 ${isHebrew ? 'rotate-180' : ''}`} />
+        <span className="text-base text-pride-purple font-medium">{h.suggestion}</span>
+      </div>
+    </>
+  );
+
   const renderHighlightedText = () => {
     const demoText = translations.demoText;
     const parts: React.ReactNode[] = [];
@@ -95,26 +116,15 @@ const DemoPreview = React.memo(function DemoPreview({ isHebrew, translations }: 
           transition={{ duration: 0.5 }}
         >
           {h.term}
+          {/* Desktop: floating tooltip anchored under the term. Hidden on mobile
+              where a term-anchored, fixed-width box overflows the card. */}
           {isActive && (
             <motion.div
               initial={{ opacity: 0, y: 5, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              className={`absolute ${isHebrew ? 'right-0' : 'left-0'} top-full mt-3 z-10 w-72 p-4 rounded-xl bg-white dark:bg-slate-800 shadow-2xl border border-slate-200 dark:border-slate-700`}
+              className={`hidden sm:block absolute ${isHebrew ? 'right-0' : 'left-0'} top-full mt-3 z-10 w-72 p-4 rounded-xl bg-white dark:bg-slate-800 shadow-2xl border border-slate-200 dark:border-slate-700`}
             >
-              <div className="flex items-center gap-2 mb-3">
-                <span
-                  className={`w-2.5 h-2.5 rounded-full ${
-                    h.severity === 'outdated' ? 'bg-sky-500' : 'bg-amber-500'
-                  }`}
-                />
-                <span className="text-sm font-semibold uppercase text-slate-500">
-                  {h.severityLabel}
-                </span>
-              </div>
-              <div className="flex items-start gap-2">
-                <ArrowRight className={`w-5 h-5 text-pride-purple flex-shrink-0 mt-0.5 ${isHebrew ? 'rotate-180' : ''}`} />
-                <span className="text-base text-pride-purple font-medium">{h.suggestion}</span>
-              </div>
+              {renderSuggestion(h)}
             </motion.div>
           )}
         </motion.span>
@@ -186,8 +196,21 @@ const DemoPreview = React.memo(function DemoPreview({ isHebrew, translations }: 
                 </div>
               </div>
 
-              <div className={`text-lg sm:text-xl leading-relaxed relative min-h-[120px] ${isHebrew ? 'text-right' : ''}`} dir={isHebrew ? 'rtl' : 'ltr'}>
+              <div className={`text-lg sm:text-xl leading-relaxed relative min-h-[160px] sm:min-h-[120px] ${isHebrew ? 'text-right' : ''}`} dir={isHebrew ? 'rtl' : 'ltr'}>
                 {renderHighlightedText()}
+                {/* Mobile: panel anchored to the text container (not the term),
+                    full width so it can never overflow the card. */}
+                {activeHighlight !== null && highlights[activeHighlight] && (
+                  <motion.div
+                    key={`m-${activeHighlight}`}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    dir={isHebrew ? 'rtl' : 'ltr'}
+                    className="sm:hidden absolute inset-x-0 bottom-0 z-10 p-4 rounded-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur shadow-2xl border border-slate-200 dark:border-slate-700"
+                  >
+                    {renderSuggestion(highlights[activeHighlight])}
+                  </motion.div>
+                )}
               </div>
             </div>
           </div>

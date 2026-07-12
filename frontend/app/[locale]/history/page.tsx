@@ -465,8 +465,21 @@ export default function HistoryPage() {
         .replace(/^_+|_+$/g, '') || 'analysis';
       a.href = url;
       a.download = `${safe}_inclusify_report.pdf`;
+      // iOS Safari ignores the `download` attribute and won't save a blob via a
+      // synthetic click — open it in a new tab so the user can view/share/save.
+      const iOS = /iP(hone|ad|od)/.test(navigator.userAgent)
+        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (iOS) {
+        a.target = '_blank';
+        a.rel = 'noopener';
+      }
+      // Must be in the DOM for the click to register on some mobile browsers.
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
+      a.remove();
+      // Defer revoke: the blob read is async, so revoking immediately cancels
+      // the download on mobile / slower devices.
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
     } catch {
       toast.error(isHe
         ? 'אין דוח שמור לניתוח זה'

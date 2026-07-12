@@ -127,7 +127,7 @@ function AdminDashboardContent({ translations }: AdminDashboardProps) {
   ];
 
   return (
-    <div className="relative left-1/2 flex w-[calc(100vw-2rem)] -translate-x-1/2 flex-1 min-h-0 flex-col gap-3 overflow-hidden py-3 sm:w-[calc(100vw-3rem)] lg:w-[calc(100vw-14.5rem)]">
+    <div className="relative left-1/2 flex w-[calc(100vw-2rem)] -translate-x-1/2 flex-col gap-3 py-3 sm:w-[calc(100vw-3rem)] lg:min-h-0 lg:flex-1 lg:overflow-hidden lg:w-[calc(100vw-14.5rem)]">
       {/* Header with time range selector */}
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
         <div>
@@ -152,26 +152,27 @@ function AdminDashboardContent({ translations }: AdminDashboardProps) {
         </select>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="grid h-11 shrink-0 grid-cols-4 border-b border-slate-200 dark:border-slate-700">
+      {/* Tab Navigation — scrolls horizontally on mobile (labels show in full,
+          no truncation); even 4-column grid on desktop. */}
+      <div className="flex h-11 shrink-0 overflow-x-auto border-b border-slate-200 dark:border-slate-700 lg:grid lg:grid-cols-4">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={cn(
-              'h-11 min-w-0 px-2 text-center text-sm font-medium border-b-2 -mb-px transition-colors',
+              'h-11 shrink-0 whitespace-nowrap px-4 text-center text-sm font-medium border-b-2 -mb-px transition-colors lg:px-2',
               activeTab === tab.key
                 ? 'border-pride-purple text-pride-purple'
                 : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
             )}
           >
-            <span className="block truncate">{tab.label}</span>
+            {tab.label}
           </button>
         ))}
       </div>
 
       {/* Tab Content */}
-      <div className="min-h-0 flex-1 overflow-hidden">
+      <div className="lg:min-h-0 lg:flex-1 lg:overflow-hidden">
         {activeTab === 'overview' && (
           <OverviewTab
             days={days}
