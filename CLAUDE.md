@@ -32,8 +32,13 @@ downloadable reports.
 - Backend: Rule-based placeholder in analysis router. DB integration is written but commented out.
 - ML: Fine-tuned model validated (POC complete). Adapters ready. inference_demo.py works locally.
 - DB: Full schema + seed implemented. Repository layer written. NOT connected to running app.
-- Infra: Empty. No Docker, no CI/CD, no Azure deployment configs.
-- Data Pipeline: Docling validated as replacement for PyMuPDF. Not yet integrated into ingestion.
+- Infra: Backend + frontend deploy on Railway from `main` via infra/docker/*.Dockerfile; GitHub Actions CI runs on push.
+- Data Pipeline: Docling integrated into ingestion (see below).
+
+## Ingestion & Ops (July 2026)
+- Docling runs in a **recycled spawn subprocess** (`ProcessPoolExecutor`, `max_tasks_per_child=4`) in backend/app/modules/ingestion/service.py — it OOM'd the container when run in-process (its memory ratchets and never returns to the OS). The API parent stays ~40 MB; each conversion's peak is reclaimed. Serialized to one parse at a time; torch threads + glibc arenas capped via the Dockerfile.
+- Prod runs on **Railway Hobby** ($5/mo, backend replica 4 GB / 2 vCPU). Full docling incl. Hebrew/English OCR + tables is live (`BLOCK_OCR_DOCUMENTS=false`). The guard remains a code knob for hosts under ~2 GB.
+- Logging is **level-split** (backend/app/main.py `dictConfig`): INFO/DEBUG → stdout, WARNING+ → stderr, because Railway tags severity by stream. `LOG_LEVEL` env overrides the INFO default.
 
 ## Key Architecture Decisions
 - Hybrid detection: rule-based (high-precision known terms) + LLM (contextual analysis)
