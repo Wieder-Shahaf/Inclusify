@@ -241,17 +241,49 @@ export default function AnalyzePage() {
     announce(t('a11y.analysisComplete', { count: Object.values(result.counts).reduce((a, b) => a + b, 0) }));
   }, [t, announce]);
 
-  // Dev-only: `?demo=1` loads sample results so the results view (incl. the
-  // mobile report) can be previewed without a backend. Stripped in production.
+  // Dev-only: `?demo=1` loads sample results (incl. the real PDF viewer,
+  // stepped through the real ProcessingAnimation on a fake timer) so the
+  // hero demo video can be captured without a backend. Stripped in
+  // production via the NODE_ENV guard below.
   useEffect(() => {
     if (process.env.NODE_ENV === 'production') return;
     if (typeof window === 'undefined') return;
     if (new URLSearchParams(window.location.search).get('demo') !== '1') return;
-    import('@/lib/demoAnalysis').then(({ buildDemoAnalysis, DEMO_FILE_NAME }) => {
+
+    let cancelled = false;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    Promise.all([
+      import('@/lib/demoAnalysis'),
+      fetch('/demo/sample_paper.pdf').then((r) => r.blob()),
+    ]).then(([{ buildDemoAnalysis, DEMO_FILE_NAME }, blob]) => {
+      if (cancelled) return;
       const { text, result } = buildDemoAnalysis();
+      const file = new File([blob], DEMO_FILE_NAME, { type: 'application/pdf' });
+
       setFileName(DEMO_FILE_NAME);
-      finishAnalysis(text, result);
+      setUploadedFile(file);
+      setDocInputType('pdf');
+      setViewState('processing');
+
+      // Step through the real processing stages on a fake timer so the demo
+      // video captures the genuine animation with no real backend wait.
+      const stages: Array<typeof processingStage> = ['uploading', 'parsing', 'analyzing', 'generating', 'complete'];
+      stages.forEach((s, i) => {
+        timers.push(setTimeout(() => {
+          if (cancelled) return;
+          setProcessingStage(s);
+          if (s === 'complete') {
+            timers.push(setTimeout(() => { if (!cancelled) finishAnalysis(text, result); }, 500));
+          }
+        }, i * 600));
+      });
     });
+
+    return () => {
+      cancelled = true;
+      timers.forEach(clearTimeout);
+    };
   }, [finishAnalysis]);
 
   const handleFileSelect = useCallback(async (file: File) => {
