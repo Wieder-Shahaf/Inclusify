@@ -99,7 +99,7 @@ export default function FeedbackTab({ translations: t }: FeedbackTabProps) {
   const falsePct         = totalAll > 0 ? Math.round(((data?.total_false_positive ?? 0) / totalAll) * 100) : 0;
 
   return (
-    <div className="flex h-full min-w-0 flex-col gap-3 overflow-hidden">
+    <div className="flex min-w-0 flex-col gap-3 lg:h-full lg:overflow-hidden">
 
       {/* KPI Summary Cards */}
       <div className="grid shrink-0 grid-cols-1 gap-3 sm:grid-cols-3">
@@ -150,7 +150,7 @@ export default function FeedbackTab({ translations: t }: FeedbackTabProps) {
       )}
 
       {/* Filter bar + table */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border bg-white dark:bg-slate-900 shadow-sm">
+      <div className="flex flex-col overflow-hidden rounded-xl border bg-white dark:bg-slate-900 shadow-sm lg:min-h-0 lg:flex-1">
 
         {/* Table header row */}
         <div className="flex shrink-0 items-center justify-between px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex-wrap gap-3">
@@ -192,8 +192,8 @@ export default function FeedbackTab({ translations: t }: FeedbackTabProps) {
 
         {/* Table */}
         {isLoading ? (
-          <div className="min-h-0 flex-1 overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="lg:min-h-0 lg:flex-1 lg:overflow-hidden">
+            <table className="dash-table w-full text-sm">
               <tbody>{[1, 2, 3].map(i => <SkeletonRow key={i} />)}</tbody>
             </table>
           </div>
@@ -210,8 +210,8 @@ export default function FeedbackTab({ translations: t }: FeedbackTabProps) {
             </p>
           </div>
         ) : (
-          <div className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden">
-            <table className="w-full text-sm">
+          <div className="lg:min-h-0 lg:flex-1 lg:overflow-x-auto lg:overflow-y-hidden">
+            <table className="dash-table w-full text-sm">
               <thead>
                 <tr className="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-50/70 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800">
                   <th className="px-6 py-3 w-20">{t.colVote}</th>
@@ -233,7 +233,7 @@ export default function FeedbackTab({ translations: t }: FeedbackTabProps) {
                       className="hover:bg-slate-50/60 dark:hover:bg-slate-800/20 transition-colors"
                     >
                       {/* Vote icon */}
-                      <td className="px-6 py-3">
+                      <td data-label={t.colVote} className="px-6 py-3">
                         {item.vote === 'up' ? (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 dark:bg-green-900/25 dark:text-green-300 border border-green-200 dark:border-green-800">
                             <ThumbsUp className="w-3 h-3" />
@@ -250,7 +250,7 @@ export default function FeedbackTab({ translations: t }: FeedbackTabProps) {
                       </td>
 
                       {/* Flagged text */}
-                      <td className="px-4 py-3 max-w-xs">
+                      <td data-label={t.colFlaggedText} className="px-4 py-3 max-w-xs">
                         {item.flagged_text ? (
                           <span className="font-medium text-slate-800 dark:text-slate-100 break-words">
                             &ldquo;{item.flagged_text}&rdquo;
@@ -261,7 +261,7 @@ export default function FeedbackTab({ translations: t }: FeedbackTabProps) {
                       </td>
 
                       {/* Severity */}
-                      <td className="px-4 py-3">
+                      <td data-label={t.colSeverity} className="px-4 py-3">
                         {sev ? (
                           <span className={cn('px-2.5 py-1 rounded-full text-xs font-medium capitalize', sev.bg, sev.text)}>
                             {sev.label}
@@ -272,7 +272,7 @@ export default function FeedbackTab({ translations: t }: FeedbackTabProps) {
                       </td>
 
                       {/* User */}
-                      <td className="px-4 py-3">
+                      <td data-label={t.colUser} className="px-4 py-3">
                         {item.user_email === 'anonymous' ? (
                           <span className="text-xs italic text-slate-400">{t.anonymous}</span>
                         ) : (
@@ -283,7 +283,7 @@ export default function FeedbackTab({ translations: t }: FeedbackTabProps) {
                       </td>
 
                       {/* Date */}
-                      <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                      <td data-label={t.colDate} className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
                         {new Date(item.created_at).toLocaleDateString(undefined, {
                           day: 'numeric', month: 'short', year: 'numeric',
                         })}

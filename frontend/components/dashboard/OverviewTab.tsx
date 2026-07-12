@@ -184,8 +184,8 @@ export default function OverviewTab({ days, translations }: OverviewTabProps) {
               No recent activity
             </div>
           ) : (
-            <div className="overflow-x-auto lg:min-h-0 lg:flex-1 lg:overflow-y-hidden">
-              <table className="w-full text-sm">
+            <div className="lg:min-h-0 lg:flex-1 lg:overflow-x-auto lg:overflow-y-hidden">
+              <table className="dash-table w-full text-sm">
                 <thead>
                   <tr className="text-left text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">
                     <th className="py-2 pr-4 font-medium">User</th>
@@ -204,14 +204,14 @@ export default function OverviewTab({ days, translations }: OverviewTabProps) {
                       transition={{ delay: idx * 0.05 }}
                       className="border-b border-slate-50 dark:border-slate-800/50 last:border-0"
                     >
-                      <td className="py-2.5 pr-4 text-slate-800 dark:text-white truncate max-w-[140px]">{item.user_email}</td>
-                      <td className="py-2.5 pr-4 text-slate-600 dark:text-slate-400 truncate max-w-[160px]">
+                      <td data-label="User" className="py-2.5 pr-4 text-slate-800 dark:text-white truncate max-w-[140px]">{item.user_email}</td>
+                      <td data-label="Document" className="py-2.5 pr-4 text-slate-600 dark:text-slate-400 truncate max-w-[160px]">
                         {item.document_name || 'Direct text'}
                       </td>
-                      <td className="py-2.5 pr-4 text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                      <td data-label="Date" className="py-2.5 pr-4 text-slate-500 dark:text-slate-400 whitespace-nowrap">
                         {new Date(item.started_at).toLocaleDateString()}
                       </td>
-                      <td className="py-2.5 pr-4">
+                      <td data-label="Status" className="py-2.5 pr-4">
                         <span className={cn(
                           'px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap',
                           item.status === 'succeeded'
@@ -223,7 +223,7 @@ export default function OverviewTab({ days, translations }: OverviewTabProps) {
                           {item.status}
                         </span>
                       </td>
-                      <td className="py-2.5">
+                      <td data-label="Findings" className="py-2.5">
                         <span className="font-semibold text-slate-800 dark:text-white">{item.issue_count}</span>
                       </td>
                     </motion.tr>
