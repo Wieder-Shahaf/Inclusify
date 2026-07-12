@@ -76,7 +76,7 @@ function ScoreRing({ score, size = 64 }: { score: number | null; size?: number }
         className="absolute text-sm font-bold text-slate-900 dark:text-white"
         style={{ fontSize: size < 50 ? 9 : 12 }}
       >
-        {score != null ? `${score}%` : '—'}
+        {score != null ? `${Math.floor(score)}%` : '—'}
       </span>
     </div>
   );
@@ -471,7 +471,7 @@ export default function HistoryPage() {
 
   const scored = analyses.filter(a => a.score != null);
   const avgScore = scored.length
-    ? Math.round((scored.reduce((s, a) => s + (a.score as number), 0) / scored.length) * 10) / 10
+    ? Math.round(scored.reduce((s, a) => s + (a.score as number), 0) / scored.length)
     : null;
 
   const cleanCount = analyses.filter(a => a.findings_count === 0).length;

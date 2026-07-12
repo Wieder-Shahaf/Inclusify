@@ -212,8 +212,8 @@ function loadHebrewFont(): Promise<{ regular: string; bold: string } | null> {
 }
 
 function clampScore(score: number): number {
-  // One decimal — the clean-text % is meaningful at that precision (99.2 vs 99.8)
-  const n = Number.isFinite(score) ? Math.round(score * 10) / 10 : 0;
+  // Whole numbers only (floor matches backend scoring.py semantics)
+  const n = Number.isFinite(score) ? Math.floor(score) : 0;
   return Math.max(0, Math.min(100, n));
 }
 

@@ -1,6 +1,7 @@
 // Per-analysis clean-text score.
 //
-// score = 100 · (1 − flaggedChars / totalChars)
+// score = floor(100 · (1 − flaggedChars / totalChars))  — whole numbers only;
+// floor (not round) so a document with any finding can never display 100.
 //
 // The % of document characters NOT flagged by any finding. Flagged characters
 // are the UNION of finding spans — overlapping or duplicate findings are
@@ -37,5 +38,5 @@ export function computeCleanScore(
   }
   if (curEnd >= 0) flagged += curEnd - curStart;
 
-  return Math.round(100 * (1 - flagged / totalChars) * 10) / 10;
+  return Math.floor(100 * (1 - flagged / totalChars));
 }

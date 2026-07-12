@@ -155,7 +155,8 @@ describe('exportReport', () => {
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allTextArgs = textSpy.mock.calls.map((call: any[]) => call[0]);
-    expect(allTextArgs).toEqual(expect.arrayContaining(['97.3', '%']));
+    // Whole numbers only: 97.3 floors to 97
+    expect(allTextArgs).toEqual(expect.arrayContaining(['97', '%']));
     expect(allTextArgs).not.toEqual(expect.arrayContaining(['/100']));
   });
 
