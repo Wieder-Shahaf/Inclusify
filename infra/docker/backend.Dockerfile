@@ -109,7 +109,17 @@ ENV PYTHONUNBUFFERED=1 \
     # Cache dirs for Docling/HF weights — baked below so startup needs no network
     HF_HOME=/home/appuser/.cache/huggingface \
     TORCH_HOME=/home/appuser/.cache/torch \
-    XDG_CACHE_HOME=/home/appuser/.cache
+    XDG_CACHE_HOME=/home/appuser/.cache \
+    # Cap CPU parallelism so a single docling conversion uses less peak RAM
+    # (torch allocates per-thread scratch buffers). Slower inference, lower peak
+    # — the accepted memory-for-time trade on a constrained host. Inherited by
+    # the spawned parse worker.
+    OMP_NUM_THREADS=1 \
+    MKL_NUM_THREADS=1 \
+    OPENBLAS_NUM_THREADS=1 \
+    # glibc otherwise opens one 64MB arena PER thread; each fragments and inflates
+    # RSS. Two arenas keeps container RSS close to real usage.
+    MALLOC_ARENA_MAX=2
 
 WORKDIR /app
 

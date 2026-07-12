@@ -20,8 +20,12 @@ router = APIRouter()
 # 50MB size limit (prevent DoS)
 MAX_FILE_SIZE = 50 * 1024 * 1024
 
-# Limit concurrent Docling parses to prevent OOM and CPU starvation under load.
-MAX_CONCURRENT_PARSES = 2
+# Serialize parses: the docling worker pool runs one conversion at a time
+# (service._get_parse_pool), so only ONE conversion's ~1.2GB peak is ever live.
+# The semaphore mirrors that at the request layer — extra uploads queue here
+# instead of buffering 50MB of file_bytes each while they wait. Longer wait,
+# bounded memory: the accepted trade.
+MAX_CONCURRENT_PARSES = 1
 parse_semaphore = asyncio.Semaphore(MAX_CONCURRENT_PARSES)
 
 ALLOWED_CONTENT_TYPES = {

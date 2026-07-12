@@ -1,8 +1,11 @@
 import asyncio
 import logging
+import multiprocessing
 import os
 import tempfile
 import time
+from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures.process import BrokenProcessPool
 
 from pypdf import PdfReader
 from pypdf.errors import PdfReadError
@@ -437,20 +440,61 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
             except OSError as e:
                 logger.warning(f"Failed to delete temp file: {e}")
 
+_parse_pool: ProcessPoolExecutor | None = None
+
+
+def _get_parse_pool() -> ProcessPoolExecutor:
+    """One worker, recycled after every task, spawned (not forked).
+
+    docling/torch never return their ~1GB working set to the OS within a
+    process, so in-process RSS ratchets up per conversion (measured 1007MB →
+    1319MB on back-to-back blank pages) until the container OOM-kills — the
+    root cause of "OOM for almost any document". A fresh subprocess per document
+    hands that memory back to the OS every time; the parent API server stays
+    lean. max_workers=1 also means only ONE conversion's peak is ever live, so a
+    burst of uploads can't multiply memory (they queue instead).
+
+    spawn, not fork: forking a parent that has imported torch copies its whole
+    heap and is deadlock-prone; spawn starts the worker clean and loads weights
+    from the baked HF cache itself.
+
+    max_tasks_per_child recycles the worker periodically to cap the ratchet.
+    Tuned for the 8GB Hobby replica: full docling peaks ~1.5-3GB and each doc
+    adds a few hundred MB before recycle, so 4 docs/worker stays well under 8GB
+    while reloading models only once per 4 uploads instead of every upload.
+    # ponytail: if the replica RAM changes, retune — smaller RAM → lower this
+    # (1 = reload every doc, the only safe value on a 1GB container).
+    """
+    global _parse_pool
+    if _parse_pool is None:
+        _parse_pool = ProcessPoolExecutor(
+            max_workers=1,
+            max_tasks_per_child=4,
+            mp_context=multiprocessing.get_context("spawn"),
+        )
+    return _parse_pool
+
+
 async def parse_document_async(file_bytes: bytes, filename: str) -> dict:
+    global _parse_pool
     loop = asyncio.get_running_loop()
-    return await loop.run_in_executor(None, _parse_document_sync, file_bytes, filename)
+    try:
+        return await loop.run_in_executor(
+            _get_parse_pool(), _parse_document_sync, file_bytes, filename
+        )
+    except BrokenProcessPool:
+        # Worker was killed mid-conversion — almost always the OOM-killer on a
+        # document heavier than the container's ceiling. Reset the pool so the
+        # next upload gets a fresh worker, and return a clean error not a 500.
+        _parse_pool = None
+        logger.error("Docling worker died (likely OOM) while parsing %s", filename)
+        return {"error": "This document is too large to process on the current server. Try a smaller file."}
 
 
 async def warm_up_docling() -> None:
-    """Pre-load Docling model weights at startup so the first upload is not slow."""
-    loop = asyncio.get_running_loop()
-    # Guard on → lightweight parsers only, docling is never used at runtime, so
-    # don't load its weights (saves memory on the constrained host).
-    if _ocr_blocked():
-        logger.info("Docling warm-up skipped — BLOCK_OCR_DOCUMENTS on (lightweight parsers only)")
-        return
-    logger.info("Docling warm-up started — loading model weights")
-    await loop.run_in_executor(None, lambda: _get_docling_converter(use_ocr=True))
-    await loop.run_in_executor(None, _get_hybrid_chunker)
-    logger.info("Docling warm-up complete")
+    """No-op by design. Conversions run in a recycled subprocess (see
+    _get_parse_pool), so loading docling's ~1GB of weights into THIS long-lived
+    API process would bloat it permanently for no benefit — every upload spawns
+    a fresh worker that loads weights from the baked HF cache itself. Kept so
+    main.py's startup call site is unchanged."""
+    logger.info("Docling warm-up skipped — conversions run in a recycled subprocess")
