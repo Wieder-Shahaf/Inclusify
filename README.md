@@ -51,22 +51,6 @@ _▶️ **[Watch the full 50-second walkthrough](docs/media/inclusify-demo.mp4)*
 
 ---
 
-## Architecture
-
-Hybrid detection combines a high-precision rule-based pass over known terms with contextual LLM analysis, over a Docling-based ingestion pipeline.
-
-<div align="center">
-<img src="docs/Inclusify-System.png" alt="Inclusify system architecture" width="900" />
-</div>
-
-**Analysis pipeline** — document ingestion → sentence chunking → rule-based + LLM detection → aggregated, severity-graded findings:
-
-<div align="center">
-<img src="docs/Analysis-Pipeline.png" alt="Inclusify analysis pipeline" width="900" />
-</div>
-
----
-
 ## Local Development
 
 The full stack runs via Docker Compose — Postgres, Redis, an Azure Blob emulator (Azurite), the FastAPI backend, and the Next.js frontend.
