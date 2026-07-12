@@ -146,10 +146,14 @@ class TestGoogleOAuthCallback:
                 follow_redirects=False,
             )
 
-            # Should redirect to frontend
+            # Should redirect to frontend. Compare against the cached settings
+            # value, not the literal env var: settings is instantiated once at
+            # first import, so if config loaded earlier in the suite,
+            # settings.FRONTEND_URL may differ from this file's os.environ.
+            from app.core.config import settings
             assert response.status_code == 302
             location = response.headers.get("location", "")
-            assert "localhost:3000" in location
+            assert settings.FRONTEND_URL.rstrip("/") in location
             assert "access_token=" in location
 
     @pytest.mark.asyncio
@@ -239,9 +243,10 @@ class TestGoogleOAuthCallback:
             follow_redirects=False,
         )
 
+        from app.core.config import settings
         assert response.status_code == 302
         location = response.headers.get("location", "")
-        assert "localhost:3000" in location
+        assert settings.FRONTEND_URL.rstrip("/") in location
         assert "error=access_denied" in location
 
     @pytest.mark.asyncio
