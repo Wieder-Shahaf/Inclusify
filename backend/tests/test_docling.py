@@ -108,15 +108,20 @@ class TestParseDocumentAsync:
     """Tests for the async document parsing wrapper."""
 
     @pytest.mark.asyncio
-    async def test_calls_sync_in_executor(self):
-        """Async wrapper delegates to sync function."""
+    async def test_parses_in_worker_process(self):
+        """The async wrapper runs the parse in a spawned worker process and
+        returns its result back across the process boundary.
+
+        Can't mock _parse_document_sync here: it executes in a separate
+        process the parent's patch never reaches. So use a real TXT input —
+        cheap, deterministic, no docling — which proves the pickle round-trip
+        (bytes in, result dict out) works end to end."""
         from app.modules.ingestion.service import parse_document_async
 
-        mock_result = {"text": "test content", "page_count": 1}
-
-        with patch('app.modules.ingestion.service._parse_document_sync', return_value=mock_result):
-            result = await parse_document_async(b"%PDF-1.4 fake", "test.pdf")
-            assert result == mock_result
+        result = await parse_document_async(b"Hello inclusive world.", "note.txt")
+        assert result["text"] == "Hello inclusive world."
+        assert result["detected_language"] == "en"
+        assert result["page_count"] == 1
 
 
 class TestUploadEndpoint:
