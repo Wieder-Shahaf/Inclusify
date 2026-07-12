@@ -224,6 +224,7 @@ async def get_history(
             "findings_low": int(kpis_raw["findings_low"]),
             "findings_medium": int(kpis_raw["findings_medium"]),
             "findings_high": int(kpis_raw["findings_high"]),
+            "findings_by_category": kpis_raw.get("findings_by_category", []),
         },
         "analyses": serialized,
         "total": total,

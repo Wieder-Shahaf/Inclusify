@@ -404,6 +404,7 @@ export interface HistoryKPIs {
   findings_low: number;
   findings_medium: number;
   findings_high: number;
+  findings_by_category: { category: string; count: number }[];
 }
 
 export interface HistoryResponse {

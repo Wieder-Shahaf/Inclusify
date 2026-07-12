@@ -202,9 +202,28 @@ async def get_user_history_kpis(
         """,
         user_id,
     )
+    # Findings grouped by classification (category), for the "Findings by
+    # category" breakdown. category is free-text as stored by the analyzer.
+    cat_rows = await conn.fetch(
+        """
+        SELECT f.category AS category, COUNT(*) AS count
+        FROM analysis_runs ar
+        JOIN documents d ON ar.document_id = d.document_id
+        JOIN findings f ON f.run_id = ar.run_id
+        WHERE d.user_id = $1
+          AND ar.status = 'succeeded'
+          AND d.deleted_at IS NULL
+        GROUP BY f.category
+        ORDER BY count DESC, f.category
+        """,
+        user_id,
+    )
+    by_category = [{"category": r["category"], "count": int(r["count"])} for r in cat_rows]
     if row:
-        return dict(row)
-    return {"total_analyses": 0, "total_findings": 0, "findings_low": 0, "findings_medium": 0, "findings_high": 0}
+        result = dict(row)
+        result["findings_by_category"] = by_category
+        return result
+    return {"total_analyses": 0, "total_findings": 0, "findings_low": 0, "findings_medium": 0, "findings_high": 0, "findings_by_category": []}
 
 
 async def get_run_details(conn: asyncpg.Connection, run_id, user_id) -> Optional[dict]:

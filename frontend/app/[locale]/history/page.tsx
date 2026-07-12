@@ -53,6 +53,17 @@ function scoreBg(score: number): string {
   return 'bg-red-50 dark:bg-red-950/30';
 }
 
+// Colors for the "Findings by category" bar. Categories are free-text, so
+// segments take a palette color by index (cycled if there are more than 6).
+const CATEGORY_PALETTE = [
+  'bg-pride-purple',
+  'bg-orange-500',
+  'bg-sky-500',
+  'bg-amber-500',
+  'bg-rose-500',
+  'bg-emerald-500',
+];
+
 function severityColor(sev: string) {
   if (sev === 'high') return { dot: 'bg-red-400', text: 'text-red-600 dark:text-red-400', badge: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300' };
   if (sev === 'medium') return { dot: 'bg-amber-400', text: 'text-amber-600 dark:text-amber-400', badge: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' };
@@ -583,36 +594,29 @@ export default function HistoryPage() {
           </div>
         )}
 
-        {/* Severity bar */}
-        {kpis && kpis.total_findings > 0 && (
+        {/* Findings by category */}
+        {kpis && kpis.total_findings > 0 && kpis.findings_by_category.length > 0 && (
           <div className="mb-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5">
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
-              {isHe ? 'פירוט ממצאים לפי חומרה' : 'Findings by severity'}
+              {isHe ? 'פירוט ממצאים לפי סיווג' : 'Findings by category'}
             </p>
-            <div className="flex gap-2 h-3 rounded-full overflow-hidden mb-3">
-              {kpis.findings_high > 0 && (
-                <div className="bg-red-400 transition-all" style={{ width: `${(kpis.findings_high / kpis.total_findings) * 100}%` }} />
-              )}
-              {kpis.findings_medium > 0 && (
-                <div className="bg-amber-400 transition-all" style={{ width: `${(kpis.findings_medium / kpis.total_findings) * 100}%` }} />
-              )}
-              {kpis.findings_low > 0 && (
-                <div className="bg-blue-400 transition-all" style={{ width: `${(kpis.findings_low / kpis.total_findings) * 100}%` }} />
-              )}
+            <div className="flex gap-0.5 h-3 rounded-full overflow-hidden mb-3">
+              {kpis.findings_by_category.map((c, i) => (
+                <div
+                  key={c.category}
+                  className={`${CATEGORY_PALETTE[i % CATEGORY_PALETTE.length]} transition-all`}
+                  style={{ width: `${(c.count / kpis.total_findings) * 100}%` }}
+                  title={`${c.category}: ${c.count}`}
+                />
+              ))}
             </div>
             <div className="flex flex-wrap gap-4 text-xs text-slate-600 dark:text-slate-400">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-red-400 inline-block" />
-                {isHe ? 'גבוה' : 'High'}: {kpis.findings_high}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
-                {isHe ? 'בינוני' : 'Medium'}: {kpis.findings_medium}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />
-                {isHe ? 'נמוך' : 'Low'}: {kpis.findings_low}
-              </span>
+              {kpis.findings_by_category.map((c, i) => (
+                <span key={c.category} className="flex items-center gap-1.5">
+                  <span className={`w-2 h-2 rounded-full inline-block ${CATEGORY_PALETTE[i % CATEGORY_PALETTE.length]}`} />
+                  {c.category}: {c.count}
+                </span>
+              ))}
             </div>
           </div>
         )}
