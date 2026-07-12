@@ -16,7 +16,7 @@ import MobileReport from '@/components/MobileReport';
 import { analyzeText, uploadFile, healthCheck, modelHealthCheck, uploadReportPdf, AnalysisCancelledError, BboxAnnotation, PageSize, AnalysisResult } from '@/lib/api/client';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { exportReport, dataUriToPdfBlob } from '@/lib/exportReport';
-import { computeInclusivityScore } from '@/lib/score';
+import { computeCleanScore, scoreBand, SCORE_BANDS } from '@/lib/score';
 import { registerNavigationGuard } from '@/lib/navigationGuard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLiveAnnouncer } from '@/contexts/LiveAnnouncerContext';
@@ -35,6 +35,9 @@ type ViewState = 'upload' | 'processing' | 'results';
 
 interface AnalysisData {
   text: string;
+  /** Merged flagged-char count / total chars behind summary.score (when known). */
+  flaggedChars?: number | null;
+  totalChars?: number | null;
   annotations: Annotation[];
   results: Array<{
     phrase: string;
@@ -61,9 +64,9 @@ const emptyAnalysis: AnalysisData = {
 };
 
 function getScoreColor(score: number): string {
-  if (score >= 90) return 'text-green-500';
-  if (score >= 70) return 'text-amber-500';
-  if (score >= 50) return 'text-orange-500';
+  if (score >= SCORE_BANDS.excellent) return 'text-green-500';
+  if (score >= SCORE_BANDS.good) return 'text-amber-500';
+  if (score >= SCORE_BANDS.needsImprovement) return 'text-orange-500';
   return 'text-red-500';
 }
 
@@ -102,14 +105,14 @@ function buildReportInputs(analysis: AnalysisData) {
   const visibleAnnotations = analysis.annotations.filter(ann =>
     visiblePhrases.has(ann.label.toLowerCase()),
   );
-  const wordCount = analysis.text.split(/\s+/).filter(Boolean).length;
   return {
     filteredResults: [...confidenceFiltered].sort(
       (a, b) => severityOrder[a.severity] - severityOrder[b.severity],
     ),
     visibleAnnotations,
     counts,
-    score: computeInclusivityScore(counts, wordCount),
+    // Fixed at analysis time — same clean-text % everywhere (view, report, history).
+    score: analysis.summary.score,
   };
 }
 
@@ -212,10 +215,10 @@ export default function AnalyzePage() {
     }
   }, [t, announce]);
 
-  // Shared post-analysis step: compute score + recommendations and switch to results
+  // Shared post-analysis step: adopt the backend's stored clean-text score
+  // (client mirror only as fallback, e.g. demo mode) and switch to results
   const finishAnalysis = useCallback((text: string, result: AnalysisResult) => {
-    const wc = text.split(/\s+/).filter(Boolean).length;
-    const score = computeInclusivityScore(result.counts, wc);
+    const score = result.score ?? computeCleanScore(result.annotations, text.length);
 
     const recommendations: string[] = [];
     if (result.counts.potentially_offensive > 0) recommendations.push(t('recommendations.potentially_offensive'));
@@ -226,6 +229,8 @@ export default function AnalyzePage() {
 
     setAnalysis({
       text,
+      flaggedChars: result.flaggedChars ?? null,
+      totalChars: result.totalChars ?? text.length,
       annotations: result.annotations,
       results: result.results,
       counts: result.counts,
@@ -632,8 +637,9 @@ export default function AnalyzePage() {
     });
   };
 
-  // Recompute score from confidence-filtered counts so it's consistent with the displayed findings.
-  const score = computeInclusivityScore(filteredCounts, wordCount);
+  // The score is fixed at analysis time (backend-stored, clean-text %) — the
+  // same value shown here, in the exported report, and in My Analyses.
+  const score = analysis.summary.score;
 
   // Whether this run was persisted to the user's history (drives the wording of
   // the leave-results dialog: "find it in My Analyses" vs "results will be lost").
@@ -667,14 +673,7 @@ export default function AnalyzePage() {
     })();
   }, [viewState, currentRunId, user, privateMode, analysis, fileName, locale]);
 
-  const scoreLabel =
-    score >= 90
-      ? t('summaryCard.excellent')
-      : score >= 70
-      ? t('summaryCard.good')
-      : score >= 50
-      ? t('summaryCard.needsImprovement')
-      : t('summaryCard.requiresAttention');
+  const scoreLabel = t(`summaryCard.${scoreBand(score)}`);
 
   const uploadTranslations = {
     title: t('uploadTitle'),
@@ -1094,10 +1093,10 @@ export default function AnalyzePage() {
                             >
                               {score}
                             </motion.span>
-                            <span className="text-slate-400 text-lg">/100</span>
+                            <span className="text-slate-400 text-lg">%</span>
                           </div>
                           <div className="flex items-center gap-1.5 mt-1.5">
-                            {score >= 70 ? (
+                            {score >= SCORE_BANDS.good ? (
                               <CheckCircle2 className={cn('w-4 h-4', getScoreColor(score))} />
                             ) : (
                               <AlertCircle className={cn('w-4 h-4', getScoreColor(score))} />
@@ -1107,8 +1106,16 @@ export default function AnalyzePage() {
                             </span>
                           </div>
                           <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
-                            {totalIssues} {t('scoreSummaryReview')}
+                            {t('summaryCard.cleanTextDesc')}
                           </p>
+                          {analysis.flaggedChars != null && analysis.totalChars != null && analysis.totalChars > 0 && (
+                            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 leading-relaxed tabular-nums">
+                              {t('summaryCard.charsFlagged', {
+                                flagged: analysis.flaggedChars.toLocaleString(),
+                                total: analysis.totalChars.toLocaleString(),
+                              })}
+                            </p>
+                          )}
                         </div>
 
                         <div className="flex flex-col gap-2 w-40 flex-shrink-0 border-l border-slate-200/70 dark:border-slate-700/70 pl-3">
@@ -1154,28 +1161,21 @@ export default function AnalyzePage() {
                       <BarChart3 className="w-4 h-4 text-pride-purple" />
                       <h3 className="text-sm font-semibold">{t('summaryCard.categories')}</h3>
                     </div>
-                    <div className="space-y-2.5">
+                    {/* Plain counters — percentages over a handful of findings are
+                        noise, and the counts are the honest, useful number. */}
+                    <div className="space-y-2">
                       {severityPriority.map((sev) => {
                         const cfg = categoryConfig[sev];
                         const count = filteredCounts[sev];
-                        const sharePct = totalIssues > 0 ? Math.round((count / totalIssues) * 100) : 0;
-                        const barPct = sharePct;
                         return (
-                          <div key={sev}>
-                            <div className="flex items-center justify-between text-xs mb-1">
+                          <div key={sev} className="flex items-center justify-between text-xs">
+                            <span className="flex items-center gap-1.5">
+                              <span className={cn('w-2 h-2 rounded-full flex-shrink-0', cfg.dot)} />
                               <span className={cn('font-medium', cfg.text)}>{cfg.label}</span>
-                              <span className="font-bold text-slate-600 dark:text-slate-300 tabular-nums">
-                                {count} · {sharePct}%
-                              </span>
-                            </div>
-                            <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                              <motion.div
-                                className={cn('h-full rounded-full', cfg.bar)}
-                                initial={{ width: 0 }}
-                                animate={{ width: `${barPct}%` }}
-                                transition={{ duration: 0.6, delay: 0.15 }}
-                              />
-                            </div>
+                            </span>
+                            <span className="font-bold text-slate-600 dark:text-slate-300 tabular-nums">
+                              {count}
+                            </span>
                           </div>
                         );
                       })}

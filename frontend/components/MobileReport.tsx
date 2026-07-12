@@ -7,6 +7,7 @@ import {
   AlertCircle, CheckCircle2, ChevronRight, Info,
 } from 'lucide-react';
 import type { Severity } from '@/components/SeverityBadge';
+import { SCORE_BANDS } from '@/lib/score';
 import { cn } from '@/lib/utils';
 
 type ReportResult = {
@@ -36,9 +37,9 @@ interface MobileReportProps {
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 90) return 'text-green-500';
-  if (score >= 70) return 'text-amber-500';
-  if (score >= 50) return 'text-orange-500';
+  if (score >= SCORE_BANDS.excellent) return 'text-green-500';
+  if (score >= SCORE_BANDS.good) return 'text-amber-500';
+  if (score >= SCORE_BANDS.needsImprovement) return 'text-orange-500';
   return 'text-red-500';
 }
 
@@ -126,10 +127,10 @@ export default function MobileReport({
           <div>
             <div className="flex items-baseline gap-1.5">
               <span className={cn('text-5xl font-black tabular-nums leading-none', getScoreColor(score))}>{score}</span>
-              <span className="text-slate-400 text-lg">/100</span>
+              <span className="text-slate-400 text-lg">%</span>
             </div>
             <div className="flex items-center gap-1.5 mt-2">
-              {score >= 70 ? <CheckCircle2 className={cn('w-4 h-4', getScoreColor(score))} /> : <AlertCircle className={cn('w-4 h-4', getScoreColor(score))} />}
+              {score >= SCORE_BANDS.good ? <CheckCircle2 className={cn('w-4 h-4', getScoreColor(score))} /> : <AlertCircle className={cn('w-4 h-4', getScoreColor(score))} />}
               <span className={cn('text-sm font-semibold', getScoreColor(score))}>{scoreLabel}</span>
             </div>
           </div>
@@ -153,20 +154,18 @@ export default function MobileReport({
             <BarChart3 className="w-4 h-4 text-pride-purple" />
             <h3 className="text-sm font-semibold">{t('summaryCard.categories')}</h3>
           </div>
-          <div className="space-y-2.5">
+          {/* Plain counters — percentages over a handful of findings are noise. */}
+          <div className="space-y-2">
             {severityPriority.map((sev) => {
               const cfg = categoryConfig[sev];
               const count = counts[sev];
-              const sharePct = totalIssues > 0 ? Math.round((count / totalIssues) * 100) : 0;
               return (
-                <div key={sev}>
-                  <div className="flex items-center justify-between text-xs mb-1">
+                <div key={sev} className="flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-1.5">
+                    <span className={cn('w-2 h-2 rounded-full flex-shrink-0', cfg.dot)} />
                     <span className={cn('font-medium', cfg.text)}>{cfg.label}</span>
-                    <span className="font-bold text-slate-600 dark:text-slate-300 tabular-nums">{count} · {sharePct}%</span>
-                  </div>
-                  <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                    <motion.div className={cn('h-full rounded-full', cfg.bar)} initial={{ width: 0 }} animate={{ width: `${sharePct}%` }} transition={{ duration: 0.6, delay: 0.15 }} />
-                  </div>
+                  </span>
+                  <span className="font-bold text-slate-600 dark:text-slate-300 tabular-nums">{count}</span>
                 </div>
               );
             })}

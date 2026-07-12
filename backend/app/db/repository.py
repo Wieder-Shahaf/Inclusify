@@ -67,21 +67,23 @@ async def create_run(conn: asyncpg.Connection, document_id, model_version: str, 
 
 #  Added error_message parameter to handle 'failed' runs
 async def finish_run(
-    conn: asyncpg.Connection, 
-    run_id, 
-    status: str, 
-    runtime_ms: int, 
-    error_message: Optional[str] = None
+    conn: asyncpg.Connection,
+    run_id,
+    status: str,
+    runtime_ms: int,
+    error_message: Optional[str] = None,
+    score: Optional[float] = None,
 ):
     await conn.execute(
         """
         UPDATE analysis_runs
-        SET status=$1, finished_at=NOW(), runtime_ms=$2, error_message=$3
-        WHERE run_id=$4;
+        SET status=$1, finished_at=NOW(), runtime_ms=$2, error_message=$3, score=$4
+        WHERE run_id=$5;
         """,
         status,
         runtime_ms,
         error_message,
+        score,
         run_id,
     )
 
@@ -151,6 +153,7 @@ async def get_user_history(
             ar.started_at,
             ar.finished_at,
             ar.runtime_ms,
+            ar.score,
             d.document_id,
             d.original_filename,
             d.title,
@@ -168,7 +171,7 @@ async def get_user_history(
         WHERE d.user_id = $1
           AND ar.status = 'succeeded'
           AND d.deleted_at IS NULL
-        GROUP BY ar.run_id, ar.started_at, ar.finished_at, ar.runtime_ms,
+        GROUP BY ar.run_id, ar.started_at, ar.finished_at, ar.runtime_ms, ar.score,
                  d.document_id, d.original_filename, d.title, d.input_type,
                  d.language, d.detected_language, d.page_count
         ORDER BY ar.started_at DESC
@@ -229,7 +232,7 @@ async def get_user_history_kpis(
 async def get_run_details(conn: asyncpg.Connection, run_id, user_id) -> Optional[dict]:
     row = await conn.fetchrow(
         """
-        SELECT ar.run_id, ar.started_at, ar.finished_at, ar.runtime_ms, ar.status,
+        SELECT ar.run_id, ar.started_at, ar.finished_at, ar.runtime_ms, ar.status, ar.score,
                d.document_id, d.original_filename, d.title, d.input_type,
                d.language, d.detected_language, d.page_count
         FROM analysis_runs ar

@@ -228,7 +228,9 @@
       "outdated": "מיושן",
       "biased": "מוטה",
       "potentially_offensive": "פוגעני",
-      "factually_incorrect": "שגוי"
+      "factually_incorrect": "שגוי",
+      "cleanTextDesc": "אחוז הטקסט הנקי מניסוחים שסומנו",
+      "charsFlagged": "{flagged} מתוך {total} תווים סומנו"
     },
     "recommendations": {
       "outdated": "עדכנו את הטרמינולוגיה לסטנדרטים מכלילים עדכניים",

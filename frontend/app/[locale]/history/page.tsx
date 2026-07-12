@@ -18,38 +18,43 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { SCORE_BANDS } from '@/lib/score';
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
-function computeScore(findings: number): number {
-  return Math.max(0, Math.min(100, 100 - findings * 8));
-}
+// Scores are the backend-stored clean-text % (see lib/score.ts). Runs that
+// predate the score column have null — shown as a dash, never recomputed
+// with a different formula.
 
-function scoreLabel(score: number, locale: string): string {
-  if (score >= 90) return locale === 'he' ? 'מצוין' : 'Excellent';
-  if (score >= 70) return locale === 'he' ? 'טוב' : 'Good';
-  if (score >= 50) return locale === 'he' ? 'דורש שיפור' : 'Needs Improvement';
+function scoreLabel(score: number | null, locale: string): string {
+  if (score == null) return locale === 'he' ? 'ללא ציון' : 'No score';
+  if (score >= SCORE_BANDS.excellent) return locale === 'he' ? 'מצוין' : 'Excellent';
+  if (score >= SCORE_BANDS.good) return locale === 'he' ? 'טוב' : 'Good';
+  if (score >= SCORE_BANDS.needsImprovement) return locale === 'he' ? 'דורש שיפור' : 'Needs Improvement';
   return locale === 'he' ? 'דורש תשומת לב' : 'Requires Attention';
 }
 
-function scoreColor(score: number): string {
-  if (score >= 90) return '#22c55e';
-  if (score >= 70) return '#84cc16';
-  if (score >= 50) return '#f59e0b';
+function scoreColor(score: number | null): string {
+  if (score == null) return '#94a3b8';
+  if (score >= SCORE_BANDS.excellent) return '#22c55e';
+  if (score >= SCORE_BANDS.good) return '#84cc16';
+  if (score >= SCORE_BANDS.needsImprovement) return '#f59e0b';
   return '#ef4444';
 }
 
-function scoreRingColor(score: number): string {
-  if (score >= 90) return 'text-green-500';
-  if (score >= 70) return 'text-lime-500';
-  if (score >= 50) return 'text-amber-500';
+function scoreRingColor(score: number | null): string {
+  if (score == null) return 'text-slate-400';
+  if (score >= SCORE_BANDS.excellent) return 'text-green-500';
+  if (score >= SCORE_BANDS.good) return 'text-lime-500';
+  if (score >= SCORE_BANDS.needsImprovement) return 'text-amber-500';
   return 'text-red-500';
 }
 
-function scoreBg(score: number): string {
-  if (score >= 90) return 'bg-green-50 dark:bg-green-950/30';
-  if (score >= 70) return 'bg-lime-50 dark:bg-lime-950/30';
-  if (score >= 50) return 'bg-amber-50 dark:bg-amber-950/30';
+function scoreBg(score: number | null): string {
+  if (score == null) return 'bg-slate-50 dark:bg-slate-800/30';
+  if (score >= SCORE_BANDS.excellent) return 'bg-green-50 dark:bg-green-950/30';
+  if (score >= SCORE_BANDS.good) return 'bg-lime-50 dark:bg-lime-950/30';
+  if (score >= SCORE_BANDS.needsImprovement) return 'bg-amber-50 dark:bg-amber-950/30';
   return 'bg-red-50 dark:bg-red-950/30';
 }
 
@@ -85,10 +90,10 @@ function docLabel(entry: HistoryEntry | AnalysisDetail, locale: string): string 
 
 // ── Score ring ─────────────────────────────────────────────────────────────
 
-function ScoreRing({ score, size = 64 }: { score: number; size?: number }) {
+function ScoreRing({ score, size = 64 }: { score: number | null; size?: number }) {
   const r = size * 0.39;
   const circ = 2 * Math.PI * r;
-  const dash = (score / 100) * circ;
+  const dash = ((score ?? 0) / 100) * circ;
   const color = scoreColor(score);
   const cx = size / 2;
   return (
@@ -99,7 +104,9 @@ function ScoreRing({ score, size = 64 }: { score: number; size?: number }) {
         <circle cx={cx} cy={cx} r={r} fill="none" stroke={color} strokeWidth="5"
           strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" />
       </svg>
-      <span className="absolute text-sm font-bold" style={{ color, fontSize: size < 50 ? 10 : 14 }}>{score}</span>
+      <span className="absolute text-sm font-bold" style={{ color, fontSize: size < 50 ? 9 : 12 }}>
+        {score != null ? `${score}%` : '—'}
+      </span>
     </div>
   );
 }
@@ -189,7 +196,7 @@ function DetailModal({ runId, locale, onClose }: { runId: string; locale: string
       .finally(() => setLoading(false));
   }, [runId]);
 
-  const score = detail ? computeScore(detail.findings.length) : 100;
+  const score = detail ? detail.score : null;
   const label = detail ? docLabel(detail, locale) : '';
 
   return (
@@ -288,7 +295,7 @@ function AnalysisCard({
 }: {
   entry: HistoryEntry; locale: string; onView: () => void; onDelete: () => void; onDownload: () => void;
 }) {
-  const score = computeScore(entry.findings_count);
+  const score = entry.score;
   const label = docLabel(entry, locale);
   const isHe = locale === 'he';
 
@@ -498,9 +505,10 @@ export default function HistoryPage() {
     }
   }, [locale, isHe]);
 
-  const avgScore = analyses.length
-    ? Math.round(analyses.reduce((s, a) => s + computeScore(a.findings_count), 0) / analyses.length)
-    : 100;
+  const scored = analyses.filter(a => a.score != null);
+  const avgScore = scored.length
+    ? Math.round((scored.reduce((s, a) => s + (a.score as number), 0) / scored.length) * 10) / 10
+    : null;
 
   const cleanCount = analyses.filter(a => a.findings_count === 0).length;
 
@@ -573,7 +581,7 @@ export default function HistoryPage() {
             <KpiCard
               icon={<TrendingUp className="w-5 h-5 text-blue-500" />}
               label={isHe ? 'ציון ממוצע' : 'Avg. Score'}
-              value={avgScore}
+              value={avgScore != null ? `${avgScore}%` : '—'}
               sub={scoreLabel(avgScore, locale)}
               accent="bg-blue-50 dark:bg-blue-950/30"
             />

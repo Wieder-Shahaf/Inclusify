@@ -48,6 +48,7 @@ async def get_analysis_detail(
         "analyzed_at": _utc_iso(detail["started_at"]),
         "runtime_ms": detail["runtime_ms"],
         "status": detail["status"],
+        "score": float(detail["score"]) if detail["score"] is not None else None,
         "findings": [
             {
                 "finding_id": str(f["finding_id"]),
@@ -214,6 +215,7 @@ async def get_history(
             "findings_low": int(a["findings_low"]),
             "findings_medium": int(a["findings_medium"]),
             "findings_high": int(a["findings_high"]),
+            "score": float(a["score"]) if a["score"] is not None else None,
         })
 
     return {

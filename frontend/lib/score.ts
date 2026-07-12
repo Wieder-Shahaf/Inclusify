@@ -1,61 +1,59 @@
-// Per-analysis LGBTQ+ inclusivity score.
+// Per-analysis clean-text score.
 //
-// The score is based on the *density* of weighted findings — weighted issues
-// per 1,000 words — rather than the raw issue count. This keeps the score
-// fair across document lengths: a 10,000-word paper and a 500-word abstract
-// with the same rate of problematic language get the same score. An
-// exponential curve maps density to 0–100 smoothly, so very dense documents
-// still differentiate (no saturation at 0).
+// score = 100 · (1 − flaggedChars / totalChars)
 //
-//   score = 100 · e^(−density / DENSITY_SCALE)
+// The % of document characters NOT flagged by any finding. Flagged characters
+// are the UNION of finding spans — overlapping or duplicate findings are
+// merged so no character counts twice. All severities weigh equally by
+// design: the score is a transparent, verifiable quantity ("99.2% of your
+// text is inclusive"), and severity detail lives in the findings list.
 //
-// Calibration (DENSITY_SCALE = 8):
-//   density 0    → 100
-//   density 0.85 →  90   (≈ one minor issue per 1,200 words — "Excellent")
-//   density 2.9  →  70   ("Good" boundary)
-//   density 5.5  →  50   ("Needs Improvement" boundary)
-//   density 12   →  22
-//
-// TODO: tune DENSITY_SCALE and SEVERITY_WEIGHTS against the Achva
-// expert-validated articles once the gold annotation set is extracted
-// (see ACHVA-DATA-STRATEGY.md).
+// The backend computes and stores the canonical value per run
+// (backend/app/modules/analysis/scoring.py — keep the two in sync);
+// this mirror exists for demo mode and as a fallback.
 
-export type ScoreSeverity =
-  | 'outdated'
-  | 'biased'
-  | 'potentially_offensive'
-  | 'factually_incorrect';
+export function computeCleanScore(
+  spans: Array<{ start: number; end: number }>,
+  totalChars: number,
+): number {
+  if (totalChars <= 0) return 100;
 
-// Aligned with the UI severity ordering (findings list sorts
-// factually_incorrect as most severe).
-export const SEVERITY_WEIGHTS: Record<ScoreSeverity, number> = {
-  outdated: 1,
-  biased: 2,
-  potentially_offensive: 3,
-  factually_incorrect: 4,
-};
+  const clamped = spans
+    .map(({ start, end }) => ({ start: Math.max(0, start), end: Math.min(totalChars, end) }))
+    .filter(({ start, end }) => end > start)
+    .sort((a, b) => a.start - b.start);
 
-const DENSITY_SCALE = 8;
+  let flagged = 0;
+  let curStart = -1;
+  let curEnd = -1;
+  for (const { start, end } of clamped) {
+    if (start > curEnd) {
+      if (curEnd >= 0) flagged += curEnd - curStart;
+      curStart = start;
+      curEnd = end;
+    } else {
+      curEnd = Math.max(curEnd, end);
+    }
+  }
+  if (curEnd >= 0) flagged += curEnd - curStart;
 
-// Very short texts make density explode (one finding in 50 words → density 80);
-// score them as if they were at least this long so a single finding in a
-// pasted paragraph doesn't automatically read as 0.
-const MIN_EFFECTIVE_WORDS = 300;
-
-export function weightedIssueCount(counts: Record<ScoreSeverity, number>): number {
-  return (Object.keys(SEVERITY_WEIGHTS) as ScoreSeverity[]).reduce(
-    (sum, sev) => sum + (counts[sev] ?? 0) * SEVERITY_WEIGHTS[sev],
-    0,
-  );
+  return Math.round(100 * (1 - flagged / totalChars) * 10) / 10;
 }
 
-export function computeInclusivityScore(
-  counts: Record<ScoreSeverity, number>,
-  wordCount: number,
-): number {
-  const weighted = weightedIssueCount(counts);
-  if (weighted === 0) return 100;
-  const effectiveWords = Math.max(wordCount, MIN_EFFECTIVE_WORDS);
-  const densityPer1k = weighted / (effectiveWords / 1000);
-  return Math.max(0, Math.min(100, Math.round(100 * Math.exp(-densityPer1k / DENSITY_SCALE))));
+// Qualitative bands on the clean-text %. Clean scores cluster near 100
+// (a handful of flagged phrases in a full paper is well under 1%), so the
+// boundaries sit much higher than the old 90/70/50 density score.
+export const SCORE_BANDS = {
+  excellent: 99,
+  good: 97,
+  needsImprovement: 94,
+} as const;
+
+export type ScoreBand = 'excellent' | 'good' | 'needsImprovement' | 'requiresAttention';
+
+export function scoreBand(score: number): ScoreBand {
+  if (score >= SCORE_BANDS.excellent) return 'excellent';
+  if (score >= SCORE_BANDS.good) return 'good';
+  if (score >= SCORE_BANDS.needsImprovement) return 'needsImprovement';
+  return 'requiresAttention';
 }

@@ -83,6 +83,11 @@ CREATE TABLE analysis_runs (
   model_version TEXT NOT NULL,
   runtime_ms INT CHECK (runtime_ms IS NULL OR runtime_ms >= 0),
 
+  -- Clean-text score: % of characters NOT flagged (union of finding spans,
+  -- overlaps merged). Computed once at analysis time; NULL for failed runs
+  -- and runs predating migration 007.
+  score NUMERIC(5,2) CHECK (score IS NULL OR (score >= 0 AND score <= 100)),
+
   config_snapshot JSONB NOT NULL DEFAULT '{}'::jsonb,
 
   started_at TIMESTAMP,

@@ -31,6 +31,7 @@ from app.db.models import User
 from app.db import repository as repo
 from app.modules.analysis.call_metrics import CallMetrics
 from app.modules.analysis.hybrid_detector import HybridDetector, detect_language
+from app.modules.analysis.scoring import clean_text_score
 from app.modules.admin.router import ws_manager
 from app.core.blob_storage import upload_text as _blob_upload_text
 
@@ -79,6 +80,10 @@ class AnalysisResponse(BaseModel):
     note: Optional[str] = None
     analysis_mode: Literal['llm'] = 'llm'
     run_id: Optional[str] = None
+    # Clean-text score: % of characters NOT flagged (union of finding spans).
+    score: Optional[float] = None
+    flagged_chars: Optional[int] = None
+    total_chars: Optional[int] = None
 
 
 # =============================================================================
@@ -112,6 +117,7 @@ async def _persist_results(
     analysis_mode: str,
     issues: list[Issue],
     runtime_ms: int,
+    score: Optional[float] = None,
     input_type: Optional[str] = None,
     original_filename: Optional[str] = None,
     mime_type: Optional[str] = None,
@@ -184,7 +190,7 @@ async def _persist_results(
                             )
 
                     # 3. If everything is good, mark as succeeded
-                    await repo.finish_run(conn, run_id=run_id, status="succeeded", runtime_ms=runtime_ms)
+                    await repo.finish_run(conn, run_id=run_id, status="succeeded", runtime_ms=runtime_ms, score=score)
                 logger.info("DB persistence succeeded: user_id=%s issues=%d", user.id if user else "guest", len(issues))
 
             except Exception as inner_e:
@@ -293,6 +299,11 @@ async def analyze_text(
         len(issues), analysis_mode, elapsed,
     )
 
+    score, flagged_chars = clean_text_score(
+        text_length,
+        [(iss.start, iss.end) for iss in issues if iss.confidence is None or iss.confidence > 0],
+    )
+
     # If the client aborted the request mid-analysis (e.g. the navigation guard
     # cancelled the job), treat the run as cancelled: skip persistence so no
     # orphaned run shows up in history. Metrics are still recorded below.
@@ -320,6 +331,7 @@ async def analyze_text(
             analysis_mode=analysis_mode,
             issues=issues,
             runtime_ms=runtime_ms,
+            score=score,
             input_type=body.input_type or "txt",
             original_filename=body.original_filename,
             mime_type=body.mime_type,
@@ -351,4 +363,7 @@ async def analyze_text(
         note=f"Found {len(issues)} issue(s). Mode: {analysis_mode}",
         analysis_mode=analysis_mode,
         run_id=persisted_run_id if not private_mode else None,
+        score=score,
+        flagged_chars=flagged_chars,
+        total_chars=text_length,
     )

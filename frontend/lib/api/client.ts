@@ -68,6 +68,9 @@ interface BackendAnalysisResponse {
   note?: string;
   analysis_mode?: 'llm';
   run_id?: string;
+  score?: number | null;
+  flagged_chars?: number | null;
+  total_chars?: number | null;
 }
 
 // Frontend analysis result
@@ -79,6 +82,10 @@ export interface AnalysisResult {
   correctedText?: string;
   analysisMode?: 'llm';
   runId?: string;
+  /** Backend-computed clean-text score (% of chars not flagged, union of spans). */
+  score?: number | null;
+  flaggedChars?: number | null;
+  totalChars?: number | null;
 }
 
 // Map backend severity to frontend severity
@@ -214,6 +221,9 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
     correctedText: response.corrected_text,
     analysisMode: response.analysis_mode,
     runId: response.run_id,
+    score: response.score ?? null,
+    flaggedChars: response.flagged_chars ?? null,
+    totalChars: response.total_chars ?? null,
   };
 }
 
@@ -395,6 +405,8 @@ export interface HistoryEntry {
   findings_low: number;
   findings_medium: number;
   findings_high: number;
+  /** Stored clean-text score; null for runs predating the score column. */
+  score: number | null;
 }
 
 export interface HistoryKPIs {

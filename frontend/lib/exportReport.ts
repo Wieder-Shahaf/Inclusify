@@ -1,5 +1,6 @@
 import type { Annotation } from '@/components/AnnotatedText';
 import type { Severity } from '@/components/SeverityBadge';
+import { SCORE_BANDS } from '@/lib/score';
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 const PURPLE:       [number, number, number] = [88,  28,  135];
@@ -212,7 +213,9 @@ function loadHebrewFont(): Promise<{ regular: string; bold: string } | null> {
 }
 
 function clampScore(score: number): number {
-  return Math.max(0, Math.min(100, Math.round(Number.isFinite(score) ? score : 0)));
+  // One decimal — the clean-text % is meaningful at that precision (99.2 vs 99.8)
+  const n = Number.isFinite(score) ? Math.round(score * 10) / 10 : 0;
+  return Math.max(0, Math.min(100, n));
 }
 
 function countWords(text: string): number {
@@ -430,9 +433,9 @@ export async function exportReport(
   drawCard(doc, M, Y, CW, scoreCardH);
 
   const scoreColor: [number, number, number] =
-    displayScore >= 80 ? [22, 163, 74] : displayScore >= 60 ? [202, 138, 4] : [220, 38, 38];
+    displayScore >= SCORE_BANDS.excellent ? [22, 163, 74] : displayScore >= SCORE_BANDS.good ? [202, 138, 4] : [220, 38, 38];
   const scoreLabel =
-    displayScore >= 80 ? labels.excellent : displayScore >= 60 ? labels.good : labels.needsWork;
+    displayScore >= SCORE_BANDS.excellent ? labels.excellent : displayScore >= SCORE_BANDS.good ? labels.good : labels.needsWork;
 
   const innerL = M + 6;
   const innerT = Y + 5;
@@ -449,12 +452,12 @@ export async function exportReport(
   doc.setTextColor(...scoreColor);
   doc.text(String(displayScore), innerL, innerT + 17);
 
-  // /100
+  // % — clean-text share of the document
   const bigNumW = textWidth(doc, String(displayScore));
   doc.setFontSize(13);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...SLATE);
-  doc.text('/100', innerL + bigNumW + 1.5, innerT + 17);
+  doc.text('%', innerL + bigNumW + 1.5, innerT + 17);
 
   // Status and short interpretation
   doc.setFont(fontFor(scoreLabel, 'helvetica'), 'bold');
@@ -503,41 +506,27 @@ export async function exportReport(
   doc.text(labels.findingsByCategory, cbInnerL, cbInnerT + 4, rtlOpts(labels.findingsByCategory));
 
   const severities: Severity[] = ['factually_incorrect', 'potentially_offensive', 'biased', 'outdated'];
-  // Count from the filtered set so bars match exactly what is shown on the page
-  const totalCountForPct = Math.max(Object.values(displayCounts).reduce((sum, count) => sum + count, 0), 1);
-  const barAreaW = CW - 12 - 48 - 21; // subtract label + count/percent + padding
 
+  // Plain counters — percentages over a handful of findings are noise; the
+  // count is the honest, useful number (matches the results view).
   severities.forEach((sev, i) => {
-    const rowY     = cbInnerT + 11 + i * 9.5;
-    const cols     = SEVERITY_COLOR[sev];
-    const count    = displayCounts[sev] ?? 0;
-    const pct      = Math.round((count / totalCountForPct) * 100);
-    // Bar length must match the printed percentage (share of total findings) —
-    // scaling to the largest category drew a full bar next to e.g. "45%".
-    const barFill  = (count / totalCountForPct) * barAreaW;
+    const rowY = cbInnerT + 11 + i * 9.5;
+    const cols = SEVERITY_COLOR[sev];
+    const count = displayCounts[sev] ?? 0;
 
-    // Severity label
+    // Severity dot + label
+    doc.setFillColor(...cols.bar);
+    doc.circle(cbInnerL + 1.2, rowY + 2.2, 1.2, 'F');
     doc.setFont(fontFor(labels.severity[sev], 'helvetica'), 'bold');
     doc.setFontSize(8);
     doc.setTextColor(...cols.label);
-    doc.text(labels.severity[sev], cbInnerL, rowY + 3.2, rtlOpts(labels.severity[sev]));
+    doc.text(labels.severity[sev], cbInnerL + 4, rowY + 3.2, rtlOpts(labels.severity[sev]));
 
-    // Track background
-    const bx = cbInnerL + 50;
-    doc.setFillColor(233, 228, 248);
-    doc.rect(bx, rowY, barAreaW, 3.5, 'F');
-
-    // Fill bar
-    if (barFill > 0) {
-      doc.setFillColor(...cols.bar);
-      doc.rect(bx, rowY, barFill, 3.5, 'F');
-    }
-
-    // Count
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
+    // Count, right-aligned in the card
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
     doc.setTextColor(...SLATE);
-    doc.text(`${count} - ${pct}%`, bx + barAreaW + 2.5, rowY + 3.2);
+    doc.text(String(count), M + CW - 8, rowY + 3.2, { align: 'right' });
   });
 
   Y += 52 + 6;

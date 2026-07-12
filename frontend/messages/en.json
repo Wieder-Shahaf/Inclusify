@@ -228,7 +228,9 @@
       "outdated": "Outdated",
       "biased": "Biased",
       "potentially_offensive": "Potentially Offensive",
-      "factually_incorrect": "Factually Incorrect"
+      "factually_incorrect": "Factually Incorrect",
+      "cleanTextDesc": "Share of text free of flagged language",
+      "charsFlagged": "{flagged} of {total} characters flagged"
     },
     "recommendations": {
       "outdated": "Update terminology to current inclusive standards",

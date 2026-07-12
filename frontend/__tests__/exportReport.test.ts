@@ -146,17 +146,17 @@ describe('exportReport', () => {
     );
   });
 
-  it('uses the display score passed from the visible UI state', async () => {
+  it('uses the display score passed from the visible UI state, rendered as a percentage', async () => {
     await exportReport(mockAnalysis, {
       fileName: 'x',
       locale: 'en',
       returnBase64: true,
-      displayScore: 72,
+      displayScore: 97.3,
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allTextArgs = textSpy.mock.calls.map((call: any[]) => call[0]);
-    expect(allTextArgs).toEqual(expect.arrayContaining(['72', '/100']));
-    expect(allTextArgs).not.toEqual(expect.arrayContaining(['72%']));
+    expect(allTextArgs).toEqual(expect.arrayContaining(['97.3', '%']));
+    expect(allTextArgs).not.toEqual(expect.arrayContaining(['/100']));
   });
 
   it('footer text for he locale contains Hebrew watermark string', async () => {
