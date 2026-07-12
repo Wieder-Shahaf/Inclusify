@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Cpu, AlertTriangle, GitBranch, Timer, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useModelMetrics } from '@/lib/api/admin';
@@ -28,14 +28,25 @@ function SkeletonLoader({ className }: { className?: string }) {
 function Tooltip({ text }: { text: string }) {
   const [visible, setVisible] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
-  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const [pos, setPos] = useState<{ top: number; left: number; arrow: number } | null>(null);
 
   // Anchor via a body portal + fixed positioning so the tooltip escapes the
   // dashboard's overflow-hidden layers (cards, tab pane) that otherwise clip it
   // — an absolutely-positioned tooltip was cut off on both mobile and desktop.
   const show = () => {
     const r = btnRef.current?.getBoundingClientRect();
-    if (r) setPos({ top: r.top, left: r.left + r.width / 2 });
+    if (r) {
+      const TIP_W = 208; // w-52
+      const half = TIP_W / 2;
+      const pad = 8;
+      const centerX = r.left + r.width / 2;
+      // Clamp so the tooltip stays fully on-screen (right-column icons would
+      // otherwise push a center-anchored tooltip off the right edge on mobile).
+      const left = Math.min(Math.max(centerX, half + pad), window.innerWidth - half - pad);
+      // Keep the arrow pointing at the icon after the box is clamped.
+      const arrow = Math.max(-half + 12, Math.min(half - 12, centerX - left));
+      setPos({ top: r.top, left, arrow });
+    }
     setVisible(true);
   };
   const hide = () => setVisible(false);
@@ -54,23 +65,20 @@ function Tooltip({ text }: { text: string }) {
       >
         <Info className="w-3.5 h-3.5" />
       </button>
-      {typeof document !== 'undefined' && createPortal(
-        <AnimatePresence>
-          {visible && pos && (
-            <motion.div
-              role="tooltip"
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 4 }}
-              transition={{ duration: 0.15 }}
-              style={{ position: 'fixed', top: pos.top - 8, left: pos.left, transform: 'translate(-50%, -100%)' }}
-              className="z-[100] w-52 rounded-lg bg-slate-800 dark:bg-slate-700 text-white text-xs px-3 py-2 shadow-lg pointer-events-none"
-            >
-              {text}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800 dark:border-t-slate-700" />
-            </motion.div>
-          )}
-        </AnimatePresence>,
+      {/* Plain div (not motion.div): Framer animates `transform`, which would
+          override the translate that centers + clamps the tooltip. */}
+      {typeof document !== 'undefined' && visible && pos && createPortal(
+        <div
+          role="tooltip"
+          style={{ position: 'fixed', top: pos.top - 8, left: pos.left, transform: 'translate(-50%, -100%)' }}
+          className="z-[100] w-52 rounded-lg bg-slate-800 dark:bg-slate-700 text-white text-xs px-3 py-2 shadow-lg pointer-events-none"
+        >
+          {text}
+          <div
+            className="absolute top-full -translate-x-1/2 border-4 border-transparent border-t-slate-800 dark:border-t-slate-700"
+            style={{ left: `calc(50% + ${pos.arrow}px)` }}
+          />
+        </div>,
         document.body
       )}
     </span>
