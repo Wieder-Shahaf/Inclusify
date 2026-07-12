@@ -7,6 +7,7 @@ import remarkGfm from 'remark-gfm';
 import IssueTooltip, { severityConfig } from './IssueTooltip';
 import { Annotation } from './AnnotatedText';
 import type { BboxAnnotation, PageSize } from '@/lib/api/client';
+import { computeBboxOverlays } from '@/lib/pdfOverlays';
 import { cn } from '@/lib/utils';
 import 'react-pdf/dist/Page/TextLayer.css';
 
@@ -230,16 +231,8 @@ function MarkdownViewer({
   );
 }
 
-// ── PDF viewer: span-rect overlays per page ──────────────────────────────────
+// ── PDF viewer: Docling bbox overlays per page ───────────────────────────────
 const PDF_RENDER_WIDTH = 680;
-
-type PdfOverlay = {
-  top: number;
-  left: number;
-  width: number;
-  height: number;
-  annotation: Annotation;
-};
 
 export interface PdfNavHandle {
   scrollToPage: (n: number) => void;
@@ -250,19 +243,28 @@ export interface PdfNavHandle {
 const PdfViewer = forwardRef<PdfNavHandle, {
   file: File;
   annotations: Annotation[];
+  bboxAnnotations: BboxAnnotation[] | null;
+  pageSizes: Record<string, PageSize> | null;
   onAnnotationClick: (ann: Annotation) => void;
   onNumPagesChange?: (n: number) => void;
   onPageChange?: (n: number) => void;
-}>(function PdfViewer({ file, annotations, onAnnotationClick, onNumPagesChange, onPageChange }, ref) {
+}>(function PdfViewer({ file, annotations, bboxAnnotations, pageSizes, onAnnotationClick, onNumPagesChange, onPageChange }, ref) {
   const pdf = usePdfLib();
   const [numPages, setNumPages] = useState(0);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageOverlays, setPageOverlays] = useState<Map<number, PdfOverlay[]>>(new Map());
+  // Pages whose canvas has painted — overlays wait for real page height
+  const [renderedPages, setRenderedPages] = useState<Set<number>>(new Set());
 
   const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
-  const processedPages = useRef<Set<number>>(new Set());
   const pageTextIndex = useRef<Map<number, string>>(new Map());
+
+  // Pure derivation from backend provenance — recomputes on filter changes,
+  // independent of PDF.js text-layer timing.
+  const pageOverlays = useMemo(
+    () => computeBboxOverlays(annotations, bboxAnnotations, pageSizes, PDF_RENDER_WIDTH),
+    [annotations, bboxAnnotations, pageSizes],
+  );
 
   const scrollToPage = useCallback((pageNo: number) => {
     const el = pageRefs.current.get(pageNo);
@@ -309,98 +311,23 @@ const PdfViewer = forwardRef<PdfNavHandle, {
   useEffect(() => {
     const url = URL.createObjectURL(file);
     setFileUrl(url);
-    setPageOverlays(new Map());
+    setRenderedPages(new Set());
     pageRefs.current.clear();
-    processedPages.current.clear();
     pageTextIndex.current.clear();
+    return () => URL.revokeObjectURL(url);
   }, [file]);
 
-  useEffect(() => {
-    return () => {
-      if (fileUrl) URL.revokeObjectURL(fileUrl);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [file]);
-
+  // Index each page's text for the search box only — overlays no longer
+  // depend on the PDF.js text layer (scanned/OCR PDFs have an empty one).
   const makeTextLayerHandler = useCallback(
     (pageNumber: number) => () => {
-      // Guard inside the rAF (not here) so pages whose text layer fires before content
-      // is ready can be retried on the next onRenderTextLayerSuccess call.
       const pageEl = pageRefs.current.get(pageNumber);
       if (!pageEl) return;
-
-      // rAF ensures the text layer has been painted and has valid layout rects
-      requestAnimationFrame(() => {
-        if (processedPages.current.has(pageNumber)) return;
-
-        const textLayer = pageEl.querySelector('.react-pdf__Page__textContent');
-        if (!textLayer) return;
-
-        const allSpans = Array.from(textLayer.querySelectorAll('span')) as HTMLElement[];
-
-        // Join with a space so adjacent spans ("contemporary"+"sexual") become searchable
-        // as "contemporary sexual". normalize() collapses any double-spaces later.
-        const pageText = allSpans.map(s => s.textContent || '').join(' ');
-        if (!pageText.trim()) return; // Text layer not ready — allow retry on next render
-
-        // Mark processed only after confirming content so failed pages can be retried
-        processedPages.current.add(pageNumber);
-        pageTextIndex.current.set(pageNumber, pageText);
-
-        // For overlay creation only use spans that are actually painted.
-        // Zero-dimension spans are PDF.js selection-layer artifacts that produce bogus rects.
-        const spans = allSpans.filter(s => {
-          if (!(s.textContent || '').length) return false;
-          const r = s.getBoundingClientRect();
-          return r.width > 0 && r.height > 0;
-        });
-        if (spans.length === 0) return;
-
-        // Build fullText with space separators so multi-word phrases across spans can match.
-        // spanMap records each span's start/end in this spaced string.
-        let fullText = '';
-        const spanMap: Array<{ start: number; end: number; el: HTMLElement }> = [];
-        for (const span of spans) {
-          const t = span.textContent || '';
-          if (fullText) fullText += ' ';
-          spanMap.push({ start: fullText.length, end: fullText.length + t.length, el: span });
-          fullText += t;
-        }
-
-        const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim();
-        const lowerFull = normalize(fullText);
-        const pageRect = pageEl.getBoundingClientRect();
-        const overlays: PdfOverlay[] = [];
-
-        for (const ann of annotations) {
-          if (!ann.label) continue;
-          // Normalize phrase whitespace to match the space-joined span text
-          const lowerPhrase = normalize(ann.label);
-          let idx = lowerFull.indexOf(lowerPhrase);
-          while (idx !== -1) {
-            const phraseEnd = idx + lowerPhrase.length;
-            const relevant = spanMap.filter(s => s.end > idx && s.start < phraseEnd);
-            if (relevant.length > 0) {
-              const rects = relevant.map(s => s.el.getBoundingClientRect());
-              const top = Math.min(...rects.map(r => r.top)) - pageRect.top;
-              const left = Math.min(...rects.map(r => r.left)) - pageRect.left;
-              const width = Math.max(...rects.map(r => r.right)) - Math.min(...rects.map(r => r.left));
-              const height = Math.max(...rects.map(r => r.bottom)) - Math.min(...rects.map(r => r.top));
-              // Skip degenerate rects — indicates a span with no real painted position
-              if (width > 2 && height > 2) {
-                overlays.push({ top, left, width, height, annotation: ann });
-              }
-            }
-            idx = lowerFull.indexOf(lowerPhrase, phraseEnd);
-          }
-        }
-
-        if (overlays.length > 0) {
-          setPageOverlays(prev => new Map(prev).set(pageNumber, overlays));
-        }
-      });
+      const spans = Array.from(pageEl.querySelectorAll('.react-pdf__Page__textContent span'));
+      const pageText = spans.map(s => s.textContent || '').join(' ');
+      if (pageText.trim()) pageTextIndex.current.set(pageNumber, pageText);
     },
-    [annotations],
+    [],
   );
 
   // Precompute which overlay on which page gets the scroll-anchor id for each annotation.
@@ -445,7 +372,7 @@ const PdfViewer = forwardRef<PdfNavHandle, {
       >
         {Array.from({ length: numPages }, (_, i) => {
           const pageNo = i + 1;
-          const overlays = pageOverlays.get(pageNo) || [];
+          const overlays = renderedPages.has(pageNo) ? pageOverlays.get(pageNo) || [] : [];
           return (
             <div
               key={pageNo}
@@ -461,6 +388,7 @@ const PdfViewer = forwardRef<PdfNavHandle, {
                 width={PDF_RENDER_WIDTH}
                 renderTextLayer={true}
                 renderAnnotationLayer={false}
+                onRenderSuccess={() => setRenderedPages(prev => new Set(prev).add(pageNo))}
                 onRenderTextLayerSuccess={makeTextLayerHandler(pageNo)}
               />
               {overlays.map((overlay, idx) => {
@@ -678,8 +606,8 @@ const DocumentViewer = forwardRef<PdfNavHandle, DocumentViewerProps>(function Do
   text,
   annotations,
   uploadedFile,
-  bboxAnnotations: _bboxAnnotations,
-  pageSizes: _pageSizes,
+  bboxAnnotations,
+  pageSizes,
   markdownText,
   onAnnotationClick,
   isHebrew,
@@ -692,6 +620,8 @@ const DocumentViewer = forwardRef<PdfNavHandle, DocumentViewerProps>(function Do
         ref={ref}
         file={uploadedFile}
         annotations={annotations}
+        bboxAnnotations={bboxAnnotations}
+        pageSizes={pageSizes}
         onAnnotationClick={onAnnotationClick}
         onNumPagesChange={onPdfNumPages}
         onPageChange={onPdfPageChange}

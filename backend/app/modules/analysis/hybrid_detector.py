@@ -9,6 +9,7 @@ analysis_mode='llm'.
 import asyncio
 import logging
 import re as _re
+from bisect import bisect_left
 from typing import TYPE_CHECKING, Optional
 
 from app.modules.analysis.call_metrics import CallMetrics
@@ -119,7 +120,24 @@ def _locate_chunks(full_text: str, chunks: list[str]) -> list[tuple[str, int, in
     search_start = 0
 
     _ws_norm = _re.compile(r'\s+')
-    full_text_normalized = _ws_norm.sub(' ', full_text)
+    # Whitespace-collapsed copy of full_text plus a map from each normalized
+    # char back to its original offset, so fallback matches yield exact
+    # original-text offsets (highlights depend on them).
+    norm_parts: list[str] = []
+    norm_to_orig: list[int] = []
+    pos = 0
+    for m in _ws_norm.finditer(full_text):
+        for j in range(pos, m.start()):
+            norm_parts.append(full_text[j])
+            norm_to_orig.append(j)
+        norm_parts.append(' ')
+        norm_to_orig.append(m.start())
+        pos = m.end()
+    for j in range(pos, len(full_text)):
+        norm_parts.append(full_text[j])
+        norm_to_orig.append(j)
+    norm_to_orig.append(len(full_text))  # sentinel: maps a match ending at EOF
+    full_text_normalized = ''.join(norm_parts)
 
     for raw in chunks:
         stripped = raw.strip()
@@ -138,15 +156,16 @@ def _locate_chunks(full_text: str, chunks: list[str]) -> list[tuple[str, int, in
                 if idx != -1:
                     stripped = content
 
-        # 3. Whitespace-normalized match (recovers double-space / tab differences)
+        # 3. Whitespace-normalized match (recovers double-space / tab differences),
+        # mapped back to exact original-text offsets via norm_to_orig.
         if idx == -1:
             norm_chunk = _ws_norm.sub(' ', stripped)
-            norm_idx = full_text_normalized.find(norm_chunk, search_start)
+            norm_start = bisect_left(norm_to_orig, search_start)
+            norm_idx = full_text_normalized.find(norm_chunk, norm_start)
             if norm_idx != -1:
-                orig_idx = full_text.find(norm_chunk[0], search_start)
-                if orig_idx != -1:
-                    idx = orig_idx
-                    stripped = full_text[orig_idx: orig_idx + len(norm_chunk)]
+                idx = norm_to_orig[norm_idx]
+                end = norm_to_orig[norm_idx + len(norm_chunk)]
+                stripped = full_text[idx:end]
 
         if idx != -1:
             result.append((stripped, idx, idx + len(stripped)))

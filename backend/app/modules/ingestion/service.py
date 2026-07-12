@@ -360,39 +360,46 @@ def _parse_document_sync(file_bytes: bytes, filename: str, max_pages: int = MAX_
         page_sizes = None
         if ext == ".pdf":
             bbox_annotations = []
-            # Sort items into reading order (page asc, top-of-page first) so the
-            # sequential find() search advances monotonically and doesn't miss items
-            # when Docling returns them out of order.
-            def _reading_order(item):
-                prov_list = item.get("prov", [])
-                if not prov_list:
-                    return (9999, -9999.0)
-                prov = prov_list[0]
-                pg = prov.get("page_no", 9999)
-                raw = prov.get("bbox")
-                t = (raw.t if hasattr(raw, 't') else raw.get('t', 0.0)) if raw else 0.0
-                return (pg, -t)  # higher t = top of page = earlier in reading order
+            # Walk body items via iterate_items(): the SAME reading order (and BODY
+            # content layer) that export_to_text() serializes, so the sequential
+            # find() advances monotonically even on two-column layouts. Sorting by
+            # (page, -top) here would interleave columns and drop most of column 1.
+            # ponytail: tables aren't indexed (TableItem has no .text) — annotations
+            # inside table cells get no overlay; index doc.tables if that matters.
             search_start = 0
-            for item in sorted(items, key=_reading_order):
-                item_text = item.get("text", "")
-                prov_list = item.get("prov", [])
+            for node, _level in result.document.iterate_items():
+                item_text = getattr(node, "text", None)
+                prov_list = getattr(node, "prov", None)
                 if not item_text or not prov_list:
                     continue
-                prov = prov_list[0]
-                raw_bbox = prov.get("bbox")
-                if raw_bbox is None:
-                    continue
-                bbox = {"l": raw_bbox.l, "t": raw_bbox.t, "r": raw_bbox.r, "b": raw_bbox.b} if hasattr(raw_bbox, 'l') else raw_bbox
-                page_no = prov.get("page_no", 1)
                 idx = full_text.find(item_text, search_start)
-                if idx != -1:
+                if idx == -1:
+                    continue
+                search_start = idx + len(item_text)
+                # One entry PER prov fragment: docling merges paragraph continuations
+                # across column/page breaks into one item whose prov entries each carry
+                # their own page/bbox and charspan into the merged text. Using only
+                # prov[0] would draw continuation highlights on the wrong page.
+                for prov in prov_list:
+                    raw_bbox = getattr(prov, "bbox", None)
+                    if raw_bbox is None:
+                        continue
+                    cs = getattr(prov, "charspan", None) or (0, len(item_text))
+                    s = max(0, min(int(cs[0]), len(item_text)))
+                    e = max(s, min(int(cs[1]), len(item_text)))
+                    if e == s:
+                        continue
+                    origin = getattr(raw_bbox, "coord_origin", None)
                     bbox_annotations.append({
-                        "start": idx,
-                        "end": idx + len(item_text),
-                        "page": page_no,
-                        "bbox": bbox,
+                        "start": idx + s,
+                        "end": idx + e,
+                        "page": getattr(prov, "page_no", 1),
+                        "bbox": {
+                            "l": raw_bbox.l, "t": raw_bbox.t,
+                            "r": raw_bbox.r, "b": raw_bbox.b,
+                            "coord_origin": getattr(origin, "value", str(origin)) if origin else "BOTTOMLEFT",
+                        },
                     })
-                    search_start = idx + len(item_text)
 
             page_sizes = {}
             if hasattr(result.document, 'pages'):

@@ -221,7 +221,7 @@ export interface BboxAnnotation {
   start: number;
   end: number;
   page: number;
-  bbox: { l: number; t: number; r: number; b: number };
+  bbox: { l: number; t: number; r: number; b: number; coord_origin?: string };
 }
 
 export interface PageSize {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -590,11 +590,11 @@ export default function AnalyzePage() {
 
   const severityPriority: Severity[] = ['factually_incorrect', 'potentially_offensive', 'biased', 'outdated'];
 
-  const confidenceFiltered = analysis.results.filter(r => {
+  const confidenceFiltered = useMemo(() => analysis.results.filter(r => {
     const conf = resultConfidence(analysis.annotations, r);
     if (conf == null) return true;
     return conf >= 0.30 && conf <= 0.85;
-  });
+  }), [analysis]);
 
   const filteredCounts: Record<Severity, number> = {
     outdated: 0, biased: 0, potentially_offensive: 0, factually_incorrect: 0,
@@ -612,11 +612,13 @@ export default function AnalyzePage() {
     .filter(r => activeTypeFilters.size === 0 || (r.category != null && activeTypeFilters.has(r.category)))
     .sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
 
-  // Only show highlights in the document viewer for phrases that passed confidence filtering
-  const visiblePhrases = new Set(confidenceFiltered.map(r => r.phrase.toLowerCase()));
-  const visibleAnnotations = analysis.annotations.filter(ann =>
-    visiblePhrases.has(ann.label.toLowerCase()),
-  );
+  // Only show highlights in the document viewer for phrases that passed confidence
+  // filtering. Memoized: a fresh array identity here re-runs the PDF overlay
+  // computation on every keystroke in the search box.
+  const visibleAnnotations = useMemo(() => {
+    const visiblePhrases = new Set(confidenceFiltered.map(r => r.phrase.toLowerCase()));
+    return analysis.annotations.filter(ann => visiblePhrases.has(ann.label.toLowerCase()));
+  }, [analysis, confidenceFiltered]);
 
   const handleExport = () => {
     exportReport(analysis, {
