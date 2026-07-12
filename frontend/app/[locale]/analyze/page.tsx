@@ -16,7 +16,7 @@ import MobileReport from '@/components/MobileReport';
 import { analyzeText, uploadFile, healthCheck, modelHealthCheck, uploadReportPdf, AnalysisCancelledError, BboxAnnotation, PageSize, AnalysisResult } from '@/lib/api/client';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { exportReport, dataUriToPdfBlob } from '@/lib/exportReport';
-import { computeCleanScore, scoreBand, SCORE_BANDS } from '@/lib/score';
+import { computeCleanScore } from '@/lib/score';
 import { registerNavigationGuard } from '@/lib/navigationGuard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLiveAnnouncer } from '@/contexts/LiveAnnouncerContext';
@@ -24,7 +24,7 @@ import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import {
   RotateCcw, FileText, ChevronLeft, ChevronRight, Scan, BarChart3, ShieldCheck,
-  Lock, Mail, Download, AlertCircle, CheckCircle2, Filter, Type,
+  Lock, Mail, Download, Filter, Type,
 } from 'lucide-react';
 import PrivateModeToggle from '@/components/PrivateModeToggle';
 import ContactModal from '@/components/ContactModal';
@@ -62,13 +62,6 @@ const emptyAnalysis: AnalysisData = {
   counts: { outdated: 0, biased: 0, potentially_offensive: 0, factually_incorrect: 0 },
   summary: { totalIssues: 0, score: 100, recommendations: [] },
 };
-
-function getScoreColor(score: number): string {
-  if (score >= SCORE_BANDS.excellent) return 'text-green-500';
-  if (score >= SCORE_BANDS.good) return 'text-amber-500';
-  if (score >= SCORE_BANDS.needsImprovement) return 'text-orange-500';
-  return 'text-red-500';
-}
 
 const severityOrder: Record<Severity, number> = {
   factually_incorrect: 0,
@@ -673,8 +666,6 @@ export default function AnalyzePage() {
     })();
   }, [viewState, currentRunId, user, privateMode, analysis, fileName, locale]);
 
-  const scoreLabel = t(`summaryCard.${scoreBand(score)}`);
-
   const uploadTranslations = {
     title: t('uploadTitle'),
     description: t('uploadDesc'),
@@ -901,7 +892,6 @@ export default function AnalyzePage() {
               fileName={fileName}
               privateMode={privateMode}
               score={score}
-              scoreLabel={scoreLabel}
               totalIssues={totalIssues}
               wordCount={wordCount}
               results={filteredResults}
@@ -1086,7 +1076,7 @@ export default function AnalyzePage() {
                         <div className="min-w-0">
                           <div className="flex items-baseline gap-2">
                             <motion.span
-                              className={cn('text-5xl font-black tabular-nums leading-none', getScoreColor(score))}
+                              className="text-5xl font-black tabular-nums leading-none text-slate-900 dark:text-white"
                               initial={{ scale: 0.6, opacity: 0 }}
                               animate={{ scale: 1, opacity: 1 }}
                               transition={{ type: 'spring', stiffness: 180, damping: 14, delay: 0.1 }}
@@ -1094,16 +1084,6 @@ export default function AnalyzePage() {
                               {score}
                             </motion.span>
                             <span className="text-slate-400 text-lg">%</span>
-                          </div>
-                          <div className="flex items-center gap-1.5 mt-1.5">
-                            {score >= SCORE_BANDS.good ? (
-                              <CheckCircle2 className={cn('w-4 h-4', getScoreColor(score))} />
-                            ) : (
-                              <AlertCircle className={cn('w-4 h-4', getScoreColor(score))} />
-                            )}
-                            <span className={cn('text-sm font-semibold', getScoreColor(score))}>
-                              {scoreLabel}
-                            </span>
                           </div>
                           <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
                             {t('summaryCard.cleanTextDesc')}

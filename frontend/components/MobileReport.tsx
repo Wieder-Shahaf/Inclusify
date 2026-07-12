@@ -4,10 +4,9 @@ import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import {
   RotateCcw, FileText, BarChart3, Lock, Mail, Download,
-  AlertCircle, CheckCircle2, ChevronRight, Info,
+  ChevronRight, Info,
 } from 'lucide-react';
 import type { Severity } from '@/components/SeverityBadge';
-import { SCORE_BANDS } from '@/lib/score';
 import { cn } from '@/lib/utils';
 
 type ReportResult = {
@@ -23,7 +22,6 @@ interface MobileReportProps {
   fileName: string;
   privateMode: boolean;
   score: number;
-  scoreLabel: string;
   totalIssues: number;
   wordCount: number;
   results: ReportResult[];
@@ -34,13 +32,6 @@ interface MobileReportProps {
   onExport: () => void;
   onContact: () => void;
   onIssueClick: (result: ReportResult) => void;
-}
-
-function getScoreColor(score: number): string {
-  if (score >= SCORE_BANDS.excellent) return 'text-green-500';
-  if (score >= SCORE_BANDS.good) return 'text-amber-500';
-  if (score >= SCORE_BANDS.needsImprovement) return 'text-orange-500';
-  return 'text-red-500';
 }
 
 const severityPriority: Severity[] = [
@@ -62,7 +53,7 @@ const severityBorderColor: Record<Severity, string> = {
  * The heavy DocumentViewer / highlight tooltips are never mounted here.
  */
 export default function MobileReport({
-  fileName, privateMode, score, scoreLabel, totalIssues, wordCount,
+  fileName, privateMode, score, totalIssues, wordCount,
   results, counts, recommendations, hasAnyResults,
   onReset, onExport, onContact, onIssueClick,
 }: MobileReportProps) {
@@ -126,12 +117,8 @@ export default function MobileReport({
         <div className="flex items-end justify-between gap-3">
           <div>
             <div className="flex items-baseline gap-1.5">
-              <span className={cn('text-5xl font-black tabular-nums leading-none', getScoreColor(score))}>{score}</span>
+              <span className="text-5xl font-black tabular-nums leading-none text-slate-900 dark:text-white">{score}</span>
               <span className="text-slate-400 text-lg">%</span>
-            </div>
-            <div className="flex items-center gap-1.5 mt-2">
-              {score >= SCORE_BANDS.good ? <CheckCircle2 className={cn('w-4 h-4', getScoreColor(score))} /> : <AlertCircle className={cn('w-4 h-4', getScoreColor(score))} />}
-              <span className={cn('text-sm font-semibold', getScoreColor(score))}>{scoreLabel}</span>
             </div>
           </div>
           <div className="flex gap-2 flex-shrink-0">

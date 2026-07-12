@@ -18,45 +18,13 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import { SCORE_BANDS } from '@/lib/score';
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
-// Scores are the backend-stored clean-text % (see lib/score.ts). Runs that
-// predate the score column have null — shown as a dash, never recomputed
-// with a different formula.
-
-function scoreLabel(score: number | null, locale: string): string {
-  if (score == null) return locale === 'he' ? 'ללא ציון' : 'No score';
-  if (score >= SCORE_BANDS.excellent) return locale === 'he' ? 'מצוין' : 'Excellent';
-  if (score >= SCORE_BANDS.good) return locale === 'he' ? 'טוב' : 'Good';
-  if (score >= SCORE_BANDS.needsImprovement) return locale === 'he' ? 'דורש שיפור' : 'Needs Improvement';
-  return locale === 'he' ? 'דורש תשומת לב' : 'Requires Attention';
-}
-
-function scoreColor(score: number | null): string {
-  if (score == null) return '#94a3b8';
-  if (score >= SCORE_BANDS.excellent) return '#22c55e';
-  if (score >= SCORE_BANDS.good) return '#84cc16';
-  if (score >= SCORE_BANDS.needsImprovement) return '#f59e0b';
-  return '#ef4444';
-}
-
-function scoreRingColor(score: number | null): string {
-  if (score == null) return 'text-slate-400';
-  if (score >= SCORE_BANDS.excellent) return 'text-green-500';
-  if (score >= SCORE_BANDS.good) return 'text-lime-500';
-  if (score >= SCORE_BANDS.needsImprovement) return 'text-amber-500';
-  return 'text-red-500';
-}
-
-function scoreBg(score: number | null): string {
-  if (score == null) return 'bg-slate-50 dark:bg-slate-800/30';
-  if (score >= SCORE_BANDS.excellent) return 'bg-green-50 dark:bg-green-950/30';
-  if (score >= SCORE_BANDS.good) return 'bg-lime-50 dark:bg-lime-950/30';
-  if (score >= SCORE_BANDS.needsImprovement) return 'bg-amber-50 dark:bg-amber-950/30';
-  return 'bg-red-50 dark:bg-red-950/30';
-}
+// Scores are the backend-stored clean-text % (see lib/score.ts), displayed
+// neutrally — no color coding or qualitative band labels. Runs that predate
+// the score column have null — shown as a dash, never recomputed with a
+// different formula.
 
 // Colors for the "Findings by category" bar. Categories are free-text, so
 // segments take a palette color by index (cycled if there are more than 6).
@@ -94,17 +62,20 @@ function ScoreRing({ score, size = 64 }: { score: number | null; size?: number }
   const r = size * 0.39;
   const circ = 2 * Math.PI * r;
   const dash = ((score ?? 0) / 100) * circ;
-  const color = scoreColor(score);
   const cx = size / 2;
   return (
     <div className="relative flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90" viewBox={`0 0 ${size} ${size}`}>
         <circle cx={cx} cy={cx} r={r} fill="none" stroke="currentColor" strokeWidth="5"
           className="text-slate-200 dark:text-slate-700" />
-        <circle cx={cx} cy={cx} r={r} fill="none" stroke={color} strokeWidth="5"
+        <circle cx={cx} cy={cx} r={r} fill="none" stroke="currentColor" strokeWidth="5"
+          className="text-slate-400 dark:text-slate-500"
           strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" />
       </svg>
-      <span className="absolute text-sm font-bold" style={{ color, fontSize: size < 50 ? 9 : 12 }}>
+      <span
+        className="absolute text-sm font-bold text-slate-900 dark:text-white"
+        style={{ fontSize: size < 50 ? 9 : 12 }}
+      >
         {score != null ? `${score}%` : '—'}
       </span>
     </div>
@@ -230,9 +201,6 @@ function DetailModal({ runId, locale, onClose }: { runId: string; locale: string
                     <Globe className="w-3 h-3" />{detail.language}
                   </span>
                 )}
-                <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${scoreBg(score)} ${scoreRingColor(score)}`}>
-                  {scoreLabel(score, locale)}
-                </span>
               </div>
             )}
           </div>
@@ -363,10 +331,6 @@ function AnalysisCard({
                 </span>
               </>
             )}
-            <span className="text-xs text-slate-400">·</span>
-            <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${scoreBg(score)} ${scoreRingColor(score)}`}>
-              {scoreLabel(score, locale)}
-            </span>
           </div>
 
           {entry.findings_count > 0 ? (
@@ -582,7 +546,6 @@ export default function HistoryPage() {
               icon={<TrendingUp className="w-5 h-5 text-blue-500" />}
               label={isHe ? 'ציון ממוצע' : 'Avg. Score'}
               value={avgScore != null ? `${avgScore}%` : '—'}
-              sub={scoreLabel(avgScore, locale)}
               accent="bg-blue-50 dark:bg-blue-950/30"
             />
             <KpiCard

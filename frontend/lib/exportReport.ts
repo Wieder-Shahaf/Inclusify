@@ -1,6 +1,5 @@
 import type { Annotation } from '@/components/AnnotatedText';
 import type { Severity } from '@/components/SeverityBadge';
-import { SCORE_BANDS } from '@/lib/score';
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 const PURPLE:       [number, number, number] = [88,  28,  135];
@@ -432,10 +431,9 @@ export async function exportReport(
   const scoreCardH = 40;
   drawCard(doc, M, Y, CW, scoreCardH);
 
-  const scoreColor: [number, number, number] =
-    displayScore >= SCORE_BANDS.excellent ? [22, 163, 74] : displayScore >= SCORE_BANDS.good ? [202, 138, 4] : [220, 38, 38];
-  const scoreLabel =
-    displayScore >= SCORE_BANDS.excellent ? labels.excellent : displayScore >= SCORE_BANDS.good ? labels.good : labels.needsWork;
+  // Neutral presentation: no color coding or qualitative band label — the
+  // number and the findings themselves carry the meaning.
+  const scoreColor: [number, number, number] = [15, 23, 42];
 
   const innerL = M + 6;
   const innerT = Y + 5;
@@ -459,16 +457,12 @@ export async function exportReport(
   doc.setTextColor(...SLATE);
   doc.text('%', innerL + bigNumW + 1.5, innerT + 17);
 
-  // Status and short interpretation
-  doc.setFont(fontFor(scoreLabel, 'helvetica'), 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(...scoreColor);
-  doc.text(scoreLabel, innerL, innerT + 25, rtlOpts(scoreLabel));
+  // Short factual summary
   doc.setFontSize(7);
   doc.setTextColor(...SLATE);
   const summaryText = `${totalFindings} ${labels.findingsRequireReview}`;
   doc.setFont(fontFor(summaryText, 'helvetica'), 'normal');
-  doc.text(summaryText, innerL, innerT + 31, rtlOpts(summaryText));
+  doc.text(summaryText, innerL, innerT + 25, rtlOpts(summaryText));
 
   // Compact stat blocks on the right: no duplicate score visualization
   const statItems = [

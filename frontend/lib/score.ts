@@ -39,21 +39,3 @@ export function computeCleanScore(
 
   return Math.round(100 * (1 - flagged / totalChars) * 10) / 10;
 }
-
-// Qualitative bands on the clean-text %. Clean scores cluster near 100
-// (a handful of flagged phrases in a full paper is well under 1%), so the
-// boundaries sit much higher than the old 90/70/50 density score.
-export const SCORE_BANDS = {
-  excellent: 99,
-  good: 97,
-  needsImprovement: 94,
-} as const;
-
-export type ScoreBand = 'excellent' | 'good' | 'needsImprovement' | 'requiresAttention';
-
-export function scoreBand(score: number): ScoreBand {
-  if (score >= SCORE_BANDS.excellent) return 'excellent';
-  if (score >= SCORE_BANDS.good) return 'good';
-  if (score >= SCORE_BANDS.needsImprovement) return 'needsImprovement';
-  return 'requiresAttention';
-}
