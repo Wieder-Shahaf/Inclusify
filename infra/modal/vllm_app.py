@@ -60,6 +60,7 @@ ADAPTER_REMOTE_DIR = "/adapters/qwen_r8_d0.2_achva_v2"
 
 VLLM_PORT = 8001  # same internal port as the VM (Modal still serves it over HTTPS)
 MINUTES = 60
+HOURS = 60 * MINUTES
 
 app = modal.App("inclusify-vllm")
 
@@ -101,7 +102,7 @@ vllm_image = (
 @app.function(
     image=vllm_image,
     gpu="T4",  # same GPU class as the Azure Standard_NC4as_T4_v3
-    scaledown_window=5 * MINUTES,  # stay warm 5 min after last request, then -> 0
+    scaledown_window=3 * HOURS,  # stay warm 3 h after last request, then -> 0
     timeout=10 * MINUTES,
     secrets=[modal.Secret.from_name("inclusify-vllm-key")],
     # enable_memory_snapshot=True,  # see NOTES — verify GPU-snapshot support on
