@@ -28,6 +28,7 @@ export interface AnalysisData {
     references?: Array<{ label: string; url: string }>;
   }>;
   counts: Record<Severity, number>;
+  reportLanguage?: 'he' | 'en';
   summary: {
     totalIssues: number;
     score: number;
@@ -76,7 +77,7 @@ export default function ContactModal({ open, onClose, analysis, fileName, locale
       if (analysis) {
         const dataUri = await exportReport(analysis, {
           fileName: fileName || 'analysis',
-          locale,
+          locale: analysis.reportLanguage ?? locale,
           returnBase64: true,
         });
         pdfBlob = dataUriToPdfBlob(dataUri);
