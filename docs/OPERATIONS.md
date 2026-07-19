@@ -1,332 +1,161 @@
-# Inclusify — Operations Runbook
+# Inclusify — Operations Runbook (Railway + Modal + R2)
 
-All Azure CLI commands for managing the production deployment.
-Resource Group: **Group07** | Region: **East US**
+Day-2 operations for the production stack. Provisioning from scratch is in
+**docs/STACK-A-PROVISIONING.md**; the migration rationale is in
+**docs/STACK-A-MIGRATION.md**; the non-technical guide is
+**docs/operator-handbook.html**.
 
----
+Concrete URLs, account emails, and secrets are deliberately NOT committed —
+they live in the Railway/Modal dashboards and the operator's credential sheet
+(handbook §3).
 
-## Quick Reference — URLs
-
-| Service | URL |
-|---------|-----|
-| Frontend | https://inclusify-frontend.ashyriver-56608625.eastus.azurecontainerapps.io |
-| Backend API | https://inclusify-backend.ashyriver-56608625.eastus.azurecontainerapps.io |
-| Backend Health | https://inclusify-backend.ashyriver-56608625.eastus.azurecontainerapps.io/health |
-| GPU VM (SSH) | ssh azureuser@52.224.246.238 |
-| PostgreSQL | inclusify-postgres.postgres.database.azure.com |
-| ACR | inclusifyacr.azurecr.io |
+> The old Azure runbook this file replaced is in git history
+> (`git log -- docs/OPERATIONS.md`). The Azure stack is retired.
 
 ---
 
-## 1. Check Status of All Resources
+## Quick Reference
 
-### Container Apps (Backend + Frontend)
-```bash
-az containerapp list -g Group07 --query "[].{name:name,status:properties.runningStatus}" -o table
-```
+| Piece | Where | How it deploys |
+|---|---|---|
+| Frontend (Next.js) | Railway service | auto on push to `main` (infra/docker/frontend.Dockerfile) |
+| Backend (FastAPI) | Railway service | auto on push to `main` (infra/docker/backend.Dockerfile, `runtime` target) |
+| PostgreSQL | Railway Postgres | managed |
+| vLLM (Qwen2.5-3B + LoRA `inclusify`) | Modal app `inclusify-vllm` | manual: `modal deploy infra/modal/vllm_app.py` |
+| Object storage | Cloudflare R2 bucket | managed |
+| Health checks | `GET /health` (backend), `GET /api/v1/health/model` (vLLM reachability / circuit breaker) | — |
 
-### PostgreSQL
-```bash
-az postgres flexible-server show --name inclusify-postgres -g Group07 --query "{name:name,state:state}" -o table
-```
-
-### GPU VM
-```bash
-az vm show -g Group07 --name InclusifyModel --show-details --query "{name:name,powerState:powerState,publicIp:publicIps}" -o table
-```
-
-### All resources at once
-```bash
-az containerapp list -g Group07 --query "[].{name:name,status:properties.runningStatus}" -o table && \
-az postgres flexible-server show --name inclusify-postgres -g Group07 --query "{name:name,state:state}" -o table && \
-az vm show -g Group07 --name InclusifyModel --show-details --query "{name:name,powerState:powerState}" -o table
-```
+CLI setup (one-time): `npm i -g @railway/cli && railway login && railway link`,
+`pip install modal && modal token new`.
 
 ---
 
-## 2. Start / Stop Resources
+## 1. Check status
 
-### Start everything (in order: DB first, then apps, then VM)
 ```bash
-# 1. Start PostgreSQL (takes ~1 min)
-az postgres flexible-server start --name inclusify-postgres -g Group07
-
-# 2. Container Apps are always running (auto-scaled by Azure)
-# They reconnect to PG automatically once it's up
-
-# 3. Start GPU VM for LLM inference (takes ~2 min)
-az vm start -g Group07 --name InclusifyModel
+railway status                          # linked project + services
+curl -s https://<backend>.up.railway.app/health
+curl -s https://<backend>.up.railway.app/api/v1/health/model
+modal app list                          # inclusify-vllm should be "deployed"
 ```
 
-### Stop everything (saves costs — do this when not presenting/testing)
-```bash
-# 1. Stop GPU VM first (most expensive resource)
-az vm deallocate -g Group07 --name InclusifyModel
-
-# 2. Stop PostgreSQL
-az postgres flexible-server stop --name inclusify-postgres -g Group07
-
-# Container Apps scale to zero automatically when idle (minimal cost)
-```
-
-### Stop GPU VM only (keep backend/frontend running with rule-based fallback)
-```bash
-az vm deallocate -g Group07 --name InclusifyModel
-```
-> When VM is off, analysis still works using rule-based detection only (no LLM).
+With `MODEL_SCALE_TO_ZERO=true` (prod), `/api/v1/health/model` never probes
+vLLM — it reports `state: "scale_to_zero"` and lets the first real request
+wake the GPU. A cold start takes up to ~1 minute; that is normal, not an
+outage.
 
 ---
 
-## 3. View Live Logs
+## 2. Logs
 
-### Backend logs (FastAPI / Uvicorn)
 ```bash
-az containerapp logs show --name inclusify-backend -g Group07 --follow
+railway logs --service backend          # or --service frontend / postgres
+modal app logs inclusify-vllm           # GPU-side vLLM logs
 ```
 
-### Frontend logs (Next.js)
-```bash
-az containerapp logs show --name inclusify-frontend -g Group07 --follow
-```
-
-### Recent logs (last N lines, no streaming)
-```bash
-az containerapp logs show --name inclusify-backend -g Group07 --tail 50
-az containerapp logs show --name inclusify-frontend -g Group07 --tail 50
-```
-
-### GPU VM logs (SSH in, then check vLLM)
-```bash
-ssh azureuser@52.224.246.238
-# Once connected:
-journalctl -f                    # All system logs
-# Or check vLLM process directly:
-ps aux | grep vllm               # Check if vLLM is running
-```
-
-### PostgreSQL logs
-```bash
-az postgres flexible-server log list --server-name inclusify-postgres -g Group07
-```
+Railway tags severity by stream: the backend intentionally sends INFO/DEBUG to
+stdout and WARNING+ to stderr (`main.py` dictConfig), so "error" entries in the
+Railway UI are real. `LOG_LEVEL` env var overrides the INFO default.
 
 ---
 
-## 4. Deploy New Version
+## 3. Deploy
 
-### Automatic (CI/CD)
-Push to `main` branch → GitHub Actions builds images → prints deploy commands.
-
-### Manual deploy after CI builds
-```bash
-# Get the image tag from the GitHub Actions output, then:
-az containerapp update --name inclusify-backend -g Group07 \
-  --image inclusifyacr.azurecr.io/inclusify-backend:<TAG>
-
-az containerapp update --name inclusify-frontend -g Group07 \
-  --image inclusifyacr.azurecr.io/inclusify-frontend:<TAG>
-```
-
-### Check which image is currently running
-```bash
-az containerapp revision list --name inclusify-backend -g Group07 \
-  --query "[?properties.trafficWeight > \`0\`].{name:name,image:properties.template.containers[0].image}" -o table
-
-az containerapp revision list --name inclusify-frontend -g Group07 \
-  --query "[?properties.trafficWeight > \`0\`].{name:name,image:properties.template.containers[0].image}" -o table
-```
-
-### Build images manually (without GitHub Actions)
-```bash
-# Backend
-az acr build --registry inclusifyacr -g Group07 \
-  --image inclusify-backend:manual \
-  --file backend/Dockerfile backend/
-
-# Frontend
-az acr build --registry inclusifyacr -g Group07 \
-  --image inclusify-frontend:manual \
-  --file frontend/Dockerfile frontend/ \
-  --build-arg NEXT_PUBLIC_API_URL=https://inclusify-backend.ashyriver-56608625.eastus.azurecontainerapps.io \
-  --build-arg NEXT_PUBLIC_USE_DEMO_MODE=false
-```
+- **Backend/frontend:** push to `main` → Railway builds the Dockerfiles and
+  deploys. Rollback / redeploy an old build: Railway dashboard → service →
+  Deployments → ⋮ → Redeploy.
+- **`NEXT_PUBLIC_API_URL` is a BUILD-time variable** on the frontend service
+  (inlined into the bundle). Changing it requires a rebuild, not a restart.
+- **Model (Modal):**
+  ```bash
+  modal deploy infra/modal/vllm_app.py
+  ```
+  First deploy rebuilds the image and re-downloads weights (slow — expected).
+  The vLLM API key comes from the Modal secret `inclusify-vllm-key` and must
+  equal the backend's `VLLM_API_KEY`.
+- **CI:** `gh run list --workflow CI --branch main --limit 5`,
+  `gh run view <RUN_ID> --log-failed`.
 
 ---
 
-## 5. Database Operations
+## 4. Database
 
-### Connect to PostgreSQL
 ```bash
-PGPASSWORD='<password>' psql \
-  -h inclusify-postgres.postgres.database.azure.com \
-  -U inclusifyadmin \
-  -d inclusify
-```
-> DB password is stored in container app secret `db-password`. Retrieve with:
-> ```bash
-> az containerapp secret show --name inclusify-backend -g Group07 --secret-name db-password --query "value" -o tsv
-> ```
-
-### Apply schema
-```bash
-PGPASSWORD='<password>' psql \
-  -h inclusify-postgres.postgres.database.azure.com \
-  -U inclusifyadmin \
-  -d inclusify \
-  -f db/schema.sql
+railway connect postgres                # psql shell into prod DB
 ```
 
-### Apply seed data
+Apply schema / seed (destructive on conflicts — schema has no migration
+tooling; prod drifts from db/schema.sql, apply changes as targeted SQL):
+
 ```bash
-PGPASSWORD='<password>' psql \
-  -h inclusify-postgres.postgres.database.azure.com \
-  -U inclusifyadmin \
-  -d inclusify \
-  -f db/seed.sql
+railway run --service postgres psql < db/schema.sql   # fresh DB only
+railway run --service postgres psql < db/seed.sql
 ```
 
-### Quick DB queries
-```bash
-# Check users
-PGPASSWORD='<password>' psql -h inclusify-postgres.postgres.database.azure.com -U inclusifyadmin -d inclusify \
-  -c "SELECT email, role, org_id FROM users;"
+Useful queries:
 
-# Check recent analyses
-PGPASSWORD='<password>' psql -h inclusify-postgres.postgres.database.azure.com -U inclusifyadmin -d inclusify \
-  -c "SELECT d.created_at, ar.status, ar.model_version, ar.runtime_ms FROM documents d JOIN analysis_runs ar ON ar.document_id = d.document_id ORDER BY d.created_at DESC LIMIT 10;"
+```sql
+-- Users and roles
+SELECT email, role FROM users;
 
-# Check findings
-PGPASSWORD='<password>' psql -h inclusify-postgres.postgres.database.azure.com -U inclusifyadmin -d inclusify \
-  -c "SELECT category, severity, excerpt_redacted FROM findings ORDER BY created_at DESC LIMIT 10;"
+-- Promote a user to admin (also possible in the app: admin dashboard → Users)
+UPDATE users SET role = 'site_admin' WHERE email = 'user@example.com';
 
-# Promote a user to admin
-PGPASSWORD='<password>' psql -h inclusify-postgres.postgres.database.azure.com -U inclusifyadmin -d inclusify \
-  -c "UPDATE users SET role = 'site_admin' WHERE email = 'user@example.com';"
+-- Recent analyses
+SELECT d.created_at, ar.status, ar.model_version, ar.runtime_ms
+FROM documents d JOIN analysis_runs ar ON ar.document_id = d.document_id
+ORDER BY d.created_at DESC LIMIT 10;
 ```
+
+**Backups:** Railway dashboard → Postgres service → Backups. Verify these
+exist and are recent — this is the only stateful piece that can't be rebuilt
+from the repo.
 
 ---
 
-## 6. Environment Variables & Secrets
+## 5. Environment variables & secrets
 
-### View all backend env vars
-```bash
-az containerapp show --name inclusify-backend -g Group07 \
-  --query "properties.template.containers[0].env[].{name:name,value:value,secretRef:secretRef}" -o table
-```
+Set in Railway dashboard → service → Variables (backend restarts on change).
+Full list with prod values: docs/STACK-A-PROVISIONING.md §3. The load-bearing
+ones:
 
-### View all frontend env vars
-```bash
-az containerapp show --name inclusify-frontend -g Group07 \
-  --query "properties.template.containers[0].env[].{name:name,value:value}" -o table
-```
-
-### Set a new env var
-```bash
-az containerapp update --name inclusify-backend -g Group07 \
-  --set-env-vars MY_VAR=my_value
-```
-
-### Set a new secret + env var
-```bash
-# 1. Create the secret
-az containerapp secret set --name inclusify-backend -g Group07 \
-  --secrets my-secret=the-secret-value
-
-# 2. Link env var to secret
-az containerapp update --name inclusify-backend -g Group07 \
-  --set-env-vars MY_SECRET=secretref:my-secret
-```
-
-### Current secrets reference
-
-| Env Var | Secret Name | Description |
-|---------|-------------|-------------|
-| PGPASSWORD | db-password | PostgreSQL password |
-| JWT_SECRET | jwt-secret | JWT signing key |
-| GOOGLE_CLIENT_ID | google-client-id | Google OAuth client ID |
-| GOOGLE_CLIENT_SECRET | google-client-secret | Google OAuth client secret |
+| Var | Purpose |
+|---|---|
+| `PG*` / `DATABASE_URL` | Postgres connection (Railway injects references) |
+| `JWT_SECRET` | JWT signing key |
+| `GOOGLE_CLIENT_ID/SECRET` | Google OAuth |
+| `VLLM_URL` | Modal endpoint `https://<workspace>--inclusify-vllm-serve.modal.run` |
+| `VLLM_API_KEY` | must equal Modal secret `inclusify-vllm-key` |
+| `MODEL_SCALE_TO_ZERO` | `true` in prod — never health-probe the GPU |
+| `S3_*` | Cloudflare R2 (`S3_ENDPOINT_URL=https://<ACCOUNT_ID>.r2.cloudflarestorage.com`) |
+| `RESEND_API_KEY`, `EMAIL_FROM`, `RESEND_FROM` | email (auth mails / contact form) |
+| `BLOCK_OCR_DOCUMENTS` | `false` on Railway Hobby (4 GB); OCR guard for smaller hosts |
+| `NEXT_PUBLIC_API_URL` | frontend → backend URL (**build-time**, frontend service) |
 
 ---
 
-## 7. Troubleshooting
+## 6. Troubleshooting
 
-### Backend returns 503 "Database not available"
-PostgreSQL is stopped. Start it:
-```bash
-az postgres flexible-server start --name inclusify-postgres -g Group07
-```
-
-### Analysis returns "rules_only" mode (no LLM)
-GPU VM is off. Start it:
-```bash
-az vm start -g Group07 --name InclusifyModel
-```
-Then SSH in and verify vLLM is running:
-```bash
-ssh azureuser@52.224.246.238
-curl http://localhost:8001/v1/models
-```
-
-### Container app stuck / not responding
-Force a new revision:
-```bash
-az containerapp revision restart --name inclusify-backend -g Group07 \
-  --revision <revision-name>
-```
-Or redeploy the same image:
-```bash
-az containerapp update --name inclusify-backend -g Group07 \
-  --set-env-vars DEPLOY_TS=$(date +%s)
-```
-
-### Check GitHub Actions CI status
-```bash
-gh run list --workflow CI --branch main --limit 5
-gh run list --workflow "Build & Deploy" --branch main --limit 5
-```
-
-### View failed CI logs
-```bash
-gh run view <RUN_ID> --log-failed
-```
+| Symptom | Likely cause → fix |
+|---|---|
+| Backend 503 "Database not available" | Postgres service down/unlinked → Railway dashboard → Postgres → restart; check `PG*` vars |
+| Analyses hang / fail after ~1 min | Modal cold start is normal once; persistent → `modal app list` (deployed?), `VLLM_URL`/`VLLM_API_KEY` mismatch, `modal app logs inclusify-vllm` |
+| GPU bill climbing daily | Something keeps the container warm → confirm `scaledown_window` is 5 min in infra/modal/vllm_app.py and `MODEL_SCALE_TO_ZERO=true` on the backend (a live probe would wake it) |
+| Google login fails | Redirect URI mismatch → Google Cloud console → OAuth credentials → add current frontend URL |
+| Uploads crash in prod only | Backend image runs `HF_HUB_OFFLINE=1` with docling models baked in — a build warm-up must be a real `.convert()` (see infra/docker/backend.Dockerfile) |
+| Emails not arriving | Resend dashboard → send log; free tier only delivers to the account owner (inclusify.support@gmail.com) |
+| Service stuck | Railway dashboard → service → ⋮ → Restart |
 
 ---
 
-## 8. Cost Management
-
-**Most expensive resources (stop when not in use):**
-
-| Resource | ~Cost/hr | Stop Command |
-|----------|----------|--------------|
-| GPU VM (NC4as T4 v3) | ~$0.53/hr | `az vm deallocate -g Group07 --name InclusifyModel` |
-| PostgreSQL (B1ms) | ~$0.02/hr | `az postgres flexible-server stop --name inclusify-postgres -g Group07` |
-| Container Apps | ~$0.01/hr | Auto-scales to near-zero |
-
-**Before a demo/presentation:**
-```bash
-az postgres flexible-server start --name inclusify-postgres -g Group07
-az vm start -g Group07 --name InclusifyModel
-# Wait ~2 minutes for everything to boot
-curl https://inclusify-backend.ashyriver-56608625.eastus.azurecontainerapps.io/health
-```
-
-**After a demo/presentation:**
-```bash
-az vm deallocate -g Group07 --name InclusifyModel
-az postgres flexible-server stop --name inclusify-postgres -g Group07
-```
-
----
-
-## Architecture Quick Reference
+## Architecture quick reference
 
 ```
-Browser → Frontend (Next.js, Container App)
-       → Backend (FastAPI, Container App)
-           → PostgreSQL (Azure Flexible Server)
-           → GPU VM (vLLM + LoRA adapter, private IP 10.0.0.4:8001)
-           → Redis (refresh tokens)
-           → Google OAuth2
+Browser → Frontend (Next.js, Railway)
+       → Backend (FastAPI, Railway)
+           → PostgreSQL (Railway)
+           → vLLM  (Modal, scale-to-zero T4; bearer auth via VLLM_API_KEY)
+           → R2    (uploads, S3 API)
+           → Redis (refresh tokens; optional — app degrades without it)
+           → Google OAuth2 / Resend
 ```
-
-All resources in VNET. Backend talks to GPU VM via private IP (10.0.0.4:8001).
-Container Apps connect to PostgreSQL via public FQDN with SSL.

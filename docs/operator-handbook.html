@@ -204,6 +204,7 @@
         <div class="map-row"><div class="part"><span class="lay" data-i18n="m6lay"></span><span data-i18n="m6part"></span></div><div class="desc" data-i18n="m6desc"></div></div>
       </div>
       <div class="note tip" data-i18n="s2flow"></div>
+      <div class="note warn" data-i18n="s2priv"></div>
       <p data-i18n="s2repo"></p>
     </section>
 
@@ -266,6 +267,21 @@
       <span class="sec-tag" data-i18n="secLabel5">Section 5</span>
       <h2 data-i18n="s5h">Costs &amp; staying cheap</h2>
       <p class="lead" data-i18n="s5lead"></p>
+      <h3 data-i18n="s5h0">What a normal month looks like</h3>
+      <div class="card tint">
+        <table class="fill">
+          <thead><tr><th data-i18n="s5eSvc">Service</th><th data-i18n="s5eCost">Expected monthly cost</th></tr></thead>
+          <tbody>
+            <tr><td class="svc" data-i18n="s5e1"></td><td data-i18n="s5e1v"></td></tr>
+            <tr><td class="svc" data-i18n="s5e2"></td><td data-i18n="s5e2v"></td></tr>
+            <tr><td class="svc" data-i18n="s5e3"></td><td data-i18n="s5e3v"></td></tr>
+            <tr><td class="svc" data-i18n="s5e4"></td><td data-i18n="s5e4v"></td></tr>
+            <tr><td class="svc" data-i18n="s5e5"></td><td data-i18n="s5e5v"></td></tr>
+            <tr><td class="svc" data-i18n="s5et"></td><td><b data-i18n="s5etv"></b></td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:12.5px;color:var(--ink-faint);margin:8px 0 0" data-i18n="s5enote"></p>
+      </div>
       <div class="card">
         <table class="fill" data-persist="budget">
           <thead><tr><th data-i18n="s5tTarget">Your target</th><th data-i18n="s5tValue">Value</th></tr></thead>
@@ -353,6 +369,7 @@
         <li><input type="checkbox"><span data-i18n="s8m2"></span></li>
         <li><input type="checkbox"><span data-i18n="s8m3"></span></li>
         <li><input type="checkbox"><span data-i18n="s8m4"></span></li>
+        <li><input type="checkbox"><span data-i18n="s8m5"></span></li>
       </ul>
       <h3 data-i18n="s8h2">Every few months</h3>
       <ul class="ticks" data-persist="quarterly">
@@ -360,6 +377,7 @@
         <li><input type="checkbox"><span data-i18n="s8q2"></span></li>
         <li><input type="checkbox"><span data-i18n="s8q3"></span></li>
         <li><input type="checkbox"><span data-i18n="s8q4"></span></li>
+        <li><input type="checkbox"><span data-i18n="s8q5"></span></li>
       </ul>
     </section>
 
@@ -407,8 +425,8 @@ const I18N = {
   headTitle:{en:"Operator Handbook",he:"מדריך למפעיל"},
   headLead:{en:"Everything one non-technical person needs to keep Inclusify running — written so you never need to call us. If you can use a website dashboard and copy-paste, you can run this.",
     he:"כל מה שאדם אחד ללא רקע טכני צריך כדי לתחזק את Inclusify — כתוב כך שלא תצטרכו להתקשר אלינו אף פעם. אם אתם יודעים להשתמש בלוח בקרה של אתר ולהעתיק-להדביק, אתם יכולים לתפעל את זה."},
-  headMeta:{en:"Audience: the single post-handover operator · No coding required · Your notes save automatically in this browser",
-    he:"קהל יעד: המפעיל היחיד לאחר המסירה · ללא צורך בתכנות · ההערות נשמרות אוטומטית בדפדפן הזה"},
+  headMeta:{en:"Audience: the single post-handover operator · No coding required · Your notes save automatically in this browser · Last reviewed: July 2026",
+    he:"קהל יעד: המפעיל היחיד לאחר המסירה · ללא צורך בתכנות · ההערות נשמרות אוטומטית בדפדפן הזה · עודכן לאחרונה: יולי 2026"},
 
   secLabel1:{en:"Section 1",he:"פרק 1"}, secLabel2:{en:"Section 2",he:"פרק 2"}, secLabel3:{en:"Section 3",he:"פרק 3"},
   secLabel4:{en:"Section 4",he:"פרק 4"}, secLabel5:{en:"Section 5",he:"פרק 5"}, secLabel6:{en:"Section 6",he:"פרק 6"},
@@ -417,8 +435,8 @@ const I18N = {
   s1h:{en:"Start here",he:"מתחילים כאן"},
   s1lead:{en:"Inclusify is a website that checks academic texts (Hebrew & English) for LGBTQphobic, outdated, or biased language, and suggests inclusive alternatives. People upload a document or paste text, and get a graded report.",
     he:"Inclusify הוא אתר שבודק טקסטים אקדמיים (עברית ואנגלית) לאיתור שפה הומופובית/טרנספובית, מיושנת או מוטה, ומציע חלופות מכבירות. משתמשים מעלים מסמך או מדביקים טקסט ומקבלים דו״ח מדורג."},
-  s1note:{en:"<b>The one thing to understand:</b> Inclusify is made of a few separate online services that talk to each other (a website, a database, an AI model, file storage, a domain). You don't manage servers — each piece lives on a provider with a simple dashboard. This handbook tells you what each one does, what can go wrong, and exactly what to click.",
-    he:"<b>הדבר האחד שחשוב להבין:</b> Inclusify מורכב מכמה שירותים נפרדים באינטרנט שמדברים זה עם זה (אתר, בסיס נתונים, מודל AI, אחסון קבצים, ודומיין). אתם לא מנהלים שרתים — כל חלק נמצא אצל ספק עם לוח בקרה פשוט. המדריך הזה מסביר מה כל חלק עושה, מה עלול להשתבש, ובדיוק על מה ללחוץ."},
+  s1note:{en:"<b>The one thing to understand:</b> Inclusify is made of a few separate online services that talk to each other (a website, a database, an AI model, file storage, a domain). You don't manage servers — each piece lives on a provider with a simple dashboard. This handbook tells you what each one does, what can go wrong, and exactly what to click. One more thing: the reports are <b>AI-generated suggestions</b> — a human should always apply judgment before acting on them, and it's worth saying so wherever the org presents the tool.",
+    he:"<b>הדבר האחד שחשוב להבין:</b> Inclusify מורכב מכמה שירותים נפרדים באינטרנט שמדברים זה עם זה (אתר, בסיס נתונים, מודל AI, אחסון קבצים, ודומיין). אתם לא מנהלים שרתים — כל חלק נמצא אצל ספק עם לוח בקרה פשוט. המדריך הזה מסביר מה כל חלק עושה, מה עלול להשתבש, ובדיוק על מה ללחוץ. ועוד דבר: הדו״חות הם <b>הצעות שנוצרו על-ידי AI</b> — אדם צריך תמיד להפעיל שיקול דעת לפני שפועלים לפיהן, וכדאי לומר זאת בכל מקום שבו הארגון מציג את הכלי."},
   s1h3:{en:"Your first 30 minutes",he:"30 הדקות הראשונות שלכם"},
   s1t1:{en:"Read Section 2 (the system, plainly) — 5 minutes, it makes everything else make sense.",he:"קראו את פרק 2 (המערכת בפשטות) — 5 דקות, וכל השאר יתחבר."},
   s1t2:{en:"Fill in Section 3 (accounts & credentials) with the logins the team handed you.",he:"מלאו את פרק 3 (חשבונות והרשאות) עם פרטי ההתחברות שהצוות מסר לכם."},
@@ -434,15 +452,17 @@ const I18N = {
   m2lay:{en:"The brain",he:"המוח"}, m2part:{en:"Backend / API",he:"השרת / API"},
   m2desc:{en:"Does the actual work: receives text, runs the checks, returns the report. If uploads or analysis fail, look here.",he:"עושה את העבודה בפועל: מקבל טקסט, מריץ את הבדיקות, מחזיר דו״ח. אם העלאות או ניתוח נכשלים — בדקו כאן."},
   m3lay:{en:"Memory",he:"זיכרון"}, m3part:{en:"Database",he:"בסיס נתונים"},
-  m3desc:{en:"Stores users, results, the glossary of flagged terms. If logins or saved data vanish, this is it.",he:"שומר משתמשים, תוצאות, ומילון המונחים המסומנים. אם התחברויות או נתונים שמורים נעלמים — זה כאן."},
+  m3desc:{en:"Stores users, analysis results, and user feedback. If logins or saved data vanish, this is it.",he:"שומר משתמשים, תוצאות ניתוח ומשוב משתמשים. אם התחברויות או נתונים שמורים נעלמים — זה כאן."},
   m4lay:{en:"The AI",he:"ה-AI"}, m4part:{en:"Language model (GPU)",he:"מודל השפה (GPU)"},
   m4desc:{en:"The fine-tuned model that reads context. It \"sleeps\" when idle to save money and wakes on the first request (see cold-start, Section 6).",he:"המודל המאומן שקורא את ההקשר. הוא \"נרדם\" בזמן חוסר פעילות כדי לחסוך כסף ומתעורר בבקשה הראשונה (ראו cold-start, פרק 6)."},
   m5lay:{en:"Files",he:"קבצים"}, m5part:{en:"Object storage",he:"אחסון קבצים"},
   m5desc:{en:"Holds uploaded files/text. Cheap, rarely an issue.",he:"מחזיק קבצים/טקסט שהועלו. זול, ולעיתים נדירות מקור לבעיה."},
   m6lay:{en:"The address",he:"הכתובת"}, m6part:{en:"Domain (Wix DNS)",he:"דומיין (Wix DNS)"},
   m6desc:{en:"The web address (a subdomain of achvalgbt.org.il) that points people to the website. Managed in the Wix dashboard.",he:"כתובת האתר (תת-דומיין של achvalgbt.org.il) שמפנה אנשים לאתר. מנוהל בלוח הבקרה של Wix."},
-  s2flow:{en:"<b>Plain-English flow:</b> a user opens the <b>website</b> → the <b>backend</b> takes their text → asks the <b>AI model</b> + checks the <b>database</b> glossary → saves to the <b>database</b> & <b>storage</b> → shows the report. The <b>domain</b> is just the signpost pointing at the website.",
-    he:"<b>הזרימה בפשטות:</b> משתמש פותח את <b>האתר</b> ← <b>השרת</b> מקבל את הטקסט ← פונה ל<b>מודל ה-AI</b> ובודק את מילון <b>בסיס הנתונים</b> ← שומר ב<b>בסיס הנתונים</b> וב<b>אחסון</b> ← מציג את הדו״ח. <b>הדומיין</b> הוא רק התמרור שמפנה לאתר."},
+  s2flow:{en:"<b>Plain-English flow:</b> a user opens the <b>website</b> → the <b>backend</b> takes their text → sends it to the <b>AI model</b> for analysis → saves the results to the <b>database</b> & <b>storage</b> → shows the report. The <b>domain</b> is just the signpost pointing at the website.",
+    he:"<b>הזרימה בפשטות:</b> משתמש פותח את <b>האתר</b> ← <b>השרת</b> מקבל את הטקסט ← שולח אותו ל<b>מודל ה-AI</b> לניתוח ← שומר את התוצאות ב<b>בסיס הנתונים</b> וב<b>אחסון</b> ← מציג את הדו״ח. <b>הדומיין</b> הוא רק התמרור שמפנה לאתר."},
+  s2priv:{en:"<b>Privacy — it matters here:</b> uploaded texts and their results are stored so users can revisit them. Users can switch on <b>Private mode</b> before analyzing — then their text is never stored anywhere. If someone asks for their data to be deleted, treat it as a small developer/AI task (Section 7) and honor it promptly — for an LGBTQ+ organization this is a promise, not a feature.",
+    he:"<b>פרטיות — כאן זה חשוב במיוחד:</b> טקסטים שהועלו והתוצאות שלהם נשמרים כדי שמשתמשים יוכלו לחזור אליהם. משתמשים יכולים להפעיל <b>מצב פרטי</b> לפני הניתוח — ואז הטקסט שלהם לא נשמר בשום מקום. אם מישהו מבקש שנמחק את הנתונים שלו, התייחסו לזה כמשימה קטנה למפתח/AI (פרק 7) וטפלו בזה במהירות — עבור ארגון גאווה זו הבטחה, לא פיצ׳ר."},
   s2repo:{en:"The full source code lives in a private code repository (GitHub). You won't edit it, but an AI assistant or any developer you hire can — note the repo link in Section 3.",
     he:"קוד המקור המלא נמצא במאגר קוד פרטי (GitHub). אתם לא תערכו אותו, אבל עוזר AI או כל מפתח שתשכרו יכולים — רשמו את קישור המאגר בפרק 3."},
 
@@ -452,8 +472,8 @@ const I18N = {
   s3sec:{en:"<b>Security:</b> type only <b>account emails, dashboard links, and who-pays</b> here. <b>Never</b> type passwords or secret keys into this file. Keep those in a proper password manager (e.g. Bitwarden, 1Password, Google Password Manager).",
     he:"<b>אבטחה:</b> הקלידו כאן רק <b>כתובות אימייל של חשבונות, קישורים ללוחות בקרה, ומי משלם</b>. <b>לעולם אל</b> תקלידו סיסמאות או מפתחות סודיים בקובץ הזה. שמרו אותם במנהל סיסמאות אמיתי (למשל Bitwarden, 1Password, מנהל הסיסמאות של Google)."},
   s3cService:{en:"Service",he:"שירות"}, s3cEmail:{en:"Account email / ID",he:"אימייל / מזהה חשבון"}, s3cLink:{en:"Dashboard link",he:"קישור ללוח בקרה"}, s3cPays:{en:"Who pays",he:"מי משלם"},
-  s3r1:{en:"Web/app hosting",he:"אירוח האתר/אפליקציה"}, s3r2:{en:"Database",he:"בסיס נתונים"}, s3r3:{en:"AI model (GPU)",he:"מודל AI (GPU)"},
-  s3r4:{en:"File storage",he:"אחסון קבצים"}, s3r5:{en:"Google login (OAuth)",he:"התחברות Google (OAuth)"}, s3r6:{en:"Email sending (Resend)",he:"שליחת אימייל (Resend)"},
+  s3r1:{en:"Web/app hosting (Railway)",he:"אירוח האתר/אפליקציה (Railway)"}, s3r2:{en:"Database (Railway Postgres)",he:"בסיס נתונים (Railway Postgres)"}, s3r3:{en:"AI model / GPU (Modal)",he:"מודל AI / GPU (Modal)"},
+  s3r4:{en:"File storage (Cloudflare R2)",he:"אחסון קבצים (Cloudflare R2)"}, s3r5:{en:"Google login (OAuth)",he:"התחברות Google (OAuth)"}, s3r6:{en:"Email sending (Resend)",he:"שליחת אימייל (Resend)"},
   s3r7:{en:"Domain (Wix)",he:"דומיין (Wix)"}, s3r8:{en:"Code repository",he:"מאגר קוד"},
   s3h3:{en:"Admin access to Inclusify itself",he:"הרשאות ניהול בתוך Inclusify"},
   s3p:{en:"Inside the app, certain Google accounts are marked <b>site admins</b> (they see the admin dashboard). Make sure <b>your</b> Google account is an admin before the team leaves.",
@@ -466,12 +486,12 @@ const I18N = {
   s4a2:{en:"Log in with an admin Google account.",he:"התחברו עם חשבון Google בעל הרשאת ניהול."},
   s4a3:{en:"Paste a short paragraph or upload a small PDF, and run the analysis.",he:"הדביקו פסקה קצרה או העלו PDF קטן, והריצו את הניתוח."},
   s4a4:{en:"If you get a graded report back, the whole system is healthy. (First run after a quiet period may take up to a minute — that's the AI waking up, see Section 6.)",he:"אם קיבלתם דו״ח מדורג בחזרה — כל המערכת תקינה. (ההרצה הראשונה אחרי תקופה שקטה עלולה לקחת עד דקה — זה ה-AI שמתעורר, ראו פרק 6.)"},
-  s4h2:{en:"Manage the glossary / flagged terms",he:"ניהול המילון / מונחים מסומנים"},
-  s4p2:{en:"The admin dashboard lets you review the terms the tool flags and their suggested alternatives. This is the highest-value thing you control — improving the glossary improves results with zero technical work and no cost.",
-    he:"לוח הניהול מאפשר לכם לעבור על המונחים שהכלי מסמן ועל החלופות המוצעות. זה הדבר בעל הערך הגבוה ביותר שבשליטתכם — שיפור המילון משפר את התוצאות ללא עבודה טכנית וללא עלות."},
-  s4b1:{en:"Log in as admin → open the admin dashboard.",he:"התחברו כמנהל ← פתחו את לוח הניהול."},
-  s4b2:{en:"Find the terms / rules section.",he:"מצאו את אזור המונחים / הכללים."},
-  s4b3:{en:"Add, edit, or remove entries and save. Changes take effect for new analyses.",he:"הוסיפו, ערכו או מחקו רשומות ושמרו. השינויים חלים על ניתוחים חדשים."},
+  s4h2:{en:"Review user feedback (monthly)",he:"סקירת משוב משתמשים (חודשי)"},
+  s4p2:{en:"Users can rate results and flag mistakes. The admin dashboard's <b>Feedback</b> tab collects everything they said — it's your early-warning system for quality problems, and checking it costs nothing. (The dashboard also has Overview, Users, and Model Performance tabs — worth a monthly glance too.)",
+    he:"משתמשים יכולים לדרג תוצאות ולסמן טעויות. לשונית <b>המשוב (Feedback)</b> בלוח הניהול אוספת את כל מה שהם אמרו — זו מערכת ההתרעה המוקדמת שלכם לבעיות איכות, והבדיקה לא עולה כלום. (בלוח יש גם לשוניות סקירה, משתמשים וביצועי מודל — שווה הצצה חודשית גם להן.)"},
+  s4b1:{en:"Log in as admin → open the admin dashboard → the <b>Feedback</b> tab.",he:"התחברו כמנהל ← פתחו את לוח הניהול ← לשונית <b>המשוב (Feedback)</b>."},
+  s4b2:{en:"Read new feedback. Watch for repeated complaints about the same kind of mistake.",he:"קראו משוב חדש. שימו לב לתלונות חוזרות על אותו סוג טעות."},
+  s4b3:{en:"If a pattern appears, save a few examples — they are exactly what an AI assistant or a developer needs in order to improve the tool (Section 7).",he:"אם מסתמן דפוס, שמרו כמה דוגמאות — הן בדיוק מה שעוזר AI או מפתח צריכים כדי לשפר את הכלי (פרק 7)."},
   s4h3:{en:"Add or remove an admin",he:"הוספה או הסרה של מנהל"},
   s4c1:{en:"The person signs in once with their Google account (this creates their user).",he:"האדם מתחבר פעם אחת עם חשבון ה-Google שלו (זה יוצר את המשתמש שלו)."},
   s4c2:{en:"In the admin dashboard's users area, mark them as a site admin (or remove the flag).",he:"באזור המשתמשים בלוח הניהול, סמנו אותו כמנהל אתר (או הסירו את הסימון)."},
@@ -481,6 +501,16 @@ const I18N = {
   s5h:{en:"Costs & staying cheap",he:"עלויות וחיסכון"},
   s5lead:{en:"Run at low traffic (a few–30 users/day), Inclusify should cost very little. The single biggest risk to the budget is the AI model running 24/7 instead of sleeping when idle.",
     he:"בתעבורה נמוכה (כמה עד 30 משתמשים ביום), Inclusify אמור לעלות מעט מאוד. הסיכון הגדול ביותר לתקציב הוא מודל ה-AI שרץ 24/7 במקום להירדם כשאין שימוש."},
+  s5h0:{en:"What a normal month looks like",he:"איך נראה חודש רגיל"},
+  s5eSvc:{en:"Service",he:"שירות"}, s5eCost:{en:"Expected monthly cost",he:"עלות חודשית צפויה"},
+  s5e1:{en:"Railway (website + backend + database)",he:"Railway (אתר + שרת + בסיס נתונים)"}, s5e1v:{en:"~$5 (Hobby plan) + a few $ usage",he:"כ-$5 (תוכנית Hobby) + כמה דולרים שימוש"},
+  s5e2:{en:"Modal (AI model / GPU)",he:"Modal (מודל AI / GPU)"}, s5e2v:{en:"$0–15 — usually inside Modal's free monthly credit",he:"$0–15 — בדרך כלל בתוך הקרדיט החודשי החינמי של Modal"},
+  s5e3:{en:"Cloudflare R2 (file storage)",he:"Cloudflare R2 (אחסון קבצים)"}, s5e3v:{en:"~$0 at this usage",he:"כ-$0 בשימוש הנוכחי"},
+  s5e4:{en:"Google login, GitHub, Resend",he:"התחברות Google, GitHub, Resend"}, s5e4v:{en:"$0 (free tiers)",he:"$0 (תוכניות חינמיות)"},
+  s5e5:{en:"Domain",he:"דומיין"}, s5e5v:{en:"part of Achva's existing Wix plan",he:"חלק מתוכנית ה-Wix הקיימת של האחווה"},
+  s5et:{en:"Total",he:"סה״כ"}, s5etv:{en:"roughly $5–20 / month",he:"בערך $5–20 לחודש"},
+  s5enote:{en:"July 2026 ballparks at a few–30 users/day. Providers change prices — the fill-in table below is your source of truth.",
+    he:"הערכות נכון ליולי 2026, בכמה עד 30 משתמשים ביום. ספקים משנים מחירים — הטבלה למילוי למטה היא מקור האמת שלכם."},
   s5tTarget:{en:"Your target",he:"היעד שלכם"}, s5tValue:{en:"Value",he:"ערך"},
   s5b1:{en:"Monthly budget ceiling",he:"תקרת תקציב חודשית"}, s5b2:{en:"Who watches the bill",he:"מי עוקב אחרי החשבון"}, s5b3:{en:"Day of month to check",he:"יום בחודש לבדיקה"},
   s5gold:{en:"<b>The golden rule:</b> the AI model must <b>scale to zero / auto-shut-down</b> when no one is using it. If you ever see GPU costs climbing every single day, the model is stuck \"on\" — that's the one thing that turns a ~$10/month tool into a ~$300/month one. Fix steps are in Section 6 → \"Costs are climbing\".",
@@ -501,8 +531,8 @@ const I18N = {
   fx1s2:{en:"Open the web/app hosting dashboard (Section 3). Is the service \"running\"/\"healthy\"? If it's stopped or crashed, click restart/redeploy.",he:"פתחו את לוח האירוח (פרק 3). האם השירות \"running\"/\"healthy\"? אם נעצר או קרס — לחצו restart/redeploy."},
   fx1s3:{en:"Check the hosting provider's status page for an outage on their end.",he:"בדקו בעמוד הסטטוס של ספק האירוח אם יש תקלה מצידם."},
   fx1s4:{en:"Still down? Copy the rescue prompt below into an AI assistant, add what you see on the dashboard, and follow its steps.",he:"עדיין למטה? העתיקו את פרומפט החילוץ למטה לעוזר AI, הוסיפו את מה שאתם רואים בלוח, ופעלו לפי הצעדים."},
-  fx1p:{en:"The Inclusify website won't load. It's a Next.js frontend + FastAPI backend hosted on [PROVIDER]. On the hosting dashboard the service status shows \"[WHAT YOU SEE]\". The most recent logs say: \"[PASTE LOG LINES]\". Walk me through, step by step in non-technical language, how to get the site back online from this dashboard, and how to tell whether the problem is the frontend, the backend, or the host.",
-    he:"האתר Inclusify לא נטען. זהו frontend ב-Next.js + backend ב-FastAPI שמתארחים ב-[PROVIDER]. בלוח האירוח סטטוס השירות מציג \"[מה שאני רואה]\". הלוגים האחרונים אומרים: \"[הדביקו שורות לוג]\". הסבירו לי שלב-אחר-שלב בשפה לא-טכנית איך להחזיר את האתר לאוויר מתוך הלוח הזה, ואיך לדעת אם הבעיה היא ב-frontend, ב-backend או אצל ספק האירוח."},
+  fx1p:{en:"The Inclusify website won't load. It's a Next.js frontend + FastAPI backend hosted on Railway. On the Railway dashboard the service status shows \"[WHAT YOU SEE]\". The most recent logs say: \"[PASTE LOG LINES]\". Walk me through, step by step in non-technical language, how to get the site back online from this dashboard, and how to tell whether the problem is the frontend, the backend, or the host.",
+    he:"האתר Inclusify לא נטען. זהו frontend ב-Next.js + backend ב-FastAPI שמתארחים ב-Railway. בלוח של Railway סטטוס השירות מציג \"[מה שאני רואה]\". הלוגים האחרונים אומרים: \"[הדביקו שורות לוג]\". הסבירו לי שלב-אחר-שלב בשפה לא-טכנית איך להחזיר את האתר לאוויר מתוך הלוח הזה, ואיך לדעת אם הבעיה היא ב-frontend, ב-backend או אצל ספק האירוח."},
 
   fx2h:{en:"Can't log in (Google sign-in fails)",he:"אי אפשר להתחבר (התחברות Google נכשלת)"},
   fx2s1:{en:"Most common cause: the site's web address changed and Google wasn't told. This needs the \"authorized redirect URI\" updated in the Google login (OAuth) settings.",he:"הסיבה הנפוצה: כתובת האתר השתנתה ו-Google לא עודכן. צריך לעדכן את ה-\"authorized redirect URI\" בהגדרות ההתחברות (OAuth) של Google."},
@@ -516,8 +546,8 @@ const I18N = {
   fx3s2:{en:"If it still fails after a second try: open the AI model (GPU) dashboard (Section 3) and check the model service is deployed/healthy.",he:"אם זה עדיין נכשל אחרי ניסיון שני: פתחו את לוח מודל ה-AI (GPU) (פרק 3) ובדקו שהשירות deployed/healthy."},
   fx3s3:{en:"The app also has a built-in health check for the model — a developer or AI can check it at the address /api/v1/health/model on your site.",he:"לאפליקציה יש גם בדיקת תקינות מובנית למודל — מפתח או AI יכולים לבדוק אותה בכתובת /api/v1/health/model באתר שלכם."},
   fx3s4:{en:"Use the prompt below if it stays broken.",he:"השתמשו בפרומפט למטה אם זה נשאר תקול."},
-  fx3p:{en:"Inclusify analyses never return a result. The AI model runs as a vLLM service (a fine-tuned Qwen2.5-3B with a LoRA adapter) on [PROVIDER], and the backend calls it over an OpenAI-compatible /v1/chat/completions endpoint set by an environment variable called VLLM_URL. On the GPU dashboard the model service shows \"[WHAT YOU SEE]\". Help me check, in plain steps: (1) is the model service actually running, (2) is VLLM_URL in the backend pointing at the right address, (3) is it just a slow cold-start. Tell me what to click.",
-    he:"ניתוחים ב-Inclusify אף פעם לא מחזירים תוצאה. מודל ה-AI רץ כשירות vLLM (מודל Qwen2.5-3B מאומן עם LoRA adapter) ב-[PROVIDER], וה-backend קורא אליו דרך endpoint תואם-OpenAI בשם /v1/chat/completions שמוגדר במשתנה סביבה בשם VLLM_URL. בלוח ה-GPU שירות המודל מציג \"[מה שאני רואה]\". עזרו לי לבדוק, בצעדים פשוטים: (1) האם שירות המודל באמת רץ, (2) האם VLLM_URL ב-backend מצביע לכתובת הנכונה, (3) האם זה רק cold-start איטי. אמרו לי על מה ללחוץ."},
+  fx3p:{en:"Inclusify analyses never return a result. The AI model runs as a vLLM service (a fine-tuned Qwen2.5-3B with a LoRA adapter) on Modal (serverless GPU), and the backend calls it over an OpenAI-compatible /v1/chat/completions endpoint set by an environment variable called VLLM_URL. On the GPU dashboard the model service shows \"[WHAT YOU SEE]\". Help me check, in plain steps: (1) is the model service actually running, (2) is VLLM_URL in the backend pointing at the right address, (3) is it just a slow cold-start. Tell me what to click.",
+    he:"ניתוחים ב-Inclusify אף פעם לא מחזירים תוצאה. מודל ה-AI רץ כשירות vLLM (מודל Qwen2.5-3B מאומן עם LoRA adapter) ב-Modal (GPU serverless), וה-backend קורא אליו דרך endpoint תואם-OpenAI בשם /v1/chat/completions שמוגדר במשתנה סביבה בשם VLLM_URL. בלוח ה-GPU שירות המודל מציג \"[מה שאני רואה]\". עזרו לי לבדוק, בצעדים פשוטים: (1) האם שירות המודל באמת רץ, (2) האם VLLM_URL ב-backend מצביע לכתובת הנכונה, (3) האם זה רק cold-start איטי. אמרו לי על מה ללחוץ."},
 
   fx4h:{en:"Emails not arriving",he:"אימיילים לא מגיעים"},
   fx4s1:{en:"Open the email provider (Resend) dashboard (Section 3) and look at the recent sends log — were they sent, bounced, or never attempted?",he:"פתחו את לוח ספק האימייל (Resend) (פרק 3) והסתכלו ביומן השליחות האחרונות — האם נשלחו, נדחו, או שמעולם לא נוסו?"},
@@ -532,16 +562,16 @@ const I18N = {
   fx5s2:{en:"On the GPU dashboard, confirm \"scale to zero\" / \"auto-shutdown when idle\" is turned on. If the model is set to always-run, switch it back to sleep-when-idle.",he:"בלוח ה-GPU, ודאו ש-\"scale to zero\" / \"כיבוי אוטומטי בחוסר פעילות\" מופעל. אם המודל מוגדר לרוץ תמיד — החזירו אותו למצב שינה-בחוסר-פעילות."},
   fx5s3:{en:"Confirm there's no leftover always-on machine from before the migration still running and being billed.",he:"ודאו שאין מכונה ישנה מלפני ההגירה שעדיין רצה תמיד ומחויבת."},
   fx5s4:{en:"Use the prompt below to be sure.",he:"השתמשו בפרומפט למטה לוודאות."},
-  fx5p:{en:"My serverless GPU bill on [PROVIDER] is rising every day instead of staying near zero. The GPU should scale to zero / auto-shut-down when idle, since the app only gets a few requests a day. Tell me, click by click on this provider's dashboard, how to confirm scale-to-zero is enabled, how to find any GPU instance that's stuck running, and how to stop it — without breaking the app for the next real user.",
-    he:"חשבון ה-GPU ה-serverless שלי ב-[PROVIDER] עולה בכל יום במקום להישאר קרוב לאפס. ה-GPU אמור לרדת לאפס / להיכבות אוטומטית בחוסר פעילות, כי האפליקציה מקבלת רק כמה בקשות ביום. אמרו לי, לחיצה-אחר-לחיצה בלוח של הספק הזה, איך לוודא ש-scale-to-zero מופעל, איך למצוא מכונת GPU שתקועה רצה, ואיך לעצור אותה — מבלי לשבור את האפליקציה למשתמש האמיתי הבא."},
+  fx5p:{en:"My serverless GPU bill on Modal is rising every day instead of staying near zero. The GPU should scale to zero / auto-shut-down when idle, since the app only gets a few requests a day. Tell me, click by click on this provider's dashboard, how to confirm scale-to-zero is enabled, how to find any GPU instance that's stuck running, and how to stop it — without breaking the app for the next real user.",
+    he:"חשבון ה-GPU ה-serverless שלי ב-Modal עולה בכל יום במקום להישאר קרוב לאפס. ה-GPU אמור לרדת לאפס / להיכבות אוטומטית בחוסר פעילות, כי האפליקציה מקבלת רק כמה בקשות ביום. אמרו לי, לחיצה-אחר-לחיצה בלוח של הספק הזה, איך לוודא ש-scale-to-zero מופעל, איך למצוא מכונת GPU שתקועה רצה, ואיך לעצור אותה — מבלי לשבור את האפליקציה למשתמש האמיתי הבא."},
 
   fx6h:{en:"Wrong/expired address or no padlock (HTTPS)",he:"כתובת שגויה/פגה או אין מנעול (HTTPS)"},
   fx6s1:{en:"The address is a subdomain of achvalgbt.org.il, controlled in the Wix dashboard → Domains → Manage DNS Records.",he:"הכתובת היא תת-דומיין של achvalgbt.org.il, שנשלט בלוח של Wix ← Domains ← Manage DNS Records."},
   fx6s2:{en:"If the site loads on its raw hosting address but not on the achvalgbt subdomain, a DNS record is wrong or missing.",he:"אם האתר נטען בכתובת האירוח הגולמית אבל לא בתת-הדומיין של achvalgbt, רשומת DNS שגויה או חסרה."},
   fx6s3:{en:"The hosting provider gives you the exact records to add; you (or whoever has Wix access) add them in Wix. SSL/the padlock then becomes automatic.",he:"ספק האירוח נותן לכם את הרשומות המדויקות להוספה; אתם (או מי שיש לו גישה ל-Wix) מוסיפים אותן ב-Wix. ה-SSL/המנעול הופך אוטומטי."},
   fx6s4:{en:"Use the prompt below.",he:"השתמשו בפרומפט למטה."},
-  fx6p:{en:"I need the address https://[YOUR SUBDOMAIN].achvalgbt.org.il to point to my app hosted on [PROVIDER], which gave me these target records: \"[PASTE WHAT THE HOST SHOWS]\". DNS is managed in Wix (Manage DNS Records). Tell me, step by step, exactly which records (CNAME / TXT, name and value) to add in the Wix DNS screen, and how to confirm it worked and the HTTPS padlock is active.",
-    he:"אני צריך שהכתובת https://[תת-הדומיין שלכם].achvalgbt.org.il תצביע לאפליקציה שלי שמתארחת ב-[PROVIDER], שנתן לי את רשומות היעד הבאות: \"[הדביקו את מה שספק האירוח מציג]\". ה-DNS מנוהל ב-Wix (Manage DNS Records). אמרו לי שלב-אחר-שלב אילו רשומות בדיוק (CNAME / TXT, שם וערך) להוסיף במסך ה-DNS של Wix, ואיך לוודא שזה עבד ושמנעול ה-HTTPS פעיל."},
+  fx6p:{en:"I need the address https://[YOUR SUBDOMAIN].achvalgbt.org.il to point to my app hosted on Railway, which gave me these target records: \"[PASTE WHAT THE HOST SHOWS]\". DNS is managed in Wix (Manage DNS Records). Tell me, step by step, exactly which records (CNAME / TXT, name and value) to add in the Wix DNS screen, and how to confirm it worked and the HTTPS padlock is active.",
+    he:"אני צריך שהכתובת https://[תת-הדומיין שלכם].achvalgbt.org.il תצביע לאפליקציה שלי שמתארחת ב-Railway, שנתן לי את רשומות היעד הבאות: \"[הדביקו את מה שספק האירוח מציג]\". ה-DNS מנוהל ב-Wix (Manage DNS Records). אמרו לי שלב-אחר-שלב אילו רשומות בדיוק (CNAME / TXT, שם וערך) להוסיף במסך ה-DNS של Wix, ואיך לוודא שזה עבד ושמנעול ה-HTTPS פעיל."},
 
   s7h:{en:"AI-rescue prompts",he:"פרומפטים לחילוץ עם AI"},
   s7lead:{en:"Because there's no support line, your support line is an AI assistant (ChatGPT, Claude, Gemini). The trick: first paste the <b>context primer</b> below so the AI understands the whole system, then describe your problem in your own words.",
@@ -552,14 +582,14 @@ const I18N = {
   s7a3:{en:"Then paste the specific prompt from Section 6, or just describe what's wrong and what you see on the dashboard. Add a screenshot if the tool allows it.",he:"אז הדביקו את הפרומפט הספציפי מפרק 6, או פשוט תארו מה לא בסדר ומה אתם רואים בלוח. הוסיפו צילום מסך אם הכלי מאפשר."},
   s7a4:{en:"Follow the steps it gives. If it suggests editing code, you can hand the code-repository link (Section 3) to the AI or to a freelance developer.",he:"פעלו לפי הצעדים שהוא נותן. אם הוא מציע לערוך קוד, תוכלו למסור את קישור מאגר הקוד (פרק 3) ל-AI או למפתח עצמאי."},
   s7lbl1:{en:"Context primer — paste this first",he:"פרומפט רקע — הדביקו קודם"},
-  s7primer:{en:"You are helping me operate a web app called Inclusify. I am NOT a developer — explain everything in plain, click-by-click steps.\n\nWhat it is: a website that analyzes academic text (Hebrew + English) for non-inclusive LGBTQ+ language and suggests better wording.\n\nHow it's built:\n- Frontend: a Next.js website (the pages users see).\n- Backend: a FastAPI (Python) service that does the work.\n- Database: PostgreSQL (users, results, glossary of flagged terms).\n- AI model: a fine-tuned Qwen2.5-3B language model with a LoRA adapter, served by vLLM, reached over an OpenAI-compatible /v1/chat/completions endpoint. The backend finds it via an environment variable VLLM_URL. It scales to zero when idle (so the first request can be slow — a \"cold start\").\n- File storage: S3-compatible object storage for uploaded text/files.\n- Login: Google sign-in (OAuth).\n- Email: sent via Resend (env vars RESEND_API_KEY, EMAIL_FROM).\n- Domain: a subdomain of achvalgbt.org.il, with DNS managed in Wix.\n- Everything runs as Docker containers; the source code is in a private GitHub repo.\n\nMy situation: [DESCRIBE THE PROBLEM, WHICH DASHBOARD YOU'RE ON, AND WHAT YOU SEE]\n\nGive me numbered, non-technical steps. Ask me what to click and what I see, one step at a time.",
-    he:"אתה עוזר לי לתפעל אפליקציית ווב בשם Inclusify. אני לא מפתח — הסבר הכול בשלבים פשוטים, לחיצה-אחר-לחיצה. ענה בעברית.\n\nמה זה: אתר שמנתח טקסט אקדמי (עברית + אנגלית) לאיתור שפה לא-מכלילה כלפי הקהילה הגאה ומציע ניסוח טוב יותר.\n\nאיך זה בנוי:\n- Frontend: אתר Next.js (הדפים שהמשתמשים רואים).\n- Backend: שירות FastAPI (Python) שעושה את העבודה.\n- Database: PostgreSQL (משתמשים, תוצאות, מילון מונחים מסומנים).\n- מודל AI: מודל שפה Qwen2.5-3B מאומן עם LoRA adapter, מוגש ע\"י vLLM, נגיש דרך endpoint תואם-OpenAI בשם /v1/chat/completions. ה-backend מוצא אותו דרך משתנה סביבה VLLM_URL. הוא יורד לאפס בחוסר פעילות (לכן הבקשה הראשונה יכולה להיות איטית — \"cold start\").\n- אחסון קבצים: object storage תואם-S3 לטקסט/קבצים שהועלו.\n- התחברות: Google sign-in (OAuth).\n- אימייל: נשלח דרך Resend (משתני סביבה RESEND_API_KEY, EMAIL_FROM).\n- דומיין: תת-דומיין של achvalgbt.org.il, עם DNS שמנוהל ב-Wix.\n- הכול רץ כ-Docker containers; קוד המקור במאגר GitHub פרטי.\n\nהמצב שלי: [תארו את הבעיה, באיזה לוח אתם נמצאים, ומה אתם רואים]\n\nתן לי שלבים ממוספרים ולא-טכניים. שאל אותי על מה ללחוץ ומה אני רואה, שלב אחד בכל פעם."},
+  s7primer:{en:"You are helping me operate a web app called Inclusify. I am NOT a developer — explain everything in plain, click-by-click steps.\n\nWhat it is: a website that analyzes academic text (Hebrew + English) for non-inclusive LGBTQ+ language and suggests better wording.\n\nHow it's built:\n- Frontend: a Next.js website (the pages users see), hosted on Railway.\n- Backend: a FastAPI (Python) service that does the work, hosted on Railway.\n- Database: PostgreSQL on Railway (users, analysis results, user feedback).\n- AI model: a fine-tuned Qwen2.5-3B language model with a LoRA adapter, served by vLLM on Modal (serverless GPU), reached over an OpenAI-compatible /v1/chat/completions endpoint. The backend finds it via an environment variable VLLM_URL. It scales to zero when idle (so the first request can be slow — a \"cold start\").\n- File storage: Cloudflare R2 (S3-compatible object storage) for uploaded text/files.\n- Login: Google sign-in (OAuth).\n- Email: sent via Resend (env vars RESEND_API_KEY, EMAIL_FROM).\n- Domain: a subdomain of achvalgbt.org.il, with DNS managed in Wix.\n- Everything runs as Docker containers; the source code is in a private GitHub repo.\n\nMy situation: [DESCRIBE THE PROBLEM, WHICH DASHBOARD YOU'RE ON, AND WHAT YOU SEE]\n\nGive me numbered, non-technical steps. Ask me what to click and what I see, one step at a time.",
+    he:"אתה עוזר לי לתפעל אפליקציית ווב בשם Inclusify. אני לא מפתח — הסבר הכול בשלבים פשוטים, לחיצה-אחר-לחיצה. ענה בעברית.\n\nמה זה: אתר שמנתח טקסט אקדמי (עברית + אנגלית) לאיתור שפה לא-מכלילה כלפי הקהילה הגאה ומציע ניסוח טוב יותר.\n\nאיך זה בנוי:\n- Frontend: אתר Next.js (הדפים שהמשתמשים רואים), מתארח ב-Railway.\n- Backend: שירות FastAPI (Python) שעושה את העבודה, מתארח ב-Railway.\n- Database: PostgreSQL ב-Railway (משתמשים, תוצאות ניתוח, משוב משתמשים).\n- מודל AI: מודל שפה Qwen2.5-3B מאומן עם LoRA adapter, מוגש ע\"י vLLM ב-Modal (GPU serverless), נגיש דרך endpoint תואם-OpenAI בשם /v1/chat/completions. ה-backend מוצא אותו דרך משתנה סביבה VLLM_URL. הוא יורד לאפס בחוסר פעילות (לכן הבקשה הראשונה יכולה להיות איטית — \"cold start\").\n- אחסון קבצים: Cloudflare R2 (object storage תואם-S3) לטקסט/קבצים שהועלו.\n- התחברות: Google sign-in (OAuth).\n- אימייל: נשלח דרך Resend (משתני סביבה RESEND_API_KEY, EMAIL_FROM).\n- דומיין: תת-דומיין של achvalgbt.org.il, עם DNS שמנוהל ב-Wix.\n- הכול רץ כ-Docker containers; קוד המקור במאגר GitHub פרטי.\n\nהמצב שלי: [תארו את הבעיה, באיזה לוח אתם נמצאים, ומה אתם רואים]\n\nתן לי שלבים ממוספרים ולא-טכניים. שאל אותי על מה ללחוץ ומה אני רואה, שלב אחד בכל פעם."},
   s7tip:{en:"<b>Tip:</b> when the AI asks for \"logs\" or \"errors\", that just means the text shown on the provider's dashboard when something fails — copy that text and paste it in. You don't need to understand it; the AI does.",
     he:"<b>טיפ:</b> כשה-AI מבקש \"logs\" או \"errors\", הכוונה פשוט לטקסט שמופיע בלוח של הספק כשמשהו נכשל — העתיקו את הטקסט והדביקו. אתם לא צריכים להבין אותו; ה-AI מבין."},
   s7h2:{en:"Hire-a-developer prompt (if you ever need a human)",he:"פרומפט לשכירת מפתח (אם תצטרכו בן-אדם)"},
   s7lbl2:{en:"For a freelance developer",he:"עבור מפתח עצמאי"},
-  s7dev:{en:"I run a small non-profit web app (Inclusify) and need occasional paid help. Stack: Next.js frontend, FastAPI (Python) backend, PostgreSQL, an S3-compatible storage bucket, Google OAuth login, Resend email, and a vLLM-served fine-tuned LLM (Qwen2.5-3B + LoRA) on a serverless GPU. Everything is Dockerized; code is in a private GitHub repo I can share. The current issue is: [DESCRIBE]. Please quote me to diagnose and fix it. There is no existing dev team to onboard you — the repo README and an operator handbook are the only docs.",
-    he:"אני מפעיל אפליקציית ווב קטנה ללא מטרות רווח (Inclusify) וזקוק לעזרה בתשלום מדי פעם. ה-Stack: frontend ב-Next.js, backend ב-FastAPI (Python), PostgreSQL, דלי אחסון תואם-S3, התחברות Google OAuth, אימייל דרך Resend, ומודל שפה מאומן (Qwen2.5-3B + LoRA) מוגש ע\"י vLLM על GPU serverless. הכול ב-Docker; הקוד במאגר GitHub פרטי שאוכל לשתף. הבעיה הנוכחית: [תארו]. אנא תמחרו לי אבחון ותיקון. אין צוות פיתוח קיים לחפיפה — ה-README של המאגר ומדריך המפעיל הם התיעוד היחיד."},
+  s7dev:{en:"I run a small non-profit web app (Inclusify) and need occasional paid help. Stack: Next.js frontend + FastAPI (Python) backend + PostgreSQL on Railway, Cloudflare R2 storage, Google OAuth login, Resend email, and a vLLM-served fine-tuned LLM (Qwen2.5-3B + LoRA) on Modal serverless GPU. Everything is Dockerized; code is in a private GitHub repo I can share. The current issue is: [DESCRIBE]. Please quote me to diagnose and fix it. There is no existing dev team to onboard you — the repo README and an operator handbook are the only docs.",
+    he:"אני מפעיל אפליקציית ווב קטנה ללא מטרות רווח (Inclusify) וזקוק לעזרה בתשלום מדי פעם. ה-Stack: frontend ב-Next.js + backend ב-FastAPI (Python) + PostgreSQL על Railway, אחסון Cloudflare R2, התחברות Google OAuth, אימייל דרך Resend, ומודל שפה מאומן (Qwen2.5-3B + LoRA) מוגש ע\"י vLLM על GPU serverless של Modal. הכול ב-Docker; הקוד במאגר GitHub פרטי שאוכל לשתף. הבעיה הנוכחית: [תארו]. אנא תמחרו לי אבחון ותיקון. אין צוות פיתוח קיים לחפיפה — ה-README של המאגר ומדריך המפעיל הם התיעוד היחיד."},
 
   s8h:{en:"Routine checklist",he:"צ׳קליסט שוטף"},
   s8lead:{en:"Ten minutes a month keeps it healthy. Tick as you go — it saves automatically.",he:"עשר דקות בחודש שומרות על תקינות. סמנו תוך כדי — זה נשמר אוטומטית."},
@@ -568,11 +598,13 @@ const I18N = {
   s8m2:{en:"Glance at each provider's bill vs. your ceiling (Section 5).",he:"הציצו בחשבון של כל ספק מול התקרה שלכם (פרק 5)."},
   s8m3:{en:"Confirm the AI model is still set to sleep-when-idle (Section 5 golden rule).",he:"ודאו שמודל ה-AI עדיין מוגדר לישון-בחוסר-פעילות (כלל הזהב, פרק 5)."},
   s8m4:{en:"Confirm the site loads on the achvalgbt subdomain with the HTTPS padlock.",he:"ודאו שהאתר נטען בתת-הדומיין של achvalgbt עם מנעול ה-HTTPS."},
+  s8m5:{en:"Check the support inbox (inclusify.support@gmail.com) — contact-form messages arrive there.",he:"בדקו את תיבת התמיכה (inclusify.support@gmail.com) — הודעות מטופס יצירת הקשר מגיעות לשם."},
   s8h2:{en:"Every few months",he:"כל כמה חודשים"},
   s8q1:{en:"Check the email sending domain is still verified (Resend).",he:"בדקו שדומיין שליחת האימייל עדיין מאומת (Resend)."},
   s8q2:{en:"Confirm your admin Google account still has admin access.",he:"ודאו שחשבון ה-Google הניהולי שלכם עדיין בעל הרשאת ניהול."},
-  s8q3:{en:"Review the glossary — add any new terms the org wants flagged.",he:"עברו על המילון — הוסיפו מונחים חדשים שהארגון רוצה לסמן."},
+  s8q3:{en:"Open the admin dashboard's Feedback tab and review new user feedback (Section 4).",he:"פתחו את לשונית המשוב בלוח הניהול ועברו על משוב חדש ממשתמשים (פרק 4)."},
   s8q4:{en:"Make sure passwords/keys are saved in a password manager, not lost.",he:"ודאו שסיסמאות/מפתחות שמורים במנהל סיסמאות, ולא אבדו."},
+  s8q5:{en:"Confirm the database has recent automatic backups (Railway dashboard → the Postgres service → Backups).",he:"ודאו שלבסיס הנתונים יש גיבויים אוטומטיים עדכניים (לוח Railway ← שירות ה-Postgres ← Backups)."},
 
   s9h:{en:"Help & escalation",he:"עזרה והסלמה"},
   s9lead:{en:"In order, this is where to turn when stuck.",he:"לפי הסדר, לכאן פונים כשנתקעים."},

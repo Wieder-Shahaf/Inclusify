@@ -11,29 +11,28 @@ downloadable reports.
 - Backend: FastAPI (Python 3.11+), async, Pydantic v2, uvicorn
 - Database: PostgreSQL (schema in db/schema.sql, seed in db/seed.sql), asyncpg
 - ML Model: Qwen/Qwen2.5-3B-Instruct, QLoRA fine-tuned
-- LoRA adapters: ml/LoRA_Adapters/
-- Inference: vLLM on Azure VM with T4 GPU (not yet integrated)
-- Document parsing: Docling (replacing PyMuPDF, validated in R&D)
-- Infrastructure: Microsoft Azure (course requirement)
+- LoRA adapters: ml/adapters/ (live: qwen_r8_d0.2_achva_v2, served as model name `inclusify`)
+- Inference: vLLM on Modal serverless GPU (T4, scale-to-zero) — infra/modal/vllm_app.py
+- Document parsing: Docling
+- Infrastructure: Railway (backend + frontend + Postgres) + Modal (GPU) + Cloudflare R2 (storage). Migrated off Azure — see docs/STACK-A-MIGRATION.md
 
 ## Repo Structure
 - frontend/ — Next.js app with [locale] routing (en/he)
 - backend/app/ — FastAPI with modules/ingestion and modules/analysis
 - backend/app/db/ — asyncpg connection, deps, repository layer
 - db/ — PostgreSQL schema.sql + seed.sql (canonical source of truth)
-- ml/ — Fine-tuning notebooks, inference demo, LoRA adapters, pipeline
+- ml/ — Fine-tuning notebooks, LoRA adapters (ml/adapters/), data pipeline
 - data/ — Training datasets (Inclusify_Dataset.csv, augmented_dataset.csv)
-- shared/ — Shared types (empty, to be populated)
-- infra/ — Deployment configs (empty, to be populated)
+- infra/ — docker/ (Railway Dockerfiles), modal/ (vLLM app), azure/ (legacy, retired)
 - scripts/ — DB test scripts, ML venv setup
 
-## Current State (March 2026)
-- Frontend: Full UI flow (upload → processing → results) works with DEMO data
-- Backend: Rule-based placeholder in analysis router. DB integration is written but commented out.
-- ML: Fine-tuned model validated (POC complete). Adapters ready. inference_demo.py works locally.
-- DB: Full schema + seed implemented. Repository layer written. NOT connected to running app.
-- Infra: Backend + frontend deploy on Railway from `main` via infra/docker/*.Dockerfile; GitHub Actions CI runs on push.
-- Data Pipeline: Docling integrated into ingestion (see below).
+## Current State (July 2026)
+- Frontend: Full flow wired to the real API. Demo data only behind a dev-only `?demo=1` flag.
+- Backend: Analysis is LLM-based via vLLM on Modal (VLLMClient in modules/analysis/llm_client.py — bearer auth, circuit breaker, `MODEL_SCALE_TO_ZERO` cold-start handling). Auth is Google OAuth + JWT (fastapi-users).
+- DB: Fully wired — asyncpg pool created in main.py lifespan; analysis results persist via the repository layer. NOTE: `glossary_terms`/`rules` tables are seeded but nothing reads them.
+- Admin: dashboard at /admin (Overview / Users+roles / Model Performance / Feedback tabs).
+- Infra: Backend + frontend deploy on Railway from `main` via infra/docker/*.Dockerfile; GitHub Actions CI runs on push. Modal app deployed separately (`modal deploy infra/modal/vllm_app.py`).
+- Ops runbook: docs/OPERATIONS.md. Non-technical guide: docs/operator-handbook.html.
 
 ## Ingestion & Ops (July 2026)
 - Docling runs in a **recycled spawn subprocess** (`ProcessPoolExecutor`, `max_tasks_per_child=4`) in backend/app/modules/ingestion/service.py — it OOM'd the container when run in-process (its memory ratchets and never returns to the OS). The API parent stays ~40 MB; each conversion's peak is reclaimed. Serialized to one parse at a time; torch threads + glibc arenas capped via the Dockerfile.
@@ -41,23 +40,26 @@ downloadable reports.
 - Logging is **level-split** (backend/app/main.py `dictConfig`): INFO/DEBUG → stdout, WARNING+ → stderr, because Railway tags severity by stream. `LOG_LEVEL` env overrides the INFO default.
 
 ## Key Architecture Decisions
-- Hybrid detection: rule-based (high-precision known terms) + LLM (contextual analysis)
+- Detection is LLM-only (the `HybridDetector` class name is historical — no rule-based pass; glossary_terms/rules DB tables are unread)
 - Private mode: no text storage when enabled (enforced by DB CHECK constraint)
 - API contract: POST /api/v1/analysis/analyze → AnalysisResponse with Issue[]
-- Frontend API client already built in frontend/lib/api/client.ts, ready to wire
-- Canonical DB schema is db/schema.sql (not frontend/prisma/schema.prisma)
+- Frontend API client: frontend/lib/api/client.ts
+- Canonical DB schema is db/schema.sql (no migration tooling — prod drifts, apply changes manually)
 
 ## API Endpoints (Existing)
-- GET / → health check
+- GET / → health check; GET /api/v1/health/model → vLLM availability/circuit-breaker state
+- /auth/jwt/*, /auth/google/*, /users/* → fastapi-users auth (login, register, OAuth)
 - POST /api/v1/ingestion/upload → PDF upload + text extraction
-- POST /api/v1/analysis/analyze → text analysis (currently rule-based demo)
+- POST /api/v1/analysis/analyze → LLM text analysis
+- /api/v1/admin/* → analytics, users + role changes, model-metrics, feedback (site_admin only)
+- /api/v1/users → profile; /api/v1/contact → contact form (Resend); /api/v1/feedback → user feedback
 
 ## Commands
 - Frontend dev: cd frontend && npm run dev (port 3000)
 - Backend dev: cd backend && uvicorn app.main:app --reload --port 8000
 - DB schema apply: psql -f db/schema.sql
 - DB seed: psql -f db/seed.sql
-- ML inference demo: cd ml && python inference_demo.py
+- Modal deploy: modal deploy infra/modal/vllm_app.py
 
 ## Deadlines
 - April 15, 2026: Second results presentation
