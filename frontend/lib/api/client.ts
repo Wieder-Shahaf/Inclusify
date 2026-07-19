@@ -71,6 +71,7 @@ interface BackendAnalysisResponse {
   score?: number | null;
   flagged_chars?: number | null;
   total_chars?: number | null;
+  detected_language?: 'he' | 'en' | null;
 }
 
 // Frontend analysis result
@@ -86,6 +87,8 @@ export interface AnalysisResult {
   score?: number | null;
   flaggedChars?: number | null;
   totalChars?: number | null;
+  /** Language detected at extraction — the report is rendered in this language. */
+  detectedLanguage?: 'he' | 'en' | null;
 }
 
 // Map backend severity to frontend severity
@@ -224,6 +227,7 @@ function transformResponse(response: BackendAnalysisResponse, inputText: string)
     score: response.score ?? null,
     flaggedChars: response.flagged_chars ?? null,
     totalChars: response.total_chars ?? null,
+    detectedLanguage: response.detected_language ?? null,
   };
 }
 

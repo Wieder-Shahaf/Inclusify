@@ -84,6 +84,8 @@ class AnalysisResponse(BaseModel):
     score: Optional[float] = None
     flagged_chars: Optional[int] = None
     total_chars: Optional[int] = None
+    # Language detected at extraction (or from text) — drives the report's language.
+    detected_language: Optional[Literal['he', 'en']] = None
 
 
 # =============================================================================
@@ -366,4 +368,5 @@ async def analyze_text(
         score=score,
         flagged_chars=flagged_chars,
         total_chars=text_length,
+        detected_language=detected_language,
     )

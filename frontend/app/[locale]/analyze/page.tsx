@@ -48,6 +48,8 @@ interface AnalysisData {
     references?: Array<{ label: string; url: string }>;
   }>;
   counts: Record<Severity, number>;
+  /** Language detected at extraction — the downloaded report is rendered in it. */
+  reportLanguage?: 'he' | 'en';
   summary: {
     totalIssues: number;
     score: number;
@@ -227,6 +229,7 @@ export default function AnalyzePage() {
       annotations: result.annotations,
       results: result.results,
       counts: result.counts,
+      reportLanguage: result.detectedLanguage ?? undefined,
       summary: {
         totalIssues: Object.values(result.counts).reduce((a, b) => a + b, 0),
         score,
@@ -621,7 +624,7 @@ export default function AnalyzePage() {
   const handleExport = () => {
     exportReport(analysis, {
       fileName,
-      locale,
+      locale: analysis.reportLanguage ?? locale,
       filteredResults,
       visibleAnnotations,
       displayScore: score,
@@ -650,7 +653,7 @@ export default function AnalyzePage() {
         const inputs = buildReportInputs(analysis);
         const dataUri = await exportReport(analysis, {
           fileName,
-          locale,
+          locale: analysis.reportLanguage ?? locale,
           returnBase64: true,
           filteredResults: inputs.filteredResults,
           visibleAnnotations: inputs.visibleAnnotations,
