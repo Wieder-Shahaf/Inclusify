@@ -86,9 +86,9 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: str = ""
     FRONTEND_URL: str = "http://localhost:3000"
 
-    # Email (Resend)
+    # Email (Resend). Sender address is read from the RESEND_FROM env var
+    # (see contact router / auth manager) — must be a Resend-verified domain.
     RESEND_API_KEY: str = ""
-    EMAIL_FROM: str = "Inclusify <onboarding@resend.dev>"
 
     # Database Configuration
     DATABASE_URL: Optional[str] = None

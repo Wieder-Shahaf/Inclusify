@@ -4,6 +4,7 @@ User manager for FastAPI Users.
 Handles user lifecycle events and password management.
 """
 import logging
+import os
 import uuid
 from typing import Optional
 
@@ -50,9 +51,12 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
             return
 
         resend.api_key = settings.RESEND_API_KEY
+        # Same sender var as the contact form — must be a Resend-verified domain,
+        # or Resend only delivers to the account owner.
+        from_addr = os.getenv("RESEND_FROM", "Inclusify <onboarding@resend.dev>")
         try:
             resend.Emails.send({
-                "from": settings.EMAIL_FROM,
+                "from": from_addr,
                 "to": [user.email],
                 "subject": "Reset your Inclusify password",
                 "html": f"""

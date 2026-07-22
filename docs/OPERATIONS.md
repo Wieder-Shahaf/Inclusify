@@ -128,7 +128,7 @@ ones:
 | `VLLM_API_KEY` | must equal Modal secret `inclusify-vllm-key` |
 | `MODEL_SCALE_TO_ZERO` | `true` in prod — never health-probe the GPU |
 | `S3_*` | Cloudflare R2 (`S3_ENDPOINT_URL=https://<ACCOUNT_ID>.r2.cloudflarestorage.com`) |
-| `RESEND_API_KEY`, `EMAIL_FROM`, `RESEND_FROM` | email (auth mails / contact form) |
+| `RESEND_API_KEY`, `RESEND_FROM` | email (auth mails / contact form); `RESEND_FROM` must be a Resend-verified domain |
 | `BLOCK_OCR_DOCUMENTS` | `false` on Railway Hobby (4 GB); OCR guard for smaller hosts |
 | `NEXT_PUBLIC_API_URL` | frontend → backend URL (**build-time**, frontend service) |
 
