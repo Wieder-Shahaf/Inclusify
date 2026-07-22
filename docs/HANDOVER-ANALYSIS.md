@@ -121,7 +121,7 @@ College — coincidental name. The `.org.il` domain implies nothing — open reg
 
 - **Google OAuth/email:** dedicated `inclusify.support` Google account already
   created; credentials handed over directly.
-- **Resend / SMTP** keys: handed over directly.
+- **Resend** keys: handed over directly.
 
 ### Key references
 

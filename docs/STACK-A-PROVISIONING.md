@@ -167,7 +167,6 @@ Use Railway's variable references for Postgres (`${{Postgres.PGHOST}}` etc.).
 | `FRONTEND_URL` | the Railway frontend URL |
 | `ALLOWED_ORIGINS` | the Railway frontend URL |
 | `RESEND_API_KEY` `RESEND_FROM` | existing values |
-| `SMTP_USER` `SMTP_PASSWORD` `SMTP_HOST` `SMTP_PORT` | existing values |
 
 ### Frontend service variables
 | Variable | Value | Notes |

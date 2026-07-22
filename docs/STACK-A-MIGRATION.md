@@ -150,7 +150,7 @@ Operational parameters carry over 1:1 from `infra/azure/vllm-vm/vllm.service` (`
 | `REDIS_URL` | (dev only) | Railway Redis URL |
 | `FRONTEND_URL` / `ALLOWED_ORIGINS` | `*.azurecontainerapps.io` FQDN | Railway domain(s) — also update the **Google OAuth authorized redirect URIs** in the Google Cloud console |
 | `NEXT_PUBLIC_API_URL` | backend FQDN (build arg) | Railway backend public URL (Railway build-time var) |
-| `JWT_SECRET`, `GOOGLE_CLIENT_*`, `RESEND_API_KEY`, SMTP vars | Container Apps secrets | Railway service variables (unchanged values) |
+| `JWT_SECRET`, `GOOGLE_CLIENT_*`, `RESEND_API_KEY`, `RESEND_FROM` | Container Apps secrets | Railway service variables (unchanged values) |
 
 **Files that become dead after migration** (archive, don't delete until cutover is verified): `infra/scripts/azure-*.sh`, `infra/azure/vllm-vm/*`, the `azurite` compose service, `.github/workflows/deploy.yml` (ACR push), and the hardcoded `BACKEND_URL`/ACR names inside it. `.github/workflows/vllm-integration.yml` survives — just point its `VLLM_URL` secret at Modal and add the API key.
 
