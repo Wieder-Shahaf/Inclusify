@@ -322,6 +322,88 @@ def map_severity(llm_severity: str) -> Optional[str]:
     return SEVERITY_MAP.get(llm_severity)
 
 
+# Single-flight guard for wait_until_model_ready: one poll loop per process, so N
+# concurrent analyses share one cold start instead of each starting their own.
+_ready_lock: Optional[asyncio.Lock] = None
+
+
+def _get_ready_lock() -> asyncio.Lock:
+    global _ready_lock
+    if _ready_lock is None:
+        _ready_lock = asyncio.Lock()
+    return _ready_lock
+
+
+async def wait_until_model_ready(budget_s: Optional[float] = None) -> bool:
+    """Block until vLLM is serving settings.VLLM_MODEL_NAME. False = gave up.
+
+    Why this exists: on Modal the GPU scales to zero and a cold start measured
+    183s on 2026-07-29 (container start + 117s engine init + 38s CUDA-graph
+    capture + torch.compile, whose cache dies with the container). That is longer
+    than the detector's 180s overall analysis cap, so without this gate the first
+    analysis after idle spent its entire budget waiting, every chunk task was
+    cancelled, and an empty issue list scored a perfect 100.
+
+    Polls GET /v1/models rather than a completion: it costs no GPU tokens, and
+    vLLM only starts serving HTTP *after* it logs "Loaded new LoRA adapter: name
+    'inclusify'" — so a 200 listing the adapter proves the fine-tuned model, not
+    the base model, is what will answer the analysis requests.
+    """
+    if settings.VLLM_LOAD_TEST_MODE:
+        return True  # load testing runs on mock responses; never wait on a GPU
+
+    budget = budget_s if budget_s is not None else settings.VLLM_READY_BUDGET
+    async with _get_ready_lock():
+        # Clock starts after the lock: a caller queued behind someone else's cold
+        # start gets its own full budget, not the leftovers.
+        t0 = time.monotonic()
+        deadline = t0 + budget
+        attempts = 0
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                logger.error(
+                    "vLLM not ready after %.0fs (%d attempts) — url=%s model=%s",
+                    time.monotonic() - t0, attempts, settings.VLLM_URL,
+                    settings.VLLM_MODEL_NAME,
+                )
+                return False
+            attempts += 1
+            try:
+                # follow_redirects: Modal answers with a 303 to a polling URL while
+                # the container boots. Safe on GET (unlike POST, where a 303 would
+                # drop the body).
+                async with httpx.AsyncClient(
+                    timeout=min(30.0, remaining), follow_redirects=True
+                ) as client:
+                    resp = await client.get(
+                        f"{settings.VLLM_URL}/v1/models", headers=VLLMClient._auth_headers()
+                    )
+                resp.raise_for_status()
+                served = [m.get("id") for m in resp.json().get("data", [])]
+                if settings.VLLM_MODEL_NAME in served:
+                    if attempts > 1:
+                        logger.info(
+                            "vLLM ready after %.0fs (%d attempts) — serving %s",
+                            time.monotonic() - t0, attempts, settings.VLLM_MODEL_NAME,
+                        )
+                    return True
+                # Server is up but the adapter is absent — a deploy fault (bad
+                # --lora-modules), not a cold start. Polling cannot fix it, so let
+                # the analysis run and fail loudly on the 404s instead of hanging.
+                logger.error(
+                    "vLLM is up but does not serve %r (serving: %s) — check --lora-modules",
+                    settings.VLLM_MODEL_NAME, served,
+                )
+                return True
+            except Exception as exc:
+                logger.info(
+                    "vLLM not ready yet (attempt %d, %.0fs left): %s",
+                    attempts, max(0.0, deadline - time.monotonic()), exc,
+                )
+            await asyncio.sleep(min(3.0, max(0.0, deadline - time.monotonic())))
+
+
 class VLLMClient:
     """
     Async HTTP client for vLLM inference.
@@ -571,4 +653,4 @@ def extract_chunk_issues(parsed: Optional[dict]) -> list[dict]:
     return []
 
 
-__all__ = ["VLLMClient", "parse_llm_output", "map_severity", "extract_severity_confidence", "extract_chunk_issues", "SYSTEM_PROMPT", "CallMetrics"]
+__all__ = ["VLLMClient", "wait_until_model_ready", "parse_llm_output", "map_severity", "extract_severity_confidence", "extract_chunk_issues", "SYSTEM_PROMPT", "CallMetrics"]

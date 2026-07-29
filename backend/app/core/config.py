@@ -59,6 +59,12 @@ class Settings(BaseSettings):
     VLLM_MAX_CONCURRENT: int = 16
     # When True, vLLM errors return a simulated response instead of None (for load testing only).
     VLLM_LOAD_TEST_MODE: bool = False
+    # How long /analyze may block waiting for a scaled-to-zero GPU to come up
+    # before giving up with a 503 (see wait_until_model_ready). A measured Modal
+    # cold start is ~183s (2026-07-29), so this must stay comfortably above it —
+    # otherwise the wait eats the analysis budget and the run returns 0 issues,
+    # which scores as a perfect 100.
+    VLLM_READY_BUDGET: float = 240.0
 
     # Model health-check behaviour (see /api/v1/health/model and
     # docs/STACK-A-MIGRATION.md §2.3). When the GPU layer is serverless and
