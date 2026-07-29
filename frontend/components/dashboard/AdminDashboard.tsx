@@ -81,7 +81,7 @@ type TabKey = 'overview' | 'users' | 'model-performance' | 'feedback';
 // Skeleton loader for suspense fallback
 function DashboardSkeleton() {
   return (
-    <div className="relative left-1/2 flex w-[calc(100vw-2rem)] -translate-x-1/2 flex-1 min-h-0 flex-col gap-3 py-3 animate-pulse sm:w-[calc(100vw-3rem)] lg:w-[calc(100vw-14.5rem)]">
+    <div className="mx-auto flex w-full flex-1 min-h-0 flex-col gap-3 py-3 animate-pulse lg:w-[calc(100%-10.5rem)]">
       <div className="flex shrink-0 items-center justify-between">
         <div>
           <div className="h-7 w-48 bg-slate-200 dark:bg-slate-700 rounded mb-2" />
@@ -127,7 +127,12 @@ function AdminDashboardContent({ translations }: AdminDashboardProps) {
   ];
 
   return (
-    <div className="relative left-1/2 flex w-[calc(100vw-2rem)] -translate-x-1/2 flex-col gap-3 py-3 sm:w-[calc(100vw-3rem)] lg:min-h-0 lg:flex-1 lg:overflow-hidden lg:w-[calc(100vw-14.5rem)]">
+    // Centered with mx-auto, NOT `relative left-1/2 -translate-x-1/2`: that hack
+    // assumes the box starts at the parent's left edge, which is only true in LTR.
+    // <main> is a column flex container, so in RTL (he) the cross-axis start flips
+    // to the right, the box got shoved off-center, and main's overflow-x-hidden
+    // clipped the overhang. mx-auto absorbs free space in either direction.
+    <div className="mx-auto flex w-full flex-col gap-3 py-3 lg:min-h-0 lg:flex-1 lg:overflow-hidden lg:w-[calc(100%-10.5rem)]">
       {/* Header with time range selector */}
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
         <div>
