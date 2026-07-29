@@ -15,6 +15,8 @@ import pytest
 import uuid
 from unittest.mock import AsyncMock, MagicMock, patch
 
+from app.modules.analysis.call_metrics import CallMetrics
+
 
 # ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -388,7 +390,7 @@ class TestPrivateModeGate:
              patch("app.modules.analysis.router._persist_metrics", new_callable=AsyncMock), \
              patch("app.modules.analysis.router._hybrid_detector") as mock_detector:
 
-            mock_detector.analyze = AsyncMock(return_value=([], "llm", MagicMock()))
+            mock_detector.analyze = AsyncMock(return_value=([], "llm", CallMetrics()))
 
             from httpx import AsyncClient, ASGITransport
             from app.main import app
@@ -410,7 +412,7 @@ class TestPrivateModeGate:
              patch("app.modules.analysis.router._hybrid_detector") as mock_detector:
 
             mock_persist.return_value = None
-            mock_detector.analyze = AsyncMock(return_value=([], "llm", MagicMock()))
+            mock_detector.analyze = AsyncMock(return_value=([], "llm", CallMetrics()))
 
             from httpx import AsyncClient, ASGITransport
             from app.main import app
@@ -436,7 +438,7 @@ class TestPrivateModeGate:
              patch("app.modules.analysis.router._hybrid_detector") as mock_detector:
 
             mock_persist.return_value = None
-            mock_detector.analyze = AsyncMock(return_value=([], "llm", MagicMock()))
+            mock_detector.analyze = AsyncMock(return_value=([], "llm", CallMetrics()))
 
             from httpx import AsyncClient, ASGITransport
             from app.main import app

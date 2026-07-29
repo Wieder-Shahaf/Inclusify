@@ -47,6 +47,11 @@ def _repair_phrase(chunk: str, phrase: str) -> Optional[str]:
 
 logger = logging.getLogger(__name__)
 
+# Wall-clock cap on the whole chunk fan-out, whatever the document size. The GPU
+# cold start is NOT counted here — the router gates on model readiness first.
+OVERALL_ANALYSIS_TIMEOUT_S = 180
+
+
 def _find_references_start(text: str) -> int:
     """
     Return the char offset where the references/bibliography section begins,
@@ -251,13 +256,28 @@ class HybridDetector:
             result = await self.client.analyze_sentence(sentence, metrics=call_metrics)
             return (result, sentence, start_offset, end_offset)
 
-        tasks = [analyze_one(s, start, end) for s, start, end in sentences]
-        # Overall safety cap: 3 min for the entire analysis regardless of document size.
-        try:
-            results = await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=180)
-        except asyncio.TimeoutError:
-            logger.warning("Analysis hit overall 180s timeout — returning partial results")
-            results = []
+        # asyncio.wait, not wait_for(gather(...)): the old version discarded every
+        # completed chunk when the cap fired, so a slow run reported zero issues —
+        # which scores a perfect 100. Keep what finished, drop the tail. Task order
+        # is preserved (iterate `tasks`, not the unordered `done` set) so findings
+        # stay in document order.
+        tasks = [asyncio.create_task(analyze_one(s, start, end)) for s, start, end in sentences]
+        results: list = []
+        if tasks:
+            done, pending = await asyncio.wait(tasks, timeout=OVERALL_ANALYSIS_TIMEOUT_S)
+            if pending:
+                logger.warning(
+                    "Analysis hit overall %ds timeout — keeping %d/%d completed chunk(s), cancelling %d",
+                    OVERALL_ANALYSIS_TIMEOUT_S, len(done), len(tasks), len(pending),
+                )
+                for t in pending:
+                    t.cancel()
+                await asyncio.gather(*pending, return_exceptions=True)
+            for t in tasks:
+                if t not in done:
+                    continue
+                exc = t.exception()
+                results.append(exc if exc is not None else t.result())
 
         for item in results:
             if isinstance(item, Exception):

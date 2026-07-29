@@ -286,7 +286,11 @@ export async function analyzeText(
   const fetchFn = options?.useAuth ? fetchWithAuth : fetch;
   const meta = options?.fileMeta;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 4 * 60 * 1000); // 4 min safety cap
+  // 8 min safety cap. Must exceed the backend's own worst case, or a cold start
+  // gets killed here and the user is told to retry a request that was working:
+  // VLLM_READY_BUDGET (240s, Modal GPU cold start measured 183s) + the analysis
+  // fan-out cap (180s) = 420s.
+  const timeoutId = setTimeout(() => controller.abort(), 8 * 60 * 1000);
   // Relay external cancellation into the fetch's own controller
   const onExternalAbort = () => controller.abort();
   if (options?.signal) {

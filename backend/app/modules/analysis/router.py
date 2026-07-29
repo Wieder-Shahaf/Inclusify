@@ -22,7 +22,7 @@ import logging
 import hashlib
 import time
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from typing import Optional, Literal
 
@@ -30,6 +30,7 @@ from app.auth.users import current_user_optional
 from app.db.models import User
 from app.db import repository as repo
 from app.modules.analysis.call_metrics import CallMetrics
+from app.modules.analysis.llm_client import wait_until_model_ready
 from app.modules.analysis.hybrid_detector import HybridDetector, detect_language
 from app.modules.analysis.scoring import clean_text_score
 from app.modules.admin.router import ws_manager
@@ -288,6 +289,16 @@ async def analyze_text(
         user_id, text_length, language, detected_language, private_mode,
     )
 
+    # Wait for the GPU BEFORE the analysis starts. On Modal it scales to zero and a
+    # cold start runs ~3 min — longer than the detector's own 180s cap, so left
+    # inside the analysis every chunk got cancelled and the empty result scored a
+    # perfect 100. Costs ~0.6s when the model is already warm.
+    if not await wait_until_model_ready():
+        raise HTTPException(
+            status_code=503,
+            detail="The analysis model is still starting up. Please try again in a moment.",
+        )
+
     start_time = time.monotonic()
 
     issues, analysis_mode, call_metrics = await _hybrid_detector.analyze(
@@ -300,6 +311,26 @@ async def analyze_text(
         "Analysis completed: issues_found=%d analysis_mode=%s elapsed_s=%.3f",
         len(issues), analysis_mode, elapsed,
     )
+
+    # A run where every chunk failed produces no findings, and no findings scores
+    # 100% clean — a failure that reads as a flawless document. Record the metrics
+    # (they are what makes this diagnosable) and refuse to invent a score.
+    if call_metrics.total_sentences > 0 and call_metrics.llm_successes == 0:
+        await _persist_metrics(
+            request=request, call_metrics=call_metrics,
+            analysis_mode=analysis_mode, runtime_ms=runtime_ms,
+        )
+        logger.error(
+            "Analysis produced nothing: %d/%d chunks failed (errors=%d timeouts=%d "
+            "breaker_trips=%d) — returning 503 instead of a 100%% score",
+            call_metrics.llm_errors, call_metrics.total_sentences,
+            call_metrics.llm_errors, call_metrics.llm_timeouts,
+            call_metrics.circuit_breaker_trips,
+        )
+        raise HTTPException(
+            status_code=503,
+            detail="The analysis model did not respond. Please try again in a moment.",
+        )
 
     score, flagged_chars = clean_text_score(
         text_length,

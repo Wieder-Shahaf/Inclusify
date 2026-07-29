@@ -22,6 +22,20 @@ from unittest.mock import AsyncMock, MagicMock
 pytest_plugins = ('pytest_asyncio',)
 
 
+@pytest.fixture(autouse=True)
+def _model_ready(monkeypatch):
+    """Report the model ready everywhere. No vLLM runs in the suite, so the real
+    gate in /analyze would poll a dead URL for its whole VLLM_READY_BUDGET (240s)
+    before answering 503. Tests that exercise the gate itself call
+    llm_client.wait_until_model_ready directly, which this does not patch.
+    """
+    monkeypatch.setattr(
+        "app.modules.analysis.router.wait_until_model_ready",
+        AsyncMock(return_value=True),
+        raising=False,
+    )
+
+
 @pytest.fixture
 def mock_pool():
     """Create a mock asyncpg pool for testing without real DB.
