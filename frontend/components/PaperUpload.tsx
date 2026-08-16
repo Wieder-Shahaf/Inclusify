@@ -30,7 +30,7 @@ const defaultTranslations: Translations = {
   chooseDifferent: 'Choose Different File',
   analyzePaper: 'Analyze Paper',
   fileError: 'Please upload a PDF, DOCX, PPTX, or TXT file',
-  fileSizeError: 'File size must be less than 10MB',
+  fileSizeError: 'File size must be less than 50MB',
 };
 
 const acceptedExtensions = '.pdf,.docx,.pptx,.txt';
@@ -54,8 +54,9 @@ export default function PaperUpload({ onFileSelect, disabled, translations }: Pa
       return false;
     }
 
-    // Check file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
+    // Check file size (max 50MB) — matches MAX_FILE_SIZE in the ingestion router.
+    // The backend also enforces a 50-page cap, so whichever limit is hit first wins.
+    if (file.size > 50 * 1024 * 1024) {
       setError(labels.fileSizeError);
       return false;
     }

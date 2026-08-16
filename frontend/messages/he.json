@@ -201,7 +201,7 @@
     "chooseDifferent": "בחירת קובץ אחר",
     "analyzePaper": "ניתוח המסמך",
     "fileError": "יש להעלות קובץ PDF, DOCX, PPTX, או TXT",
-    "fileSizeError": "גודל הקובץ חייב להיות פחות מ-10MB",
+    "fileSizeError": "גודל הקובץ חייב להיות פחות מ-50MB",
     "processing": {
       "uploading": "מעלה מסמך",
       "uploadingDesc": "מעביר את הקובץ בצורה מאובטחת...",
