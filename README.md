@@ -35,16 +35,30 @@ _▶️ **[Watch the full 50-second walkthrough](docs/media/inclusify-demo.mp4)*
 - Supports **Hebrew and English** academic texts with full RTL layout
 - Generates **downloadable reports** for authors and editors
 - **Private mode**: analysis without storing any text to the database
-- **Admin dashboard**: usage analytics, glossary management, model performance monitoring
+- **Admin dashboard**: usage analytics, user + role management, model performance monitoring, user feedback
+
+---
+
+## Live Deployment
+
+| | URL |
+|---|---|
+| **App** | https://frontend-production-780b.up.railway.app |
+| **API** | https://backend-production-bd58.up.railway.app |
+| **API docs** | https://backend-production-bd58.up.railway.app/docs |
+
+The GPU inference service runs **scale-to-zero** on Modal, so the first analysis
+after an idle period takes ~2–3 minutes while the model loads. Subsequent
+requests return in seconds.
 
 ---
 
 ## Local Development
 
-The full stack runs via Docker Compose — Postgres, Redis, an Azure Blob emulator (Azurite), the FastAPI backend, and the Next.js frontend.
+The full stack runs via Docker Compose — Postgres, Redis, MinIO (S3-compatible, mirrors Cloudflare R2 in production), the FastAPI backend, and the Next.js frontend.
 
 ```bash
-# Start everything with hot-reload (backend :8000, frontend :3000)
+# Start everything with hot-reload (backend :8000, frontend :3100)
 docker compose --profile dev up
 
 # Apply DB schema + seed (run once; auto-applied on first postgres start)
@@ -62,7 +76,7 @@ BUILD_TARGET=runtime docker compose build
 
 `BUILD_TARGET` selects the Dockerfile stage for both services. The default (`development`) ships hot-reload and full dependencies; `runtime` produces the optimized, slim production images.
 
-The backend installs **CPU-only PyTorch**. Inference runs remotely over HTTP (`VLLM_URL` → vLLM on the Azure GPU VM), so the CUDA build of torch — pulled transitively by Docling — would add ~3.5 GB of `nvidia`/`triton` libraries that are never executed in this container. Do not "upgrade" to the default torch wheel.
+The backend installs **CPU-only PyTorch**. Inference runs remotely over HTTP (`VLLM_URL` → vLLM on Modal's serverless GPU), so the CUDA build of torch — pulled transitively by Docling — would add ~3.5 GB of `nvidia`/`triton` libraries that are never executed in this container. Do not "upgrade" to the default torch wheel.
 
 ---
 
