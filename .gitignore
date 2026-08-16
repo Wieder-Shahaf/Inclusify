@@ -9,8 +9,20 @@ __pycache__/
 *.db
 .venv/
 venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Secrets / local environment.
+# Keep the specific historical names too: these files may still exist in a
+# teammate's checkout, and un-ignoring them risks a stray `git add -A`.
 .env
 .env.team
+env.team
+az.txt
+Azure_env_key.txt
+*_key.txt
+*.pem
 
 # Node
 node_modules/
@@ -19,41 +31,24 @@ build/
 .next/
 .out/
 
-# Data / models
+# Data / models — large artifacts that do not belong in git.
+# NOTE: ml/adapters/*/adapter_model.safetensors IS tracked on purpose; it is the
+# deployed LoRA and the project ships it. Do not add a blanket *.safetensors rule.
 *.ckpt
 *.pt
 *.bin
 ml/data/raw/
 ml/data/private/
-
-.claude
-CLAUDE.md
-
-Azure_env_key.txt
-admin-request-email-SHORT.txt
-# Training checkpoints (too large for git)
+ml/logs/
 ml/adapters/*/checkpoint-*/
 ml/adapters/*/runs/
-ml/logs/
-
-# Training cache
 unsloth_compiled_cache/
 
-CLAUDE.md
-az.txt
-
-PRETRAINING.md
-lamma_tasks.json
-env.team
-
-# Claude Code / AI tooling
+# Claude Code / AI tooling — instructions for an assistant, not project files
+.claude
 .agents/
 skills-lock.json
+CLAUDE.md
 
-# Course submission/instruction files (not part of the codebase)
+# Course submission / instruction files (not part of the codebase)
 Project Submmisions and Instractions Files/
-
-# Local scratch / personal working files (not part of the codebase)
-docs/DELIVERABLES.md
-docs/poster-testing.html
-infra/scripts/azure-idle-postgres.sh

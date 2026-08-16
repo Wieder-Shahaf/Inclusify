@@ -4,9 +4,7 @@
   "private": true,
   "description": "INCLUSIFY - LGBTQ+ Inclusive Language Analyzer",
   "workspaces": [
-    "frontend",
-    "backend",
-    "shared"
+    "frontend"
   ],
   "scripts": {
     "dev": "cd frontend && npx next dev --webpack",

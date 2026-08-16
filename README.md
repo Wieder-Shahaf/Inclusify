@@ -106,7 +106,7 @@ Full right-to-left layout with a bilingual interface.
 ## Project Poster
 
 <div align="center">
-<a href="docs/Inclusify-Poster.pdf"><img src="docs/poster-web.png" alt="Inclusify research poster" width="640" /></a>
+<a href="docs/Inclusify-Poster.pdf">Inclusify research poster (PDF)</a>
 
 _📄 **[View the full poster (PDF)](docs/Inclusify-Poster.pdf)**_
 </div>

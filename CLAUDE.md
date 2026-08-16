@@ -14,7 +14,7 @@ downloadable reports.
 - LoRA adapters: ml/adapters/ (live: qwen_r8_d0.2_achva_v2, served as model name `inclusify`)
 - Inference: vLLM on Modal serverless GPU (T4, scale-to-zero) — infra/modal/vllm_app.py
 - Document parsing: Docling
-- Infrastructure: Railway (backend + frontend + Postgres) + Modal (GPU) + Cloudflare R2 (storage). Migrated off Azure — see docs/STACK-A-MIGRATION.md
+- Infrastructure: Railway (backend + frontend + Postgres) + Modal (GPU) + Cloudflare R2 (storage). Migrated off Azure.
 
 ## Repo Structure
 - frontend/ — Next.js app with [locale] routing (en/he)
@@ -32,7 +32,7 @@ downloadable reports.
 - DB: Fully wired — asyncpg pool created in main.py lifespan; analysis results persist via the repository layer. NOTE: `glossary_terms`/`rules` tables are seeded but nothing reads them.
 - Admin: dashboard at /admin (Overview / Users+roles / Model Performance / Feedback tabs).
 - Infra: Backend + frontend deploy on Railway from `main` via infra/docker/*.Dockerfile; GitHub Actions CI runs on push. Modal app deployed separately (`modal deploy infra/modal/vllm_app.py`).
-- Ops runbook: docs/OPERATIONS.md. Non-technical guide: docs/operator-handbook.html.
+- Operations and handover guidance lives in the delivered Technical Guide (docs/G07 - Inclusify - Technical Guide.pdf).
 
 ## Ingestion & Ops (July 2026)
 - Docling runs in a **recycled spawn subprocess** (`ProcessPoolExecutor`, `max_tasks_per_child=4`) in backend/app/modules/ingestion/service.py — it OOM'd the container when run in-process (its memory ratchets and never returns to the OS). The API parent stays ~40 MB; each conversion's peak is reclaimed. Serialized to one parse at a time; torch threads + glibc arenas capped via the Dockerfile.
