@@ -122,6 +122,6 @@ Technion — Israel Institute of Technology, 2025–2026
 
 ## Acknowledgments
 
-- [Achva LGBT Organization](https://achva-lgbt.org.il/) — partner organization and domain expertise
+- [Achva LGBT Organization](https://www.achvalgbt.org.il) — partner organization and domain expertise
 - [Qwen](https://huggingface.co/Qwen) — base model
 - [Docling](https://github.com/DS4SD/docling) — document parsing
