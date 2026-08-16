@@ -1,7 +1,7 @@
 {
-  "active_adapter": "qwen_r8_d0.2",
-  "version": "1.0.0",
-  "promoted_date": "2026-03",
+  "active_adapter": "qwen_r8_d0.2_achva_v2",
+  "version": "2.0.0",
+  "promoted_date": "2026-06",
   "promoted_by": "team",
-  "notes": "Initial production adapter"
+  "notes": "Retrained on curated Achva data. This is the adapter baked into the Modal image — the authoritative reference is ADAPTER_LOCAL_DIR in infra/modal/vllm_app.py; keep the two in sync when promoting a new adapter."
 }

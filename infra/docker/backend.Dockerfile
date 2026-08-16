@@ -171,5 +171,12 @@ ENV HF_HUB_OFFLINE=1 \
 
 EXPOSE 8000
 
-# Production entrypoint (no hot-reload)
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Production entrypoint (no hot-reload).
+# --proxy-headers + --forwarded-allow-ips=* make request.client.host the real
+# caller instead of Railway's edge proxy. Without this, uvicorn only trusts
+# X-Forwarded-For from 127.0.0.1, so every client collapses into a handful of
+# proxy-IP buckets and per-IP rate limits are shared across unrelated users.
+# "*" is safe here because the container is only reachable through Railway's
+# proxy, which always overwrites X-Forwarded-For.
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", \
+     "--proxy-headers", "--forwarded-allow-ips", "*"]

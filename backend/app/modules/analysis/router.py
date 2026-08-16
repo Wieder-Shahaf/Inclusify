@@ -22,6 +22,8 @@ import logging
 import hashlib
 import time
 
+from collections import defaultdict
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from typing import Optional, Literal
@@ -41,12 +43,48 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+# Guests may analyse by design, so this limit is the only thing between a
+# script and the GPU budget: every call wakes or occupies a paid Modal GPU and
+# writes a row. Keyed by user id when authenticated, client IP otherwise —
+# mirrors contact/router.py. Relies on uvicorn running with --proxy-headers so
+# the IP is the real caller and not Railway's edge proxy.
+# ponytail: in-memory + per-process — resets on restart, not shared across
+# replicas. Fine at current single-container scale; swap for Redis if we scale out.
+_rate_store: dict[str, list[float]] = defaultdict(list)
+_RATE_LIMIT = 20
+_RATE_WINDOW = 3600.0
+
+
+def _rate_key(request: Request, user: Optional["User"]) -> str:
+    if user is not None:
+        return f"user:{user.id}"
+    return f"ip:{request.client.host}" if request.client else "ip:unknown"
+
+
+def _check_rate_limit(key: str) -> None:
+    now = time.monotonic()
+    _rate_store[key] = [t for t in _rate_store[key] if now - t < _RATE_WINDOW]
+    if len(_rate_store[key]) >= _RATE_LIMIT:
+        raise HTTPException(
+            status_code=429,
+            detail="Too many analyses. Please try again later.",
+        )
+    _rate_store[key].append(now)
+
+
 # =============================================================================
 # Request/Response Models
 # =============================================================================
 
+# Upper bound on a single analysis. The product caps uploads at 50 pages and
+# ingestion yields ~2k chars/page, so 200k leaves generous headroom while
+# stopping one request from monopolising the GPU. Without it, a request-count
+# rate limit means nothing: one call could carry megabytes of text.
+MAX_ANALYSIS_CHARS = 200_000
+
+
 class AnalysisRequest(BaseModel):
-    text: str = Field(..., min_length=1)
+    text: str = Field(..., min_length=1, max_length=MAX_ANALYSIS_CHARS)
     language: Optional[Literal['en', 'he', 'auto']] = 'auto'
     private_mode: Optional[bool] = False
     input_type: Optional[Literal['pdf', 'docx', 'pptx', 'txt']] = None
@@ -270,6 +308,9 @@ async def analyze_text(
     Response includes analysis_mode: "llm".
 
     """
+    # Before any GPU work: cap how often one caller can reach the model.
+    _check_rate_limit(_rate_key(request, current_user))
+
     text_length = len(body.text)
     language = body.language or "auto"
     private_mode = body.private_mode if body.private_mode is not None else False

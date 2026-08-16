@@ -123,9 +123,10 @@ services:
       - CONTACT_RECIPIENTS=${CONTACT_RECIPIENTS:-}
       # CORS
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3100}
-      # LLM inference service (transformers-based, not vLLM)
-      # vLLM is VNet-only now; for local dev tunnel with: ssh -L 8001:localhost:8001 azureuser@<vm>
-      # (host.docker.internal reaches the tunnel on the host from inside the container)
+      # vLLM inference service. In production this is the Modal endpoint
+      # (https://<workspace>--inclusify-vllm-serve.modal.run) — set VLLM_URL and
+      # VLLM_API_KEY in .env to point local dev at it. The default below assumes
+      # a vLLM server running on the host at :8001.
       - VLLM_URL=${VLLM_URL:-http://host.docker.internal:8001}
       - VLLM_API_KEY=${VLLM_API_KEY:-}
       # Model health (Stack A §2.3): TRUE when vLLM is serverless (Modal) so the
