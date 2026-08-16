@@ -37,17 +37,23 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 
-# ML artifacts & training data (not needed in the API container)
+# ML artifacts & training data (not needed in the API container — inference is
+# remote, on Modal). This also keeps the ~57 MB LoRA out of the image.
 ml/
 data/
 *.safetensors
 *.gguf
 *.bin
 
-# Planning / build metadata
-.planning/
+# Build metadata
 *.egg-info/
 
-# Documentation
+# Documentation and delivered PDFs — none of it is read at runtime, and docs/
+# alone is ~10 MB of poster, guides, screenshots and demo video.
+docs/
 *.md
 !README.md
+
+# AI tooling instructions
+.claude/
+CLAUDE.md

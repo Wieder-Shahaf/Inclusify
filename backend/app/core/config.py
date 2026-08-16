@@ -67,7 +67,7 @@ class Settings(BaseSettings):
     VLLM_READY_BUDGET: float = 240.0
 
     # Model health-check behaviour (see /api/v1/health/model and
-    # docs/STACK-A-MIGRATION.md §2.3). When the GPU layer is serverless and
+    # When the GPU layer is serverless and
     # scales to zero (Modal), set MODEL_SCALE_TO_ZERO=True: the health endpoint
     # must NOT probe vLLM, because any request wakes the GPU and bills idle time.
     # In that mode availability is inferred from the circuit breaker (real
@@ -79,7 +79,7 @@ class Settings(BaseSettings):
     MODEL_HEALTH_CACHE_TTL: float = 300.0  # seconds; live-probe path only
 
     # Object storage (S3-compatible: Cloudflare R2 in prod, MinIO in dev).
-    # Replaces the Azure Blob settings (docs/STACK-A-MIGRATION.md §2.1). Empty
+    # Replaces the Azure Blob settings from the previous stack. Empty
     # credentials => storage disabled: uploads become no-ops returning None.
     S3_ENDPOINT_URL: str = ""       # R2: https://<ACCT_ID>.r2.cloudflarestorage.com · MinIO: http://minio:9000
     S3_ACCESS_KEY_ID: str = ""

@@ -99,7 +99,7 @@ async def health_check(request: Request):
 async def model_health_check():
     """Check vLLM model availability, latency, and circuit breaker state.
 
-    Two modes (docs/STACK-A-MIGRATION.md §2.3):
+    Two modes:
 
     - Serverless GPU (settings.MODEL_SCALE_TO_ZERO=True, e.g. Modal): NEVER probe
       vLLM. Any request to a scaled-to-zero endpoint wakes the GPU and bills idle

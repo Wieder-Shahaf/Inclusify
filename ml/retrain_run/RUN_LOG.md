@@ -40,9 +40,9 @@ Both r8 and r16 passed; r8 chosen (better on the harder real-document eval, smal
 - **Eval is ~190 sentences** — treat all deltas as directional, not precise.
 
 ### Cost / time
-- GPU: ~6.1 GPU-hours on one H100 (2 candidates × ~3.0h, GPU 1). Judge: ~16k remote Gemma calls (cached).
-- All heavy artifacts on `/data/shahafw_home/inclusify_retrain` — see EXTERNAL_PATHS.md; teardown =
-  `rm -rf /data/shahafw_home/inclusify_retrain`.
+- GPU: ~6.1 GPU-hours (2 candidates × ~3.0h) on a single training GPU. Judge: ~16k remote Gemma calls (cached).
+- All heavy artifacts on `<external-work-root>` — teardown =
+  `rm -rf <external-work-root>`.
 - Branch `retrain/achva-v2` pushed to origin (weights via Git LFS).
 
 ---
@@ -55,15 +55,15 @@ Both r8 and r16 passed; r8 chosen (better on the harder real-document eval, smal
 | Fact | Value |
 |---|---|
 | Start (UTC) | 2026-06-20T13:37Z |
-| Host | `ziv` (this is the H100 box; judge runs on a separate host) |
+| Host | dedicated training host; the judge model runs on a separate host |
 | Branch | `retrain/achva-v2` (off `main` @ `dc99a6e`) |
-| GPUs | 4× NVIDIA H100 80GB. **GPU 1 free (0 MiB) → training.** GPU 0 ~6.5GB used; GPU 2&3 ~50GB each (local Qwen3 vLLM serving on :8078, leave alone). |
+| GPUs | Multi-GPU host; training pinned to a single otherwise-idle GPU. The remaining GPUs were left untouched (unrelated local vLLM serving). |
 | Driver / CUDA | 570.195.03 / CUDA 12.8 (no `nvcc` toolkit — torch wheels bundle runtime, fine) |
 | Python | 3.10.12 (**deviation**: runbook expected 3.11/3.12; stack runs on 3.10) |
 | CPU / RAM | 128 cores / 1.0 TiB |
 | Repo disk `/` | 98G total, ~18G free (tight — keep heavy artifacts OFF this fs) |
 | Heavy-artifact disk | `/data` (local, 14T, 5.6T free) |
-| External work root | `/data/shahafw_home/inclusify_retrain` (owned by me; teardown = delete this dir + venv) |
+| External work root | `<external-work-root>` (owned by me; teardown = delete this dir + venv) |
 
 ### Judge endpoint (remote, over network)
 - URL: `http://192.168.100.112:8222/v1` — reachable from this box (verified `/v1/models` + chat OK).
@@ -72,7 +72,7 @@ Both r8 and r16 passed; r8 chosen (better on the harder real-document eval, smal
 - Used ONLY as the Phase-2.2 use-mention relabel judge, gated by ≥85% calibration vs expert.
 
 ### Deviations from runbook (intentional, with reason)
-1. **Storage**: runbook used repo-relative `ml/base_model/`, `ml/adapters_new/`. Root fs has only 18G free, so heavy artifacts go to `/data/shahafw_home/inclusify_retrain/...` and `config_h100.py` points there. Repo keeps only small artifacts.
+1. **Storage**: runbook used repo-relative `ml/base_model/`, `ml/adapters_new/`. Root fs has only 18G free, so heavy artifacts go to `<external-work-root>/...` and `config_retrain.py` points there. Repo keeps only small artifacts.
 2. **Judge**: runbook said download a 32B/72B judge locally. Instead we use the existing remote Gemma-4-26B-A4B API (no local GPU/disk cost, isolated VM still respected — call is LAN-only).
 3. **Python 3.10** instead of 3.11/3.12.
 4. **Training GPU pinned to `CUDA_VISIBLE_DEVICES=1`** to avoid the busy serving GPUs.
@@ -84,7 +84,7 @@ Both r8 and r16 passed; r8 chosen (better on the harder real-document eval, smal
 - **Prod user template** (exact): `Analyze this passage for LGBTQ+ inclusive language compliance:\n"{sentence}"`.
 - **Prod SYSTEM_PROMPT** ≈9,443 chars (~1.9k tokens) at `backend/app/modules/analysis/llm_client.py:26-88` — import verbatim, do not copy.
 - **Old training format** (`prepare_data.py::format_example_qwen`) = sentence-level `{"severity","explanation"}` — confirms the train/inference mismatch the runbook targets.
-- **Old config** (`ml/training/config.py`): 4-bit NF4, fp16=False/bf16=False, bs=4, adamw_8bit, max_seq=512, hardcoded `/home/azureuser/...` paths → all overridden in `config_h100.py`.
+- **Old config** (`ml/training/config.py`): 4-bit NF4, fp16=False/bf16=False, bs=4, adamw_8bit, max_seq=512, hardcoded `/home/azureuser/...` paths → all overridden in `config_retrain.py`.
 - **`trl` + `tensorboard` missing** from `ml/requirements.txt` — install explicitly.
 
 ---
@@ -93,7 +93,7 @@ Both r8 and r16 passed; r8 chosen (better on the harder real-document eval, smal
 
 ### Phase 0 — Environment bring-up  ✅ DONE
 - [x] Branch `retrain/achva-v2` created off `main@dc99a6e`.
-- [x] External work root + subdirs created on `/data/shahafw_home/inclusify_retrain`.
+- [x] External work root + subdirs created on `<external-work-root>`.
 - [x] Repo dirs created: `ml/retrain_run`, `ml/eval_sets`, `ml/data_curated`, `data/curated`.
 - [x] venv + deps installed; `pip_freeze.txt` written.
   - **GOTCHA:** `~/.config/pip/pip.conf` forces an expired private AWS CodeArtifact
@@ -107,7 +107,7 @@ Both r8 and r16 passed; r8 chosen (better on the harder real-document eval, smal
 - [x] Base model downloaded: `…/base_model/Qwen2.5-3B-Instruct` (5.8 GB, ungated, no HF token needed).
   - Smoke test: loads on GPU 1 in bf16 in 2.5s, 6.2 GB peak VRAM, generates correctly.
 - [x] Data inventory confirmed (all CSVs + Achva xlsx/docx/pdf/Legend present).
-- [x] `config_h100.py` written.
+- [x] `config_retrain.py` written.
 - [ ] Phase 0 committed (next).
 
 ### Phase 2 — data curation & relabeling  ✅ DONE
@@ -179,7 +179,7 @@ Both r8 and r16 passed; r8 chosen (better on the harder real-document eval, smal
   - **GOTCHA:** the adapter weights were missing from the repo working tree (removed in commit
     `5fa0bb8 "remove large binary"`; `.gitattributes` marks `*.safetensors` as LFS). Recovered
     the real 57MB weights from git history `git cat-file -p 8a19e7d:…/adapter_model.safetensors`
-    → reconstructed full adapter at `/data/shahafw_home/inclusify_retrain/baseline_adapter/qwen_r8_d0.2`
+    → reconstructed full adapter at `<external-work-root>/baseline_adapter/qwen_r8_d0.2`
     (repo dir left untouched per runbook; weights kept off git).
 
   | set | acc | macro-F1 | EN F1 | HE F1 | use-mention FP | parse_fail |

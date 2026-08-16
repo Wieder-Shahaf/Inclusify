@@ -1,6 +1,6 @@
 """S3-compatible object storage client (Cloudflare R2 in prod, MinIO in dev).
 
-Replaces the Azure Blob client (docs/STACK-A-MIGRATION.md §2.1). boto3 is sync,
+Replaces the Azure Blob client from the previous stack. boto3 is sync,
 so calls run in a thread executor to avoid blocking the async FastAPI endpoints.
 
 Storage refs are emitted as `blob://<bucket>/<key>` — an opaque, stable format

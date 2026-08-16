@@ -14,7 +14,7 @@ Everything you need to start contributing code from your own PC.
 8. [Branch & Commit Strategy](#8-branch--commit-strategy)
 9. [CI Pipeline](#9-ci-pipeline)
 10. [Role Quick Reference](#10-role-quick-reference)
-11. [Azure Services Overview](#11-azure-services-overview)
+11. [Production Services Overview](#11-production-services-overview)
 12. [Troubleshooting](#12-troubleshooting)
 13. [Useful Links](#13-useful-links)
 
@@ -40,14 +40,14 @@ Everything you need to start contributing code from your own PC.
 **SSH (preferred):**
 
 ```bash
-git clone git@github.com:Wieder-Shahaf/inclusify.git
+git clone git@github.com:achvalgbt/Inclusify.git
 cd inclusify
 ```
 
 **HTTPS (if you haven't set up SSH keys):**
 
 ```bash
-git clone https://github.com/Wieder-Shahaf/inclusify.git
+git clone https://github.com/achvalgbt/Inclusify.git
 cd inclusify
 ```
 
@@ -95,7 +95,7 @@ docker compose --profile dev up
 This starts:
 - **PostgreSQL** on port 5432 (auto-initializes schema + seed data)
 - **Backend (FastAPI)** on port 8000
-- **Frontend (Next.js)** on port 3000
+- **Frontend (Next.js)** on port 3100 (container port 3000, shifted to avoid clashes)
 
 Hot-reload is enabled via volume mounts — edit code and see changes immediately.
 
@@ -140,7 +140,7 @@ Open [http://localhost:8000/docs](http://localhost:8000/docs) in your browser �
 
 **Frontend:**
 
-Open [http://localhost:3000](http://localhost:3000) — you should see the Inclusify landing page.
+Open [http://localhost:3100](http://localhost:3100) — you should see the Inclusify landing page.
 
 **Test the analysis endpoint:**
 
@@ -253,7 +253,7 @@ Every push and PR triggers GitHub Actions CI automatically.
 - `next build` — Next.js build verification (frontend)
 - Sanity checks
 
-If CI fails on your PR, check the Actions tab for details: [GitHub Actions](https://github.com/Wieder-Shahaf/inclusify/actions)
+If CI fails on your PR, check the Actions tab for details: [GitHub Actions](https://github.com/achvalgbt/Inclusify/actions)
 
 Fix the issues locally and push again.
 
@@ -272,28 +272,35 @@ Fix the issues locally and push again.
 **Tips by role:**
 
 - **Adan:** The canonical DB schema is `db/schema.sql`, not `frontend/prisma/schema.prisma`. Always edit `schema.sql` for DB changes.
-- **Rasha:** Use `az acr build` for pushing Docker images — it's faster than building locally and pushing.
+- **Rasha:** Images build on Railway from `infra/docker/*.Dockerfile`; deploy with `railway up --service <name>` from the repository root.
 - **Lama:** The ingestion module is at `backend/app/modules/ingestion/`. Docling is the document parser (replacing PyMuPDF).
-- **Barak:** LoRA adapters are in `ml/LoRA_Adapters/`. The inference demo at `ml/inference_demo.py` works locally for testing.
+- **Barak:** LoRA adapters live in `ml/adapters/`; `ml/adapters/active.json` names the promoted one, and `infra/modal/vllm_app.py` is the authoritative record of what production serves.
 
 ---
 
-## 11. Azure Services Overview
+## 11. Production Services Overview
 
-These are deployed and managed. You don't need to set these up — just be aware they exist.
+These are deployed and managed. You don't need to set them up — just be aware they exist.
 
 | Service | Purpose | Details |
 |---------|---------|---------|
-| **Azure Container Apps** | Hosts frontend + backend containers | Auto-scaled, HTTPS |
-| **Azure Container Registry (ACR)** | Stores Docker images | `inclusifyacr.azurecr.io` |
-| **Azure PostgreSQL Flexible Server** | Production database | SSL required, `db/schema.sql` is source of truth |
-| **Azure VM (T4 GPU)** | vLLM inference server | `52.224.246.238:8001` — runs the fine-tuned model |
+| **Railway** | Hosts the backend and frontend containers | Built from `infra/docker/*.Dockerfile`; HTTPS terminated at Railway's edge |
+| **Railway PostgreSQL** | Production database | `db/schema.sql` is the source of truth; there is no migration runner, so schema changes are applied by hand (see `db/migrations/README.md`) |
+| **Railway Redis** | Refresh-token store | Managed instance; `REDIS_URL` is injected into the backend |
+| **Modal (T4 GPU)** | vLLM inference server | Serverless and **scale-to-zero** — the first analysis after an idle period takes ~2–3 minutes while the model loads. Deployed separately with `modal deploy infra/modal/vllm_app.py` |
+| **Cloudflare R2** | Uploaded documents and generated reports | S3-compatible; MinIO stands in for it in local Compose |
+
+> **Deploys are currently manual.** The GitHub → Railway link does not follow the
+> repository to a new owner, so pushing to `main` does not deploy on its own.
+> Deploy with `railway up --service backend` (or `--service frontend`) **from the
+> repository root** — the CLI resolves its upload root by walking up to the git
+> root, so running it from a subdirectory or a worktree uploads the wrong tree.
 
 ---
 
 ## 12. Troubleshooting
 
-### Port already in use (5432, 3000, or 8000)
+### Port already in use (5432, 3100, or 8000)
 
 **macOS / Linux:**
 
@@ -378,11 +385,11 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 | Resource | URL |
 |----------|-----|
-| GitHub Repo | [github.com/Wieder-Shahaf/inclusify](https://github.com/Wieder-Shahaf/inclusify) |
-| GitHub Actions (CI) | [github.com/Wieder-Shahaf/inclusify/actions](https://github.com/Wieder-Shahaf/inclusify/actions) |
+| GitHub Repo | [github.com/achvalgbt/Inclusify](https://github.com/achvalgbt/Inclusify) |
+| GitHub Actions (CI) | [github.com/achvalgbt/Inclusify/actions](https://github.com/achvalgbt/Inclusify/actions) |
 | Local Swagger UI | [localhost:8000/docs](http://localhost:8000/docs) |
-| Local Frontend | [localhost:3000](http://localhost:3000) |
+| Local Frontend | [localhost:3100](http://localhost:3100) |
 | DB Schema | `db/schema.sql` |
-| Production Frontend | `https://inclusify-frontend.azurecontainerapps.io` |
-| Production Backend | `https://inclusify-backend.azurecontainerapps.io` |
-| vLLM GPU VM | `52.224.246.238:8001` |
+| Production Frontend | https://frontend-production-780b.up.railway.app |
+| Production Backend | https://backend-production-bd58.up.railway.app |
+| Model inference | Modal (serverless T4, scale-to-zero) — see `infra/modal/vllm_app.py` |

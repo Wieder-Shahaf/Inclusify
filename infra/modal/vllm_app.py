@@ -22,7 +22,7 @@ Setup (one-time)
 Deploy
     modal deploy infra/modal/vllm_app.py
 
-Wire up the backend (per docs/STACK-A-MIGRATION.md §2.2, §3)
+Wire up the backend
     VLLM_URL=https://<workspace>--inclusify-vllm-serve.modal.run
     VLLM_API_KEY=<same value as the Modal secret>     # backend sends Bearer <key>
     VLLM_MODEL_NAME=inclusify                          # already the default
@@ -67,7 +67,7 @@ app = modal.App("inclusify-vllm")
 def _download_base_model() -> None:
     """Bake base weights into the image at build time.
 
-    Per docs/STACK-A-MIGRATION.md §2.4/§4.1: a cold start must be a local VRAM
+    A cold start must be a local VRAM
     load, never a runtime HuggingFace download. Downloading here (during the
     image build) burns the weights into an image layer.
     """
@@ -141,7 +141,7 @@ def serve() -> None:
 # Cold start: a 3B FP16 model from an image layer loads in ~30-60s on a T4. The
 #   backend's VLLM_TIMEOUT=120s and circuit breaker (3 fails / 60s) tolerate
 #   this, but the first request after idle may trip one breaker count — consider
-#   bumping VLLM_CIRCUIT_FAIL_MAX to 5 (docs/STACK-A-MIGRATION.md §2.4).
+#   bumping VLLM_CIRCUIT_FAIL_MAX to 5.
 #
 # Memory snapshots: Modal can snapshot/restore container state to cut cold-start
 #   duration further. GPU/CUDA snapshotting has constraints that vary by Modal
