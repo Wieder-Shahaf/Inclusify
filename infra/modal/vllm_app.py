@@ -1,6 +1,6 @@
 """Modal serverless deployment of the Inclusify vLLM inference server.
 
-Replaces the Azure T4 VM (infra/azure/vllm-vm/vllm.service). Serves the
+Replaces the retired Azure T4 VM. Serves the
 Qwen2.5-3B-Instruct base model with the fine-tuned `inclusify` LoRA adapter over
 an OpenAI-compatible API, scaling to zero when idle.
 
@@ -13,8 +13,7 @@ Validated environment — read directly from the Azure VM "InclusifyModel"
     LoRA : qwen_r8_d0.2_achva_v2  (r=8, alpha=16, dropout=0.2)  served as "inclusify"
 
 The serve flags below are copied 1:1 from the *live* systemd ExecStart on that
-VM (which already uses the achva_v2 adapter — the committed vllm.service still
-references the older qwen_r8_d0.2 and is stale).
+VM, which already served the achva_v2 adapter.
 
 Setup (one-time)
     modal secret create inclusify-vllm-key VLLM_API_KEY=<generate-a-strong-key>

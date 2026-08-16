@@ -201,7 +201,7 @@
     "chooseDifferent": "Choose Different File",
     "analyzePaper": "Analyze Paper",
     "fileError": "Please upload a PDF, DOCX, PPTX, or TXT file",
-    "fileSizeError": "File size must be less than 10MB",
+    "fileSizeError": "File size must be less than 50MB",
     "processing": {
       "uploading": "Uploading document",
       "uploadingDesc": "Securely transferring your file...",

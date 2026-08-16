@@ -1,6 +1,6 @@
 # Inclusify LoRA Retrain — RUN LOG (branch `retrain/achva-v2`)
 
-> Running log of the Achva-v2 retrain per `ml/RETRAIN_PLAN.md`. Every command outcome,
+> Running log of the Achva-v2 retrain. Every command outcome,
 > metric, and deviation is recorded here. The human reads this to trust the result.
 
 ## 🛑 HANDOFF SUMMARY (final gate — awaiting human decision)
